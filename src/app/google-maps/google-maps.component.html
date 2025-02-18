@@ -1,0 +1,91 @@
+
+<!--
+<div class="map-container">
+  <table border="1" style="width: 100%; margin-bottom: 20px;">
+    <thead>
+      <tr>
+        <th>Caixa Número</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let v of destino">
+        <td>{{v.numero}}</td>
+      </tr>
+      <tr *ngFor="let v of destinoCTO">
+        <td>{{v.numero}} (CTO)</td>
+      </tr>
+    </tbody>
+  </table>
+
+-->
+
+  <google-map
+    [center]="center"
+    [zoom]="zoom"
+    width="99%"
+    height="90vh"
+    (mapInitialized)="onMapInitialized()">
+    <map-marker
+      *ngFor="let position of markerCaixas; let i = index"
+      [position]="position"
+      [options]="markerOptions[i]"
+      (mapDragend)="onMarkerDragEnd($event,i)">
+    </map-marker>
+    <map-marker
+      *ngFor="let position of markerCtos; let i = index"
+      [position]="position"
+      [options]="markerOptionsCTO[i]"
+      (mapDragend)="onMarkerDragEnd($event,i,true)">
+    </map-marker>
+
+    <map-polyline 
+    *ngFor="let pathj of polylinePaths8f"
+    [path]="pathj"
+    [options]="polylineOptions8f"
+    ></map-polyline>
+
+    <map-polyline 
+    *ngFor="let path of polylinePaths"
+    [path]="path"
+    [options]="polylineOptions"
+    ></map-polyline>
+    
+    <map-polyline
+    *ngFor="let pathi of polylinePaths24f"
+    [path]="pathi"
+    [options]="polylineOptions24f">
+    </map-polyline>
+
+  </google-map>
+
+
+  <!--
+  <div class="debug-info" style="margin-top: 20px;">
+    <h3>Debug Info - Locations:</h3>
+    <table border="1" style="width: 100%;">
+      <thead>
+        <tr>
+          <th>Número</th>
+          <th>Latitude</th>
+          <th>Longitude</th>
+          <th>Tipo</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let loc of destino">
+          <td>{{loc.numero}}</td>
+          <td>{{loc.LAT}}</td>
+          <td>{{loc.LONGI}}</td>
+          <td>CEO</td>
+        </tr>
+        <tr *ngFor="let loc of destinoCTO">
+          <td>{{loc.numero}}</td>
+          <td>{{loc.LAT}}</td>
+          <td>{{loc.LONGI}}</td>
+          <td>CTO</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+-->

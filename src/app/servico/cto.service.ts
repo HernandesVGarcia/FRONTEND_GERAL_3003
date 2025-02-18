@@ -1,0 +1,56 @@
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
+import {Cto} from '../modelo/Cto';
+import {Observable, throwError } from 'rxjs';
+import { retry, timeout, catchError } from 'rxjs/operators';
+
+
+
+
+@Injectable({
+  providedIn: 'root'
+})
+
+export class CtoService {
+  
+  url:string = 'http://127.0.0.1:3001/ctos'
+  private readonly TIMEOUT = 10000; // 10 segundos
+  private readonly RETRY_ATTEMPTS = 3;
+
+  constructor(private http:HttpClient) {
+    console.log('inicialização do serviço CTO-ok');
+  }
+   
+
+  // Método para Selecionar Caixa
+  
+  selecionar():Observable<Cto[]>{
+    const headers = new HttpHeaders()
+      .set('Content-Type', 'application/json')
+      .set('Access-Control-Allow-Origin', '*')
+      .set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE')
+      .set('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+    return this.http.get<Cto[]>(this.url).pipe(
+      timeout(this.TIMEOUT),
+      retry(this.RETRY_ATTEMPTS),
+      catchError(this.handleError)
+    );
+    
+}
+
+private handleError(error: HttpErrorResponse) {
+  console.error('Erro na requisição:', error);
+  let errorMessage = 'Ocorreu um erro na requisição.';
+  
+  if (error.error instanceof ErrorEvent) {
+    // Erro do cliente
+    errorMessage = `Erro: ${error.error.message}`;
+  } else {
+    // Erro do servidor
+    errorMessage = `Código do erro: ${error.status}, mensagem: ${error.message}`;
+  }
+  
+  return throwError(() => errorMessage);
+}   
+
+}

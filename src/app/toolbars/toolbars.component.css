@@ -1,0 +1,23 @@
+.mat-toolbar.mat-primary {
+
+    background: rgb(111, 136, 192);
+    color: white;
+    height: 50px;
+    vertical-align: 20%;
+    left:200px;
+    
+    
+    
+  }
+
+  .mat-icon {
+
+    color:royalblue;
+    width: 50px;
+    height: 22px;
+    offset-anchor:initial 100 px;
+    left: 30%;
+    
+    
+
+  }
