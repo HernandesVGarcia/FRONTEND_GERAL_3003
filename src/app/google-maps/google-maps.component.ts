@@ -2,7 +2,7 @@ import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/cor
 import { CommonModule } from '@angular/common';
 import { GoogleMapsModule } from '@angular/google-maps';
 import { Cabos8f } from '../modelo/Cabos8f';
-import { Cabos } from '../modelo/Cabos';
+import { Cabos12f } from '../modelo/Cabos12f';
 import { Cabos24f } from '../modelo/Cabos24f';
 import { Caixa } from '../modelo/Caixa';
 import { Cto } from '../modelo/Cto';
@@ -17,7 +17,7 @@ import { Cto } from '../modelo/Cto';
 export class GoogleMapsComponent implements OnInit, OnChanges {
   @Input() destino: Caixa[] = [];
   @Input() destinoCTO: Cto[] = [];
-  @Input() destinoCabos: Cabos[] = [];
+  @Input() destinoCabos12f: Cabos12f[] = [];
   @Input() destinoCabos8f: Cabos8f[] = [];
   @Input() destinoCabos24f: Cabos24f[] = [];
 
@@ -30,7 +30,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges {
   markerCtos: google.maps.LatLngLiteral[] = [];
   markerOptions: google.maps.MarkerOptions[] = [];
   markerOptionsCTO: google.maps.MarkerOptions[] = [];
-  polylinePaths: google.maps.LatLngLiteral[][] = [];
+  polylinePaths12f: google.maps.LatLngLiteral[][] = [];
   polylinePaths8f: google.maps.LatLngLiteral[][] = [];
   polylinePaths24f: google.maps.LatLngLiteral[][] = [];
 
@@ -46,7 +46,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges {
 
   }
 
-  polylineOptions: google.maps.PolylineOptions = {
+  polylineOptions12f: google.maps.PolylineOptions = {
     strokeColor: 'green',
     strokeOpacity: 0.8,
     strokeWeight: 4,
@@ -82,13 +82,13 @@ export class GoogleMapsComponent implements OnInit, OnChanges {
     if ((changes['destino'] && changes['destino'].currentValue) ||
         (changes['destinoCTO'] && changes['destinoCTO'].currentValue) || 
         (changes['destinoCabos8f'] && changes['destinoCabos8f'].currentValue) ||
-        (changes['destinoCabos'] && changes['destinoCabos'].currentValue) ||
+        (changes['destinoCabos12f'] && changes['destinoCabos12f'].currentValue) ||
         (changes['destinoCabos24f'] && changes['destinoCabos24f'].currentValue)) {
       console.log('Novo valor de destino:', this.destino);
       this.updateMarkers();
       this.updateMarkersCTO();
       this.updatePolylinesCabos8f();
-      this.updatePolylinesCabos();
+      this.updatePolylinesCabos12f();
       this.updatePolylinesCabos24f();
     }
   }
@@ -237,13 +237,13 @@ export class GoogleMapsComponent implements OnInit, OnChanges {
 
 
 
-  private updatePolylinesCabos() {
-    if (!this.destinoCabos?.length) return;
+  private updatePolylinesCabos12f() {
+    if (!this.destinoCabos12f?.length) return;
     
     try {
-      this.polylinePaths = [];
+      this.polylinePaths12f = [];
       
-      this.destinoCabos.forEach(cabo => {
+      this.destinoCabos12f.forEach(cabo => {
         try {
           if (!cabo.GOOGLE_LATLNG) return;
           //console.log('valor de Google_latlng antes da conversão: ', cabo.GOOGLE_LATLNG);
@@ -251,7 +251,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges {
           const coords = this.convertStringToCoords(cabo.GOOGLE_LATLNG);
           
           if (coords.length > 0) {
-            this.polylinePaths.push(coords);
+            this.polylinePaths12f.push(coords);
             console.log(`Cabo 12f  ${cabo.id_meta} processado com sucesso:`, coords);
           }
         } catch (e) {
@@ -259,18 +259,18 @@ export class GoogleMapsComponent implements OnInit, OnChanges {
         }
       });
 
-      if (this.polylinePaths.length > 0) {
-        const firstPoint = this.polylinePaths[0][0];
+      if (this.polylinePaths12f.length > 0) {
+        const firstPoint = this.polylinePaths12f[0][0];
         if (firstPoint) {
           this.center = { lat: firstPoint.lat, lng: firstPoint.lng };
           console.log('Mapa centralizado em:', this.center);
         }
       }
 
-      console.log(`Total de ${this.polylinePaths.length} cabos processados`);
+      console.log(`Total de ${this.polylinePaths12f.length} cabos processados`);
     } catch (e) {
       console.error('Erro ao processar cabos:', e);
-      this.polylinePaths = [];
+      this.polylinePaths12f = [];
     }
   }
 

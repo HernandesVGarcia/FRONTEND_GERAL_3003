@@ -1,52 +1,55 @@
-import { CommonModule } from '@angular/common';
 import { Component, OnInit, Output, EventEmitter } from '@angular/core';
-import { Cabos } from '../modelo/Cabos';
+import { Cabos12f } from '../modelo/Cabos12f'
 import { CaboService } from '../servico/cabo.service';
+import { CommonModule } from '@angular/common';
 
 
 @Component({
-  selector: 'app-lista-cabos',
+  selector: 'app-lista-cabos12f',
   imports: [CommonModule],
   templateUrl: './lista-cabos12f.component.html',
   styleUrl: './lista-cabos12f.component.css'
 })
+export class ListaCabos12fComponent implements OnInit{
 
-export class ListaCabosComponent implements OnInit {
-  vetorCabos: Cabos[] = [];
-  @Output() caboSelecionada = new EventEmitter<any[]>();
-  
-  constructor(private servicoCabos: CaboService) {
-    console.log('ListaCabosComponent construído');
-  }
-
-  ngOnInit() {
-    console.log('inicialização do app-lista-cabos-ok');
-    this.selecionar(210,12);
-  }
-
-  selecionar(idCidade:number,capacidade:number) {
-    console.log('Iniciando seleção de cabos...');
-
+ 
+  vetorCabos: Cabos12f[] = [];
+    @Output() caboSelecionada = new EventEmitter<any[]>();
     
-    this.servicoCabos.selecionar(idCidade, capacidade).subscribe({
-      next: (retorno) => {
-        console.log('Dados recebidos:', retorno);
-        if ('response' in retorno) {
-          this.vetorCabos = (retorno as any).response;
-        } else {
-          this.vetorCabos = retorno as Cabos[];
+    constructor(private servicoCabos: CaboService) {
+      console.log('ListaCabosComponent construído');
+    }
+  
+    ngOnInit() {
+      console.log('inicialização do app-lista-cabos-ok');
+      this.selecionar(210,12);
+    }
+  
+    selecionar(idCidade:number,capacidade:number) {
+      console.log('Iniciando seleção de cabos...');
+  
+      
+      this.servicoCabos.selecionar(idCidade, capacidade).subscribe({
+        next: (retorno) => {
+          console.log('Dados recebidos:', retorno);
+          if ('response' in retorno) {
+            this.vetorCabos = (retorno as any).response;
+          } else {
+            this.vetorCabos = retorno as Cabos12f[];
+          }
+          this.caboSelecionada.emit(this.vetorCabos);
+        },
+        error: (erro) => {
+          console.error('Erro ao carregar cabos:', erro);
         }
-        this.caboSelecionada.emit(this.vetorCabos);
-      },
-      error: (erro) => {
-        console.error('Erro ao carregar cabos:', erro);
-      }
-    });
-  }
+      });
+    }
+  
+    //selecionarCabo(vetorCabos: Cabos) {
+    //  this.caboSelecionada.emit([this.vetorCabos]);
+   // }
 
-  selecionarCabo(vetorCabos: Cabos) {
-    this.caboSelecionada.emit([this.vetorCabos]);
-  }
 }
+
 
 

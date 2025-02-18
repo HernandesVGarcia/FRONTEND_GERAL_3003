@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ListaCabosComponent } from './lista-cabos12f.component';
+import { ListaCabos12fComponent } from './lista-cabos12f.component';
 
-describe('ListaCabosComponent', () => {
-  let component: ListaCabosComponent;
-  let fixture: ComponentFixture<ListaCabosComponent>;
+describe('ListaCabos12fComponent', () => {
+  let component: ListaCabos12fComponent;
+  let fixture: ComponentFixture<ListaCabos12fComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ListaCabosComponent]
+      imports: [ListaCabos12fComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(ListaCabosComponent);
+    fixture = TestBed.createComponent(ListaCabos12fComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

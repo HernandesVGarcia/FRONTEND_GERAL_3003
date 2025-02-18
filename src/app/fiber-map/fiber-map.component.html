@@ -5,8 +5,10 @@
     <!-- Lista de CTOs -->
     <app-lista-ctos (ctoSelecionada)="onCTOSelecionada($event)"></app-lista-ctos>
 
-    <!-- Lista de Cabos -->
-    <app-lista-cabos (caboSelecionada)="onCabosSelecionada($event)"></app-lista-cabos>
+    <!-- Lista de Cabos 12-->
+    <app-lista-cabos12f (caboSelecionada)="onCabosSelecionada($event)"></app-lista-cabos12f>
+
+
 
     <!-- Lista de Cabos8 -->
     <app-lista-cabos8f (caboSelecionada)="onCabos8fSelecionada($event)"></app-lista-cabos8f>
@@ -19,7 +21,7 @@
     <app-google-maps 
       [destino]="caixasCEO" 
       [destinoCTO]="caixasCTO"
-      [destinoCabos]="cabos"
+      [destinoCabos12f]="cabos12f"
       [destinoCabos8f]="cabos8f"
       [destinoCabos24f]="cabos24f"
         > 
