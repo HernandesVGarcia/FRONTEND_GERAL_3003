@@ -7,7 +7,6 @@ import { ListaCabos12fComponent } from '../lista-cabos12f/lista-cabos12f.compone
 import { ListaCabos8fComponent } from '../lista-cabos8f/lista-cabos8f.component';
 import { ListaCabos24fComponent} from '../lista-cabos24f/lista-cabos24f.component';
 import { Cabos12f } from '../modelo/Cabos12f';
-
 import { Cabos24f } from '../modelo/Cabos24f';
 import { Cabos8f } from '../modelo/Cabos8f';
 
