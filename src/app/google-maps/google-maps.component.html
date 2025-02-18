@@ -39,15 +39,21 @@
     </map-marker>
 
     <map-polyline 
+    *ngFor="let pathj of polylinePaths6f"
+    [path]="pathj"
+    [options]="polylineOptions6f"
+    ></map-polyline>
+
+    <map-polyline 
     *ngFor="let pathj of polylinePaths8f"
     [path]="pathj"
     [options]="polylineOptions8f"
     ></map-polyline>
 
     <map-polyline 
-    *ngFor="let path of polylinePaths"
+    *ngFor="let path of polylinePaths12f"
     [path]="path"
-    [options]="polylineOptions"
+    [options]="polylineOptions12f"
     ></map-polyline>
     
     <map-polyline

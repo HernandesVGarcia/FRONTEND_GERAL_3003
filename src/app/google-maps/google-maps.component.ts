@@ -1,6 +1,7 @@
 import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { GoogleMapsModule } from '@angular/google-maps';
+import { Cabos6f } from '../modelo/Cabos6f';
 import { Cabos8f } from '../modelo/Cabos8f';
 import { Cabos12f } from '../modelo/Cabos12f';
 import { Cabos24f } from '../modelo/Cabos24f';
@@ -17,8 +18,9 @@ import { Cto } from '../modelo/Cto';
 export class GoogleMapsComponent implements OnInit, OnChanges {
   @Input() destino: Caixa[] = [];
   @Input() destinoCTO: Cto[] = [];
-  @Input() destinoCabos12f: Cabos12f[] = [];
+  @Input() destinoCabos6f: Cabos6f[] = [];
   @Input() destinoCabos8f: Cabos8f[] = [];
+  @Input() destinoCabos12f: Cabos12f[] = [];
   @Input() destinoCabos24f: Cabos24f[] = [];
 
   title: string = "Fiberworks";
@@ -30,9 +32,22 @@ export class GoogleMapsComponent implements OnInit, OnChanges {
   markerCtos: google.maps.LatLngLiteral[] = [];
   markerOptions: google.maps.MarkerOptions[] = [];
   markerOptionsCTO: google.maps.MarkerOptions[] = [];
-  polylinePaths12f: google.maps.LatLngLiteral[][] = [];
+  polylinePaths6f: google.maps.LatLngLiteral[][] = [];
   polylinePaths8f: google.maps.LatLngLiteral[][] = [];
+  polylinePaths12f: google.maps.LatLngLiteral[][] = [];
   polylinePaths24f: google.maps.LatLngLiteral[][] = [];
+
+  polylineOptions6f: google.maps.PolylineOptions = {
+    strokeColor: 'black',
+    strokeOpacity: 0.8,
+    strokeWeight: 3,
+    clickable: true,
+    visible: true,
+    zIndex: 1,
+    draggable: true,
+    editable: false
+
+  }
 
   polylineOptions8f: google.maps.PolylineOptions = {
     strokeColor: 'blue',
@@ -81,12 +96,14 @@ export class GoogleMapsComponent implements OnInit, OnChanges {
     
     if ((changes['destino'] && changes['destino'].currentValue) ||
         (changes['destinoCTO'] && changes['destinoCTO'].currentValue) || 
+        (changes['destinoCabos6f'] && changes['destinoCabos6f'].currentValue) ||
         (changes['destinoCabos8f'] && changes['destinoCabos8f'].currentValue) ||
         (changes['destinoCabos12f'] && changes['destinoCabos12f'].currentValue) ||
         (changes['destinoCabos24f'] && changes['destinoCabos24f'].currentValue)) {
       console.log('Novo valor de destino:', this.destino);
       this.updateMarkers();
       this.updateMarkersCTO();
+      this.updatePolylinesCabos6f();
       this.updatePolylinesCabos8f();
       this.updatePolylinesCabos12f();
       this.updatePolylinesCabos24f();
@@ -192,6 +209,44 @@ export class GoogleMapsComponent implements OnInit, OnChanges {
       return [];
     }
   }
+
+  private updatePolylinesCabos6f() {
+    if (!this.destinoCabos6f?.length) return;
+    
+    try {
+      this.polylinePaths6f = [];
+      
+      this.destinoCabos6f.forEach(cabo => {
+        try {
+          if (!cabo.GOOGLE_LATLNG) return;
+          //console.log('valor de Google_latlng antes da conversão: ', cabo.GOOGLE_LATLNG);
+          
+          const coords = this.convertStringToCoords(cabo.GOOGLE_LATLNG);
+          
+          if (coords.length > 0) {
+            this.polylinePaths6f.push(coords);
+            console.log(`Cabo 6f  ${cabo.id_meta} processado com sucesso:`, coords);
+          }
+        } catch (e) {
+          console.error(`Erro ao processar cabo ${cabo.id_meta}:`, e);
+        }
+      });
+
+      if (this.polylinePaths6f.length > 0) {
+        const firstPoint = this.polylinePaths6f[0][0];
+        if (firstPoint) {
+          this.center = { lat: firstPoint.lat, lng: firstPoint.lng };
+          console.log('Mapa centralizado em:', this.center);
+        }
+      }
+
+      console.log(`Total de ${this.polylinePaths6f.length} cabos processados`);
+    } catch (e) {
+      console.error('Erro ao processar cabos:', e);
+      this.polylinePaths6f = [];
+    }
+  }
+
 
 
 
