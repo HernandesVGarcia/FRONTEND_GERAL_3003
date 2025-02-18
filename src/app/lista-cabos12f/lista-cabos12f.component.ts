@@ -7,8 +7,8 @@ import { CaboService } from '../servico/cabo.service';
 @Component({
   selector: 'app-lista-cabos',
   imports: [CommonModule],
-  templateUrl: './lista-cabos.component.html',
-  styleUrl: './lista-cabos.component.css'
+  templateUrl: './lista-cabos12f.component.html',
+  styleUrl: './lista-cabos12f.component.css'
 })
 
 export class ListaCabosComponent implements OnInit {

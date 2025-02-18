@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ListaCabosComponent } from './lista-cabos.component';
+import { ListaCabosComponent } from './lista-cabos12f.component';
 
 describe('ListaCabosComponent', () => {
   let component: ListaCabosComponent;
