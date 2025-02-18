@@ -9,7 +9,7 @@ import { CaboService } from '../servico/cabo.service';
   templateUrl: './lista-cabos6f.component.html',
   styleUrl: './lista-cabos6f.component.css'
 })
-export class ListaCabos6fComponent {
+export class ListaCabos6fComponent implements OnInit{
   vetorCabos: Cabos6f[] = [];
       @Output() caboSelecionada = new EventEmitter<any[]>();
       
@@ -18,12 +18,12 @@ export class ListaCabos6fComponent {
       }
     
       ngOnInit() {
-        console.log('inicialização do app-lista-cabos-ok');
+        console.log('inicialização do app-lista-cabos6F-ok');
         this.selecionar(210,6);
       }
     
       selecionar(idCidade:number,capacidade:number) {
-        console.log('Iniciando seleção de cabos...');
+        console.log('Iniciando seleção de cabos 6F...');
     
         
         this.servicoCabos.selecionar(idCidade, capacidade).subscribe({

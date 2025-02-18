@@ -39,7 +39,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges {
 
   polylineOptions6f: google.maps.PolylineOptions = {
     strokeColor: 'black',
-    strokeOpacity: 0.8,
+    strokeOpacity: 0.7,
     strokeWeight: 3,
     clickable: true,
     visible: true,
