@@ -10,7 +10,8 @@ frontend:
   artifacts:
     baseDirectory: dist/angular-google-maps
     files:
-      - '**/*'
+      - "**/*"
+      - "*"
   cache:
     paths:
       - node_modules/**/*
