@@ -8,7 +8,7 @@ frontend:
       commands:
         - npm run build
   artifacts:
-    baseDirectory: dist/angular-google-maps
+    baseDirectory: dist/angular-google-maps/browser
     files:
       - "**/*"
       - "*"
