@@ -6,7 +6,6 @@ frontend:
         - npm ci
     build:
       commands:
-        - find . -type f -name "*.html" -exec sed -i "s/%GOOGLE_MAPS_API_KEY%/${GOOGLE_MAPS_API_KEY}/g" {} +
         - npm run build
   artifacts:
     baseDirectory: dist/angular-google-maps/browser
