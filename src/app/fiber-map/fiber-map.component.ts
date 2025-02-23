@@ -11,6 +11,8 @@ import { Cabos6f } from '../modelo/Cabos6f';
 import { Cabos8f } from '../modelo/Cabos8f';
 import { Cabos12f } from '../modelo/Cabos12f';
 import { Cabos24f } from '../modelo/Cabos24f';
+import { Caixa} from '../modelo/Caixa'
+import { Cto} from '../modelo/Cto'
 
 
 
@@ -30,11 +32,11 @@ export class FiberMapComponent {
   cabos24f: Cabos24f []=[];
 
 
-  onCaixaSelecionada(caixas: any[]) {
-    this.caixasCEO = caixas;
+  onCaixaSelecionada(caixas: Caixa[]) { //recebe caixas do template que recebe de lista caixa
+    this.caixasCEO = caixas;  
   }
 
-  onCTOSelecionada(ctos: any[]) {
+  onCTOSelecionada(ctos: Cto[]) {
     this.caixasCTO = ctos;
   }
 

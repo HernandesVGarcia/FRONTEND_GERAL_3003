@@ -1,3 +1,9 @@
+
+<!-- Único mapa para exibir ambos os tipos de caixas -->
+
+
+
+
 <div class="container">
     <!-- Lista de Caixas CEO -->
     <app-lista-caixas (caixaSelecionada)="onCaixaSelecionada($event)"></app-lista-caixas>
@@ -22,15 +28,15 @@
     <app-lista-cabos24f (caboSelecionada)="onCabos24fSelecionada($event)"></app-lista-cabos24f>
     
     
-    <!-- Único mapa para exibir ambos os tipos de caixas -->
-    <app-google-maps 
-      [destino]="caixasCEO" 
-      [destinoCTO]="caixasCTO"
-      [destinoCabos6f]="cabos6f"
-      [destinoCabos8f]="cabos8f"
-      [destinoCabos12f]="cabos12f"
-      [destinoCabos24f]="cabos24f"
-        > 
-    </app-google-maps>
+    
   </div>
   
+  <app-google-maps 
+  [destino]="caixasCEO" 
+  [destinoCTO]="caixasCTO"
+  [destinoCabos6f]="cabos6f"
+  [destinoCabos8f]="cabos8f"
+  [destinoCabos12f]="cabos12f"
+  [destinoCabos24f]="cabos24f"
+    > 
+  </app-google-maps>

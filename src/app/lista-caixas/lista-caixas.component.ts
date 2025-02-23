@@ -43,5 +43,5 @@ export class ListaCaixasComponent implements OnInit {
 
   //selecionarCaixa(vetor: Caixa) {
   //  this.caixaSelecionada.emit([this.vetor]);
-  //}
+ // }
 }
