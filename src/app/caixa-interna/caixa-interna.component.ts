@@ -33,7 +33,7 @@ export class CaixaInternaComponent implements OnInit {
       height: 100,
       color: "#00A8F0",
       radius: 5,
-      draggable: true
+      //draggable: true
       
     });
 
@@ -45,7 +45,7 @@ export class CaixaInternaComponent implements OnInit {
       y2: 800,    // ponto final y
       stroke: 5,  // espessura da linha
       color: "#FF0000",  // cor vermelha
-      draggable: true
+      //draggable: true
     });
 
 
