@@ -7,13 +7,14 @@ import { Cabos12f } from '../modelo/Cabos12f';
 import { Cabos24f } from '../modelo/Cabos24f';
 import { Caixa } from '../modelo/Caixa';
 import { Cto } from '../modelo/Cto';
+import { CaixaInternaComponent } from '../caixa-interna/caixa-interna.component';
 
 @Component({
   selector: 'app-google-maps',
   templateUrl: './google-maps.component.html',
   styleUrls: ['./google-maps.component.css'],
   standalone: true,
-  imports: [CommonModule, GoogleMapsModule],
+  imports: [CommonModule, GoogleMapsModule,CaixaInternaComponent],
 })
 export class GoogleMapsComponent implements OnInit, OnChanges {
   @Input() destino: Caixa[] = [];
@@ -22,6 +23,8 @@ export class GoogleMapsComponent implements OnInit, OnChanges {
   @Input() destinoCabos8f: Cabos8f[] = [];
   @Input() destinoCabos12f: Cabos12f[] = [];
   @Input() destinoCabos24f: Cabos24f[] = [];
+
+  caixaSelecionada: string | null = null;
 
   title: string = "Fiberworks";
   center: google.maps.LatLngLiteral = { lat: -23.326803, lng: -52.114882 };
@@ -85,6 +88,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges {
 
 
   }
+isMapReady: any;
 
   ngOnInit() {
     console.log('GoogleMapsComponent initialized');
@@ -382,5 +386,16 @@ export class GoogleMapsComponent implements OnInit, OnChanges {
       console.warn('Google Maps API not loaded yet. Waiting...');
       setTimeout(() => this.checkGoogleMapsAPI(), 1000);
     }
+  }
+
+  onMarkerClick(event: google.maps.MapMouseEvent, index: number) {
+    if (this.destino[index]) {
+      this.caixaSelecionada = this.destino[index].numero || null;
+    }
+  }
+  
+
+  onCaixaInternaClose() {
+    this.caixaSelecionada = null;
   }
 }

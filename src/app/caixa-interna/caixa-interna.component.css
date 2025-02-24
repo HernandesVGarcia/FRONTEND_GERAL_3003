@@ -1,0 +1,34 @@
+.caixa-interna-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.3);
+    z-index: 1000;
+  }
+
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px;
+    background-color: #f0f0f0;
+    border-bottom: 1px solid #ccc;
+  }
+
+  .close-button {
+    background: rgba(220, 220, 226, 0.781);
+    border: red;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 4px 8px;
+    color: #666;
+  }
+  
+  .close-button:hover {
+    color: #1eb940;
+  }

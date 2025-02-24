@@ -29,6 +29,7 @@
       *ngFor="let position of markerCaixas; let i = index"
       [position]="position"
       [options]="markerOptions[i]"
+      (mapClick)="onMarkerClick($event, i)"
       (mapDragend)="onMarkerDragEnd($event,i)">
     </map-marker>
     <map-marker
@@ -65,7 +66,16 @@
   </google-map>
 
 
+  <app-caixa-interna
+    *ngIf="caixaSelecionada"
+    [numeroCaixa]="caixaSelecionada"
+    (onClose)="onCaixaInternaClose()"
+    >
+  </app-caixa-interna>
+
+
   <!--
+  (click)="onCaixaInternaClose()"
   <div class="debug-info" style="margin-top: 20px;">
     <h3>Debug Info - Locations:</h3>
     <table border="1" style="width: 100%;">
