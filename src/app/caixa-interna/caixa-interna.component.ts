@@ -15,7 +15,9 @@ export class CaixaInternaComponent implements OnInit {
   canvas: any;
 
   ngOnInit() {
-    this.initializeCanvas();
+    setTimeout(() => {
+      this.initializeCanvas();
+    }, 100);
   }
 
   fecharCaixa() {
@@ -23,29 +25,43 @@ export class CaixaInternaComponent implements OnInit {
   }
 
   initializeCanvas() {
+   try{
+    console.log('Iniciando canvas...');
+      const canvasElement = document.getElementById('desenhoCanvas');
+      
+      if (!canvasElement) {
+        console.error('Elemento do canvas não encontrado');
+        return;
+      }
+      // Obter as dimensões reais do container
+      const containerWidth = canvasElement.clientWidth;
+      const containerHeight = canvasElement.clientHeight;
+      
+      console.log('Dimensões do container:', containerWidth, containerHeight);
+
     this.canvas = new draw2d.Canvas('desenhoCanvas');
     
-    // Exemplo de criação de elementos no canvas
+    // Ajustar as coordenadas com base nas dimensões do container
     const figure1 = new draw2d.shape.basic.Rectangle({
-      x: 200,
-      y: 100,
-      width: 100,
-      height: 100,
+      x: Math.min(200, containerWidth * 0.25),
+      y: Math.min(100, containerHeight * 0.25),
+      width: Math.min(100, containerWidth * 0.125),
+      height: Math.min(100, containerHeight * 0.25),
       color: "#00A8F0",
       radius: 5,
-      draggable: true
-      
+       draggable: true 
     });
 
-    // Adicionando uma linha
+
+    // Ajustar as coordenadas da linha para ficar dentro do canvas
     const linha = new draw2d.shape.basic.Line({
-      x1: 1000,    // ponto inicial x
-      y1: 400,    // ponto inicial y
-      x2: 5000,   // ponto final x
-      y2: 800,    // ponto final y
-      stroke: 5,  // espessura da linha
-      color: "#FF0000",  // cor vermelha
-      draggable: true
+      x1: Math.min(100, containerWidth * 0.125),
+      y1: Math.min(200, containerHeight * 0.5),
+      x2: Math.min(300, containerWidth * 0.375),
+      y2: Math.min(200, containerHeight * 0.5),
+      stroke: 3,
+      color: "#FF0000",
+      draggable: true 
       
     });
 
@@ -53,5 +69,9 @@ export class CaixaInternaComponent implements OnInit {
     this.canvas.add(figure1);
     this.canvas.add(linha);
 
+    console.log('Canvas inicializado com sucesso');
+  } catch (error) {
+    console.error('Erro ao inicializar o canvas:', error);
   }
+}
 }

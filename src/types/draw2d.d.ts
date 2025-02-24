@@ -14,7 +14,7 @@ declare module 'draw2d' {
             height: number;
             color?: string;
             radius?: number;
-            draggable?:true;
+            draggable?:boolean;
           });
         }
         export class Line {
@@ -25,7 +25,7 @@ declare module 'draw2d' {
             y2: number;
             stroke?: number;
             color?: string;
-            draggable?:true
+            draggable?:boolean
             
             
       }
