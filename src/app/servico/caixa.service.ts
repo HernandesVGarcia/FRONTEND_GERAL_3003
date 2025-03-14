@@ -16,7 +16,7 @@ export class CaixaService {
 
   
   
-  url:string = 'http://127.0.0.1:3001/caixas'
+  url:string = 'http://15.229.242.119:3001/caixas'
 
   constructor(private http:HttpClient) { }
 

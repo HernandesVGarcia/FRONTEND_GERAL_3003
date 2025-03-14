@@ -13,7 +13,7 @@ import { retry, timeout, catchError } from 'rxjs/operators';
 
 export class CtoService {
   
-  url:string = 'http://127.0.0.1:3001/ctos'
+  url:string = 'http://15.229.242.119:3001/ctos'
   private readonly TIMEOUT = 10000; // 10 segundos
   private readonly RETRY_ATTEMPTS = 3;
 

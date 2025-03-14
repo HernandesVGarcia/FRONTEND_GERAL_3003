@@ -17,7 +17,7 @@ export class CaboService {
 
   
   
-  url:string = 'http://127.0.0.1:3001/cabos'
+  url:string = 'http://15.229.242.119:3001/cabos'
   //===============================================
   private readonly TIMEOUT = 10000; // 10 segundos
   private readonly RETRY_ATTEMPTS = 3;
