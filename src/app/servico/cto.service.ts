@@ -13,7 +13,7 @@ import { retry, timeout, catchError } from 'rxjs/operators';
 
 export class CtoService {
   
-  url:string = 'https://15.229.242.119:3001/ctos'
+  url:string = 'https://www.fiberworks-quantum.com:3001/ctos'
   private readonly TIMEOUT = 10000; // 10 segundos
   private readonly RETRY_ATTEMPTS = 3;
 

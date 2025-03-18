@@ -16,7 +16,7 @@ export class CaixaService {
 
   
   
-  url:string = 'https://15.229.242.119:3001/caixas'
+  url:string = 'https://www.fiberworks-quantum.com:3001/caixas'
 
   constructor(private http:HttpClient) { }
 
