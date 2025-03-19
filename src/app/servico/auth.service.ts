@@ -9,7 +9,7 @@ export class AuthService {
     private readonly DEFAULT_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZF91c3VhcmlvIjoxMiwiZW1haWwiOiJzdXBvcnRlQGZpYmVyd29ya3MuY29tLmJyIiwiaWF0IjoxNzQyNDE3NjkxLCJleHAiOjE3NDI0MjEyOTF9.2QIqI_fl75tIvm7iQXSnQpj9p0IBUCCzDtPnmfTSHl8';
   
     constructor() {
-      console.log('AuthService iniciado');
+      //console.log('AuthService iniciado');
       // Forçar a atualização do token para o valor padrão atualizado
       this.setToken(this.DEFAULT_TOKEN);
       console.log('Token atualizado para:', this.DEFAULT_TOKEN);
