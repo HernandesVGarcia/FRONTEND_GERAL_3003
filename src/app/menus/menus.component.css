@@ -17,7 +17,7 @@
   
   /* Vamos adicionar classes personalizadas aos nossos elementos mat-menu nos itens HTML */
   .custom-menu-item {
-    font-size: 5px !important;
+    font-size: var(--menu-item-font-size) !important;
     line-height: 10px !important;
     height: var(--menu-item-height) !important;
     min-height: var(--menu-item-height) !important;
@@ -27,6 +27,7 @@
   .custom-menu-panel {
     min-height: 5px !important;
   }
+  
   
   .custom-menu-content {
     padding-top: var(--menu-padding) !important;
