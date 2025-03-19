@@ -2,35 +2,33 @@
 
   
 
-    <button mat-button [matMenuTriggerFor]="Incluir_menu" style="width: 100px; color: rgb(104, 104, 228) ;height: 25px;">INCLUIR</button>
-    <mat-menu #Incluir_menu="matMenu" style="color: #8686f3;">
-    <button mat-menu-item style="color:rgb(23, 67, 211);height: 30px; margin-bottom: 200;min-height:initial">Incluir Cliente</button>
-    <button mat-menu-item style="color:rgb(23, 67, 211);height: 30px; margin-bottom: 200;min-height:initial">Incluir Estação</button>
-    <button mat-menu-item style="color:rgb(23, 67, 211);height: 30px; margin-bottom: 200;min-height:initial">Incluir Condomínio</button>
-    <button mat-menu-item style="color:rgb(23, 67, 211);height: 30px; margin-bottom: 200;min-height:initial">Incluir Inclui Caixa em Condomínio</button>
+    <button mat-button [matMenuTriggerFor]="Incluir_menu" style="width: 70px; color: rgb(104, 104, 228) ;height: 20px;">INCLUIR</button>
+    <mat-menu #Incluir_menu="matMenu" class="custom-menu-panel" panelClass="custom-menu-content">
+        <button mat-menu-item class="custom-menu-item">Incluir Cliente</button>
+        <button mat-menu-item class="custom-menu-item">Incluir Estação</button>
+        <button mat-menu-item class="custom-menu-item">Incluir Condomínio</button>
+        <button mat-menu-item class="custom-menu-item">Incluir Caixa em Condomínio</button>
     </mat-menu>
   
-    <button mat-button [matMenuTriggerFor]="Relatorio_menu" style="width: 100px;color: rgb(104, 104, 228);height: 25px;">RELATORIOS</button>
-    <mat-menu #Relatorio_menu="matMenu" >
-    <button mat-menu-item style="color:rgb(23, 67, 211);height: 30px; margin-bottom: 200;min-height:initial;">Relatório por Polígono</button>
-    <button mat-menu-item style="color:rgb(23, 67, 211);height: 30px; margin-bottom: 200;min-height:initial;">Relatório de Ocupação</button>
-    <button mat-menu-item style="color:rgb(23, 67, 211);height: 30px;margin-bottom: 200;min-height:initial;">Log de eventos</button>
-    
+    <button mat-button [matMenuTriggerFor]="Relatorio_menu" style="width: 75px;color: rgb(104, 104, 228);height: 20px;">RELATORIOS</button>
+    <mat-menu #Relatorio_menu="matMenu" class="custom-menu-panel" panelClass="custom-menu-content">
+        <button mat-menu-item class="custom-menu-item">Relatório por Polígono</button>
+        <button mat-menu-item class="custom-menu-item">Relatório de Ocupação</button>
+        <button mat-menu-item class="custom-menu-item">Log de eventos</button>
     </mat-menu>
   
-    <button mat-button [matMenuTriggerFor]="Projetos_menu"style="width: 100px; color: rgb(104, 104, 228);height: 25px;">PROJETOS</button>
-    <mat-menu #Projetos_menu="matMenu" >
-    <button mat-menu-item style="color:rgb(23, 67, 211);height: 30px; margin-bottom: 200;min-height:initial">Importar Postes</button>
-    <button mat-menu-item style="color:rgb(23, 67, 211);height: 30px; margin-bottom: 200;min-height:initial">Imprimir AS Built</button>
-    <button mat-menu-item style="color:rgb(23, 67, 211);height: 30px; margin-bottom: 200;min-height:initial">Exportar Shapefile Google Earth</button>
-    <button mat-menu-item style="color:rgb(23, 67, 211);height: 30px; margin-bottom: 200;min-height:initial">Pasta Projetos</button>
+    <button mat-button [matMenuTriggerFor]="Projetos_menu"style="width: 70px; color: rgb(104, 104, 228);height: 20px;">PROJETOS</button>
+    <mat-menu #Projetos_menu="matMenu" class="custom-menu-panel" panelClass="custom-menu-content">
+        <button mat-menu-item class="custom-menu-item">Importar Postes</button>
+        <button mat-menu-item class="custom-menu-item">Imprimir AS Built</button>
+        <button mat-menu-item class="custom-menu-item">Exportar Shapefile Google Earth</button>
+        <button mat-menu-item class="custom-menu-item">Pasta Projetos</button>
     </mat-menu>
   
-    <button mat-button [matMenuTriggerFor]="Rastreamento_menu"style="width: 120px; color: rgb(104, 104, 228);height: 25px;">RASTREAMENTO</button>
-    <mat-menu #Rastreamento_menu="matMenu" >
-    <button mat-menu-item style="color:rgb(23, 67, 211);height: 30px; margin-bottom: 200;min-height:initial">Atualiza Frota no Mapa</button>
-    <button mat-menu-item style="color:rgb(23, 67, 211);height: 30px; margin-bottom: 200;min-height:initial">Pesquisa Veículos</button>
-    
+    <button mat-button [matMenuTriggerFor]="Rastreamento_menu"style="width: 90px; color: rgb(104, 104, 228);height: 20px;">RASTREAMENTO</button>
+    <mat-menu #Rastreamento_menu="matMenu" class="custom-menu-panel" panelClass="custom-menu-content">
+        <button mat-menu-item class="custom-menu-item">Atualiza Frota no Mapa</button>
+        <button mat-menu-item class="custom-menu-item">Pesquisa Veículos</button>
     </mat-menu>
 
 

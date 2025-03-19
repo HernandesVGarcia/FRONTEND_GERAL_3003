@@ -1,0 +1,34 @@
+:host button[mat-button] {
+    font-size: 11px !important;
+    line-height: 1.0 !important;
+    
+    
+  }
+  
+  /* Para substituir os estilos do Material sem ::ng-deep, podemos usar classes 
+     específicas e estilos de componente. Estas serão aplicadas via ViewEncapsulation.None */
+  :host {
+    /* Aplicar estas regras globalmente mas apenas quando dentro deste componente */
+    --menu-item-font-size: 8px;
+    --menu-item-height: 10px;
+    --menu-padding: 5px;
+    
+  }
+  
+  /* Vamos adicionar classes personalizadas aos nossos elementos mat-menu nos itens HTML */
+  .custom-menu-item {
+    font-size: 5px !important;
+    line-height: 10px !important;
+    height: var(--menu-item-height) !important;
+    min-height: var(--menu-item-height) !important;
+    color: rgb(23, 67, 211) !important;
+  }
+  
+  .custom-menu-panel {
+    min-height: 5px !important;
+  }
+  
+  .custom-menu-content {
+    padding-top: var(--menu-padding) !important;
+    padding-bottom: var(--menu-padding) !important;
+  }
