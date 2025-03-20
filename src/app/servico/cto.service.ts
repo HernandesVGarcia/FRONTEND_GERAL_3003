@@ -3,6 +3,7 @@ import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http
 import {Cto} from '../modelo/Cto';
 import {Observable, throwError } from 'rxjs';
 import { retry, timeout, catchError } from 'rxjs/operators';
+import { AuthService } from '../servico/auth.service';
 
 
 
@@ -15,22 +16,26 @@ export class CtoService {
   
   url:string = 'https://www.fiberworks-quantum.com:3001/ctos'
   private readonly TIMEOUT = 10000; // 10 segundos
-  private readonly RETRY_ATTEMPTS = 3;
+  private readonly RETRY_ATTEMPTS = 2;
 
-  constructor(private http:HttpClient) {
-    console.log('inicialização do serviço CTO-ok');
+  constructor(
+    private http:HttpClient,
+    private authService : AuthService) {
+        this.authService.refreshToken();
   }
    
 
   // Método para Selecionar Caixa
   
   selecionar():Observable<Cto[]>{
+    const token = this.authService.getToken();
     const headers = new HttpHeaders()
       .set('Content-Type', 'application/json')
-      .set('Access-Control-Allow-Origin', '*')
-      .set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE')
-      .set('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
-    return this.http.get<Cto[]>(this.url).pipe(
+      //.set('Access-Control-Allow-Origin', '*')
+      //.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE')
+      //.set('Access-Control-Allow-Headers', 'X-Requested-With,content-type')
+      .set('Authorization',`Bearer ${token}`);
+    return this.http.get<Cto[]>(this.url,{ headers }).pipe(
       timeout(this.TIMEOUT),
       retry(this.RETRY_ATTEMPTS),
       catchError(this.handleError)

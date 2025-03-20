@@ -3,6 +3,7 @@ import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http
 import {Cabos12f} from '../modelo/Cabos12f';
 import {Observable, throwError} from 'rxjs';
 import { retry, timeout, catchError} from 'rxjs/operators';
+import { AuthService } from '../servico/auth.service';
 
 
 console.log('inicialização do app-lista-caixa2-ok')
@@ -24,17 +25,25 @@ export class CaboService {
  //===============================================
 
 
-  constructor(private http:HttpClient) { }
+  constructor(
+    private http:HttpClient,
+    private authService: AuthService
+
+  ) { }
  
   
   selecionar(idCidade:number, capacidade:number):Observable<Cabos12f[]>{
-    const headers = new HttpHeaders().set('Content-Type', 'application/json');
+    const token = this.authService.getToken();
+    const headers = new HttpHeaders()
+    .set('Content-Type', 'application/json')
+    .set('Authorization', `Bearer ${token}`);
+
     const body = {
       idCIDADES: idCidade,
       capacidade: capacidade
     };
     
-    return this.http.post<Cabos12f[]>(this.url, body).pipe(
+    return this.http.post<Cabos12f[]>(this.url, body,{headers}).pipe(
       timeout(this.TIMEOUT),
       retry(this.RETRY_ATTEMPTS),
       catchError(this.handleError)
