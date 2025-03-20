@@ -6,7 +6,7 @@ import { Injectable } from '@angular/core';
 export class AuthService {
     private readonly TOKEN_KEY = 'jwt_token';
     // Token atualizado com o valor fornecido pelo usuário
-    private readonly DEFAULT_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZF91c3VhcmlvIjoxMiwiZW1haWwiOiJzdXBvcnRlQGZpYmVyd29ya3MuY29tLmJyIiwiaWF0IjoxNzQyNDE4ODE4LCJleHAiOjE3NDI0MjI0MTh9.oyd4WovEoGLU3r4HjGjJnxA-lHGjTaKFk926fETTMfs';
+    private readonly DEFAULT_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZF91c3VhcmlvIjoxMiwiZW1haWwiOiJzdXBvcnRlQGZpYmVyd29ya3MuY29tLmJyIiwiaWF0IjoxNzQyNDcyMjQ4LCJleHAiOjE3NzQwMDgyNDh9.I6eZdi3USW6OM2biLi34Ob-iIHY1CX-bizKwTpem0mQ';
   
     constructor() {
       //console.log('AuthService iniciado');
