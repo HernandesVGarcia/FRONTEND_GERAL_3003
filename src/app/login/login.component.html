@@ -1,0 +1,55 @@
+
+<div class ="container-login">
+    <div class="container-login-central">
+        <div class="containder-header">
+
+            <div class = "titulo-login"> Fiberworks</div>
+            <div class = "info-login"> Digite sua Chave e Senha para Login !</div>
+
+        </div>
+
+        <div class="container-form">
+            <form class="form-inputs" (submit)="onSubmit($event)">
+
+                <div class="group-input">
+
+                    <div class="text-info"> 
+                    Chave 
+                    </div>   
+
+                    <input class="input-form" type="text" name="chave" id="chave" placeholder="Chave de Usuário" [(ngModel)]="chave" required>
+
+                </div>
+
+                <div class="group-input">
+
+                    <div class="text-info">    
+                    Senha 
+                    </div>
+
+                    <input class="input-form" type="password" name="password" id="password" placeholder="Senha do Usuário" [(ngModel)]="senha" required>
+
+                </div>
+
+
+                
+                    <div class="group-input" *ngIf="errorMessage">
+                        <div class="error-message">{{ errorMessage }}</div>
+                    </div>
+                    <div class="group-input">
+                        <button type="submit" class="btn-Loginho" [disabled]="loading">
+                            {{ loading ? 'AGUARDE...' : 'LOGIN' }}
+                        </button>
+                       
+                </div>
+
+        </form>
+
+        </div>
+
+
+    </div>
+
+
+
+</div>

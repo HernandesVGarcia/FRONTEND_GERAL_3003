@@ -134,6 +134,7 @@ isMapReady: any;
         icon: {
           url: '/assets/caixa_plp_15.png',
           labelOrigin: new google.maps.Point(70, 10),
+          scaledSize : new google.maps.Size(30 , 60)
         }
       }));
       
@@ -175,6 +176,8 @@ isMapReady: any;
         icon: {
           url: '/assets/CTO80.png',
           labelOrigin: new google.maps.Point(50, 10),
+          scaledSize : new google.maps.Size(15 , 20)
+          
         },
         customData: {
           tipo: 'cto',
