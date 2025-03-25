@@ -4,13 +4,9 @@ import { Injectable } from '@angular/core';
   providedIn: 'root'
 })
 export class AuthService {
-  private readonly TOKEN_KEY = 'jwt_token';
-  private readonly DEFAULT_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZF91c3VhcmlvIjoxMiwiZW1haWwiOiJzdXBvcnRlQGZpYmVyd29ya3MuY29tLmJyIiwiaWF0IjoxNzQyNTAxMjM5LCJleHAiOjE3NzQwMzcyMzl9.aohk_Mck3DMaSaxmXWuE9q1r1l79sHO1cJ2zEKiHvYs';
+  private readonly TOKEN_KEY = 'auth_token';
 
-  constructor() {
-    // Inicializar o token no localStorage
-    this.setToken(this.DEFAULT_TOKEN);
-  }
+  constructor() {}
 
   setToken(token: string): void {
     localStorage.setItem(this.TOKEN_KEY, token);
@@ -38,6 +34,13 @@ export class AuthService {
   }
   
   refreshToken(): void {
-    this.setToken(this.DEFAULT_TOKEN);
+    // Mantém a função, mas não define um token padrão
+    // Os serviços que utilizam essa função agora devem
+    // se certificar que há um token válido disponível
+    const token = this.getToken();
+    if (token) {
+      // Redefine o mesmo token
+      this.setToken(token);
+    }
   }
 }
