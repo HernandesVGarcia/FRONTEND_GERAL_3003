@@ -116,7 +116,7 @@ isMapReady: any;
 
   private updateMarkers() {
     if (this.destino && this.destino.length > 0) {
-      console.log('Atualizando marcadores CEO com dados:', this.destino);
+      //console.log('Atualizando marcadores CEO com dados:', this.destino);
       
       this.markerCaixas = this.destino.map(location => ({
         lat: Number(location.LAT),
@@ -158,7 +158,7 @@ isMapReady: any;
 
   private updateMarkersCTO() {
     if (this.destinoCTO && this.destinoCTO.length > 0) {
-      console.log('Atualizando marcadores CTO com dados:', this.destinoCTO);
+      //console.log('Atualizando marcadores CTO com dados:', this.destinoCTO);
       
       this.markerCtos = this.destinoCTO.map(location => ({
         lat: Number(location.LAT),
@@ -232,7 +232,7 @@ isMapReady: any;
           
           if (coords.length > 0) {
             this.polylinePaths6f.push(coords);
-            console.log(`Cabo 6f  ${cabo.id_meta} processado com sucesso:`, coords);
+            //console.log(`Cabo 6f  ${cabo.id_meta} processado com sucesso:`, coords);
           }
         } catch (e) {
           console.error(`Erro ao processar cabo ${cabo.id_meta}:`, e);
@@ -272,7 +272,7 @@ isMapReady: any;
           
           if (coords.length > 0) {
             this.polylinePaths8f.push(coords);
-            console.log(`Cabo 8f  ${cabo.id_meta} processado com sucesso:`, coords);
+            //console.log(`Cabo 8f  ${cabo.id_meta} processado com sucesso:`, coords);
           }
         } catch (e) {
           console.error(`Erro ao processar cabo ${cabo.id_meta}:`, e);
@@ -314,7 +314,7 @@ isMapReady: any;
           
           if (coords.length > 0) {
             this.polylinePaths12f.push(coords);
-            console.log(`Cabo 12f  ${cabo.id_meta} processado com sucesso:`, coords);
+           //console.log(`Cabo 12f  ${cabo.id_meta} processado com sucesso:`, coords);
           }
         } catch (e) {
           console.error(`Erro ao processar cabo ${cabo.id_meta}:`, e);
@@ -353,7 +353,7 @@ isMapReady: any;
           
           if (coords.length > 0) {
             this.polylinePaths24f.push(coords);
-            console.log(`Cabo 24f ${cabo.id_meta} processado com sucesso:`, coords);
+            //console.log(`Cabo 24f ${cabo.id_meta} processado com sucesso:`, coords);
           }
         } catch (e) {
           console.error(`Erro ao processar cabo ${cabo.id_meta}:`, e);

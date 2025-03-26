@@ -1,23 +1,54 @@
+
+
+
 .mat-toolbar.mat-primary {
 
-    background: rgb(111, 136, 192);
-    color: white;
-    height: 50px;
-    vertical-align: 20%;
-    left:200px;
-    
-    
-    
-  }
+  background: rgb(111, 136, 192);
+  color: white;
+  height: 50px;
+  vertical-align: 20%;
+  left:200px;
+  
+  
+  
+}
 
-  .mat-icon {
+.mat-icon {
 
-    color:royalblue;
-    width: 50px;
-    height: 22px;
-    offset-anchor:initial 100 px;
-    left: 30%;
-    
-    
+  color:royalblue;
+  width: 50px;
+  height: 22px;
+  offset-anchor:initial 100 px;
+  left: 30%;
+  
+  
 
-  }
+}
+
+
+
+.example-form {
+  min-width: 150px;
+  max-width: 500px;
+  width: 100%;
+  font-size: smaller;
+  font-display: 10;
+  min-height: 20px;
+  height: 20px;
+  line-height: 10px;
+
+}
+
+.example-full-width {
+  width: 50%;
+  font-size: 10px;
+  line-height: 10px;
+}
+
+
+.autocomp {
+
+  font:smaller;
+}
+
+
