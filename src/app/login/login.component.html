@@ -53,3 +53,10 @@
 
 
 </div>
+
+<!-- Modal de seleção de cidade -->
+<app-city-select-modal 
+    *ngIf="showCityModal" 
+    (citySelected)="onCitySelected($event)"
+    (modalClosed)="onModalClosed()">
+</app-city-select-modal>

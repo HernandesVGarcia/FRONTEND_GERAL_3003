@@ -6,7 +6,7 @@ import { retry, timeout, catchError} from 'rxjs/operators';
 import { AuthService } from '../servico/auth.service';
 
 
-console.log('inicialização do app-lista-caixa2-ok')
+//console.log('inicialização do app-lista-caixa2-ok')
 
 @Injectable({
   providedIn: 'root'

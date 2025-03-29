@@ -4,19 +4,21 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TokenService } from '../servico/token.service';
 import { AuthService } from '../servico/auth.service';
+import { CitySelectModalComponent } from '../city-select-modal/city-select-modal.component';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule,CitySelectModalComponent],
   templateUrl: './login.component.html',
-  styleUrl: './login.component.css'
+  styleUrls: ['./login.component.css']
 })
 export class LoginComponent {
   chave: string = '';
   senha: string = '';
   errorMessage: string = '';
   loading: boolean = false;
+  showCityModal: boolean = false;
 
   constructor(
     private tokenService: TokenService,
@@ -28,7 +30,7 @@ export class LoginComponent {
     event.preventDefault();
     this.loading = true;
     this.errorMessage = '';
-    console.log ('submite')
+    
 
     this.tokenService.selecionar(this.chave, this.senha)
       .subscribe({
@@ -38,7 +40,11 @@ export class LoginComponent {
           // Armazenar o token usando o AuthService
           if (response && response.token) {
             this.authService.setToken(response.token);
-            this.router.navigate(['/mapa']);
+            // Armazenar o valor do polo
+            this.authService.setPolo(response.polo);
+            //this.router.navigate(['/mapa']);
+            this.showCityModal = true;
+            this.loading = false;
           } else {
             this.errorMessage = 'Resposta inválida do servidor';
             this.loading = false;
@@ -50,5 +56,20 @@ export class LoginComponent {
           this.loading = false;
         }
       });
+    }
+
+
+      onCitySelected(idCidade: number): void {
+        console.log('Cidade selecionada no componente login:', idCidade);
+        // Redirecionar para a página do mapa após a seleção da cidade
+        this.authService.setIdCity(idCidade);
+        this.router.navigate(['/mapa']);
+      }
+    
+      onModalClosed(): void {
+        // Se o usuário fechar o modal sem selecionar uma cidade, redirecione para a página do mapa
+        // ou implemente uma lógica diferente conforme necessário
+        this.router.navigate(['/mapa']);
+
   }
 }

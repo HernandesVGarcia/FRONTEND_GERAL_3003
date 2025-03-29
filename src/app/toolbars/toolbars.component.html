@@ -1,12 +1,9 @@
 
-
-
 <mat-toolbar color="primary">
-    
-  <span> <img src="/assets/logo fiber 2025.png" width="35px" height="35px"  >  F I B E R W O R K S&nbsp;&nbsp;&nbsp;&nbsp;  </span>
+  <span> <img src="/assets/logo fiber 2025.png" width="35px" height="35px"> F I B E R W O R K S&nbsp;&nbsp;&nbsp;&nbsp; </span>
   
   <span class="example-spacer"></span>
-   <button mat-icon-button class="example-icon" aria-label="Example icon-button with menu icon" style= "width: 60px">
+  <button mat-icon-button class="example-icon" aria-label="Example icon-button with menu icon" style="width: 60px">
     <mat-icon>menu</mat-icon>
   </button>
   <button mat-icon-button class="example-icon favorite-icon" aria-label="Example icon-button with heart icon">
@@ -15,32 +12,19 @@
   <button mat-icon-button class="example-icon" aria-label="Example icon-button with share icon">
     <mat-icon>share</mat-icon>
   </button>
+  <button mat-icon-button class="toolbar-button ml-2" aria-label="Cidades" (click)="openCityModal()">
+    <mat-icon>location_city</mat-icon>
+  </button>
   
   <div>&nbsp;&nbsp;&nbsp;&nbsp;</div>
 
-  <form class="example-form">
-    
-      <mat-label>Workspace :</mat-label>
-      <input type="text"
-             placeholder="Click para escolher"
-             aria-label="Cidades"             
-             matInput
-             [formControl]="myControl"
-             [matAutocomplete]="auto">
-      <mat-autocomplete  autoActiveFirstOption #auto="matAutocomplete" role="combobox" >
-        @for (option of filteredOptions | async; track option) {
-          <mat-option  [value]="option">{{option}}</mat-option>
-        }
-      </mat-autocomplete>
-    
-  </form>
-    
-  
-
-</mat-toolbar>
 
 
 
-  
 
- 
+  <!-- Modal de seleção de cidade -->
+<app-city-select-modal 
+*ngIf="showCityModal" 
+(citySelected)="onCitySelected($event)" 
+(modalClosed)="onModalClosed()">
+</app-city-select-modal>

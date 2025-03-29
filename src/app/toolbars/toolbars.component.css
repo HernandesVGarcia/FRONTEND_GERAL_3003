@@ -28,27 +28,51 @@
 
 
 .example-form {
-  min-width: 150px;
-  max-width: 500px;
-  width: 100%;
-  font-size: smaller;
-  font-display: 10;
+  /*min-width: 2500px;
+  max-width: 1000px;
+  width: 200%;
+  font-size: 20px;
+  /*font-display: 1;
   min-height: 20px;
   height: 20px;
-  line-height: 10px;
+  line-height: 10px;*/
 
 }
 
-.example-full-width {
-  width: 50%;
+.example-form input {
+  font-size: 12px; /* Ajuste o tamanho do texto do input */
+  width: 200px
+}
+
+
+
+.mat-autocomplete {
+  font-size: 10px; /* Ajuste o tamanho do texto das opções */
+  width: 10px;
+  .mat-option {
+    font-size: 10px; /* Ajuste o tamanho do texto do input */
+    width: 300px
+  }
+
+
+}
+
+ /*.example-full-width {
+ width: 2000%;
+  font-size: 5px;
+  line-height: 1px;
+}*/
+
+.mat-label {
   font-size: 10px;
-  line-height: 10px;
 }
 
 
 .autocomp {
 
-  font:smaller;
+  /*font:small;*/
+  font-size: 10px;
+  width: 5000;
 }
 
 

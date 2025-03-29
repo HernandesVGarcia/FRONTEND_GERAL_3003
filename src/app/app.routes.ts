@@ -3,10 +3,12 @@ import {LoginComponent} from './login/login.component';
 import { MapPageComponent } from './map-page/map-page.component';
 
 import {MenusComponent} from './menus/menus.component';
+import { FiberMapComponent } from './fiber-map/fiber-map.component';
 
 export const routes: Routes =[
 {path:'login', component:LoginComponent},
 {path:'mapa', component:MapPageComponent},
+{path:'fibermap', component: FiberMapComponent },
 {path:'', redirectTo:'/login', pathMatch:'full'},
 {path:'**', component:MenusComponent}
 
