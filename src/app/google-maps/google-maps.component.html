@@ -25,7 +25,8 @@
     [zoom]="zoom"
     width="99%"
     height="90vh"
-    (mapInitialized)="onMapInitialized()">
+    (mapInitialized)="onMapInitialized($event)">
+    <!--
     <map-marker
       *ngFor="let position of markerCaixas; let i = index"
       [position]="position"
@@ -38,7 +39,7 @@
       [position]="position"
       [options]="markerOptionsCTO[i]"
       (mapDragend)="onMarkerDragEnd($event,i,true)">
-    </map-marker>
+    </map-marker>-->
 
     <map-polyline 
     *ngFor="let pathj of polylinePaths6f"

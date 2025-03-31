@@ -41,6 +41,7 @@ export class CaixaService {
   selecionar():Observable<Caixa[]>{
     //return this.http.get<Caixa[]>(this.url);
     const token = this.authService.getToken();
+    const idcidade = this.authService.getIdCity();
     
     if (!token) {
       console.error('Token não disponível para autenticação');
@@ -53,7 +54,11 @@ export class CaixaService {
     .set('Content-type','application/json')
     .set('Authorization', `Bearer ${token}`);
 
-    return this.http.get<Caixa[]>(this.url, { headers }).pipe(
+    const body = {
+      idCIDADES: idcidade
+    };
+
+    return this.http.post<Caixa[]>(this.url,body,{ headers }).pipe(
       timeout(this.TIMEOUT),
       retry(this.RETRY_ATTEMPTS),
       catchError(this.handleError)

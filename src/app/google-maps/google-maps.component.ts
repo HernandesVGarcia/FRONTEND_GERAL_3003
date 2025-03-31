@@ -28,17 +28,30 @@ export class GoogleMapsComponent implements OnInit, OnChanges {
 
   title: string = "Fiberworks";
   center: google.maps.LatLngLiteral = { lat: -23.326803, lng: -52.114882 };
-  zoom = 18;
+  zoom = 19;
   mapID = "My Project Angular";
 
-  markerCaixas: google.maps.LatLngLiteral[] = [];
-  markerCtos: google.maps.LatLngLiteral[] = [];
+  markerCaixas: google.maps.Marker[] = [];
+  markerCtos:google.maps.Marker[]=[];
+  //markerCtos: google.maps.LatLngLiteral[] = [];
   markerOptions: google.maps.MarkerOptions[] = [];
   markerOptionsCTO: google.maps.MarkerOptions[] = [];
   polylinePaths6f: google.maps.LatLngLiteral[][] = [];
   polylinePaths8f: google.maps.LatLngLiteral[][] = [];
   polylinePaths12f: google.maps.LatLngLiteral[][] = [];
   polylinePaths24f: google.maps.LatLngLiteral[][] = [];
+
+
+// Define os níveis de zoom para visibilidade  ***************************************************inserido
+private ZOOM_LEVEL_CAIXAS = 12; // Caixas CEO visíveis em zoom >= 14
+private ZOOM_LEVEL_CTOS = 16;   // CTOs visíveis em zoom >= 16
+
+private map?: (google.maps.Map);
+  isMapReady: any;
+
+ // **********************************************************************************************inserido
+
+ currentZoom: number = 18;
 
   polylineOptions6f: google.maps.PolylineOptions = {
     strokeColor: 'black',
@@ -88,7 +101,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges {
 
 
   }
-isMapReady: any;
+//isMapReady: any;
 
   ngOnInit() {
     console.log('GoogleMapsComponent initialized');
@@ -98,45 +111,109 @@ isMapReady: any;
   ngOnChanges(changes: SimpleChanges): void {
     console.log('ngOnChanges detectou mudança em destino:', changes['destino']);
     
-    if ((changes['destino'] && changes['destino'].currentValue) ||
-        (changes['destinoCTO'] && changes['destinoCTO'].currentValue) || 
-        (changes['destinoCabos6f'] && changes['destinoCabos6f'].currentValue) ||
-        (changes['destinoCabos8f'] && changes['destinoCabos8f'].currentValue) ||
-        (changes['destinoCabos12f'] && changes['destinoCabos12f'].currentValue) ||
-        (changes['destinoCabos24f'] && changes['destinoCabos24f'].currentValue)) {
-      console.log('Novo valor de destino:', this.destino);
+    if (changes['destino'] && changes['destino'].currentValue) {
+      console.log('Atualizando marcadores de caixas ',this.destino);
       this.updateMarkers();
-      this.updateMarkersCTO();
-      this.updatePolylinesCabos6f();
-      this.updatePolylinesCabos8f();
-      this.updatePolylinesCabos12f();
-      this.updatePolylinesCabos24f();
     }
+      
+    if (changes['destinoCTO'] && changes['destinoCTO'].currentValue) {
+      console.log('Atualizando marcadores de CTOs',this.destinoCTO);
+      this.updateMarkersCTO();
+    }
+
+    if (changes['destinoCabos6f'] && changes['destinoCabos6f'].currentValue) {
+      console.log('Atualizando polilinhas de cabos 6f ',this.destinoCabos6f);
+      this.updatePolylinesCabos6f();
+    }
+
+    if (changes['destinoCabos8f'] && changes['destinoCabos8f'].currentValue) {
+      console.log('Atualizando polilinhas de cabos 8f ',this.destinoCabos8f);
+      this.updatePolylinesCabos8f();
+    }
+
+    if (changes['destinoCabos12f'] && changes['destinoCabos12f'].currentValue) {
+      console.log('Atualizando polilinhas de cabos 12f ',this.destinoCabos12f);
+      this.updatePolylinesCabos12f();
+    }
+
+    if (changes['destinoCabos24f'] && changes['destinoCabos24f'].currentValue) {
+      console.log('Atualizando polilinhas de cabos 24f ',this.destinoCabos24f);
+      this.updatePolylinesCabos24f();
+    }    
+        
+      
   }
 
-  private updateMarkers() {
-    if (this.destino && this.destino.length > 0) {
-      //console.log('Atualizando marcadores CEO com dados:', this.destino);
-      
-      this.markerCaixas = this.destino.map(location => ({
-        lat: Number(location.LAT),
-        lng: Number(location.LONGI)
-      }));
 
-      this.markerOptions = this.destino.map(location => ({
-        title: location.numero || 'Sem número',
-        draggable: true,
-        label: {
-          text: location.numero || 'S/N',
-          color: 'blue',
-          fontSize: '12px'
-        } as google.maps.MarkerLabel,
-        icon: {
-          url: '/assets/caixa_plp_15.png',
-          labelOrigin: new google.maps.Point(70, 10),
-          scaledSize : new google.maps.Size(30 , 60)
-        }
-      }));
+  getVisibleMarkerCaixas(): google.maps.Marker[] {
+    if (this.currentZoom >= this.ZOOM_LEVEL_CAIXAS) {
+      return this.markerCaixas;
+    }
+    return [];
+  }
+           
+  getVisibleMarkerCtos(): google.maps.Marker[] {
+    if (this.currentZoom >= this.ZOOM_LEVEL_CTOS) {
+      return this.markerCtos;
+    }
+    return [];
+  }  
+
+
+
+
+  private updateMarkers() {
+    if (this.destino && this.destino.length > 0 && this.map) {
+      this.markerCaixas.forEach(marker => marker.setMap(null));
+      this.markerCaixas = [];
+      
+      this.destino.forEach(location => {
+        const position = {
+          lat: Number(location.LAT),
+          lng: Number(location.LONGI)
+        };
+        
+        
+          
+          const markerOptions: google.maps.MarkerOptions = {
+            position: position,
+            title: location.numero || 'Sem número',
+            draggable: true,
+            label: {
+              text: location.numero || 'S/N',
+              color: 'blue',
+              fontSize: '12px'
+            } as google.maps.MarkerLabel,
+            icon: {
+              url: '/assets/caixa_plp_15.png',
+              labelOrigin: new google.maps.Point(70, 10),
+              scaledSize: new google.maps.Size(15, 30)
+            },
+            visible: this.currentZoom >= this.ZOOM_LEVEL_CAIXAS
+          };
+          
+          const marker = new google.maps.Marker(markerOptions);
+          
+          if (this.map) {
+            marker.setMap(this.map);
+          }
+          
+          marker.addListener('click', (event: google.maps.MapMouseEvent) => {
+            const index = this.markerCaixas.indexOf(marker);
+            if (index !== -1) {
+              this.onMarkerClick(event, index);
+            }
+          });
+          
+          marker.addListener('dragend', (event: google.maps.MapMouseEvent) => {
+            const index = this.markerCaixas.indexOf(marker);
+            if (index !== -1) {
+              this.onMarkerDragEnd(event, index, false);
+            }
+          });
+          
+          this.markerCaixas.push(marker);
+        });
       
       console.log('Marcadores CEO atualizados:', this.markerCaixas);
     }
@@ -149,23 +226,30 @@ isMapReady: any;
       console.log(`Marcador movido para: Lat ${newLat}, Lng ${newLng}`);
       
       if (isCTO) {
-        this.markerCtos[index] = { lat: newLat, lng: newLng };
+        this.markerCtos[index].setPosition({ lat: newLat, lng: newLng });
       } else {
-        this.markerCaixas[index] = { lat: newLat, lng: newLng };
+        this.markerCaixas[index].setPosition({ lat: newLat, lng: newLng });
       }
     }
   }
 
   private updateMarkersCTO() {
-    if (this.destinoCTO && this.destinoCTO.length > 0) {
-      //console.log('Atualizando marcadores CTO com dados:', this.destinoCTO);
-      
-      this.markerCtos = this.destinoCTO.map(location => ({
-        lat: Number(location.LAT),
-        lng: Number(location.LONGI)
-      }));
+    
 
-      this.markerOptionsCTO = this.destinoCTO.map(location => ({
+      if (this.destinoCTO && this.destinoCTO.length > 0 && this.map) {
+        this.markerCtos.forEach(marker => marker.setMap(null));
+        this.markerCtos = [];
+        
+        this.destinoCTO.forEach(location => {
+          const position = {
+            lat: Number(location.LAT),
+            lng: Number(location.LONGI)
+          };
+
+    
+
+      const markerOptions: google.maps.MarkerOptions = {
+        position: position,
         title: location.numero || 'Sem número',
         draggable: true,
         label: {
@@ -176,15 +260,25 @@ isMapReady: any;
         icon: {
           url: '/assets/CTO80.png',
           labelOrigin: new google.maps.Point(50, 10),
-          scaledSize : new google.maps.Size(15 , 20)
-          
+          scaledSize: new google.maps.Size(10, 15)
         },
-        customData: {
-          tipo: 'cto',
-          numero: location.id_meta,
-          dadosOriginais: location
+        visible: this.currentZoom >= this.ZOOM_LEVEL_CTOS
+      };
+      
+      const marker = new google.maps.Marker(markerOptions);
+      if (this.map) {
+        marker.setMap(this.map);
+      }
+      
+      marker.addListener('dragend', (event: google.maps.MapMouseEvent) => {
+        const index = this.markerCtos.indexOf(marker);
+        if (index !== -1) {
+          this.onMarkerDragEnd(event, index, true);
         }
-      }));
+      });
+      
+      this.markerCtos.push(marker);
+    });
       
       console.log('CTOs atualizados:', this.markerCtos);
     }
@@ -241,10 +335,10 @@ isMapReady: any;
 
       if (this.polylinePaths6f.length > 0) {
         const firstPoint = this.polylinePaths6f[0][0];
-        if (firstPoint) {
-          this.center = { lat: firstPoint.lat, lng: firstPoint.lng };
-          console.log('Mapa centralizado em:', this.center);
-        }
+        //if (firstPoint) {
+         // this.center = { lat: firstPoint.lat, lng: firstPoint.lng };
+         // console.log('Mapa centralizado em:', this.center);
+        //}
       }
 
       console.log(`Total de ${this.polylinePaths6f.length} cabos processados`);
@@ -281,10 +375,10 @@ isMapReady: any;
 
       if (this.polylinePaths8f.length > 0) {
         const firstPoint = this.polylinePaths8f[0][0];
-        if (firstPoint) {
-          this.center = { lat: firstPoint.lat, lng: firstPoint.lng };
-          console.log('Mapa centralizado em:', this.center);
-        }
+        //if (firstPoint) {
+        //  this.center = { lat: firstPoint.lat, lng: firstPoint.lng };
+        //  console.log('Mapa centralizado em:', this.center);
+        //}
       }
 
       console.log(`Total de ${this.polylinePaths8f.length} cabos processados`);
@@ -323,10 +417,10 @@ isMapReady: any;
 
       if (this.polylinePaths12f.length > 0) {
         const firstPoint = this.polylinePaths12f[0][0];
-        if (firstPoint) {
-          this.center = { lat: firstPoint.lat, lng: firstPoint.lng };
-          console.log('Mapa centralizado em:', this.center);
-        }
+        //if (firstPoint) {
+         // this.center = { lat: firstPoint.lat, lng: firstPoint.lng };
+        //  console.log('Mapa centralizado em:', this.center);
+        //}
       }
 
       console.log(`Total de ${this.polylinePaths12f.length} cabos processados`);
@@ -362,10 +456,10 @@ isMapReady: any;
 
       if (this.polylinePaths24f.length > 0) {
         const firstPoint = this.polylinePaths24f[0][0];
-        if (firstPoint) {
-          this.center = { lat: firstPoint.lat, lng: firstPoint.lng };
-          console.log('Mapa centralizado em:', this.center);
-        }
+        //if (firstPoint) {
+        //  this.center = { lat: firstPoint.lat, lng: firstPoint.lng };
+        //  console.log('Mapa centralizado em:', this.center);
+        //}
       }
 
       console.log(`Total de ${this.polylinePaths24f.length} cabos processados`);
@@ -378,9 +472,49 @@ isMapReady: any;
 
   
 
-  onMapInitialized() {
+  onMapInitialized(map: google.maps.Map) {
     console.log('Map initialized successfully');
+    this.map=map;
+
+  
+    this.map.addListener('zoom_changed', () => {
+      if (!this.map) return;
+      
+      this.currentZoom = this.map.getZoom() || 0;
+      console.log('Zoom changed to:', this.currentZoom);
+
+      this.updateMarkersVisibility();
+
+    });
+
+    if (this.map) {
+      this.currentZoom = this.map.getZoom() || 0;
+    }
   }
+
+ // Novo método para atualizar a visibilidade dos marcadores
+ private updateMarkersVisibility() {
+  console.log('Atualizando visibilidade dos marcadores com zoom:', this.currentZoom);
+  console.log('Caixas visíveis:', this.currentZoom >= this.ZOOM_LEVEL_CAIXAS);
+  console.log('CTOs visíveis:', this.currentZoom >= this.ZOOM_LEVEL_CTOS);
+  
+  //visibilidade da caixas de acorod com o zomm
+  // Atualiza visibilidade das caixas
+  if (this.markerCaixas && this.markerCaixas.length > 0) {
+    this.markerCaixas.forEach(marker => {
+      if (marker) {
+        marker.setVisible(this.currentZoom >= this.ZOOM_LEVEL_CAIXAS);
+      }
+    });
+  }
+
+
+  //visibilidade das CTOS de acordo com o zoom;
+  if (this.currentZoom <=this.ZOOM_LEVEL_CTOS) {this.markerCtos.forEach(marker => marker.setVisible(false))};
+  if (this.currentZoom >=this.ZOOM_LEVEL_CTOS) {this.markerCtos.forEach(marker => marker.setVisible(true))};
+  
+
+}
 
   private checkGoogleMapsAPI() {
     if ((window as any).google && (window as any).google.maps) {

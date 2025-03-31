@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { BehaviorSubject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -9,6 +10,10 @@ export class AuthService {
   private readonly IDCIDADE_KEY = 'auth_idcidade';
 
   constructor() {}
+
+  
+
+
 
   setToken(token: string): void {
     localStorage.setItem(this.TOKEN_KEY, token);
@@ -21,15 +26,22 @@ export class AuthService {
   }
 
   setIdCity(idcity: number | null): void {
+  
+
     if (idcity) {
       localStorage.setItem(this.IDCIDADE_KEY, idcity.toString());
     } else {
       localStorage.removeItem(this.IDCIDADE_KEY);
     }
+
+    
+    
   }
 
-  getIdCity(): string | null {
-    return localStorage.getItem(this.IDCIDADE_KEY);
+  getIdCity(): number | null {
+    const idCityStr = localStorage.getItem(this.IDCIDADE_KEY);
+    // Convertendo a string para número explicitamente ou retornando null
+    return idCityStr ? Number(idCityStr) : null;
   }
 
   setPolo(polo: string | null): void {
@@ -51,6 +63,7 @@ export class AuthService {
   clearToken(): void {
     localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.POLO_KEY); // Também limpar o polo quando sair
+    
   }
   
   isTokenValid(): boolean {

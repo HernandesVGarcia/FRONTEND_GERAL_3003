@@ -29,13 +29,26 @@ export class CtoService {
   
   selecionar():Observable<Cto[]>{
     const token = this.authService.getToken();
+    const idcidade = this.authService.getIdCity();
+
     const headers = new HttpHeaders()
+
+    
+
+
+    
       .set('Content-Type', 'application/json')
       //.set('Access-Control-Allow-Origin', '*')
       //.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE')
       //.set('Access-Control-Allow-Headers', 'X-Requested-With,content-type')
       .set('Authorization',`Bearer ${token}`);
-    return this.http.get<Cto[]>(this.url,{ headers }).pipe(
+
+      const body = {
+        idCIDADES: idcidade
+      };
+
+
+    return this.http.post<Cto[]>(this.url,body,{ headers }).pipe(
       timeout(this.TIMEOUT),
       retry(this.RETRY_ATTEMPTS),
       catchError(this.handleError)
