@@ -28,7 +28,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges {
 
   title: string = "Fiberworks";
   center: google.maps.LatLngLiteral = { lat: -23.326803, lng: -52.114882 };
-  zoom = 19;
+  zoom = 15;
   mapID = "My Project Angular";
 
   markerCaixas: google.maps.Marker[] = [];
@@ -42,16 +42,31 @@ export class GoogleMapsComponent implements OnInit, OnChanges {
   polylinePaths24f: google.maps.LatLngLiteral[][] = [];
 
 
-// Define os níveis de zoom para visibilidade  ***************************************************inserido
-private ZOOM_LEVEL_CAIXAS = 12; // Caixas CEO visíveis em zoom >= 14
-private ZOOM_LEVEL_CTOS = 16;   // CTOs visíveis em zoom >= 16
+
+private ZOOM_LEVEL_CAIXAS = 11; // Caixas CEO visíveis em zoom >= 14
+private ZOOM_LEVEL_CTOS = 13;   // CTOs visíveis em zoom >= 16
 
 private map?: (google.maps.Map);
   isMapReady: any;
 
- // **********************************************************************************************inserido
+ 
 
  currentZoom: number = 18;
+
+
+
+ // **********************************************************************************************inserido
+ private boundsChangeTimeout: any;
+ private allCaixas: Caixa[] = [];
+ private allCTOs: Cto[] = [];
+
+ // Propriedade para controlar o limiar de densidade
+ private MAX_VISIBLE_MARKERS_CEO = 200; // Ajuste este valor conforme necessário
+ private MAX_VISIBLE_MARKERS_CTO = 150; // Ajuste este valor conforme necessário
+// **********************************************************************************************inserido
+
+
+
 
   polylineOptions6f: google.maps.PolylineOptions = {
     strokeColor: 'black',
@@ -190,6 +205,7 @@ private map?: (google.maps.Map);
               scaledSize: new google.maps.Size(15, 30)
             },
             visible: this.currentZoom >= this.ZOOM_LEVEL_CAIXAS
+            ///visible:false
           };
           
           const marker = new google.maps.Marker(markerOptions);
@@ -263,6 +279,8 @@ private map?: (google.maps.Map);
           scaledSize: new google.maps.Size(10, 15)
         },
         visible: this.currentZoom >= this.ZOOM_LEVEL_CTOS
+        ///visible: false
+
       };
       
       const marker = new google.maps.Marker(markerOptions);
@@ -483,38 +501,131 @@ private map?: (google.maps.Map);
       this.currentZoom = this.map.getZoom() || 0;
       console.log('Zoom changed to:', this.currentZoom);
 
-      this.updateMarkersVisibility();
+      ///this.updateMarkersVisibility();
+      this.updateVisibleMarkers();
 
+    });
+
+    // Adiciona o evento bounds_changed para carregamento sob demanda
+    this.map.addListener('bounds_changed', () => {
+      // Usar debounce para evitar atualizações frequentes
+      if (this.boundsChangeTimeout) {
+        clearTimeout(this.boundsChangeTimeout);
+      }
+      
+      this.boundsChangeTimeout = setTimeout(() => {
+        this.updateVisibleMarkers();
+      }, 200); // Pequeno delay para evitar muitas atualizações
     });
 
     if (this.map) {
       this.currentZoom = this.map.getZoom() || 0;
+      this.updateVisibleMarkers();
     }
   }
 
  // Novo método para atualizar a visibilidade dos marcadores
- private updateMarkersVisibility() {
-  console.log('Atualizando visibilidade dos marcadores com zoom:', this.currentZoom);
-  console.log('Caixas visíveis:', this.currentZoom >= this.ZOOM_LEVEL_CAIXAS);
-  console.log('CTOs visíveis:', this.currentZoom >= this.ZOOM_LEVEL_CTOS);
+ ///private updateMarkersVisibility() {
+
+
+///  if (!this.map) return;
+
+///  const bounds = this.map.getBounds();
+///  if (!bounds) return;
+
   
-  //visibilidade da caixas de acorod com o zomm
-  // Atualiza visibilidade das caixas
-  if (this.markerCaixas && this.markerCaixas.length > 0) {
-    this.markerCaixas.forEach(marker => {
-      if (marker) {
-        marker.setVisible(this.currentZoom >= this.ZOOM_LEVEL_CAIXAS);
+ /// console.log('Atualizando visibilidade dos marcadores com zoom:', this.currentZoom);
+///  console.log('Caixas visíveis:', this.currentZoom >= this.ZOOM_LEVEL_CAIXAS);
+///  console.log('CTOs visíveis:', this.currentZoom >= this.ZOOM_LEVEL_CTOS);
+  
+  
+  
+ // Visibilidade Caixas
+ /// if (this.markerCaixas && this.markerCaixas.length > 0) {
+ ///   this.markerCaixas.forEach(marker => {
+ ///     if (marker) {
+ ///       marker.setVisible(this.currentZoom >= this.ZOOM_LEVEL_CAIXAS);
+ ///     }
+ ///   });
+ /// }
+// Visibilidade CTOS
+///  this.markerCtos.forEach(marker => {
+///    const position = marker.getPosition();
+///    if (position && bounds.contains(position) && this.currentZoom >= this.ZOOM_LEVEL_CTOS) {
+ ///     marker.setVisible(true);
+  ///  } else {
+  ///    marker.setVisible(false);
+ // /  }
+ /// });
+
+  
+
+///}
+
+private updateVisibleMarkers() {
+  if (!this.map) return;
+  
+  const bounds = this.map.getBounds();
+  if (!bounds) return;
+  
+  console.log('Atualizando marcadores visíveis com base nos limites do mapa');
+  
+  // Atualizar visibilidade das caixas
+  let visibleCaixasCount = 0;
+  this.markerCaixas.forEach(marker => {
+    if (marker) {
+      const position = marker.getPosition();
+      if (position && 
+          bounds.contains(position) && 
+          this.currentZoom >= this.ZOOM_LEVEL_CAIXAS &&
+          visibleCaixasCount < this.MAX_VISIBLE_MARKERS_CEO) {
+        
+        if (this.map) {marker.setMap(this.map)};
+        marker.setVisible(true);
+        visibleCaixasCount++;
+      } else {
+        marker.setVisible(false);
+        marker.setMap(null);
       }
-    });
-  }
+    }
+  });
+  
+  // Atualizar visibilidade de CTOs
+  let visibleCTOsCount = 0;
+  console.log ('atualiza ctos visibles')
+  this.markerCtos.forEach(marker => {
+    if (marker) {
+      const position = marker.getPosition();
+      if (position && 
+          bounds.contains(position) && 
+          this.currentZoom >= this.ZOOM_LEVEL_CTOS &&
+          visibleCTOsCount < this.MAX_VISIBLE_MARKERS_CTO) {
+        
+        if (this.map) {marker.setMap(this.map)};
+        marker.setVisible(true);
+        visibleCTOsCount++;
+      } else {
+        marker.setVisible(false);
+        marker.setMap(null);
+      }
+
+      //console.log ('caixas visiveis', visibleCTOsCount)
+    }
+  });
 
 
-  //visibilidade das CTOS de acordo com o zoom;
-  if (this.currentZoom <=this.ZOOM_LEVEL_CTOS) {this.markerCtos.forEach(marker => marker.setVisible(false))};
-  if (this.currentZoom >=this.ZOOM_LEVEL_CTOS) {this.markerCtos.forEach(marker => marker.setVisible(true))};
   
 
+  
+  console.log(`Caixas visíveis: ${visibleCaixasCount}, CTOs visíveis: ${visibleCTOsCount}`);
 }
+
+
+private updateMarkersVisibility() {
+  // Este método agora é substituído por updateVisibleMarkers, mas mantido para compatibilidade
+  this.updateVisibleMarkers();
+}
+
 
   private checkGoogleMapsAPI() {
     if ((window as any).google && (window as any).google.maps) {
