@@ -43,8 +43,8 @@ export class GoogleMapsComponent implements OnInit, OnChanges {
 
 
 
-private ZOOM_LEVEL_CAIXAS = 11; // Caixas CEO visíveis em zoom >= 14
-private ZOOM_LEVEL_CTOS = 13;   // CTOs visíveis em zoom >= 16
+private ZOOM_LEVEL_CAIXAS = 12; // Caixas CEO visíveis em zoom >= 14
+private ZOOM_LEVEL_CTOS = 15;   // CTOs visíveis em zoom >= 16
 
 private map?: (google.maps.Map);
   isMapReady: any;
