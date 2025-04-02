@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 import { Cabos6f } from '../modelo/Cabos6f'
 import { CaboService } from '../servico/cabo.service';
+import { AuthService} from '../servico/auth.service'
 
 @Component({
   selector: 'app-lista-cabos6f',
@@ -13,13 +14,16 @@ export class ListaCabos6fComponent implements OnInit{
   vetorCabos: Cabos6f[] = [];
       @Output() caboSelecionada = new EventEmitter<any[]>();
       
-      constructor(private servicoCabos: CaboService) {
+      constructor(private servicoCabos: CaboService, private authService: AuthService) {
+        
         console.log('ListaCabosComponent construído');
       }
     
       ngOnInit() {
         console.log('inicialização do app-lista-cabos6F-ok');
-        this.selecionar(210,6);
+        const id_cidade = this.authService.getIdCity();
+        if(id_cidade){
+        this.selecionar(id_cidade,6)};
       }
     
       selecionar(idCidade:number,capacidade:number) {
@@ -39,7 +43,8 @@ export class ListaCabos6fComponent implements OnInit{
           error: (erro) => {
             console.error('Erro ao carregar cabos:', erro);
           }
-        });
+        }
+      );
       }
 
 }

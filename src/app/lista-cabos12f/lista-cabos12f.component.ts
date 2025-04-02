@@ -2,6 +2,7 @@ import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 import { Cabos12f } from '../modelo/Cabos12f'
 import { CaboService } from '../servico/cabo.service';
 import { CommonModule } from '@angular/common';
+import { AuthService} from '../servico/auth.service'
 
 
 @Component({
@@ -16,13 +17,15 @@ export class ListaCabos12fComponent implements OnInit{
   vetorCabos: Cabos12f[] = [];
     @Output() caboSelecionada = new EventEmitter<any[]>();
     
-    constructor(private servicoCabos: CaboService) {
+    constructor(private servicoCabos: CaboService,private authService: AuthService) {
       console.log('ListaCabosComponent construído');
     }
   
     ngOnInit() {
       console.log('inicialização do app-lista-cabos-ok');
-      this.selecionar(210,12);
+      const id_cidade = this.authService.getIdCity();
+        if(id_cidade){
+        this.selecionar(id_cidade,12)};
     }
   
     selecionar(idCidade:number,capacidade:number) {
