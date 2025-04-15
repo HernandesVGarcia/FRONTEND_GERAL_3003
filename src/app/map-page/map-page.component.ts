@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FiberMapComponent } from '../fiber-map/fiber-map.component';
 import { ToolbarsComponent} from '../toolbars/toolbars.component';
 import { MenusComponent } from '../menus/menus.component';
+//import { CaixaInternaSyncComponent } from '../caixa-interna-sync/caixa-interna-sync.component';
+
 
 
 @Component({

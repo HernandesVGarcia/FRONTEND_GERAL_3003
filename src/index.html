@@ -11,23 +11,105 @@
   <script async loading ="async" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCfJrOfhVGCOKdAOz1LagKl7yi4PAWLQ8Q&callback=console.debug&libraries=maps,marker&v=beta"></script>
 
 
-<!-- jQuery UI CSS -->
-<link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">  
+<!-- jQuery UI CSS 
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">  -->
 
-<!--jQuery deve ser carregado antes do draw2d -->
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<!--jQuery deve ser carregado antes do draw2d 
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script> comentado 120425  -->
 
-<!-- jQuery UI -->
-<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+<!-- jQuery UI 
+<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script> comentado 120425  -->
 
 <!-- Outras dependências do Draw2D -->
+
+
+<!--
 <script src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.3.0/raphael.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/shifty/2.8.3/shifty.min.js"></script>
-<!--<script src="https://cdnjs.cloudflare.com/ajax/libs/draw2d/1.0.38/draw2d.js"></script>-->
+-->
+
+<!-- Draw2D versão atualizada (6.1.66) 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/draw2d/6.1.66/draw2d.js"></script>-->
+
+
+<!-- Optional jQuery Browser Plugin (used in some Draw2D examples) 
+<script src="https://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script> comentado 120425  -->
+
+<!-- Draw2D and its dependencies -->
+
+<!--<script src="https://cdnjs.cloudflare.com/ajax/libs/draw2d/1.0.38/draw2d.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/draw2d@1.0.38/dist/draw2d.js"></script>-->
+
+<script src="/assets/jquery.js"></script>
+
+<script src="/assets/jquery-ui.js"></script>
+
+<script src="/assets/jquery.browser.js"></script>
+
+<script src="/assets/jquery.layout.js"></script>
+
+<!-- jQuery UI CSS  -->
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css"> 
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.3.0/raphael.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/shifty/2.8.3/shifty.min.js"></script>
+
+
+<script src="/assets/draw2d.js"></script>
 
 
 
-  
+
+
+
+
+<!-- 2. Alternativa: unpkg 
+<script>
+  if (!window.draw2d) {
+    console.log('Tentando carregar Draw2D via unpkg...');
+    document.write('<script src="https://unpkg.com/draw2d@1.0.38/dist/draw2d.js"><\/script>');
+  }
+</script>-->
+
+<!-- 3. Tentativa com versão específica da biblioteca original 
+<script>
+  if (!window.draw2d) {
+    console.log('Tentando carregar Draw2D de outro CDN...');
+    document.write('<script src="https://cdn.draw2d.org/draw2d_6.1.66.js"><\/script>');
+  }
+</script>-->
+
+<!-- Verificação avançada da biblioteca -->
+<script>
+  window.addEventListener('DOMContentLoaded', function() {
+    console.log('Draw2D Script Loaded Check:');
+    console.log('Draw2D Reference:', typeof draw2d);
+    
+    if (draw2d) {
+      console.log('Draw2D Namespace Exists');
+      console.log('Draw2D Object Keys:', Object.keys(draw2d));
+      
+      // Verificar a fonte da biblioteca
+      let scriptSrcs = Array.from(document.querySelectorAll('script'))
+        .map(script => script.src)
+        .filter(src => src.includes('draw2d'));
+      
+      console.log('Scripts carregados de Draw2D:', scriptSrcs);
+      
+      // Verificar versões específicas 
+      if (draw2d.version) {
+        console.log('Versão encontrada:', draw2d.version);
+      } else if (draw2d.Figure && draw2d.Figure.version) {
+        console.log('Versão da Figure:', draw2d.Figure.version);
+      } else {
+        console.log('Versão não disponível diretamente, verificando pela URL carregada');
+      }
+    } else {
+      console.error('Draw2D não foi carregado corretamente!');
+    }
+  });
+</script>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>

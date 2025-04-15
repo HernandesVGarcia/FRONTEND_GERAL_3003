@@ -15,6 +15,11 @@
   <button mat-icon-button class="toolbar-button ml-2" aria-label="Cidades" (click)="openCityModal()">
     <mat-icon>location_city</mat-icon>
   </button>
+  <button mat-icon-button class="toolbar-button ml-2" aria-label="CaixaInterna" (click)="openCaixaModal()">
+    <mat-icon>location_city</mat-icon>
+  </button>
+  <!-- Novo botão para abrir CaixaInternasync -->
+  
   
   <div>&nbsp;&nbsp;&nbsp;&nbsp;</div>
 
@@ -28,3 +33,12 @@
 (citySelected)="onCitySelected($event)" 
 (modalClosed)="onModalClosed()">
 </app-city-select-modal>
+
+
+<app-caixa-interna-sync
+*ngIf="showCaixaInterna"
+(onClose)="closeCaixaModal()"
+>
+  
+
+</app-caixa-interna-sync>

@@ -8,13 +8,15 @@ import { Cabos24f } from '../modelo/Cabos24f';
 import { Caixa } from '../modelo/Caixa';
 import { Cto } from '../modelo/Cto';
 import { CaixaInternaComponent } from '../caixa-interna/caixa-interna.component';
+import { ChangeDetectorRef } from '@angular/core'; /// ============novo
+import { GoJSDemoComponent } from '../gojs-demo/gojs-demo.component';
 
 @Component({
   selector: 'app-google-maps',
   templateUrl: './google-maps.component.html',
   styleUrls: ['./google-maps.component.css'],
   standalone: true,
-  imports: [CommonModule, GoogleMapsModule,CaixaInternaComponent],
+  imports: [CommonModule, GoogleMapsModule,CaixaInternaComponent,GoJSDemoComponent],
 })
 export class GoogleMapsComponent implements OnInit, OnChanges {
   @Input() destino: Caixa[] = [];
@@ -23,6 +25,10 @@ export class GoogleMapsComponent implements OnInit, OnChanges {
   @Input() destinoCabos8f: Cabos8f[] = [];
   @Input() destinoCabos12f: Cabos12f[] = [];
   @Input() destinoCabos24f: Cabos24f[] = [];
+
+  isGoJSModalOpen = false;
+
+  constructor(private cdr: ChangeDetectorRef) {};
 
   caixaSelecionada: string | null = null;
 
@@ -43,7 +49,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges {
 
 
 
-private ZOOM_LEVEL_CAIXAS = 13; // Caixas CEO visíveis em zoom >= 14
+private ZOOM_LEVEL_CAIXAS = 11; // Caixas CEO visíveis em zoom >= 14
 private ZOOM_LEVEL_CTOS = 15;   // CTOs visíveis em zoom >= 16
 
 private map?: (google.maps.Map);
@@ -115,6 +121,9 @@ private map?: (google.maps.Map);
       editable: false
 
 
+      
+
+
   }
 //isMapReady: any;
 
@@ -125,6 +134,12 @@ private map?: (google.maps.Map);
 
   ngOnChanges(changes: SimpleChanges): void {
     console.log('ngOnChanges detectou mudança em destino:', changes['destino']);
+
+    console.log('CaixaInterna - ngOnChanges recebeu:', changes);
+  if (changes['numeroCaixa']) {
+    console.log('Número da caixa alterado para');
+  }
+
     
     if (changes['destino'] && changes['destino'].currentValue) {
       console.log('Atualizando marcadores de caixas ',this.destino);
@@ -175,9 +190,8 @@ private map?: (google.maps.Map);
   }  
 
 
-
-
-  private updateMarkers() {
+    // =============================== função para carregar o marcadores Caixas na tela =========
+    private updateMarkers() {
     if (this.destino && this.destino.length > 0 && this.map) {
       this.markerCaixas.forEach(marker => marker.setMap(null));
       this.markerCaixas = [];
@@ -214,27 +228,32 @@ private map?: (google.maps.Map);
             marker.setMap(this.map);
           }
           
-          marker.addListener('click', (event: google.maps.MapMouseEvent) => {
-            const index = this.markerCaixas.indexOf(marker);
-            if (index !== -1) {
-              this.onMarkerClick(event, index);
-            }
-          });
+          // substituido pela funçõa addmarkereventlistener ************************************************
+          //marker.addListener('dblclick', (event: google.maps.MapMouseEvent) => {
+          //  const index = this.markerCaixas.indexOf(marker);
+           // if (index !== -1) {
+           //   this.onMarkerClick(event, index);
+           // }
+         // });
           
-          marker.addListener('dragend', (event: google.maps.MapMouseEvent) => {
-            const index = this.markerCaixas.indexOf(marker);
-            if (index !== -1) {
-              this.onMarkerDragEnd(event, index, false);
-            }
-          });
+          //marker.addListener('dragend', (event: google.maps.MapMouseEvent) => {
+          //  const index = this.markerCaixas.indexOf(marker);
+          //  if (index !== -1) {
+          //    this.onMarkerDragEnd(event, index, false);
+          //  }
+          //});
+          // substituido pela funçõa addmarkereventlistener ************************************************
+
+          this.addMarkerEventListeners(marker, false);
           
           this.markerCaixas.push(marker);
         });
       
       console.log('Marcadores CEO atualizados:', this.markerCaixas);
     }
-  }
+  }  //======================================================================================================
 
+  
   onMarkerDragEnd(event: google.maps.MapMouseEvent, index: number, isCTO: boolean = false) {
     if (event.latLng) {
       const newLat = event.latLng.lat();
@@ -249,6 +268,8 @@ private map?: (google.maps.Map);
     }
   }
 
+
+  //=====================================função para carregar as CTOs na Tela================================
   private updateMarkersCTO() {
     
 
@@ -294,6 +315,8 @@ private map?: (google.maps.Map);
           this.onMarkerDragEnd(event, index, true);
         }
       });
+
+      
       
       this.markerCtos.push(marker);
     });
@@ -488,7 +511,9 @@ private map?: (google.maps.Map);
   }
 
 
-  
+  //==========================================================================================================================
+  //==1 dispara o evento que monitora o zoom para executar o callback de visible markers======================================
+  //==2 dispara o evento para monitorar os boundsChange para executar o callback de visible markers===========================
 
   onMapInitialized(map: google.maps.Map) {
     console.log('Map initialized successfully');
@@ -522,45 +547,13 @@ private map?: (google.maps.Map);
       this.currentZoom = this.map.getZoom() || 0;
       this.updateVisibleMarkers();
     }
-  }
+  }//================================================================================================
 
- // Novo método para atualizar a visibilidade dos marcadores
- ///private updateMarkersVisibility() {
-
-
-///  if (!this.map) return;
-
-///  const bounds = this.map.getBounds();
-///  if (!bounds) return;
-
-  
- /// console.log('Atualizando visibilidade dos marcadores com zoom:', this.currentZoom);
-///  console.log('Caixas visíveis:', this.currentZoom >= this.ZOOM_LEVEL_CAIXAS);
-///  console.log('CTOs visíveis:', this.currentZoom >= this.ZOOM_LEVEL_CTOS);
-  
-  
-  
- // Visibilidade Caixas
- /// if (this.markerCaixas && this.markerCaixas.length > 0) {
- ///   this.markerCaixas.forEach(marker => {
- ///     if (marker) {
- ///       marker.setVisible(this.currentZoom >= this.ZOOM_LEVEL_CAIXAS);
- ///     }
- ///   });
- /// }
-// Visibilidade CTOS
-///  this.markerCtos.forEach(marker => {
-///    const position = marker.getPosition();
-///    if (position && bounds.contains(position) && this.currentZoom >= this.ZOOM_LEVEL_CTOS) {
- ///     marker.setVisible(true);
-  ///  } else {
-  ///    marker.setVisible(false);
- // /  }
- /// });
-
-  
-
-///}
+ 
+//*************************************************************************************************** */ 
+// verifica se o marcador existe ====================================================================
+// verifica se o marador tem uma posição geografica valida===========================================
+// verifica bounds.contains(position)se o marcador está dentro dos limites visíveis do mapa atual
 
 private updateVisibleMarkers() {
   if (!this.map) return;
@@ -580,15 +573,23 @@ private updateVisibleMarkers() {
           this.currentZoom >= this.ZOOM_LEVEL_CAIXAS &&
           visibleCaixasCount < this.MAX_VISIBLE_MARKERS_CEO) {
         
-        if (this.map) {marker.setMap(this.map)};
+        if (this.map) {marker.setMap(this.map)};//xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
         marker.setVisible(true);
+
+        // Readicionar os event listeners para garantir que funcionem
+        this.addMarkerEventListeners(marker, false);
+        //console.log("ADICIONANDO LISTERNER MARKER DLBCLICK")
+
         visibleCaixasCount++;
       } else {
         marker.setVisible(false);
-        marker.setMap(null);
+        marker.setMap(null);//xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+        //console.log("retirando LISTERNER MARKER DLBCLICK")
       }
     }
   });
+
+  
   
   // Atualizar visibilidade de CTOs
   let visibleCTOsCount = 0;
@@ -601,7 +602,7 @@ private updateVisibleMarkers() {
           this.currentZoom >= this.ZOOM_LEVEL_CTOS &&
           visibleCTOsCount < this.MAX_VISIBLE_MARKERS_CTO) {
         
-        if (this.map) {marker.setMap(this.map)};
+        if (this.map) {marker.setMap(this.map)};//xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
         marker.setVisible(true);
         visibleCTOsCount++;
       } else {
@@ -614,17 +615,55 @@ private updateVisibleMarkers() {
   });
 
 
-  
 
   
   console.log(`Caixas visíveis: ${visibleCaixasCount}, CTOs visíveis: ${visibleCTOsCount}`);
-}
+
+} 
+// *****************************************************************************************************
 
 
-private updateMarkersVisibility() {
-  // Este método agora é substituído por updateVisibleMarkers, mas mantido para compatibilidade
-  this.updateVisibleMarkers();
+
+
+// Novo método para adicionar event listeners a um marcador
+private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = false) {
+  // Remover listeners existentes primeiro (caso já existam)
+  google.maps.event.clearInstanceListeners(marker);
+  
+  
+  if (1) {
+    // Eventos para marcadores de Caixas
+    
+    marker.addListener('dblclick', (event: google.maps.MapMouseEvent) => {
+      
+      const index = this.markerCaixas.indexOf(marker);
+      if (index !== -1) {
+        this.onMarkerClick(event, index);
+        
+      }
+    });
+  }
+  
+  // Evento dragend para ambos tipos de marcadores
+
+  
+  marker.addListener('dragend', (event: google.maps.MapMouseEvent) => {
+    if (isCTO) {
+      const index = this.markerCtos.indexOf(marker);
+      if (index !== -1) {
+        this.onMarkerDragEnd(event, index, true);
+      }
+    } else {
+      const index = this.markerCaixas.indexOf(marker);
+      if (index !== -1) {
+        this.onMarkerDragEnd(event, index, false);
+      }
+    }
+  });
+
+  
 }
+
 
 
   private checkGoogleMapsAPI() {
@@ -638,12 +677,33 @@ private updateMarkersVisibility() {
 
   onMarkerClick(event: google.maps.MapMouseEvent, index: number) {
     if (this.destino[index]) {
-      this.caixaSelecionada = this.destino[index].numero || null;
+      // 15/04/2025this.caixaSelecionada = this.destino[index].numero || null;
+      console.log('caixa clicada' , this.destino[index].numero)
+      // Força a detecção de mudanças após atualizar a variável
+      this.isGoJSModalOpen = true;
+    this.cdr.detectChanges();
+
     }
   }
   
 
   onCaixaInternaClose() {
+    console.log('Evento de fechamento recebido no GoogleMapsComponent');
     this.caixaSelecionada = null;
+    console.log('caixaSelecionada definida como null');
+    this.cdr.detectChanges();
   }
+
+
+// Métodos para controlar o modal GoJS
+openGoJSModal() {
+  this.isGoJSModalOpen = true;
+}
+
+closeGoJSModal() {
+  this.isGoJSModalOpen = false;
+}
+
+
+
 }

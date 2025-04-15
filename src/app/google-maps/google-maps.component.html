@@ -26,15 +26,19 @@
     width="99%"
     height="90vh"
     (mapInitialized)="onMapInitialized($event)">
+
+    
+
+
     <!--
-    <map-marker
+    map-marker
       *ngFor="let position of markerCaixas; let i = index"
       [position]="position"
       [options]="markerOptions[i]"
       (mapClick)="onMarkerClick($event, i)"
       (mapDragend)="onMarkerDragEnd($event,i)">
     </map-marker>
-    <map-marker
+    map-marker
       *ngFor="let position of markerCtos; let i = index"
       [position]="position"
       [options]="markerOptionsCTO[i]"
@@ -67,13 +71,28 @@
 
   </google-map>
 
-
+  <!-- Debug *ngIf="caixaSelecionada" avalia para: {{!!caixaSelecionada}}  [numeroCaixa]="caixaSelecionada"
   <app-caixa-interna
     *ngIf="caixaSelecionada"
     [numeroCaixa]="caixaSelecionada"
     (onClose)="onCaixaInternaClose()"
     >
-  </app-caixa-interna>
+  </app-caixa-interna>-->
+
+
+<app-gojs-demo
+    *ngIf="isGoJSModalOpen"
+    [isOpen]="isGoJSModalOpen"
+    (closeModal)="closeGoJSModal()">
+  </app-gojs-demo>
+  
+<!--
+  <app-gojs-demo
+  
+  [isOpen]="isGoJSModalOpen"
+  (closeModal)="closeGoJSModal()">
+</app-gojs-demo>-->
+
 
 
   <!--

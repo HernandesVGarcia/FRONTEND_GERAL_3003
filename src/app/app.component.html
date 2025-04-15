@@ -12,8 +12,18 @@
     
 
 </main>
-
+[numeroCaixa]="caixaNumeracao"
 -->
+
+
+<!-- Adicionar o CaixaInternasyncComponent aqui para ser renderizado no nível principal 
+<app-caixa-internasync
+  *ngIf="showCaixaDiagrama"
+  [numeroCaixa]="caixaNumeracao"
+  (onClose)="closeCaixaDiagrama()">
+</app-caixa-internasync>
+
+Adicionar o CaixaInternasyncComponent aqui para ser renderizado no nível principal -->
 
 <main>
     <app-rotas></app-rotas>

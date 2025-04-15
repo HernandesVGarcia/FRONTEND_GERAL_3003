@@ -1,0 +1,42 @@
+<!--
+<div *ngIf="isOpen" class="modal">
+  <div class="modal-content">
+    <span class="close-button" (click)="close()">&times;</span>
+    <div class="gojs-container">
+      <div class="watermark-cover"></div>
+      <div #diagramDiv id="gojsDiagram" class="diagram-container"></div>
+    </div>
+  </div>
+</div>
+
+
+
+  
+    <span class="close-button" (click)="close()">&times;</span>
+    <div class="gojs-container">
+      <div class="watermark-cover"></div>
+      <div #diagramDiv id="gojsDiagram" class="diagram-container"></div>
+    </div>-->
+  
+    <div *ngIf="isOpen" class="modal">
+      <div class="modal-content">
+        <span class="close-button" (click)="close()">&times;</span>
+        <div class="gojs-container">
+          <div class="instruction-panel">
+            <p>Diagrama de Conexões</p>
+            
+          </div>
+          <div class="diagram-container">
+            <div class="watermark-cover"></div>
+            <div #diagramDiv class="diagram-div"></div>
+          </div>
+          <div class="diagram-info" *ngIf="diagramInitialized">
+            
+          </div>
+          <div class="diagram-error" *ngIf="initializationError">
+            <p>Erro ao inicializar: {{initializationError}}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    

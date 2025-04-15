@@ -8,6 +8,7 @@ import {MatMenuModule} from '@angular/material/menu';
 import { RotasComponent } from "./rotas/rotas.component";
 
 
+
 @Component({
   selector: 'app-root',
   templateUrl:'./app.component.html',
@@ -19,5 +20,12 @@ import { RotasComponent } from "./rotas/rotas.component";
   
 })
 export class AppComponent  {
-  title:string="Fiberworks"
-}
+  //title:string="Fiberworks"
+
+  title = 'Sistema de Documentação de Redes Ópticas';
+  
+  }
+
+
+
+

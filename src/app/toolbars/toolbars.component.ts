@@ -16,12 +16,24 @@ import {Cidades} from '../modelo/Cidades';
 import { AuthService } from '../servico/auth.service';
 import { Router } from '@angular/router';
 import { CitySelectModalComponent } from '../city-select-modal/city-select-modal.component';
-
-
+//import { CaixaInternasyncComponent } from '../caixa-internasync/caixa-internasync.component';
+//import { AppComponent } from '../app.component';
+import {CaixaInternaSyncComponent} from '../caixa-interna-sync/caixa-interna-sync.component'
 
 @Component({
   selector: 'app-toolbars',
-  imports: [CommonModule,MatToolbarModule,MatIconModule,MatFormFieldModule,MatSelectModule,FormsModule,MatInputModule,MatAutocompleteModule,ReactiveFormsModule,CitySelectModalComponent,MatSelectModule,],
+  imports: [CommonModule,
+    MatToolbarModule,
+    MatIconModule,
+    MatFormFieldModule,
+    MatSelectModule,
+    FormsModule,
+    MatInputModule,
+    MatAutocompleteModule,
+    ReactiveFormsModule,
+    CitySelectModalComponent,
+    MatSelectModule,
+    CaixaInternaSyncComponent],
   templateUrl: './toolbars.component.html',
   styleUrls: ['./toolbars.component.css'],
   standalone: true
@@ -32,11 +44,14 @@ export class ToolbarsComponent {
   selectedCity: any;
   cityModalOpen = false;
   showCityModal = false;
+  showCaixaInterna=false;
+ 
    
   constructor(
     private cidadesService: CidadesService,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    
   ) {
     console.log('Toolbar construída');
   }
@@ -89,7 +104,19 @@ export class ToolbarsComponent {
     this.showCityModal = false;
   }
     
+  openCaixaModal() {
+    this.showCaixaInterna=false;
+    console.log('Abrindo modal caixa toolbar');
+    this.showCaixaInterna=true;
+      
+  }
 
+  closeCaixaModal() {
+
+    console.log('Fecha modal caixa toolbar');
+    this.showCaixaInterna=false;
+      
+  }
 
   onCitySelected(idCidade: number): void {
     console.log('Cidade selecionada na toolbar:', idCidade);
@@ -103,6 +130,11 @@ export class ToolbarsComponent {
         console.log('Modal fechado sem seleção na toolbar');
         this.showCityModal = false;
       }
+
+      // Métodos para controlar o componente CaixaInternasync
+  
+
+
     }
 
     

@@ -16,12 +16,21 @@ import { Cto} from '../modelo/Cto'
 
 
 
+
 @Component({
   selector: 'app-fiber-map',
   templateUrl: './fiber-map.component.html',
   styleUrls: ['./fiber-map.component.css'],
   standalone: true,
-  imports: [CommonModule, ListaCaixasComponent, ListaCtosComponent, GoogleMapsComponent, ListaCabos12fComponent, ListaCabos24fComponent, ListaCabos8fComponent, ListaCabos6fComponent]
+  imports: [CommonModule, 
+    ListaCaixasComponent, 
+    ListaCtosComponent, 
+    GoogleMapsComponent, 
+    ListaCabos12fComponent, 
+    ListaCabos24fComponent, 
+    ListaCabos8fComponent, 
+    ListaCabos6fComponent
+    ]
 })
 export class FiberMapComponent {
   caixasCEO: any[] = [];
@@ -30,6 +39,8 @@ export class FiberMapComponent {
   cabos8f: Cabos8f []=[];
   cabos12f: Cabos12f[]=[];
   cabos24f: Cabos24f []=[];
+
+   
 
 
   onCaixaSelecionada(caixas: Caixa[]) { //recebe caixas do template que recebe de lista caixa
@@ -60,6 +71,5 @@ export class FiberMapComponent {
 
   }
 
-
-
+  
 }
