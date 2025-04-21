@@ -1,3 +1,5 @@
+import { AvoidsLinksRouter } from '../utils/AvoidsLinksRouter'
+
 import { Component, 
   OnInit, 
   Input, 
@@ -9,6 +11,9 @@ import { Component,
   ViewChild, AfterViewInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import * as go from 'gojs';
+import { Cabo12FNacComponent } from '../Stencil/cabo-12-f-nac/cabo-12-f-nac.component';
+import { Cabo12FNacDComponent } from '../Stencil/cabo-12-f-nac-d/cabo-12-f-nac-d.component';
+
 
 @Component({
   selector: 'app-gojs-demo',
@@ -25,21 +30,21 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
   public diagramInitialized = false;
   public initializationError: string | null = null;
   public diagram: go.Diagram | null = null;
+
+  private modalElement: HTMLElement | null = null;
+  private modalContentElement: HTMLElement | null = null;
+  private modalHeaderElement: HTMLElement | null = null; // Novo: referência para o cabeçalho
+  private isDragging = false;
+  private currentX = 0;
+  private currentY = 0;
+  private initialX = 0;
+  private initialY = 0;
+
+  private cabo12FNAC: Cabo12FNacComponent = new Cabo12FNacComponent();
+  private cabo12FNAC_D: Cabo12FNacDComponent = new Cabo12FNacDComponent();
+  private avoidsLinksRouter: AvoidsLinksRouter | null = null;
   
-  private nodeDataArray = [
-    { key: "Cabo Saída", category: "CABO_SAIDA", tipo: "12 FO (Portas à Direita)", loc: "100 100" },
-    { key: "Cabo Entrada", category: "CABO_ENTRADA", tipo: "12 FO (Portas à Esquerda)", loc: "300 100" },
-    { key: "Cabo Entrada1", category: "CABO_ENTRADA", tipo: "12 FO (Portas à Esquerda)", loc: "500 100" },
-    { key: "Cabo Saída1", category: "CABO_SAIDA", tipo: "24 FO (Portas à Direita)", loc: "100 250" },
-    { key: "Cabo Entrada2", category: "CABO_ENTRADA", tipo: "24 FO (Portas à Esquerda)", loc: "300 250" }
-  ];
-
-  private linkDataArray = [
-    { from: "Cabo Saída", to: "Cabo Entrada", fromPort: "P1", toPort: "P1", text: "Conexão 1" },
-    { from: "Cabo Saída", to: "Cabo Entrada1", fromPort: "P2", toPort: "P2", text: "Conexão 2" },
-    { from: "Cabo Saída1", to: "Cabo Entrada2", fromPort: "P1", toPort: "P1", text: "Conexão 3" }
-  ];
-
+ 
   constructor(private ngZone: NgZone, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
@@ -67,7 +72,76 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
       console.log('AfterViewInit: Modal está aberto, inicializando diagrama');
       setTimeout(() => this.initializeDiagram(), 200);
     }
+    this.setupDragFunctionality();
   }
+
+
+  private setupDragFunctionality(): void {
+    setTimeout(() => {
+      this.modalElement = document.querySelector('.modal') as HTMLElement;
+      this.modalContentElement = document.querySelector('.modal-content') as HTMLElement;
+      this.modalHeaderElement = document.querySelector('.modal-header') as HTMLElement;
+      
+      if (this.modalHeaderElement && this.modalContentElement) {
+        console.log('Modal header encontrado para arrastar');
+        // Adicionar listener apenas no cabeçalho, não no modal inteiro
+        this.modalHeaderElement.addEventListener('mousedown', (e: MouseEvent) => this.dragStart(e));
+        document.addEventListener('mousemove', (e: MouseEvent) => this.dragMove(e));
+        document.addEventListener('mouseup', (e: MouseEvent) => this.dragEnd(e));
+      } else {
+        console.warn('Modal header não encontrado para configurar o arrastar');
+      }
+    }, 500);
+  }
+
+  private dragStart(event: MouseEvent): void {
+    // Verificamos se o evento ocorreu no cabeçalho (não necessário, mas adicionado por segurança)
+    if (this.modalHeaderElement && 
+      (event.target === this.modalHeaderElement || 
+       this.modalHeaderElement.contains(event.target as Node))) {
+      
+      this.initialX = event.clientX - this.currentX;
+      this.initialY = event.clientY - this.currentY;
+      this.isDragging = true;
+      
+      if (this.modalContentElement) {
+        this.modalContentElement.classList.add('dragging');
+      }
+    }
+  }
+
+  private dragMove(event: MouseEvent): void {
+    if (this.isDragging && this.modalContentElement) {
+      event.preventDefault();
+      
+      this.currentX = event.clientX - this.initialX;
+      this.currentY = event.clientY - this.initialY;
+
+      this.setTranslate(this.currentX, this.currentY, this.modalContentElement);
+    }
+  }
+
+  private dragEnd(event: MouseEvent): void {
+    if (this.isDragging) {
+      this.initialX = this.currentX;
+      this.initialY = this.currentY;
+      
+      this.isDragging = false;
+      if (this.modalContentElement) {
+        this.modalContentElement.classList.remove('dragging');
+      }
+    }
+  }
+
+  private setTranslate(xPos: number, yPos: number, el: HTMLElement): void {
+    if (el) {
+      el.style.transform = `translate3d(${xPos}px, ${yPos}px, 0)`;
+    }
+  }
+
+
+
+
 
   private updateDiagramLayout(): void {
     if (this.diagram) {
@@ -108,29 +182,213 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
           "initialContentAlignment": go.Spot.Center,
           "maxScale": 2,
           "minScale": 0.2,
-          padding: new go.Margin(40, 40, 40, 40)
+          padding: new go.Margin(40, 40, 40, 40),
+          "linkingTool.isUnconnectedLinkValid": false,
+          "linkingTool.portGravity": 20,
+          "relinkingTool.isUnconnectedLinkValid": false,
+          "relinkingTool.portGravity": 20,
+          "relinkingTool.fromHandleArchetype":
+            new go.Shape("Diamond", { 
+              segmentIndex: 0, 
+              cursor: "pointer", 
+              desiredSize: new go.Size(8, 8), 
+              fill: "tomato", 
+              stroke: "darkred" 
+            }),
+          "relinkingTool.toHandleArchetype":
+            new go.Shape("Diamond", { 
+              segmentIndex: -1, 
+              cursor: "pointer", 
+              desiredSize: new go.Size(8, 8), 
+              fill: "darkred", 
+              stroke: "tomato" 
+            })
         });
 
-        console.log('Diagrama criado, configurando templates');
 
-        // Registrando os node templates
-        this.setupTemplates();
+        // Inicializar e configurar o AvoidsLinksRouter
+        this.avoidsLinksRouter = new AvoidsLinksRouter();
+        this.avoidsLinksRouter.epsilonDistance = 5; // Distância entre links paralelos
+        this.avoidsLinksRouter.linkSpacing=30;
+        this.diagram.routers.push(this.avoidsLinksRouter);
+        console.log('AvoidsLinksRouter adicionado ao diagrama');
+
+
+
+        // Definindo o modelo de nós para o diagrama
+        // Agora usando o nodeTemplate definido no componente do modelo
+
+        const caboTemplateMap = new go.Map<string, go.Node>();
+        caboTemplateMap.add("cabo", this.cabo12FNAC.getNodeTemplate());
+        caboTemplateMap.add("caboD", this.cabo12FNAC_D.getNodeTemplate());
+
         
-        // Aplicando o modelo de dados
-        const model = new go.GraphLinksModel(this.nodeDataArray, this.linkDataArray);
-        model.nodeKeyProperty = "key"; 
+
+        // Obtendo a definição do modelo do componente Cabo_12F_NAC
+        this.diagram.nodeTemplateMap = caboTemplateMap;
+
+        const caboModelTemplate = this.cabo12FNAC.getModelDefinition();
+        const caboDModelTemplate = this.cabo12FNAC_D.getModelDefinition();
+
+        // Criando dois cabos com base no mesmo modelo, mas com posições diferentes
+        const cabo1 = { 
+          ...caboModelTemplate, 
+          key: "cabo1",
+          loc: "0 0"  // Posição do primeiro cabo
+        };
+        
+        const cabo2 = { 
+          ...caboDModelTemplate, 
+          key: "cabo2",
+          loc: "4000 0", // Posição do segundo cabo (200px à direita do primeiro)
+
+        };
+          const cabo3 = { 
+            ...caboDModelTemplate, 
+            key: "cabo3",
+            loc: "800 0", // Posição do segundo cabo (200px à direita do primeiro)  
+
+          
+
+        };
+        
+       
+
+        // Configurando o LinkTemplate para conexões entre cabos
+        // Modificando para que as conexões liguem diretamente aos portos
+        this.diagram.linkTemplate =
+          new go.Link({
+            routing:  go.Routing.Orthogonal ,  // Conexões ortogonais (90 graus)
+            curve: go.Curve.None,
+            corner: 1,
+            toShortLength: 1,
+            reshapable: true,
+            resegmentable: true,
+            
+            
+            // Essencial: conecções de porta para porta (não do centro do nó)
+            fromEndSegmentLength: 5,
+            toEndSegmentLength: 5
+          })
+          .add(
+            new go.Shape({
+              strokeWidth: 3.5,
+              stroke: "#2196F3"
+            })
+          )
+          .add(
+            new go.Shape({  // Seta na ponta da linha
+              toArrow: "Standard",
+              stroke: null,
+              fill: "#2F4F4F",
+              scale: 0.8
+            })
+          );
+        
+                 
+
+
+        const model = new go.GraphLinksModel({
+
+        // Importante: uso explícito das propriedades da porta
+        linkFromPortIdProperty: "fromPort",
+        linkToPortIdProperty: "toPort"
+      });
+
+        // Configurando os nós no modelo
+        model.nodeDataArray = [cabo1, cabo2, cabo3];
+        model.linkDataArray = [];  // Inicialmente sem conexões
+        
+        // Atribuindo o modelo ao diagrama
         this.diagram.model = model;
 
-        // Configurar o layout do diagrama
-        this.diagram.layout = new go.LayeredDigraphLayout({
-          direction: 0,  // direção horizontal: 0=direita, 90=baixo, 180=esquerda, 270=cima
-          layerSpacing: 50,
-          columnSpacing: 30,
-          setsPortSpots: false
-        });
+
+        //=================================detectar conexoes==========================================
+        //=================================//=================================//======================
+
+        this.diagram.addDiagramListener("LinkDrawn", (e: go.DiagramEvent) => {
+          const link = e.subject as go.Link;
+
+          // Verificar se o objeto clicado é realmente um link
+          if (!(link instanceof go.Link)) return;
+          
+          // Obtendo os nós (cabos) de origem e destino
+          const fromNode = link.fromNode;
+          const toNode = link.toNode;
+          
+          // Obtendo as portas de origem e destino
+          const fromPort = link.fromPort;
+          const toPort = link.toPort;
+
+          if (fromNode && toNode && fromPort && toPort) {
+            // Obtendo os números das portas (F1, F2, etc)
+            const fromPortNumber = fromPort.portId;
+            const toPortNumber = toPort.portId;
+            
+            // Obtendo os identificadores dos cabos
+            const fromCableKey = fromNode.data.key;
+            const toCableKey = toNode.data.key;
+
+            console.log("Nova Conexão Detectada:");
+            console.log("  Cabo Origem:", fromCableKey);
+            console.log("  Porta Origem:", fromPortNumber);
+            console.log("  Cabo Destino:", toCableKey);
+            console.log("  Porta Destino:", toPortNumber);
+
+          }});
+
+        //=================================//=================================//=================================
+        //=================================     
+       
+
+
+
+        // Aplicar o flip horizontal ao cabo2 após o diagrama ser inicializado
+        // Verificar e manipular o cabo2 após inicialização
+        setTimeout(() => {
+          // Métodos alternativos para encontrar o nó
+          let node1 = this.diagram!.findNodeForKey("cabo1");
+          if (node1) {
+            console.log("Node cabo1 encontrado via findNodeForKey:", node1);
+                        console.log("Aplicando transformação ao cabo2");
+                        node1.resizable=true;
+                        node1.rotatable=true; 
+                        node1.scale=1;
+                        node1.movable=true;
+                        node1.position=new go.Point(-400,0);}
+          
+          // Método 2: Como alternativa, usando findNodeForKey
+          let node2 = this.diagram!.findNodeForKey("cabo2");
+          
+          
+          if (node2) {
+            console.log("Node cabo2 encontrado via findNodeForKey:", node2);
+                        console.log("Aplicando transformação ao cabo2");
+                        node2.resizable=true;
+                        node2.rotatable=true;
+                        node2.movable=true;
+                        node2.position=new go.Point(400,0);
+                        node2.scale=1; }
+
+            let node3 = this.diagram!.findNodeForKey("cabo3");             
+
+            if (node3) {
+            console.log("Node cabo3 encontrado via findNodeForKey:", node3);
+                        console.log("Aplicando transformação ao cabo2");
+                        node3.resizable=true;
+                        node3.rotatable=true;
+                        node3.scale=1;  
+                        node3.position=new go.Point(400,400);             
+
+                            
+            
+          } else {
+            console.error("Não foi possível encontrar o cabo2 por nenhum método");
+          }
+        }, 100);
         
-        // Forçar layout inicial - Corrigindo a chamada para layoutDiagram
-        this.diagram.layoutDiagram(true);
+
+        console.log('Diagrama criado com dois cabos do modelo Cabo_12F_NAC com suporte a conexões específicas de porta');
         
         // Marcando como inicializado
         this.ngZone.run(() => {
@@ -148,138 +406,19 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
     }
   }
 
-  private setupTemplates(): void {
-    if (!this.diagram) return;
-
-    // Template para cabos de saída
-    this.diagram.nodeTemplateMap.add("CABO_SAIDA", 
-      this.createNodeTemplate(
-        "#c6efce", "#006100", "CABO_SAIDA", 
-        [go.Spot.RightCenter, new go.Spot(1, 0.3), new go.Spot(1, 0.7)]
-      )
-    );
-
-    // Template para cabos de entrada
-    this.diagram.nodeTemplateMap.add("CABO_ENTRADA", 
-      this.createNodeTemplate(
-        "#ffc7ce", "#9c0006", "CABO_ENTRADA", 
-        [go.Spot.LeftCenter, new go.Spot(0, 0.3), new go.Spot(0, 0.7)]
-      )
-    );
-
-    // Template para links
-    this.diagram.linkTemplate = this.createLinkTemplate();
-  }
-
-  // Método para criar tooltips
   
-
-  // Método para criar portas
-  private makePort(id: string, spot: go.Spot, output: boolean, input: boolean) {
-    return new go.Shape("Circle", {
-        fill: output ? "#1E88E5" : "#D32F2F",
-        stroke: null,
-        desiredSize: new go.Size(8, 8),
-        alignment: spot, 
-        alignmentFocus: spot,
-        portId: id,
-        fromSpot: output ? spot : go.Spot.None,
-        toSpot: input ? spot : go.Spot.None,
-        fromLinkable: output,
-        toLinkable: input,
-        cursor: "pointer",
-        
-      });
-  }
-
-  // Método para criar template de nó
-  private createNodeTemplate(fillColor: string, strokeColor: string, category: string, portSpots: go.Spot[]): go.Node {
-    const node = new go.Node("Spot", { 
-      selectable: true,
-      resizable: true,
-      resizeObjectName: "SHAPE",
-      
-    });
-
-    // Painel principal do nó
-    const panel = new go.Panel("Auto");
-    
-    // Forma do nó
-    panel.add(
-      new go.Shape("Rectangle", {
-        fill: fillColor,
-        stroke: strokeColor,
-        strokeWidth: 2,
-        width: 140,
-        height: 80,
-        name: "SHAPE"
-      })
-    );
-    
-    // Texto do nó
-    panel.add(
-      new go.TextBlock({ 
-        margin: 8,
-        font: "bold 12px sans-serif",
-        stroke: strokeColor,
-        wrap: go.TextBlock.WrapFit,
-        textAlign: "center"
-      }).bind("text", "tipo")
-    );
-    
-    node.add(panel);
-    
-    // Adicionar portas
-    portSpots.forEach((spot, index) => {
-      node.add(this.makePort("P" + (index + 1), spot, category === "CABO_SAIDA", category === "CABO_ENTRADA"));
-    });
-    
-    return node;
-  }
-
-  // Método para criar template de link
-  private createLinkTemplate(): go.Link {
-    return new go.Link({ 
-      routing: go.Link.AvoidsNodes,
-      corner: 10,
-      curve: go.Link.JumpOver,
-      reshapable: true,
-      resegmentable: true,
-      relinkableFrom: true,
-      relinkableTo: true,
-      toEndSegmentLength: 30,
-      fromEndSegmentLength: 30,
-      
-    })
-    .add(
-      new go.Shape({ 
-        strokeWidth: 2.5, 
-        stroke: "#333" 
-      })
-    )
-    .add(
-      new go.Shape({ 
-        toArrow: "Standard", 
-        stroke: null, 
-        fill: "#333",
-        scale: 1.2
-      })
-    )
-    .add(
-      new go.TextBlock({
-        segmentOffset: new go.Point(0, -10),
-        font: "10pt sans-serif",
-        stroke: "#1565C0",
-        background: "white"
-      })
-      .bind("text", "text")
-    );
-  }
+  
 
   close() {
     console.log('Fechando modal GoJS');
     this.closeModal.emit();
   }
+  
+
+  //===============================================criando CaBOS
+
+
+
 
   
   

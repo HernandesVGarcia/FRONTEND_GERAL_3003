@@ -7,7 +7,7 @@ import { Cabos12f } from '../modelo/Cabos12f';
 import { Cabos24f } from '../modelo/Cabos24f';
 import { Caixa } from '../modelo/Caixa';
 import { Cto } from '../modelo/Cto';
-import { CaixaInternaComponent } from '../caixa-interna/caixa-interna.component';
+//import { CaixaInternaComponent } from '../caixa-interna/caixa-interna.component';
 import { ChangeDetectorRef } from '@angular/core'; /// ============novo
 import { GoJSDemoComponent } from '../gojs-demo/gojs-demo.component';
 
@@ -16,7 +16,7 @@ import { GoJSDemoComponent } from '../gojs-demo/gojs-demo.component';
   templateUrl: './google-maps.component.html',
   styleUrls: ['./google-maps.component.css'],
   standalone: true,
-  imports: [CommonModule, GoogleMapsModule,CaixaInternaComponent,GoJSDemoComponent],
+  imports: [CommonModule, GoogleMapsModule,GoJSDemoComponent],
 })
 export class GoogleMapsComponent implements OnInit, OnChanges {
   @Input() destino: Caixa[] = [];
