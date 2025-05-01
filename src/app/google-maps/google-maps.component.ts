@@ -5,11 +5,15 @@ import { Cabos6f } from '../modelo/Cabos6f';
 import { Cabos8f } from '../modelo/Cabos8f';
 import { Cabos12f } from '../modelo/Cabos12f';
 import { Cabos24f } from '../modelo/Cabos24f';
+import { Cabos36f } from '../modelo/Cabos36f';
+import { Cabos48f } from '../modelo/Cabos48f';
+import { Cabos72f } from '../modelo/Cabos72f';
 import { Caixa } from '../modelo/Caixa';
 import { Cto } from '../modelo/Cto';
 //import { CaixaInternaComponent } from '../caixa-interna/caixa-interna.component';
 import { ChangeDetectorRef } from '@angular/core'; /// ============novo
 import { GoJSDemoComponent } from '../gojs-demo/gojs-demo.component';
+import { AuthService } from '../servico/auth.service';
 
 @Component({
   selector: 'app-google-maps',
@@ -25,10 +29,13 @@ export class GoogleMapsComponent implements OnInit, OnChanges {
   @Input() destinoCabos8f: Cabos8f[] = [];
   @Input() destinoCabos12f: Cabos12f[] = [];
   @Input() destinoCabos24f: Cabos24f[] = [];
+  @Input() destinoCabos36f: Cabos36f[] = [];
+  @Input() destinoCabos48f: Cabos48f[] = [];
+  @Input() destinoCabos72f: Cabos72f[] = [];
 
   isGoJSModalOpen = false;
 
-  constructor(private cdr: ChangeDetectorRef) {};
+  constructor(private cdr: ChangeDetectorRef, private authService : AuthService) {};
 
   caixaSelecionada: string | null = null;
 
@@ -46,7 +53,9 @@ export class GoogleMapsComponent implements OnInit, OnChanges {
   polylinePaths8f: google.maps.LatLngLiteral[][] = [];
   polylinePaths12f: google.maps.LatLngLiteral[][] = [];
   polylinePaths24f: google.maps.LatLngLiteral[][] = [];
-
+  polylinePaths36f: google.maps.LatLngLiteral[][] = [];
+  polylinePaths48f: google.maps.LatLngLiteral[][] = [];
+  polylinePaths72f: google.maps.LatLngLiteral[][] = [];
 
 
 private ZOOM_LEVEL_CAIXAS = 11; // Caixas CEO visíveis em zoom >= 14
@@ -101,7 +110,7 @@ private map?: (google.maps.Map);
   polylineOptions12f: google.maps.PolylineOptions = {
     strokeColor: 'green',
     strokeOpacity: 0.8,
-    strokeWeight: 4,
+    strokeWeight: 3.5,
     clickable: true,
     visible: true,
     zIndex: 1,
@@ -113,18 +122,61 @@ private map?: (google.maps.Map);
     polylineOptions24f: google.maps.PolylineOptions = {
       strokeColor: 'violet',
       strokeOpacity: 0.8,
-      strokeWeight: 5,
+      strokeWeight: 4,
       clickable: true,
       visible: true,
       zIndex: 1,
       draggable: true,
       editable: false
 
-
-      
+     
 
 
   }
+
+  polylineOptions36f: google.maps.PolylineOptions = {
+    strokeColor: 'blue',
+    strokeOpacity: 0.8,
+    strokeWeight: 4.5,
+    clickable: true,
+    visible: true,
+    zIndex: 1,
+    draggable: true,
+    editable: false
+
+   
+
+
+}
+
+polylineOptions48f: google.maps.PolylineOptions = {
+  strokeColor: 'red',
+  strokeOpacity: 0.8,
+  strokeWeight: 5,
+  clickable: true,
+  visible: true,
+  zIndex: 1,
+  draggable: true,
+  editable: false
+ 
+
+}
+
+polylineOptions72f: google.maps.PolylineOptions = {
+  strokeColor: 'purple',
+  strokeOpacity: 0.8,
+  strokeWeight: 5.5,
+  clickable: true,
+  visible: true,
+  zIndex: 1,
+  draggable: true,
+  editable: false
+
+  
+
+
+}
+
 //isMapReady: any;
 
   ngOnInit() {
@@ -170,6 +222,21 @@ private map?: (google.maps.Map);
       console.log('Atualizando polilinhas de cabos 24f ',this.destinoCabos24f);
       this.updatePolylinesCabos24f();
     }    
+
+    if (changes['destinoCabos36f'] && changes['destinoCabos36f'].currentValue) {
+      console.log('Atualizando polilinhas de cabos 36f ',this.destinoCabos36f);
+      this.updatePolylinesCabos36f();
+    } 
+    
+    //if (changes['destinoCabos48f'] && changes['destinoCabos48f'].currentValue) {
+    //  console.log('Atualizando polilinhas de cabos 48f ',this.destinoCabos48f);
+    //  this.updatePolylinesCabos48f();
+    //}   
+
+    if (changes['destinoCabos72f'] && changes['destinoCabos72f'].currentValue) {
+      console.log('Atualizando polilinhas de cabos 72f ',this.destinoCabos48f);
+      this.updatePolylinesCabos72f();
+    }   
         
       
   }
@@ -316,7 +383,7 @@ private map?: (google.maps.Map);
         }
       });
 
-      
+      this.addMarkerEventListeners(marker, true);
       
       this.markerCtos.push(marker);
     });
@@ -511,6 +578,112 @@ private map?: (google.maps.Map);
   }
 
 
+  private updatePolylinesCabos36f() {
+    if (!this.destinoCabos36f?.length) return;
+    
+    try {
+      this.polylinePaths36f = [];
+      
+      this.destinoCabos36f.forEach(cabo => {
+        try {
+          if (!cabo.GOOGLE_LATLNG) return;
+          //console.log('valor de Google_latlng antes da conversão: ', cabo.GOOGLE_LATLNG);
+          
+          const coords = this.convertStringToCoords(cabo.GOOGLE_LATLNG);
+          
+          if (coords.length > 0) {
+            this.polylinePaths36f.push(coords);
+            //console.log(`Cabo 36f ${cabo.id_meta} processado com sucesso:`, coords);
+          }
+        } catch (e) {
+          console.error(`Erro ao processar cabo ${cabo.id_meta}:`, e);
+        }
+      });
+
+      if (this.polylinePaths36f.length > 0) {
+        const firstPoint = this.polylinePaths36f[0][0];
+        
+      }
+
+      console.log(`Total de ${this.polylinePaths36f.length} cabos processados`);
+    } catch (e) {
+      console.error('Erro ao processar cabos:', e);
+      this.polylinePaths36f = [];
+    }
+  }
+
+
+  private updatePolylinesCabos48f() {
+    if (!this.destinoCabos48f?.length) return;
+    
+    try {
+      this.polylinePaths48f = [];
+      
+      this.destinoCabos48f.forEach(cabo => {
+        try {
+          if (!cabo.GOOGLE_LATLNG) return;
+          //console.log('valor de Google_latlng antes da conversão: ', cabo.GOOGLE_LATLNG);
+          
+          const coords = this.convertStringToCoords(cabo.GOOGLE_LATLNG);
+          
+          if (coords.length > 0) {
+            this.polylinePaths48f.push(coords);
+            //console.log(`Cabo 36f ${cabo.id_meta} processado com sucesso:`, coords);
+          }
+        } catch (e) {
+          console.error(`Erro ao processar cabo ${cabo.id_meta}:`, e);
+        }
+      });
+
+      if (this.polylinePaths48f.length > 0) {
+        const firstPoint = this.polylinePaths48f[0][0];
+        
+      }
+
+      console.log(`Total de ${this.polylinePaths48f.length} cabos processados`);
+    } catch (e) {
+      console.error('Erro ao processar cabos:', e);
+      this.polylinePaths48f = [];
+    }
+  }
+
+  private updatePolylinesCabos72f() {
+    if (!this.destinoCabos72f?.length) return;
+    
+    try {
+      this.polylinePaths72f = [];
+      
+      this.destinoCabos72f.forEach(cabo => {
+        try {
+          if (!cabo.GOOGLE_LATLNG) return;
+          //console.log('valor de Google_latlng antes da conversão: ', cabo.GOOGLE_LATLNG);
+          
+          const coords = this.convertStringToCoords(cabo.GOOGLE_LATLNG);
+          
+          if (coords.length > 0) {
+            this.polylinePaths72f.push(coords);
+            //console.log(`Cabo 72f ${cabo.id_meta} processado com sucesso:`, coords);
+          }
+        } catch (e) {
+          console.error(`Erro ao processar cabo ${cabo.id_meta}:`, e);
+        }
+      });
+
+      if (this.polylinePaths72f.length > 0) {
+        const firstPoint = this.polylinePaths72f[0][0];
+        
+      }
+
+      console.log(`Total de ${this.polylinePaths72f.length} cabos processados`);
+    } catch (e) {
+      console.error('Erro ao processar cabos:', e);
+      this.polylinePaths72f = [];
+    }
+  }
+
+
+
+
   //==========================================================================================================================
   //==1 dispara o evento que monitora o zoom para executar o callback de visible markers======================================
   //==2 dispara o evento para monitorar os boundsChange para executar o callback de visible markers===========================
@@ -631,18 +804,21 @@ private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = fal
   google.maps.event.clearInstanceListeners(marker);
   
   
-  if (1) {
+  
     // Eventos para marcadores de Caixas
     
     marker.addListener('dblclick', (event: google.maps.MapMouseEvent) => {
-      
+      if (isCTO) {
+      const index = this.markerCtos.indexOf(marker);
+      if (index !== -1) {
+        this.onMarkerClick(event, index,true);}}
+
       const index = this.markerCaixas.indexOf(marker);
       if (index !== -1) {
-        this.onMarkerClick(event, index);
-        
-      }
+        this.onMarkerClick(event, index,false);}
     });
-  }
+  
+  
   
   // Evento dragend para ambos tipos de marcadores
 
@@ -675,16 +851,23 @@ private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = fal
     }
   }
 
-  onMarkerClick(event: google.maps.MapMouseEvent, index: number) {
-    if (this.destino[index]) {
-      // 15/04/2025this.caixaSelecionada = this.destino[index].numero || null;
-      console.log('caixa clicada' , this.destino[index].numero)
-      // Força a detecção de mudanças após atualizar a variável
-      this.isGoJSModalOpen = true;
-    this.cdr.detectChanges();
-
-    }
+  onMarkerClick(event: google.maps.MapMouseEvent, index: number, isCTO: boolean = false) {
+    if (isCTO) {
+      if (this.destinoCTO[index]) {
+        console.log('CTO clicada', this.destinoCTO[index].numero);
+        this.authService.setIDmetaCaixa(this.destinoCTO[index].id_meta)//<---escrevo idmeta da cto no storage
+        this.isGoJSModalOpen = true;
+        this.cdr.detectChanges();
+      }
+    } else {
+      if (this.destino[index]) {
+        console.log('caixa clicada', this.destino[index].numero);
+        this.authService.setIDmetaCaixa(this.destino[index].id_meta)//<---escrevo idmeta da caixa no storage
+        this.isGoJSModalOpen = true;
+        this.cdr.detectChanges();
+      }
   }
+}
   
 
   onCaixaInternaClose() {

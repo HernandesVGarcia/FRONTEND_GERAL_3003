@@ -1,6 +1,6 @@
 .gojs-container {
   width: 100%;
-  height: 650px;
+  height: 80vh;
   display: flex;
   flex-direction: column;
   padding: 2px;
@@ -91,7 +91,8 @@
   /* Estilos para permitir o arraste */
   transform: translate(0, 0);
   user-select: none;
-  scrollbar-width: true;
+  scrollbar-width: thin;
+  
   pointer-events: none;
 }
 
@@ -139,12 +140,12 @@
   box-shadow: 0 2px 5px rgba(0,0,0,0.1);
   min-height: 600px;
   position: relative;
-  overflow: hidden; /* Garantir que o conteúdo não transborde */
+  overflow: visible; /* Garantir que o conteúdo não transborde */
 }
 
 .diagram-div {
   width: 100%;
-  height: 200%;
+  height: 400%; /* ajudou a conseguir em dar zoom conseguir rolar a tela */
   min-height: 400px;
   background-color: #f9f9f9;
   position: relative; /* Garantir posicionamento correto */
@@ -154,3 +155,4 @@
 .modal-content.dragging {
   opacity: 0.8;}
 /*diagrama-container e diagram-div fez funcionar*/
+

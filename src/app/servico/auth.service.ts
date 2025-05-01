@@ -8,10 +8,17 @@ export class AuthService {
   private readonly TOKEN_KEY = 'auth_token';
   private readonly POLO_KEY = 'auth_polo';
   private readonly IDCIDADE_KEY = 'auth_idcidade';
+  private readonly IDMETACX = 'auth_idmetacx'
+  //constructor() {}
 
-  constructor() {}
+  // BehaviorSubject para monitorar mudanças no ID da cidade ***inserido*******/
+  private idCidadeSubject = new BehaviorSubject<number | null>(this.getIdCity()); // mudei para string|null
+  public idCidadeChanged$ = this.idCidadeSubject.asObservable();
 
-  
+  constructor() {
+    console.log('AuthService inicializado');
+  }//***************************************************************inserido*******/
+
 
 
 
@@ -25,8 +32,32 @@ export class AuthService {
     return localStorage.getItem(this.POLO_KEY);
   }
 
+
+
+  setIDmetaCaixa(idmetacx: number|undefined): void {
+
+    if(idmetacx){
+    localStorage.setItem(this.IDMETACX, idmetacx.toString());}
+    else {
+    localStorage.removeItem(this.IDMETACX);
+    }
+    
+  }
+
+
+
+  getIDmetaCaixa(): string | null {
+    return localStorage.getItem(this.IDMETACX);
+    
+  }
+
+
+
+
+
+
   setIdCity(idcity: number | null): void {
-  
+  const idAnterior =this.getIdCity(); //**************inserido */
 
     if (idcity) {
       localStorage.setItem(this.IDCIDADE_KEY, idcity.toString());
@@ -34,8 +65,12 @@ export class AuthService {
       localStorage.removeItem(this.IDCIDADE_KEY);
     }
 
-    
-    
+    // Se o ID mudou, notificar observadores//***************inserido */
+    if (idcity !== idAnterior) {
+      console.log(`ID da cidade alterado: ${idAnterior} -> ${idcity}`);
+      this.idCidadeSubject.next(idcity);
+    //*******************************************************inserido */  
+    }
   }
 
   getIdCity(): number | null {
@@ -63,7 +98,8 @@ export class AuthService {
   clearToken(): void {
     localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.POLO_KEY); // Também limpar o polo quando sair
-    
+    localStorage.removeItem(this.IDCIDADE_KEY); // Também limpar o ID da cidade quando sair //***************inserido */
+    this.idCidadeSubject.next(null); //***************inserido */
   }
   
   isTokenValid(): boolean {

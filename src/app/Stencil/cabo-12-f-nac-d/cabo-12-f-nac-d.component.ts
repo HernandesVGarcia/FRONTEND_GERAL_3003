@@ -18,7 +18,7 @@ export class Cabo12FNacDComponent implements OnInit {
   height: number = 250;
   
   // Define as cores para os ports
-  portColors = ["#228B22", "yellow", "#FFFFFF", "#1EAEDB", "#ea384c", "#9b87f5"];
+  portColors = ["#228B22", "yellow", "#FFFFFF", "blue", "#ea384c", "#9b87f5"];
   
   // Método para obter a definição do modelo para usar no GoJS
   getModelDefinition() {
@@ -36,13 +36,22 @@ export class Cabo12FNacDComponent implements OnInit {
     return new go.Node(go.Panel.Auto)
       .add(
         new go.Shape("RoundedRectangle", {
-          fill: "gray", 
+          fill: "	#C0C0C0", 
           stroke: "#2196F3",
           strokeWidth: 1
         })
           .bind("width", "width")
           .bind("height", "height")
       )
+      .add(new go.TextBlock("", {  // texto inicial vazio
+        name: "LABEL",  // nome para referência
+        font: "15px sans-serif",
+        angle: -90,
+        position: new go.Point(100, 0),
+        alignment: go.Spot.Right
+      })
+      .bind("text", "labelText")  // bind com a propriedade labelText do node data
+    )
       .add(
         new go.Panel(go.Panel.Position)
           .add(
@@ -54,6 +63,7 @@ export class Cabo12FNacDComponent implements OnInit {
               width: this.width / 2,
               height: this.height / 2,
               position: new go.Point(0, 0)  // Posicionado no lado esquerdo, topo
+              
             })
           )
           .add(
@@ -88,7 +98,7 @@ export class Cabo12FNacDComponent implements OnInit {
      // Adicionar o label (F1, F2, etc.) à direita do port
      panel.add(
       new go.TextBlock(`F${i}`, {
-        font: "bold 10px sans-serif",
+        font: "10px sans-serif",
         position: new go.Point(panelX - portMargin - 55, yPosition),
         textAlign: "left"
       })
@@ -104,13 +114,19 @@ export class Cabo12FNacDComponent implements OnInit {
           width: portWidth,
           height: portHeight / 2,
           //position: new go.Point(panelX - 5 - portWidth, yPosition),
-         position: new go.Point(-90, yPosition),
+          position: new go.Point(-90, yPosition),
           portId: `F${i}`,  // Identificador do port
           fromSpot: go.Spot.Left,  // Conexões saem pela esquerda (inverso do original)
           toSpot: go.Spot.Left,   // Conexões entram pela direita (inverso do original)
           cursor: "pointer",
           fromLinkable : true,
           toLinkable:true,
+          toMaxLinks:1,
+          fromMaxLinks:1,
+          
+          
+          
+          
         })
       );
     }

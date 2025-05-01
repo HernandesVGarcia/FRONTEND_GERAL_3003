@@ -7,10 +7,16 @@ import { ListaCabos6fComponent } from '../lista-cabos6f/lista-cabos6f.component'
 import { ListaCabos8fComponent } from '../lista-cabos8f/lista-cabos8f.component';
 import { ListaCabos12fComponent } from '../lista-cabos12f/lista-cabos12f.component';
 import { ListaCabos24fComponent} from '../lista-cabos24f/lista-cabos24f.component';
+import { ListaCabos36fComponent} from '../lista-cabos36f/lista-cabos36f.component';
+import { ListaCabos48fComponent} from '../lista-cabos48f/lista-cabos48f.component';
+import { ListaCabos72fComponent} from '../lista-cabos72f/lista-cabos72f.component';
 import { Cabos6f } from '../modelo/Cabos6f';
 import { Cabos8f } from '../modelo/Cabos8f';
 import { Cabos12f } from '../modelo/Cabos12f';
 import { Cabos24f } from '../modelo/Cabos24f';
+import { Cabos36f } from '../modelo/Cabos36f';
+import { Cabos48f } from '../modelo/Cabos48f';
+import { Cabos72f } from '../modelo/Cabos72f';
 import { Caixa} from '../modelo/Caixa'
 import { Cto} from '../modelo/Cto'
 
@@ -27,7 +33,10 @@ import { Cto} from '../modelo/Cto'
     ListaCtosComponent, 
     GoogleMapsComponent, 
     ListaCabos12fComponent, 
-    ListaCabos24fComponent, 
+    ListaCabos24fComponent,
+    ListaCabos36fComponent,
+    ListaCabos48fComponent,
+    ListaCabos72fComponent,   
     ListaCabos8fComponent, 
     ListaCabos6fComponent
     ]
@@ -39,7 +48,9 @@ export class FiberMapComponent {
   cabos8f: Cabos8f []=[];
   cabos12f: Cabos12f[]=[];
   cabos24f: Cabos24f []=[];
-
+  cabos36f: Cabos36f []=[];
+  cabos48f: Cabos48f []=[];
+  cabos72f: Cabos72f []=[];
    
 
 
@@ -70,6 +81,21 @@ export class FiberMapComponent {
       this.cabos24f = cabos;
 
   }
+
+  onCabos36fSelecionada(cabos: Cabos36f[]) {
+    this.cabos36f = cabos;
+
+}
+
+  onCabos48fSelecionada(cabos: Cabos48f[]) {
+  this.cabos48f = cabos;
+
+}
+
+  onCabos72fSelecionada(cabos: Cabos72f[]) {
+  this.cabos72f = cabos;
+
+}
 
   
 }

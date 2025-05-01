@@ -18,7 +18,7 @@ export class Cabo12FNacComponent implements OnInit {
   height: number = 250;
 
   // Define as cores para os ports
-  portColors = ["#228B22", "yellow", "#FFFFFF", "#1EAEDB", "#ea384c", "#9b87f5"];
+  portColors = ["#228B22", "yellow", "#FFFFFF", "blue", "#ea384c", "#9b87f5"];
   
   // Método para obter a definição do modelo para usar no GoJS
   getModelDefinition() {
@@ -41,23 +41,25 @@ export class Cabo12FNacComponent implements OnInit {
     return new go.Node(go.Panel.Auto)
       .add(
         new go.Shape("RoundedRectangle", {
-          fill: "gray",//"#e3f2fd", 
+          fill: "#C0C0C0",//"#e3f2fd", 
           stroke: "#2196F3",
-          strokeWidth: 2,
-          
-          
-          
-          
+          strokeWidth: 2,                   
         })
           .bind("width", "width")
           .bind("height", "height")
           
-     
-  
-  
-  
+        )
 
-)
+        .add(new go.TextBlock("", {  // texto inicial vazio
+        name: "LABEL",  // nome para referência
+        font: "15px sans-serif",
+        angle: -90,
+        position: new go.Point(-100, 0),
+        alignment: go.Spot.Left
+      })
+      .bind("text", "labelText")  // bind com a propriedade labelText do node data
+    )
+
 .add(
   new go.Panel(go.Panel.Position)
     .add(
@@ -105,8 +107,8 @@ for (let i = startFiber; i <= endFiber; i++) {
   // Adicionar o label (F1, F2, etc.)
   panel.add(
     new go.TextBlock(`F${i}`, {
-      font: "bold 10px sans-serif",
-      position: new go.Point(panelX + portMargin - 3, yPosition),
+      font: "10px sans-serif",
+      position: new go.Point(panelX + portMargin + 1, yPosition),
       textAlign: "right"
     })
   );
@@ -115,10 +117,10 @@ for (let i = startFiber; i <= endFiber; i++) {
   panel.add(
     new go.Shape("Circle", {
       fill: this.portColors[index],
-      stroke: "#000000",
+      stroke: "black",
       strokeWidth: 1.5,
       width: portWidth,
-      height: portHeight / 2,
+      height: portHeight / 1.5,
       position: new go.Point(panelX + this.width / 3, yPosition),
       portId: `F${i}`,  // Identificador do port
       fromSpot: go.Spot.RightSide,  // Conexões saem pela direita
@@ -126,7 +128,11 @@ for (let i = startFiber; i <= endFiber; i++) {
       cursor: "pointer",
       fromLinkable : true,
       toLinkable:true,
-      alignment: go.Spot.Center
+      alignment: go.Spot.Center,
+      toMaxLinks:1,
+      fromMaxLinks:1,
+      
+      
       
       
     })
