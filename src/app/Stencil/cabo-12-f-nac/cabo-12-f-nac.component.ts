@@ -15,7 +15,7 @@ export class Cabo12FNacComponent implements OnInit {
   
   // Definindo as dimensões do cabo
   width: number = 100;
-  height: number = 250;
+  height: number = 300;
 
   // Define as cores para os ports
   portColors = ["#228B22", "yellow", "#FFFFFF", "blue", "#ea384c", "#9b87f5"];
@@ -41,7 +41,7 @@ export class Cabo12FNacComponent implements OnInit {
     return new go.Node(go.Panel.Auto)
       .add(
         new go.Shape("RoundedRectangle", {
-          fill: "#C0C0C0",//"#e3f2fd", 
+          fill: "#666666",//"#e3f2fd", 
           stroke: "#2196F3",
           strokeWidth: 2,                   
         })
@@ -55,7 +55,9 @@ export class Cabo12FNacComponent implements OnInit {
         font: "15px sans-serif",
         angle: -90,
         position: new go.Point(-100, 0),
-        alignment: go.Spot.Left
+        alignment: go.Spot.Left,
+        margin:3,
+        stroke: "white"
       })
       .bind("text", "labelText")  // bind com a propriedade labelText do node data
     )
@@ -65,7 +67,7 @@ export class Cabo12FNacComponent implements OnInit {
     .add(
       // Retângulo verde superior
       new go.Shape("RoundedRectangle", {
-        fill: "#008000",  // Verde claro
+        fill: "#229A00",  // Verde claro
         stroke: "#2196F3",
         strokeWidth: 1,
         width: this.width / 2,
@@ -97,7 +99,7 @@ export class Cabo12FNacComponent implements OnInit {
 private createPortsPanel(startFiber: number, endFiber: number, panelX: number, panelY: number, panelHeight: number): go.Panel {
 const panel = new go.Panel(go.Panel.Position);
 const portHeight = panelHeight / (endFiber - startFiber + 1);
-const portWidth = 10;
+const portWidth = 20;
 const portMargin = 1;
 
 for (let i = startFiber; i <= endFiber; i++) {
@@ -118,9 +120,9 @@ for (let i = startFiber; i <= endFiber; i++) {
     new go.Shape("Circle", {
       fill: this.portColors[index],
       stroke: "black",
-      strokeWidth: 1.5,
+      strokeWidth: 1.7,
       width: portWidth,
-      height: portHeight / 1.5,
+      height: portHeight / 1.7,
       position: new go.Point(panelX + this.width / 3, yPosition),
       portId: `F${i}`,  // Identificador do port
       fromSpot: go.Spot.RightSide,  // Conexões saem pela direita

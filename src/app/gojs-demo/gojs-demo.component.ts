@@ -11,18 +11,31 @@ import { Component,
   ViewChild, AfterViewInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import * as go from 'gojs';
+import { Cabo6FNacDComponent } from '../Stencil/cabo-6-f-nac-d/cabo-6-f-nac-d.component';
+import { Cabo6FNacComponent } from '../Stencil/cabo-6-f-nac/cabo-6-f-nac.component';
+import { Cabo8FNacDComponent } from '../Stencil/cabo-8-f-nac-d/cabo-8-f-nac-d.component';
+import { Cabo8FNacComponent } from '../Stencil/cabo-8-f-nac/cabo-8-f-nac.component';
 import { Cabo12FNacComponent } from '../Stencil/cabo-12-f-nac/cabo-12-f-nac.component';
 import { Cabo12FNacDComponent } from '../Stencil/cabo-12-f-nac-d/cabo-12-f-nac-d.component';
 import { Cabo24FNacComponent } from '../Stencil/cabo-24-f-nac/cabo-24-f-nac.component';
 import { Cabo24FNacDComponent } from '../Stencil/cabo-24-f-nac-d/cabo-24-f-nac-d.component';
 import { Cabo36FNacComponent } from '../Stencil/cabo-36-f-nac/cabo-36-f-nac.component';
 import { Cabo36FNacDComponent } from '../Stencil/cabo-36-f-nac-d/cabo-36-f-nac-d.component';
+import { Cabo48FNacDComponent } from '../Stencil/cabo-48-f-nac-d/cabo-48-f-nac-d.component';
+import { Cabo48FNacComponent } from '../Stencil/cabo-48-f-nac/cabo-48-f-nac.component';
+import { Splitter12Component } from '../Stencil/spliter-1-p2/spliter-1-p2.component';
+import { Splitter14Component } from '../Stencil/spliter-1-p4/spliter-1-p4.component';
+import { Splitter18Component } from '../Stencil/spliter-1-p8/spliter-1-p8.component';
+import { Splitter116Component } from '../Stencil/spliter-1-p16/spliter-1-p16.component';
 import { BocasService } from '../servico/bocas.service';
+import { SplitterService} from '../servico/splitter.service'
 import { Bocas} from '../modelo/Bocas'
+import { Splitter} from '../modelo/Splitter'
+import { Cabo_tipo} from '../modelo/Cabo_tipo'
 import { rotatePoint } from '@syncfusion/ej2-angular-diagrams';
 import { ConexBocasService } from '../servico/conex-bocas.service';
 import { ConexaoBoca } from '../modelo/ConexaoBoca';
-
+import { Cabo_TipoService } from '../servico/cabo-tipo.service';
 
 @Component({
   selector: 'app-gojs-demo',
@@ -58,30 +71,51 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
   private initialX = 0;
   private initialY = 0;
 
+
+  private cabo6FNAC_D: Cabo6FNacDComponent = new Cabo6FNacDComponent();
+  private cabo6FNAC: Cabo6FNacComponent = new Cabo6FNacComponent();
+  private cabo8FNAC_D: Cabo8FNacDComponent = new Cabo8FNacDComponent();
+  private cabo8FNAC: Cabo8FNacComponent = new Cabo8FNacComponent();
   private cabo12FNAC: Cabo12FNacComponent = new Cabo12FNacComponent();
   private cabo12FNAC_D: Cabo12FNacDComponent = new Cabo12FNacDComponent();
   private cabo24FNAC: Cabo24FNacComponent = new Cabo24FNacComponent();
   private cabo24FNAC_D: Cabo24FNacDComponent = new Cabo24FNacDComponent();
   private cabo36FNAC: Cabo36FNacComponent = new Cabo36FNacComponent();
   private cabo36FNAC_D: Cabo36FNacDComponent = new Cabo36FNacDComponent();
-
+  private cabo48FNAC_D: Cabo48FNacDComponent = new Cabo48FNacDComponent();
+  private cabo48FNAC: Cabo48FNacComponent = new Cabo48FNacComponent();
+  private splitter1p2: Splitter12Component = new Splitter12Component();
+  private splitter1p4: Splitter14Component = new Splitter14Component();
+  private splitter1p8: Splitter18Component = new Splitter18Component();
+  private splitter1p16: Splitter116Component = new Splitter116Component();
+  
 
   private avoidsLinksRouter: AvoidsLinksRouter | null = null;
   private Alinhamento : string = "D";
   VetorBocas:Bocas[]=[];
+  VetorSplitter: Splitter[]=[];
+  VetorTipoCabos: Cabo_tipo[]=[];
+ 
   
  
   constructor(
      private ngZone: NgZone,
      private cdr: ChangeDetectorRef,
      private servicoBocas: BocasService,
+     private servicoSplitter: SplitterService,
+     private servicoTipoCabos : Cabo_TipoService ,
      private conexBocasService: ConexBocasService
     ) {}
 
   ngOnInit(): void {
     console.log('GoJSDemo Component inicializado');
-    this.selecionar_Bocas();// <-----função para ler bocas
+    this.selecionar_Bocas();// <-----função para ler bocas para desenhar cabos
+    //this.selecionar_Splitters(); // <-----função para le splitters dentro da caixa
+
+    setTimeout(() => {this.extraiTipoCabosBocas()},100)
     this.carregarConexoesBocas();
+
+    this.selecionar_Splitters()
 
 
     //this.carregarConexoesBocas(); // <--- CARREGA CONEXÕES DA BOCA DE 1 A 144 FIBRAS
@@ -131,6 +165,94 @@ selecionar_Bocas() {
 
   //==============================================================================================
 
+  //=========================função que le os Cabos das Bocas das caixas , Boca1, Boca2....Boca18  
+selecionar_Splitters() {
+  console.log('Iniciando seleção de Splitters dentro da caixa...');
+
+  
+  this.servicoSplitter.selecionar().subscribe({
+    next: (retorno) => {
+      console.log('Splitters recebidos ---> :', retorno);
+      if ('response' in retorno) {
+        this.VetorSplitter = (retorno as any).response;
+      } else {
+        this.VetorSplitter = retorno as Splitter[];
+      }
+      console.log(this.VetorSplitter[0]);
+    },
+    error: (erro) => {
+      console.error('Erro ao carregar Bocas:', erro);
+    }
+  });
+}
+
+
+  
+  
+  //async selecionar_TipoCabos(idmeta_cabo:number, bocaNumero:number) {
+   // console.log('Iniciando consulta de tipo de cabos...');
+    //const VetorTipoCabos : {capacidade:number,codigo:number,tubo:number}[]=[]
+
+   // let tipos = await this.servicoTipoCabos.selecionarAsync(idmeta_cabo)
+
+  //  console.log('resposta da api',tipos)
+    
+  //  setTimeout(() => {
+  //  if (tipos){
+  //  this.VetorTipoCabos.push ({capacidade:tipos[0].capacidade,codigo:tipos[0].codigo,tubo:tipos[0].tubo})
+    
+  //  console.log('tipocabo boca :--->',this.VetorTipoCabos[(bocaNumero-1)].capacidade, 'boca:',(bocaNumero));
+  //  }},1) }
+       
+  async selecionar_TipoCabos(idmeta_cabo: number, bocaNumero: number) {
+    try {
+      console.log(`Iniciando consulta de tipo de cabos para boca ${bocaNumero} com idmeta ${idmeta_cabo}...`);
+      
+      // Obter tipos de cabo da API
+      const tipos = await this.servicoTipoCabos.selecionarAsync(idmeta_cabo);
+      
+      console.log(`Resposta da API para boca ${bocaNumero}:`, tipos);
+      
+      // Verificar se há dados retornados
+      if (tipos && tipos.length > 0) {
+        // Modificação importante: Sempre inserir no índice correspondente ao número da boca - 1
+        const targetIndex = bocaNumero - 1;
+        
+        // Se o array não for grande o suficiente, precisamos expandi-lo
+        while (this.VetorTipoCabos.length <= targetIndex) {
+          this.VetorTipoCabos.push({
+            capacidade: 0,
+            codigo: 0,
+            tubo: 0
+          });
+        }
+        
+        // Agora podemos definir diretamente no índice correto
+        this.VetorTipoCabos[targetIndex] = {
+          capacidade: tipos[0].capacidade,
+          codigo: tipos[0].codigo,
+          tubo: tipos[0].tubo
+        };
+        
+        console.log(`Tipo de cabo para boca ${bocaNumero} armazenado no índice ${targetIndex}:`, 
+          this.VetorTipoCabos[targetIndex].capacidade);
+      } else {
+        console.warn(`Nenhum tipo de cabo encontrado para a boca ${bocaNumero}`);
+      }
+    } catch (error) {
+      console.error(`Erro ao consultar tipo de cabo para a boca ${bocaNumero}:`, error);
+    }
+  }
+
+  // Helper para obter valor de BOCAX com tratamento de tipo
+  private getBocaValue(bocaNum: number): string {
+    if (this.VetorBocas && this.VetorBocas.length > 0) {
+      const property = `BOCA${bocaNum}` as keyof Bocas;
+      return this.VetorBocas[0][property] as string || "";
+    }
+    return "";
+  }
+
 
   //============== FUNÇÃO QUE LE A CONECTIVIDADE DAS BOCAS DA CAIXA ==============================
 
@@ -146,7 +268,7 @@ selecionar_Bocas() {
 
     try {
       // Carregar cada boca sequencialmente
-      const bocasParaCarregar = [1, 2, 3, 4] as const;
+      const bocasParaCarregar = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18] as const;
       
       for (const bocaNumero of bocasParaCarregar) {
         if (!this.bocasCarregadas.has(bocaNumero)) {
@@ -198,7 +320,7 @@ selecionar_Bocas() {
         setTimeout(() => {
           console.log('Iniciando diagrama após abertura do modal');
           this.initializeDiagram();
-        }, 200);
+        }, 1000); // a partir de 200 o tempo, começa a nao dar tempo de ter a capacidade do cabo lida
       } else {
         console.log('Diagrama já inicializado, apenas atualizando');
         this.updateDiagramLayout();
@@ -209,7 +331,7 @@ selecionar_Bocas() {
   ngAfterViewInit(): void {
     if (this.isOpen) {
       console.log('AfterViewInit: Modal está aberto, inicializando diagrama');
-      setTimeout(() => this.initializeDiagram(), 200);
+      //setTimeout(() => this.initializeDiagram(), 2000);
     }
     this.setupDragFunctionality();
   }
@@ -281,7 +403,7 @@ selecionar_Bocas() {
 
 
 
-
+//=======================================
   private updateDiagramLayout(): void {
     if (this.diagram) {
       console.log('Atualizando layout do diagrama');
@@ -290,6 +412,8 @@ selecionar_Bocas() {
     }
   }
 
+
+  //=======================================
   private initializeDiagram(): void {
     if (!this.diagramDiv?.nativeElement) {
       console.error('Elemento DOM do diagrama não encontrado');
@@ -299,10 +423,16 @@ selecionar_Bocas() {
     }
 
     try {
+      
       console.log('Iniciando criação do diagrama');
       this.ngZone.runOutsideAngular(() => {
         // Remover diagrama existente se houver
         if (this.diagram) {
+          this.diagram.allowVerticalScroll=true;
+          this.diagram.allowHorizontalScroll=true;
+          this.diagram.scrollMode
+          //this.diagram.allowZoom=false;
+          
           console.log('Removendo diagrama existente');
           this.diagram.div = null;
           this.diagram = null;
@@ -349,7 +479,7 @@ selecionar_Bocas() {
 
         // Inicializar e configurar o AvoidsLinksRouter
         this.avoidsLinksRouter = new AvoidsLinksRouter();
-        this.avoidsLinksRouter.epsilonDistance = 5; // Distância entre links paralelos
+        this.avoidsLinksRouter.epsilonDistance = 15; // Distância entre links paralelos
         this.avoidsLinksRouter.linkSpacing=30;
         this.diagram.routers.push(this.avoidsLinksRouter);
         console.log('AvoidsLinksRouter adicionado ao diagrama');
@@ -360,27 +490,65 @@ selecionar_Bocas() {
         // Agora usando o nodeTemplate definido no componente do modelo
 
         const caboTemplateMap = new go.Map<string, go.Node>();
+        caboTemplateMap.add("cabo6F_D", this.cabo6FNAC_D.getNodeTemplate());
+        caboTemplateMap.add("cabo6F", this.cabo6FNAC.getNodeTemplate());
+        caboTemplateMap.add("cabo8F_D", this.cabo8FNAC_D.getNodeTemplate());
+        caboTemplateMap.add("cabo8F", this.cabo8FNAC.getNodeTemplate());
         caboTemplateMap.add("cabo", this.cabo12FNAC.getNodeTemplate());
         caboTemplateMap.add("caboD", this.cabo12FNAC_D.getNodeTemplate());
         caboTemplateMap.add("cabo24F", this.cabo24FNAC.getNodeTemplate());
         caboTemplateMap.add("cabo24F_D", this.cabo24FNAC_D.getNodeTemplate());
         caboTemplateMap.add("cabo36F", this.cabo36FNAC.getNodeTemplate());
         caboTemplateMap.add("cabo36F_D", this.cabo36FNAC_D.getNodeTemplate());
+        caboTemplateMap.add("cabo48F_D", this.cabo48FNAC_D.getNodeTemplate());
+        caboTemplateMap.add("cabo48F", this.cabo48FNAC.getNodeTemplate());
+        caboTemplateMap.add("splitter12", this.splitter1p2.getNodeTemplate());
+        caboTemplateMap.add("splitter14", this.splitter1p4.getNodeTemplate());
+        caboTemplateMap.add("splitter18", this.splitter1p8.getNodeTemplate());
+        caboTemplateMap.add("splitter116", this.splitter1p16.getNodeTemplate());
 
         
 
         // Obtendo a definição do modelo do componente Cabo_12F_NAC
         this.diagram.nodeTemplateMap = caboTemplateMap;
 
+        
+        const cabo6FModelTemplate = this.cabo6FNAC.getModelDefinition();
+        const cabo6FDModelTemplate = this.cabo6FNAC_D.getModelDefinition();
+        const cabo8FModelTemplate = this.cabo8FNAC.getModelDefinition();
+        const cabo8FDModelTemplate = this.cabo8FNAC_D.getModelDefinition();
         const caboModelTemplate = this.cabo12FNAC.getModelDefinition();
         const caboDModelTemplate = this.cabo12FNAC_D.getModelDefinition();
         const cabo24FModelTemplate = this.cabo24FNAC.getModelDefinition();
         const cabo24FDModelTemplate = this.cabo24FNAC_D.getModelDefinition();
         const cabo36FModelTemplate = this.cabo36FNAC.getModelDefinition();
         const cabo36FDModelTemplate = this.cabo36FNAC_D.getModelDefinition();
-
-        // Criando dois cabos com base no mesmo modelo, mas com posições diferentes
-
+        const cabo48FDModelTemplate = this.cabo48FNAC_D.getModelDefinition();
+        const cabo48FModelTemplate = this.cabo48FNAC.getModelDefinition();
+        const splitter12ModelTemplate= this.splitter1p2.getModelDefinition();
+        const splitter14ModelTemplate= this.splitter1p4.getModelDefinition();
+        const splitter18ModelTemplate= this.splitter1p8.getModelDefinition();
+        const splitter116ModelTemplate= this.splitter1p16.getModelDefinition();
+        
+       // Adicionar um template para o texto do título --- texto adicionado para o diagram sempre esta abaixo da marca dagua
+       this.diagram.nodeTemplateMap.add("text",
+        new go.Node("Spot")
+          .add(
+            new go.TextBlock({
+              font: "bold 16pt sans-serif",
+              stroke: "white",
+              margin: 10,
+              editable: false,
+              
+            })
+            .bind("text")
+          )
+          // Garantir que o nó de texto não seja movido pelas outras partes do diagrama
+          .bind(new go.Binding("position", "loc", go.Point.parse).makeTwoWay(go.Point.stringify))
+          // Desabilitar a movimentação pelo usuário
+          //.movable(false)
+         
+      );
         
 
 
@@ -405,87 +573,293 @@ selecionar_Bocas() {
       let Boca17: go.ObjectData | null = null;
       let Boca18: go.ObjectData | null = null;
 
-        if (this.VetorBocas[0].BOCA1!=" ") {
+
+      //setTimeout(() => {this.extraiTipoCabosBocas()},500)
+
+      if (this.VetorTipoCabos[0]) {setTimeout(() => {console.log('capacidade do cabo na boca 1',this.VetorTipoCabos[0].capacidade);},1000)}
+      if (this.VetorTipoCabos[1]) {setTimeout(() => {console.log('capacidade do cabo na boca 2',this.VetorTipoCabos[1].capacidade);},1000)}
+        if (this.VetorTipoCabos[2]) {setTimeout(() => {console.log('capacidade do cabo na boca 3',this.VetorTipoCabos[2].capacidade);},1000)}
+          if (this.VetorTipoCabos[3]) {setTimeout(() => {console.log('capacidade do cabo na boca 4',this.VetorTipoCabos[3].capacidade);},1000)}
+            if (this.VetorTipoCabos[4]) {setTimeout(() => {console.log('capacidade do cabo na boca 5',this.VetorTipoCabos[4].capacidade);},1000)}
+              if (this.VetorTipoCabos[5]) {setTimeout(() => {console.log('capacidade do cabo na boca 6',this.VetorTipoCabos[5].capacidade);},1000)}
+                if (this.VetorTipoCabos[6]) {setTimeout(() => {console.log('capacidade do cabo na boca 7',this.VetorTipoCabos[6].capacidade);},1000)}
+                  if (this.VetorTipoCabos[7]) {setTimeout(() => {console.log('capacidade do cabo na boca 8',this.VetorTipoCabos[7].capacidade);},1000)}
+
+      //  if (this.VetorBocas[0].BOCA1!=" ") {
           
-        Boca1 = { 
-          ...cabo36FModelTemplate, 
-          key: "Boca1",
-          loc: "0 0"  // Posição do primeiro cabo
-        } };
-        
-        if (this.VetorBocas[0].BOCA2!=" ") {
-        Boca2 = { 
-          ...cabo36FDModelTemplate, 
-          key: "Boca2",
-          loc: "4000 0", // Posição do segundo cabo (200px à direita do primeiro)
-        }};
 
-        if (this.VetorBocas[0].BOCA3!=" ") {
-          Boca3 = { 
-            ...cabo24FModelTemplate, 
-            key: "Boca3",
-            loc: "0 0", // Posição do segundo cabo (200px à direita do primeiro)  
-         
-        }};
 
-        if (this.VetorBocas[0].BOCA4!=" ") {
-          Boca4 = { 
-            ...cabo24FDModelTemplate, 
-            key: "Boca4",
-            loc: "0 0", // Posição do segundo cabo (200px à direita do primeiro)  
-         
-        }};
+       
+        // -----------------------------------------------define MODELO cabo BOCA01 --------------------------------------
+        if (this.VetorBocas[0].BOCA1 !== " ") {
+        // Verifica se temos informações de capacidade para esta boca
+        if (this.VetorTipoCabos.length >= 1 && this.VetorTipoCabos[0]) {
+          const capacidade = this.VetorTipoCabos[0].capacidade || 0;
+          console.log(`Boca 1: Usando capacidade ${capacidade} para selecionar modelo`);
+          
+          // Selecionar o modelo com base na capacidade
+          const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, false);
+          
+          Boca1 = { 
+            ...modeloSelecionado, 
+            key: "Boca1",
+            loc: "0 0"
+          };
+        } else {
+          console.log('Boca 1: Capacidade não disponível, usando modelo padrão 36F');
+          Boca1 = { 
+            ...this.cabo36FNAC.getModelDefinition(), 
+            key: "Boca1",
+            loc: "0 0"
+          };
+        }
+      }
 
-        if (this.VetorBocas[0].BOCA5!=" ") {
-          Boca5 = { 
-            ...caboModelTemplate, 
-            key: "Boca5",
-            loc: "0 0", // Posição do segundo cabo (200px à direita do primeiro)  
-         
-        }};
 
-        if (this.VetorBocas[0].BOCA6!=" ") {
-          Boca6 = { 
-            ...caboDModelTemplate, 
-            key: "Boca6",
-            loc: "0 0", // Posição do segundo cabo (200px à direita do primeiro)  
-         
-        }};
 
-        if (this.VetorBocas[0].BOCA7!=" ") {
-          Boca7 = { 
-            ...caboModelTemplate, 
-            key: "Boca7",
-            loc: "0 0", // Posição do segundo cabo (200px à direita do primeiro)  
-         
-        }};
+        // -----------------------------------------------define MODELO cabo BOCA02 --------------------------------------
+        if (this.VetorBocas[0].BOCA2 !== " ") {
+          if (this.VetorTipoCabos.length >= 2 && this.VetorTipoCabos[1]) {
+            const capacidade = this.VetorTipoCabos[1].capacidade || 0; // Use default 0 if undefined
+            console.log(`Boca 2: Usando capacidade ${capacidade} para selecionar modelo`);
+            
+            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, true);
+            
+            Boca2 = { 
+              ...modeloSelecionado, 
+              key: "Boca2",
+              loc: "400 0"
+            };
+          } else {
+            console.log('Boca 2: Capacidade não disponível, usando modelo padrão 36F_D');
+            Boca2 = { 
+              ...this.cabo36FNAC_D.getModelDefinition(), 
+              key: "Boca2",
+              loc: "400 0"
+            };
+          }
+        }
 
-        if (this.VetorBocas[0].BOCA8!=" ") {
-          Boca8 = { 
-            ...caboDModelTemplate, 
-            key: "Boca8",
-            loc: "0 0", // Posição do segundo cabo (200px à direita do primeiro)  
-         
-        }};
-        
+
+
+
+        // -----------------------------------------------define MODELO cabo BOCA03 --------------------------------------
+        if (this.VetorBocas[0].BOCA3 !== " ") {
+          if (this.VetorTipoCabos.length >= 3 && this.VetorTipoCabos[2]) {
+            const capacidade = this.VetorTipoCabos[2].capacidade || 0; // Use default 0 if undefined
+            console.log(`Boca 3: Usando capacidade ${capacidade} para selecionar modelo`);
+            
+            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, false);
+            
+            Boca3 = { 
+              ...modeloSelecionado, 
+              key: "Boca3",
+              loc: "0 0"
+            };
+          } else {
+            console.log('Boca 3: Capacidade não disponível, usando modelo padrão 24F');
+            Boca3 = { 
+              ...this.cabo24FNAC.getModelDefinition(), 
+              key: "Boca3",
+              loc: "0 0"
+            };
+          }
+        }
+
+        // -----------------------------------------------define MODELO cabo BOCA04 --------------------------------------
+        if (this.VetorBocas[0].BOCA4 !== " ") {
+          if (this.VetorTipoCabos.length >= 4 && this.VetorTipoCabos[3]) {
+            const capacidade = this.VetorTipoCabos[3].capacidade || 0; // Use default 0 if undefined
+            console.log(`Boca 4: Usando capacidade ${capacidade} para selecionar modelo`);
+            
+            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, true);
+            
+            Boca4 = { 
+              ...modeloSelecionado, 
+              key: "Boca4",
+              loc: "0 0"
+            };
+          } else {
+            console.log('Boca 4: Capacidade não disponível, usando modelo padrão 24F');
+            Boca4 = { 
+              ...this.cabo24FNAC.getModelDefinition(), 
+              key: "Boca4",
+              loc: "0 0"
+            };
+          }
+        }
+
+        // -----------------------------------------------define MODELO cabo BOCA05 --------------------------------------
+
+        if (this.VetorBocas[0].BOCA5 !== " ") {
+          if (this.VetorTipoCabos.length >= 5 && this.VetorTipoCabos[4]) {
+            const capacidade = this.VetorTipoCabos[4].capacidade || 0; // Use default 0 if undefined
+            console.log(`Boca 5: Usando capacidade ${capacidade} para selecionar modelo`);
+            
+            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, false);
+            
+            Boca5 = { 
+              ...modeloSelecionado, 
+              key: "Boca5",
+              loc: "0 0"
+            };
+          } else {
+            console.log('Boca 5: Capacidade não disponível, usando modelo padrão 24F');
+            Boca5 = { 
+              ...this.cabo24FNAC.getModelDefinition(), 
+              key: "Boca5",
+              loc: "0 0"
+            };
+          }
+        }
+
+        // -----------------------------------------------define MODELO cabo BOCA06 --------------------------------------
+
+        if (this.VetorBocas[0].BOCA6 !== " ") {
+          if (this.VetorTipoCabos.length >= 6 && this.VetorTipoCabos[5]) {
+            const capacidade = this.VetorTipoCabos[5].capacidade || 0; // Use default 0 if undefined
+            console.log(`Boca 6: Usando capacidade ${capacidade} para selecionar modelo`);
+            
+            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, true);
+            
+            Boca6 = { 
+              ...modeloSelecionado, 
+              key: "Boca6",
+              loc: "0 0"
+            };
+          } else {
+            console.log('Boca 6: Capacidade não disponível, usando modelo padrão 24F');
+            Boca6 = { 
+              ...this.cabo24FNAC.getModelDefinition(), 
+              key: "Boca6",
+              loc: "0 0"
+            };
+          }
+        }
+
+        // -----------------------------------------------define MODELO cabo BOCA07 --------------------------------------
+
+        if (this.VetorBocas[0].BOCA7 !== " ") {
+          if (this.VetorTipoCabos.length >= 7 && this.VetorTipoCabos[6]) {
+            const capacidade = this.VetorTipoCabos[6].capacidade || 0; // Use default 0 if undefined
+            console.log(`Boca 7: Usando capacidade ${capacidade} para selecionar modelo`);
+            
+            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, false);
+            
+            Boca7 = { 
+              ...modeloSelecionado, 
+              key: "Boca7",
+              loc: "0 0"
+            };
+          } else {
+            console.log('Boca 7: Capacidade não disponível, usando modelo padrão 24F');
+            Boca7 = { 
+              ...this.cabo24FNAC.getModelDefinition(), 
+              key: "Boca7",
+              loc: "0 0"
+            };
+          }
+        }
+
+        // -----------------------------------------------define MODELO cabo BOCA08 --------------------------------------
+
+        if (this.VetorBocas[0].BOCA8 !== " ") {
+          if (this.VetorTipoCabos.length >= 7 && this.VetorTipoCabos[7]) {
+            const capacidade = this.VetorTipoCabos[7].capacidade || 0; // Use default 0 if undefined
+            console.log(`Boca 8: Usando capacidade ${capacidade} para selecionar modelo`);
+            
+            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, true);
+            
+            Boca8 = { 
+              ...modeloSelecionado, 
+              key: "Boca8",
+              loc: "0 0"
+            };
+          } else {
+            console.log('Boca 8: Capacidade não disponível, usando modelo padrão 24F');
+            Boca8 = { 
+              ...this.cabo24FNAC.getModelDefinition(), 
+              key: "Boca8",
+              loc: "0 0"
+            };
+          }
+        }
        
 
+        let Splitter1: go.ObjectData | null = null;
+
+        // Configuração do Splitter
+        Splitter1 = {
+          ...splitter12ModelTemplate,
+          key: "Splitter1",
+          loc: "250 100",
+          labelText: "Sp 1:2"
+        };
+
+
+
+        let Splitter2: go.ObjectData | null = null;
+
+        // Configuração do Splitter
+        Splitter2 = {
+          ...splitter14ModelTemplate,
+          key: "Splitter14",
+          loc: "250 100",
+          labelText: "Sp 1:4"
+
+        
+        };
+
+        let Splitter3: go.ObjectData | null = null;
+
+        // Configuração do Splitter
+        Splitter3 = {
+          ...splitter18ModelTemplate,
+          key: "Splitter18",
+          loc: "250 100",
+          labelText: "Sp 1:8"
+
+        
+        };
+
+        let Splitter4: go.ObjectData | null = null;
+
+        // Configuração do Splitter
+        Splitter4 = {
+          ...splitter116ModelTemplate,
+          key: "Splitter116",
+          loc: "250 100",
+          labelText: "Sp 1:16"
+
+        
+        };
+
+
+
+
+
+
+
+
+
+ // -----------------------------------------------
         // Configurando o LinkTemplate para conexões entre cabos
         // Modificando para que as conexões liguem diretamente aos portos
         this.diagram.linkTemplate =
           new go.Link({
-            routing:  go.Routing.Orthogonal ,  // Conexões ortogonais (90 graus)
-            curve: go.Curve.None,
-            corner: 1,
-            toShortLength: 1,
+            routing:go.Routing.AvoidsNodes, // go.Routing.Orthogonal ,  // Conexões ortogonais (90 graus)
+            curve: go.Curve.None, // fica confuso as opçoes
+            corner: 8,
+            toShortLength: 5,
             reshapable: true,
             resegmentable: true,                    
             // Essencial: conecções de porta para porta (não do centro do nó)
-            fromEndSegmentLength: 5,
-            toEndSegmentLength: 5,
+            fromEndSegmentLength: 25,
+            toEndSegmentLength: 25,
             // Adicione validação de conexão para respeitar os limites
             relinkableFrom: true,
-            relinkableTo: true
+            relinkableTo: true,
+            
           })
           .add(
             new go.Shape({
@@ -520,7 +894,17 @@ selecionar_Bocas() {
 
         //model.nodeDataArray = [Boca1, Boca2, Boca3];
         // Filtre valores nulos antes de adicioná-los ao array
-        model.nodeDataArray = [Boca1, Boca2, Boca3, Boca4, Boca5, Boca6, Boca7, Boca8].filter(boca => boca !== null );
+        // comentei em 030525 para por texto digrama da caixa model.nodeDataArray = [Boca1, Boca2, Boca3, Boca4, Boca5, Boca6, Boca7, Boca8].filter(boca => boca !== null );
+
+
+        const nodeDataArray = [
+          Boca1, Boca2, Boca3, Boca4, Boca5, Boca6, Boca7, Boca8,Splitter1,Splitter2,Splitter3,Splitter4,
+          { key: "title", category: "text", text: "Diagrama da Caixa", loc: "-500 -200",layerName: "Foreground" }
+        ].filter(node => node !== null);
+        
+        model.nodeDataArray = nodeDataArray;
+
+
         
         model.linkDataArray = [];  // Inicialmente sem conexões
         
@@ -530,6 +914,20 @@ selecionar_Bocas() {
 
         
         //this.carregarConexoesBocas();
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
 
 
         //=================================detectar conexoes==========================================
@@ -575,22 +973,29 @@ selecionar_Bocas() {
         // Aplicar o flip horizontal ao cabo2 após o diagrama ser inicializado
         // Verificar e manipular o cabo2 após inicialização
         setTimeout(() => {
+          if (!this.diagram) return;
           // Métodos alternativos para encontrar o nó
-          if (this.diagram) {console.log(this.diagram.model.nodeDataArray)}
+          //if (this.diagram) {console.log(this.diagram.model.nodeDataArray)}
+
+          
+
+          this.diagram.startTransaction("Aplicar transformações iniciais");
           let node1 = this.diagram!.findNodeForKey("Boca1");
           
           if (node1) {
             console.log("Node cabo1 encontrado via findNodeForKey:", node1);
             
                         console.log("Aplicando transformação ao cabo1");
+                        
                         node1.resizable=true;
                         node1.rotatable=true; 
                         node1.scale=1;
                         node1.movable=true;
-                        node1.position=new go.Point(-400,-1100);
+                        node1.position=new go.Point(0,0);
+                        this.diagram?.commitTransaction()
 
                         node1.data.labelText = this.VetorBocas[0].BOCA1 + "__Boca:1";
-                          this.diagram?.updateAllTargetBindings();  // força atualização do bindin}}
+                          this.diagram.updateAllTargetBindings();  // força atualização do bindin}}
 
                           
 
@@ -601,7 +1006,7 @@ selecionar_Bocas() {
           
           // Método 2: Como alternativa, usando findNodeForKey
           let node2 = this.diagram!.findNodeForKey("Boca2");
-          if (this.diagram) {console.log(this.diagram.model.nodeDataArray)}
+          //if (this.diagram) {console.log(this.diagram.model.nodeDataArray)}
           
           if (node2) {
             console.log("Node cabo2 encontrado via findNodeForKey:", node2);
@@ -609,7 +1014,7 @@ selecionar_Bocas() {
                         node2.resizable=true;
                         node2.rotatable=true;
                         node2.movable=true;
-                        node2.position=new go.Point(400,-1100);
+                        node2.position=new go.Point(800,0);
                         node2.scale=1;                        
                         
                           node2.data.labelText = this.VetorBocas[0].BOCA2 + "__Boca:2";
@@ -629,12 +1034,12 @@ selecionar_Bocas() {
 
             if (node3) {
             console.log("Node cabo3 encontrado via findNodeForKey:", node3);
-            if (this.diagram) {console.log(this.diagram.model.nodeDataArray)}
+            //if (this.diagram) {console.log(this.diagram.model.nodeDataArray)}
                         console.log("Aplicando transformação ao cabo3");
                         node3.resizable=true;
                         node3.rotatable=true;
                         node3.scale=1;  
-                        node3.position=new go.Point(-600,-300);
+                        node3.position=new go.Point(-200,700);
                         node3.data.labelText = this.VetorBocas[0].BOCA3 + "__Boca:3";
                           this.diagram?.updateAllTargetBindings();  // força atualização do bindin}})             
 
@@ -647,12 +1052,12 @@ selecionar_Bocas() {
 
             if (node4) {
             console.log("Node cabo4 encontrado via findNodeForKey:", node4);
-            if (this.diagram) {console.log(this.diagram.model.nodeDataArray)}
+            //if (this.diagram) {console.log(this.diagram.model.nodeDataArray)}
                         console.log("Aplicando transformação ao cabo3");
                         node4.resizable=true;
                         node4.rotatable=true;
                         node4.scale=1;  
-                        node4.position=new go.Point(600,-300);
+                        node4.position=new go.Point(1000,700);
                         node4.data.labelText = this.VetorBocas[0].BOCA4 + "__Boca:4";
                           this.diagram?.updateAllTargetBindings();  // força atualização do bindin}})             
           
@@ -663,12 +1068,12 @@ selecionar_Bocas() {
 
             if (node5) {
             console.log("Node cabo5 encontrado via findNodeForKey:", node5);
-            if (this.diagram) {console.log(this.diagram.model.nodeDataArray)}
+            //if (this.diagram) {console.log(this.diagram.model.nodeDataArray)}
                         console.log("Aplicando transformação ao cabo3");
                         node5.resizable=true;
                         node5.rotatable=true;
                         node5.scale=1;  
-                        node5.position=new go.Point(-400,200);
+                        node5.position=new go.Point(0,1200);
                         node5.data.labelText = this.VetorBocas[0].BOCA5 + "__Boca:5";
                           this.diagram?.updateAllTargetBindings();  // força atualização do bindin}})             
           
@@ -678,12 +1083,12 @@ selecionar_Bocas() {
 
             if (node6) {
             console.log("Node cabo6 encontrado via findNodeForKey:", node6);
-            if (this.diagram) {console.log(this.diagram.model.nodeDataArray)}
+            //if (this.diagram) {console.log(this.diagram.model.nodeDataArray)}
                         console.log("Aplicando transformação ao cabo3");
                         node6.resizable=true;
                         node6.rotatable=true;
                         node6.scale=1;  
-                        node6.position=new go.Point(400,200);
+                        node6.position=new go.Point(800,1200);
                         node6.data.labelText = this.VetorBocas[0].BOCA6 + "__Boca:6";
                           this.diagram?.updateAllTargetBindings();  // força atualização do bindin}})             
           
@@ -694,12 +1099,12 @@ selecionar_Bocas() {
 
             if (node7) {
             console.log("Node cabo7 encontrado via findNodeForKey:", node7);
-            if (this.diagram) {console.log(this.diagram.model.nodeDataArray)}
+            //if (this.diagram) {console.log(this.diagram.model.nodeDataArray)}
                         console.log("Aplicando transformação ao cabo3");
                         node7.resizable=true;
                         node7.rotatable=true;
                         node7.scale=1;  
-                        node7.position=new go.Point(-600,600);
+                        node7.position=new go.Point(-200,1600);
                         node7.data.labelText = this.VetorBocas[0].BOCA7 + "__Boca:7";
                           this.diagram?.updateAllTargetBindings();  // força atualização do bindin}})             
           
@@ -710,12 +1115,12 @@ selecionar_Bocas() {
 
             if (node8) {
             console.log("Node cabo7 encontrado via findNodeForKey:", node8);
-            if (this.diagram) {console.log(this.diagram.model.nodeDataArray)}
+            //if (this.diagram) {console.log(this.diagram.model.nodeDataArray)}
                         console.log("Aplicando transformação ao cabo3");
                         node8.resizable=true;
                         node8.rotatable=true;
                         node8.scale=1;  
-                        node8.position=new go.Point(600,600);
+                        node8.position=new go.Point(1000,1600);
                         node8.data.labelText = this.VetorBocas[0].BOCA8 + "__Boca:8";
                           this.diagram?.updateAllTargetBindings();  // força atualização do bindin}})             
           
@@ -726,7 +1131,10 @@ selecionar_Bocas() {
           
              else {
             console.error("Não foi possível encontrar o cabo por nenhum método");
+
           }
+          // Finaliza a transação única
+          
         }, 100);
 
         
@@ -749,7 +1157,7 @@ selecionar_Bocas() {
               this.carregarConexoesBocas()
               //this.conexoesCriadas = true;
             }
-          }, 1000);
+          }, 300);
         });
       });
     } catch (err: any) {
@@ -760,12 +1168,133 @@ selecionar_Bocas() {
     }
   }
 
+
+
+
+
+
+
+//=====================================================================================
+  private extraiTipoCabosBocas() {
+
+   // console.log('extraindo capacidade das bocas');
+   // let match = this.VetorBocas[0].BOCA1!.match(/cabo(\d+)[AB]/);
+   //       if (match) {
+   //         const idmetacabo = parseInt(match[1]);
+   //         console.log("este é o idmeta do cabo boca 1", idmetacabo);
+   //         this.selecionar_TipoCabos(idmetacabo,1);}
+
+   //         match = this.VetorBocas[0].BOCA2!.match(/cabo(\d+)[AB]/);
+    //        if (match) {
+    //          const idmetacabo = parseInt(match[1]);
+     //         console.log("este é o idmeta do cabo boca 2", idmetacabo);
+     //         this.selecionar_TipoCabos(idmetacabo,2); } 
+              
+     //       match = this.VetorBocas[0].BOCA3!.match(/cabo(\d+)[AB]/);
+     //        if (match) {
+     //        const idmetacabo = parseInt(match[1]);
+      //       console.log("este é o idmeta do cabo boca 3", idmetacabo);
+       //      this.selecionar_TipoCabos(idmetacabo,3); }    
+
+       console.log('Extraindo capacidade das bocas');
+    
+       // Processamento para Boca 1
+       this.processarBoca(this.VetorBocas[0].BOCA1, 1);
+       
+       // Processamento para Boca 2
+       this.processarBoca(this.VetorBocas[0].BOCA2, 2);
+       
+       // Processamento para Boca 3
+       this.processarBoca(this.VetorBocas[0].BOCA3, 3);
+
+       // Processamento para Boca 4
+       this.processarBoca(this.VetorBocas[0].BOCA4, 4);
+
+       // Processamento para Boca 5
+       this.processarBoca(this.VetorBocas[0].BOCA5, 5);
+
+       // Processamento para Boca 6
+       this.processarBoca(this.VetorBocas[0].BOCA6, 6);
+
+       // Processamento para Boca 7
+       this.processarBoca(this.VetorBocas[0].BOCA7, 7);
+
+       // Processamento para Boca 8
+       this.processarBoca(this.VetorBocas[0].BOCA8, 8);
+     }
+     
+     private processarBoca(bocaInfo: string | undefined, bocaNumero: number) {
+       if (!bocaInfo || bocaInfo === " ") {
+         console.log(`Boca ${bocaNumero} está vazia ou indefinida`);
+         return;
+       }
+       
+       const match = bocaInfo.match(/cabo(\d+)[AB]/);
+       if (match) {
+         const idmetacabo = parseInt(match[1]);
+         console.log(`Este é o idmeta do cabo boca ${bocaNumero}:`, idmetacabo);
+         this.selecionar_TipoCabos(idmetacabo, bocaNumero);
+       } else {
+         console.warn(`Padrão de cabo não encontrado para boca ${bocaNumero}: ${bocaInfo}`);
+       }
+     }
+
+     //=============================================seleciona modelo do cabo através do tipo ========================
+
+     private selecionarModeloCaboPorCapacidade(capacidade: number , isLadoDireito: boolean): go.ObjectData {
+      console.log(`Selecionando modelo para cabo com capacidade ${capacidade}, lado direito: ${isLadoDireito}`);
+      
+     
+
+
+      if (capacidade <= 6) {
+        return isLadoDireito 
+          ? this.cabo6FNAC_D.getModelDefinition() 
+          : this.cabo6FNAC.getModelDefinition();
+      } 
+      if (capacidade <= 8) {
+        return isLadoDireito 
+          ? this.cabo8FNAC_D.getModelDefinition() 
+          : this.cabo8FNAC.getModelDefinition();
+      } 
+      if (capacidade <= 12) {
+        return isLadoDireito 
+          ? this.cabo12FNAC_D.getModelDefinition() 
+          : this.cabo12FNAC.getModelDefinition();
+      } 
+      else if (capacidade <= 24) {
+        return isLadoDireito 
+          ? this.cabo24FNAC_D.getModelDefinition() 
+          : this.cabo24FNAC.getModelDefinition();
+      } 
+      else if (capacidade <= 36) {
+        // Para capacidades acima de 24, assumimos o modelo de 36 fibras
+        return isLadoDireito 
+          ? this.cabo36FNAC_D.getModelDefinition() 
+          : this.cabo36FNAC.getModelDefinition();
+      }
+      else {
+        // Para capacidades acima de 24, assumimos o modelo de 48 fibras
+        return isLadoDireito 
+          ? this.cabo48FNAC_D.getModelDefinition() 
+          : this.cabo48FNAC.getModelDefinition();
+      }
+    }
+  
+  
+
+
+  
+
+
+
+
   //===================================================== Função para criar conexões automáticas baseadas em dados da API
   private criarConexoesAutomaticas() {
     console.log("Criando conexões automáticas");
     
     // Verificar se todas as bocas necessárias foram carregadas antes de criar conexões
-    const bocasNecessarias = [1, 2, 3, 4];
+    const bocasNecessarias = [1, 2, 3, 4, 5, 6, 7, 8];
     const todasBocasCarregadas = bocasNecessarias.every(boca => this.bocasCarregadas.has(boca));
     
     if (this.conexoesCriadas || !this.conexoesCarregadas.length || !todasBocasCarregadas) {

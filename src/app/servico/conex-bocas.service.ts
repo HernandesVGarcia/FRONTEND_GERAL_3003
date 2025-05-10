@@ -40,7 +40,7 @@ export class ConexBocasService {
     }
     
     dadosArray.forEach(boca => {
-      Object.entries(boca).forEach(([chave, valor]) => {
+      Object.entries(boca).forEach(([chave, valor]) => { //F1='id()'  : F1 => chave  'id() =>valor
         if (valor && valor !== '=id()') {
           // Extrair os números da string "prop.bocaX_Y.label"
           const match = valor.match(/prop\.boca(\d+)_(\d+)\.label/);
@@ -62,7 +62,7 @@ export class ConexBocasService {
     return conexoes;
   }
 
-  selecionar(bocaNumero: 1 | 2 | 3 | 4): Observable<ConexaoBoca[]> {
+  selecionar(bocaNumero: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18): Observable<ConexaoBoca[]> {
     const token = this.authService.getToken();
     const idmetacx = this.authService.getIDmetaCaixa();
     const route = `/conex_bc${bocaNumero}`;
@@ -87,7 +87,7 @@ export class ConexBocasService {
   }
 
   // Método para permitir o uso de async/await
-  async selecionarAsync(bocaNumero: 1 | 2 | 3 | 4): Promise<ConexaoBoca[]> {
+  async selecionarAsync(bocaNumero: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 ): Promise<ConexaoBoca[]> {
     try {
       return await firstValueFrom(this.selecionar(bocaNumero));
     } catch (error) {

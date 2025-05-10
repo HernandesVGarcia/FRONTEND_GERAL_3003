@@ -15,7 +15,7 @@ export class Cabo12FNacDComponent implements OnInit {
   
   // Definindo as dimensões do cabo
   width: number = 100;
-  height: number = 250;
+  height: number = 300;
   
   // Define as cores para os ports
   portColors = ["#228B22", "yellow", "#FFFFFF", "blue", "#ea384c", "#9b87f5"];
@@ -36,7 +36,7 @@ export class Cabo12FNacDComponent implements OnInit {
     return new go.Node(go.Panel.Auto)
       .add(
         new go.Shape("RoundedRectangle", {
-          fill: "	#C0C0C0", 
+          fill: "	#666666", 
           stroke: "#2196F3",
           strokeWidth: 1
         })
@@ -48,7 +48,8 @@ export class Cabo12FNacDComponent implements OnInit {
         font: "15px sans-serif",
         angle: -90,
         position: new go.Point(100, 0),
-        alignment: go.Spot.Right
+        alignment: go.Spot.Right,
+        stroke: "white"
       })
       .bind("text", "labelText")  // bind com a propriedade labelText do node data
     )
@@ -57,7 +58,7 @@ export class Cabo12FNacDComponent implements OnInit {
           .add(
             // Retângulo verde superior - agora no lado esquerdo
             new go.Shape("RoundedRectangle", {
-              fill: "#228B22",  // Forest Green
+              fill: "#229A00",  // Forest Green
               stroke: "#2196F3",
               strokeWidth: 1,
               width: this.width / 2,
@@ -88,8 +89,8 @@ export class Cabo12FNacDComponent implements OnInit {
   private createPortsPanel(startFiber: number, endFiber: number, panelX: number, panelY: number, panelHeight: number): go.Panel {
     const panel = new go.Panel(go.Panel.Position);
     const portHeight = panelHeight / (endFiber - startFiber + 1);
-    const portWidth = 40;
-    const portMargin = 5;
+    const portWidth = 20;
+    const portMargin = 1;
     
     for (let i = startFiber; i <= endFiber; i++) {
       const index = (i - 1) % this.portColors.length;
@@ -100,7 +101,8 @@ export class Cabo12FNacDComponent implements OnInit {
       new go.TextBlock(`F${i}`, {
         font: "10px sans-serif",
         position: new go.Point(panelX - portMargin - 55, yPosition),
-        textAlign: "left"
+        textAlign: "left",
+        stroke:"black"
       })
     );
   
@@ -110,9 +112,9 @@ export class Cabo12FNacDComponent implements OnInit {
         new go.Shape("Circle", {
           fill: this.portColors[index],
           stroke: "#000000",
-          strokeWidth: 1,
+          strokeWidth: 1.7,
           width: portWidth,
-          height: portHeight / 2,
+          height: portHeight / 1.7,
           //position: new go.Point(panelX - 5 - portWidth, yPosition),
           position: new go.Point(-90, yPosition),
           portId: `F${i}`,  // Identificador do port

@@ -78,7 +78,7 @@ export class Cabo24FNacDComponent implements OnInit {
     return new go.Node(go.Panel.Auto)
       .add(
         new go.Shape("RoundedRectangle", {
-          fill: "#C0C0C0", 
+          fill: "#666666", 
           stroke: "#2196F3",
           strokeWidth: 2,
           name: "cabo24F_D_background"                   
@@ -91,7 +91,8 @@ export class Cabo24FNacDComponent implements OnInit {
         font: "15px sans-serif",
         angle: -90,
         position: new go.Point(-100, 0),
-        alignment: go.Spot.Right
+        alignment: go.Spot.Right,
+        stroke:"white"
       })
       .bind("text", "labelText")  // bind com a propriedade labelText do node data
       )
@@ -100,7 +101,7 @@ export class Cabo24FNacDComponent implements OnInit {
           .add(
             // Tubo 1 - Verde superior (Fibras 1-6) - agora no lado esquerdo
             new go.Shape("RoundedRectangle", {
-              fill: "#006400",  // Verde escuro
+              fill: "#229A00",  // Verde escuro
               stroke: "#2196F3",
               strokeWidth: 1,
               width: this.width / 2,

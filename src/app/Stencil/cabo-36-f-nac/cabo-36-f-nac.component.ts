@@ -54,7 +54,7 @@ export class Cabo36FNacComponent implements OnInit {
   height: number = 600;
 
   // Define as cores para os ports - usando cores específicas para cada tubo
-  portColors36F = ["green", "yellow", "white", "blue", "red", "#F0F8FF"];
+  portColors36F = ["green", "yellow", "white", "blue", "red", "#7a68d2"];
   
   // Método para obter a definição do modelo para usar no GoJS com identificador único
   getModelDefinition() {
@@ -76,7 +76,7 @@ export class Cabo36FNacComponent implements OnInit {
     return new go.Node(go.Panel.Auto)
       .add(
         new go.Shape("RoundedRectangle", {
-          fill: "#C0C0C0", 
+          fill: "#666666", 
           stroke: "#2196F3",
           strokeWidth: 2,
           name: "cabo36F_background"                   
@@ -89,7 +89,8 @@ export class Cabo36FNacComponent implements OnInit {
         font: "15px sans-serif",
         angle: -90,
         position: new go.Point(-100, 0),
-        alignment: go.Spot.Left
+        alignment: go.Spot.Left,
+        stroke:"white"
       })
       .bind("text", "labelText")  // bind com a propriedade labelText do node data
       )
@@ -98,7 +99,7 @@ export class Cabo36FNacComponent implements OnInit {
           .add(
             // Tubo 1 - Verde (Fibras 1-6)
             new go.Shape("RoundedRectangle", {
-              fill: "#006400",  // Verde escuro
+              fill: "#229A00",  // Verde escuro
               stroke: "#2196F3",
               strokeWidth: 1,
               width: this.width / 2,
@@ -196,6 +197,7 @@ export class Cabo36FNacComponent implements OnInit {
       // Adicionar o label (F1, F2, etc.) com nome único
       panel.add(
         new go.TextBlock(`F${i}`, {
+          margin:3,
           font: "10px sans-serif",
           position: new go.Point(panelX + portMargin + 2, yPosition),
           textAlign: "right",
