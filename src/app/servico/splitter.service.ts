@@ -3,7 +3,7 @@ import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http
 //import {Bocas} from '../modelo/Bocas';
 import {Splitter} from '../modelo/Splitter';
 import {Observable, throwError } from 'rxjs';
-import { retry, timeout, catchError } from 'rxjs/operators';
+import { retry, timeout, catchError, map } from 'rxjs/operators';
 import { AuthService } from '../servico/auth.service';
 
 
@@ -47,10 +47,23 @@ export class SplitterService {
         };
   
   
-      return this.http.post<Splitter[]>(this.url,body,{ headers }).pipe(
+      //return this.http.post<Splitter[]>(this.url,body,{ headers }).pipe(
+      return this.http.post<{response: Splitter[]}>(this.url, body, { headers }).pipe(
         
         timeout(this.TIMEOUT),
         retry(this.RETRY_ATTEMPTS),
+
+        map(response => {
+          // Verificar se a resposta contém o campo 'response'
+          if (response && response.response) {
+            return response.response;
+          }
+          // Se não contiver, retornar um array vazio
+          return [];
+        }),
+
+
+
         catchError(this.handleError),
         
         
@@ -71,8 +84,53 @@ export class SplitterService {
     }
     
     return throwError(() => errorMessage);
-  }   
+  }
 
+  // Método auxiliar para obter o tipo de componente splitter baseado no TIPO_SPLITTER
+  getSplitterComponentType(tipoSplitter: number): string {
+    switch(tipoSplitter) {
+      case 12: return "splitter12"; // 1:2
+      case 13: return "splitter14"; // 1:4
+      case 14: return "splitter18"; // 1:8
+      case 15: return "splitter116"; // 1:16
+      case 16: return "splitter132"; // 1:32
+      case 17: return "splitter164"; // 1:64
+      case 18: return "splitter1128"; // 1:128
+      case 19: return "splitter1256"; // 1:256
+      default: return "0"; // Padrão para tipo desconhecido
+    }
+  }
+
+  // Método auxiliar para obter o nome do splitter baseado no TIPO_SPLITTER
+  getSplitterName(tipoSplitter: number): string {
+    switch(tipoSplitter) {
+      case 12: return "1:2";
+      case 13: return "1:4";
+      case 14: return "1:8";
+      case 15: return "1:16";
+      case 16: return "1:32";
+      case 17: return "1:64";
+      case 18: return "BALANCEADO 1:128";
+      case 19: return "BALANCEADO 1:256";
+      default: return "Splitter Desconhecido";
+    }
+  }
+
+  // Método auxiliar para obter atenuação do splitter baseado no TIPO_SPLITTER
+  getSplitterAttenuation(tipoSplitter: number): number {
+    switch(tipoSplitter) {
+      case 12: return 3.7;
+      case 13: return 7.1;
+      case 14: return 10.5;
+      case 15: return 13.7;
+      case 16: return 17.1;
+      case 17: return 20.5;
+      case 18: return 23;
+      case 19: return 26;
+      default: return 0;
+    }
   
+}
+
 }
 

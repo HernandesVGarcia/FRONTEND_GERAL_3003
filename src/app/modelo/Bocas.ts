@@ -17,4 +17,5 @@ export class Bocas {
     BOCA16:string | undefined;
     BOCA17:string | undefined;
     BOCA18:string | undefined;
+    
     }

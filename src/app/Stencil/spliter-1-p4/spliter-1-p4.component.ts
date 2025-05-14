@@ -41,7 +41,7 @@ export class Splitter14Component {
           fill: "#1E88E5",
           stroke: "#0D47A1",
           desiredSize: new go.Size(8, 6),
-          portId: "IN",
+          portId: "ENTRADA",
           alignment: new go.Spot(0, 0.5, -4, 0),
           fromSpot: go.Spot.Left,
           toSpot: go.Spot.Left,
@@ -58,7 +58,7 @@ export class Splitter14Component {
           fill: "#FB8C00",
           stroke: "#E65100",
           desiredSize: new go.Size(24, 6),
-          portId: "OUT1",
+          portId: "F1",
           alignment: new go.Spot(1, 0.20, 4, 0),
           fromSpot: go.Spot.Right,
           toSpot: go.Spot.Right,
@@ -75,7 +75,7 @@ export class Splitter14Component {
           fill: "#FB8C00",
           stroke: "#E65100",
           desiredSize: new go.Size(24, 6),
-          portId: "OUT2",
+          portId: "F2",
           alignment: new go.Spot(1, 0.40, 4, 0),
           fromSpot: go.Spot.Right,
           toSpot: go.Spot.Right,
@@ -92,7 +92,7 @@ export class Splitter14Component {
           fill: "#FB8C00",
           stroke: "#E65100",
           desiredSize: new go.Size(24, 6),
-          portId: "OUT3",
+          portId: "F3",
           alignment: new go.Spot(1, 0.60, 4, 0),
           fromSpot: go.Spot.Right,
           toSpot: go.Spot.Right,
@@ -109,7 +109,7 @@ export class Splitter14Component {
           fill: "#FB8C00",
           stroke: "#E65100",
           desiredSize: new go.Size(24, 6),
-          portId: "OUT4",
+          portId: "F4",
           alignment: new go.Spot(1, 0.80, 4, 0),
           fromSpot: go.Spot.Right,
           toSpot: go.Spot.Right,
@@ -129,7 +129,7 @@ export class Splitter14Component {
       category: "splitter14",
       labelText: "Sp 1:4",
       key: "Splitter1P4",
-      loc: "0.5 0.5"
+      loc: "300 300"
     };
   }
 }
