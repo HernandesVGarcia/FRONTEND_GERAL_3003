@@ -17,8 +17,8 @@ export class Splitter12Component {
         new go.Panel("Auto")
           .add(
             new go.Shape("Triangle", {
-              fill: "#AFE4DE", 
-              stroke: "#000000",
+              fill: "#9FFFFF", 
+              stroke: "#0097A9",
               strokeWidth: 2,
               desiredSize: new go.Size(80, 60),
               // Rotação para apontar entrada à esquerda e saídas à direita

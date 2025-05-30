@@ -39,6 +39,23 @@ export class ConexBocasService {
       return conexoes; // Retorna array vazio se os dados estiverem em formato inválido
     }
     
+
+   // ========================================exemplo de resposta da API
+   // {
+   //   "response": [
+   //       {
+   //           "F1": "prop.boca2_8.label",
+   //           "F2": "prop.boca2_9.label",
+   //           "F3": "prop.boca2_10.label",
+   //           "F4": "prop.boca2_11.label",
+   //           "F5": "=id()",
+   //           "F6": "=id()",
+   //           "F7": "=id()",
+   //           "F8": "=id()",
+   //           "F9": "=id()",...
+
+
+
     dadosArray.forEach(boca => {
       Object.entries(boca).forEach(([chave, valor]) => { //F1='id()'  : F1 => chave  'id() =>valor
         if (valor && valor !== '=id()') {
@@ -62,7 +79,7 @@ export class ConexBocasService {
     return conexoes;
   }
 
-  selecionar(bocaNumero: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18): Observable<ConexaoBoca[]> {
+  selecionar(bocaNumero: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 99): Observable<ConexaoBoca[]> {
     const token = this.authService.getToken();
     const idmetacx = this.authService.getIDmetaCaixa();
     const route = `/conex_bc${bocaNumero}`;
@@ -87,7 +104,7 @@ export class ConexBocasService {
   }
 
   // Método para permitir o uso de async/await
-  async selecionarAsync(bocaNumero: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 ): Promise<ConexaoBoca[]> {
+  async selecionarAsync(bocaNumero: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 99): Promise<ConexaoBoca[]> {
     try {
       return await firstValueFrom(this.selecionar(bocaNumero));
     } catch (error) {

@@ -89,6 +89,17 @@ export class SplitterService {
   // Método auxiliar para obter o tipo de componente splitter baseado no TIPO_SPLITTER
   getSplitterComponentType(tipoSplitter: number): string {
     switch(tipoSplitter) {
+      case 1: return "splitterDesb"
+      case 2: return "splitterDesb"
+      case 3: return "splitterDesb"
+      case 4: return "splitterDesb"
+      case 5: return "splitterDesb"
+      case 6: return "splitterDesb"
+      case 7: return "splitterDesb"
+      case 8: return "splitterDesb"
+      case 9: return "splitterDesb"
+      case 10: return "splitterDesb"
+      case 11: return "splitterDesb"
       case 12: return "splitter12"; // 1:2
       case 13: return "splitter14"; // 1:4
       case 14: return "splitter18"; // 1:8
@@ -104,14 +115,25 @@ export class SplitterService {
   // Método auxiliar para obter o nome do splitter baseado no TIPO_SPLITTER
   getSplitterName(tipoSplitter: number): string {
     switch(tipoSplitter) {
+      case 1: return "1/99";
+      case 2: return "2/98";
+      case 3: return "5/95";
+      case 4: return "10/90";
+      case 5: return "15/85";
+      case 6: return "20/80";
+      case 7: return "25/75";
+      case 8: return "30/70";
+      case 9: return "35/65";
+      case 10: return "40/60";
+      case 11: return "45/55";
       case 12: return "1:2";
       case 13: return "1:4";
       case 14: return "1:8";
       case 15: return "1:16";
       case 16: return "1:32";
       case 17: return "1:64";
-      case 18: return "BALANCEADO 1:128";
-      case 19: return "BALANCEADO 1:256";
+      case 18: return "1:128";
+      case 19: return "1:256";
       default: return "Splitter Desconhecido";
     }
   }

@@ -17,9 +17,9 @@ export class Splitter18Component {
         new go.Panel("Auto")
           .add(
             new go.Shape("Triangle", {
-              fill: "#AFE4DE", 
-              stroke: "#000000",
-              strokeWidth: 2,
+              fill: "#9FFFFF", 
+              stroke: "#0097A9",
+              strokeWidth: 3,
               desiredSize: new go.Size(200, 140),
               // Rotação para apontar entrada à esquerda e saídas à direita
               angle: -90
@@ -29,9 +29,10 @@ export class Splitter18Component {
             new go.TextBlock({
               margin: 5,
               editable: true,
-              font: "bold 10pt sans-serif",
+              font: "bold 9pt sans-serif",
               stroke: "#000000",
-              alignment: go.Spot.Center
+              textAlign:"center",
+              alignment: go.Spot.Top
             }).bind("text", "labelText")
           )
       )
@@ -200,7 +201,7 @@ export class Splitter18Component {
       category: "splitter18",
       labelText: "Sp 1:8",
       key: "Splitter1P8",
-      loc: "400 400"
+      loc: "600 800"
     };
   }
 }

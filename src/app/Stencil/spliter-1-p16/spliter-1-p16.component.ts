@@ -17,9 +17,9 @@ export class Splitter116Component {
         new go.Panel("Auto")
           .add(
             new go.Shape("Triangle", {
-              fill: "#AFE4DE", 
-              stroke: "#000000",
-              strokeWidth: 2,
+              fill: "#9FFFFF", 
+              stroke: "#0097A9",
+              strokeWidth: 3,
               desiredSize: new go.Size(340, 240),
               // Rotação para apontar entrada à esquerda e saídas à direita
               angle: -90
@@ -339,7 +339,7 @@ export class Splitter116Component {
       category: "splitter116",
       labelText: "Sp 1:16",
       key: "Splitter1P16",
-      loc: "500 500"
+      loc: "600 800"
     };
   }
 }

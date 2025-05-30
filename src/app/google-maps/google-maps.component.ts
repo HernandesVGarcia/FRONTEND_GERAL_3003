@@ -228,13 +228,13 @@ polylineOptions72f: google.maps.PolylineOptions = {
       this.updatePolylinesCabos36f();
     } 
     
-    //if (changes['destinoCabos48f'] && changes['destinoCabos48f'].currentValue) {
-    //  console.log('Atualizando polilinhas de cabos 48f ',this.destinoCabos48f);
-    //  this.updatePolylinesCabos48f();
-    //}   
+    if (changes['destinoCabos48f'] && changes['destinoCabos48f'].currentValue) {
+      console.log('Atualizando polilinhas de cabos 48f ',this.destinoCabos48f);
+      this.updatePolylinesCabos48f();
+    }   
 
     if (changes['destinoCabos72f'] && changes['destinoCabos72f'].currentValue) {
-      console.log('Atualizando polilinhas de cabos 72f ',this.destinoCabos48f);
+      console.log('Atualizando polilinhas de cabos 72f ',this.destinoCabos72f);
       this.updatePolylinesCabos72f();
     }   
         
