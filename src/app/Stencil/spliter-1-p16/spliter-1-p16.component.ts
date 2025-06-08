@@ -14,7 +14,7 @@ export class Splitter116Component {
   getNodeTemplate(): go.Node {
     return new go.Node("Spot")
       .add(
-        new go.Panel("Auto")
+        new go.Panel("Spot")
           .add(
             new go.Shape("Triangle", {
               fill: "#9FFFFF", 

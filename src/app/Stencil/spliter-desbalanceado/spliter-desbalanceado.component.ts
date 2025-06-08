@@ -14,7 +14,7 @@ export class SplitterDesbComponent {
   getNodeTemplate(): go.Node {
     return new go.Node("Spot")
       .add(
-        new go.Panel("Auto")
+        new go.Panel("Spot")
           .add(
             new go.Shape("Triangle", {
               fill: "#74FF73", 
@@ -36,8 +36,8 @@ export class SplitterDesbComponent {
               editable: true,
               font: "bold 6pt sans-serif",
               stroke: "#000000",
-              alignment: go.Spot.Top,
-              position: new go.Point(100 + 20 + 2, 40),
+              alignment: go.Spot.Center,
+              position: new go.Point(100 + 2, 40),
             }).bind("text", "labelText")
           )
       )

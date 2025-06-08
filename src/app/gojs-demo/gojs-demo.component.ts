@@ -31,6 +31,10 @@ import { Splitter14Component } from '../Stencil/spliter-1-p4/spliter-1-p4.compon
 import { Splitter18Component } from '../Stencil/spliter-1-p8/spliter-1-p8.component';
 import { Splitter116Component } from '../Stencil/spliter-1-p16/spliter-1-p16.component';
 import { SplitterDesbComponent } from '../Stencil/spliter-desbalanceado/spliter-desbalanceado.component';
+
+import { Cabo1FNacComponent} from '../Stencil/cabo-drop/cabo-drop.component'
+import { Cabo1FNacDComponent} from '../Stencil/cabo-drop-d/cabo-drop-d.component'
+
 import { BocasService } from '../servico/bocas.service';
 import { ConexCabopb99Service} from '../servico/conex-cabopb99.service';
 import { SplitterService} from '../servico/splitter.service'
@@ -43,6 +47,8 @@ import { ConexSplitterService } from '../servico/conex-splitter.service';
 import { ConexaoBoca } from '../modelo/ConexaoBoca';
 import { ConexaoSplitter } from '../modelo/ConexaoSplitter';
 import { Cabo_TipoService } from '../servico/cabo-tipo.service';
+import { GojsDropComponent } from '../gojs-drop/gojs-drop.component';
+import { ZoomPanTool } from '@syncfusion/ej2-angular-diagrams';
 
 @Component({
   selector: 'app-gojs-demo',
@@ -111,11 +117,16 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
   private splitter116: Splitter116Component = new Splitter116Component();
   private splitterDesb: SplitterDesbComponent = new SplitterDesbComponent();
 
+  private cabo1FNAC: Cabo1FNacComponent= new Cabo1FNacComponent();
+  private cabo1FNAC_D: Cabo1FNacDComponent= new Cabo1FNacDComponent();
+
 
 
   private avoidsLinksRouter: AvoidsLinksRouter | null = null;
   private Alinhamento : string = "D";
   VetorBocas:Bocas[]=[];
+  VetorDrops_Sp:ConexaoBoca[]=[];
+  VetorPopsCli:string[]=[]
   VetorSplitter: Splitter[]=[];
   VetorTipoCabos: Cabo_tipo[]=[];
  
@@ -130,7 +141,8 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
      private servicoTipoCabos : Cabo_TipoService ,
      private conexBocasService: ConexBocasService,
      private conexSplitterService: ConexSplitterService,
-     private conexSpSpService:ConexSpSpService
+     private conexSpSpService:ConexSpSpService,
+     private gojsDropComponent: GojsDropComponent
     ) {}
 
 
@@ -186,23 +198,38 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
 
     }
 
-    //=============================================================================================================
-
+    
+//=============================
 async selecionar_cabo99() {
+// acessa component gojs-drop  
+//=============================
 
-if (this.VetorBocas[0].BOCA99) {  
+  await this.gojsDropComponent.selecionarCabo99(this.VetorBocas,this.serviceCabo99,
+      (vetorDropsSp: ConexaoBoca[], vetorPopsCli: string[]) => {
+        this.VetorDrops_Sp = vetorDropsSp; // sera a resposta da API
+        this.VetorPopsCli = vetorPopsCli;
+        setTimeout(() => { this.desenharDrops() }, 500);
+      }
+    );
 
-const tipos = await this.serviceCabo99.selecionarAsync(this.VetorBocas[0].BOCA99)
+    this.gojsDropComponent.selecionarPOP(711718);
 
-console.log(`=====> Resposta da API CONEXOES CABO BOCA99  ${this.VetorBocas[0].BOCA99}:`, tipos);
+  }
 
-  
+  private desenharDrops() {
+    const posicoesDrops = this.gojsDropComponent.desenharDrops(this.diagram, this.VetorPopsCli);
+    
+    setTimeout(() => {
+      if (this.diagram) {
+        this.gojsDropComponent.configurarPropriedadesDrops(this.diagram, posicoesDrops);
+        setTimeout(() => { this.gojsDropComponent.criarConexoesDrops(this.diagram, this.VetorDrops_Sp) }, 2000);
+      }
+    }, 100);
+
+    
+
+
 }
-
-}
-
-
-
 //CABOS:=========================função que le os Cabos das Bocas das caixas , Boca1, Boca2....Boca18  
 selecionar_Bocas() {
     console.log('Iniciando seleção de Bocas...');
@@ -563,20 +590,6 @@ selecionar_Bocas() {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 //SPLITTERS==============================================================================================================
 //============================================================================================================== 
 //============== FUNÇÃO QUE LE A CONECTIVIDADE DOS SPLITTERS DA CAIXA ==============================================
@@ -674,6 +687,7 @@ selecionar_Bocas() {
     const model = this.diagram.model as go.GraphLinksModel;
     
     console.log(`Adicionando ${linkDataArray.length} novas conexões de splitter ao diagrama`);
+    console.log('conexoes splitters -->', linkDataArray)
     
     if (linkDataArray.length > 0) {
       model.addLinkDataCollection(linkDataArray);
@@ -999,6 +1013,7 @@ private desenharSplitters() {
           this.diagram.allowVerticalScroll=true;
           this.diagram.allowHorizontalScroll=true;
           this.diagram.scrollMode
+          this.diagram.commandHandler.zoomToFit
           //this.diagram.allowZoom=false;
           
           console.log('Removendo diagrama existente');
@@ -1018,6 +1033,7 @@ private desenharSplitters() {
           allowDrop: true,
           allowLink: true,
           allowRelink: true,
+          
           //"initialAutoScale": go.Diagram.Uniform,
           "initialAutoScale": go.AutoScale.Uniform,
           "initialContentAlignment": go.Spot.Center,
@@ -1045,7 +1061,10 @@ private desenharSplitters() {
               stroke: "tomato" 
             })
         });
-
+        this.diagram.commandHandler.zoomFactor=1.3;
+        this.diagram.scrollToRect=scroll;
+        //this.diagram.zoomToFit;;
+        //this.diagram.toolManager.showToolTip;
 
         // Inicializar e configurar o AvoidsLinksRouter
         this.avoidsLinksRouter = new AvoidsLinksRouter();
@@ -1087,7 +1106,10 @@ private desenharSplitters() {
         caboTemplateMap.add("splitter164", this.splitter116.getNodeTemplate());
         caboTemplateMap.add("splitter1128", this.splitter116.getNodeTemplate());
         caboTemplateMap.add("splitter1256", this.splitter116.getNodeTemplate());
-        
+
+        // Adicionar templates DROPS
+        caboTemplateMap.add("cabo1F", this.cabo1FNAC.getNodeTemplate());
+        caboTemplateMap.add("cabo1F_D", this.cabo1FNAC_D.getNodeTemplate());
 
         // Obtendo a definição do modelo do componente Cabo_12F_NAC
         this.diagram.nodeTemplateMap = caboTemplateMap;
@@ -1139,6 +1161,7 @@ private desenharSplitters() {
       let Boca17: go.ObjectData | null = null;
       let Boca18: go.ObjectData | null = null;
       let Splitter1: go.ObjectData | null = null;//= this.splitter12.getModelDefinition();
+      let Drop1: go.ObjectData | null = null;
 
 
       //setTimeout(() => {this.extraiTipoCabosBocas()},500)
@@ -1671,7 +1694,7 @@ private desenharSplitters() {
 
 
         const nodeDataArray = [
-          Boca1, Boca2, Boca3, Boca4, Boca5, Boca6, Boca7, Boca8, Boca9, Boca10, Boca11, Boca12, Boca13, Boca14, Boca15, Boca16, Boca17, Boca18, Splitter1,
+          Boca1, Boca2, Boca3, Boca4, Boca5, Boca6, Boca7, Boca8, Boca9, Boca10, Boca11, Boca12, Boca13, Boca14, Boca15, Boca16, Boca17, Boca18, Splitter1, Drop1,
           { key: "title", category: "text", text: "Diagrama da Caixa", loc: "-500 -200",layerName: "Foreground" }
         ].filter(node => node !== null);
         
