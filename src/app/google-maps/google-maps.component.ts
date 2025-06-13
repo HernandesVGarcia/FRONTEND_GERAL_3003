@@ -699,6 +699,22 @@ polylineOptions72f: google.maps.PolylineOptions = {
     });
   } //===========================================================
 
+  // Configurar controles responsivos
+  map.setOptions({
+    zoomControlOptions: {
+      position: window.innerWidth < 768 ? 
+        google.maps.ControlPosition.RIGHT_BOTTOM : 
+        google.maps.ControlPosition.RIGHT_TOP
+    },
+    mapTypeControlOptions: {
+      position: google.maps.ControlPosition.TOP_LEFT,
+      style: window.innerWidth < 768 ? 
+        google.maps.MapTypeControlStyle.DROPDOWN_MENU :
+        google.maps.MapTypeControlStyle.HORIZONTAL_BAR
+    }
+  });
+  //=========================================================== 
+
     console.log('Map initialized successfully');
     this.map=map;
 

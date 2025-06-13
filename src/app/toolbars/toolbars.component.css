@@ -16,10 +16,12 @@
 .mat-icon {
 
   color:royalblue;
-  width: 50px;
-  height: 22px;
+  /*width: 50px;
+  height: 22px;*/
+  width: 25px;
+  height: 25px;
   offset-anchor:initial 100 px;
-  left: 30%;
+  left: 20%;
   
   
 
@@ -76,3 +78,154 @@
 }
 
 
+/*===================================================*/
+
+.toolbar-brand {
+  display: flex;
+  align-items: center;
+}
+
+.logo-img {
+  margin-right: 8px;
+}
+
+.brand-text-mobile {
+  display: none;
+}
+
+.brand-text-full {
+  display: inline;
+}
+
+.toolbar-buttons {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Botões reduzidos pela metade */
+button[mat-icon-button] {
+  width: 30px !important; /* Reduzido de 60px para 30px */
+  height: 30px !important; /* Reduzido proporcionalmente */
+  padding: 1px !important;
+}
+
+
+/* ===================================para mobile========================================================== 
+/* Responsividade Mobile - 768px ou menos */
+@media (max-width: 768px) {
+  .mat-toolbar.mat-primary {
+    height: 45px;
+    left: 0;
+    padding: 0 8px;
+    font-size: 12px;
+  }
+  
+  .mat-icon {
+    width: 20px;
+    height: 20px;
+    font-size: 18px;
+    left: 0;
+  }
+  
+  .example-form input {
+    font-size: 11px;
+    width: 120px;
+  }
+  
+  .mat-label {
+    font-size: 9px;
+  }
+  
+  .brand-text-full {
+    display: none;
+  }
+  
+  .brand-text-mobile {
+    display: inline;
+    font-size: 12px;
+  }
+  
+  .logo-img {
+    width: 30px !important;
+    height: 30px !important;
+  }
+  
+  button[mat-icon-button] {
+    width: 35px !important;
+    height: 35px;
+    margin: 0 2px;
+  }
+  
+  .toolbar-buttons {
+    gap: 2px;
+  }
+}
+
+/* Mobile pequeno - 480px ou menos */
+@media (max-width: 480px) {
+  .mat-toolbar.mat-primary {
+    height: 40px;
+    padding: 0 4px;
+    font-size: 10px;
+  }
+  
+  .mat-icon {
+    width: 18px;
+    height: 18px;
+    font-size: 16px;
+  }
+  
+  .example-form input {
+    font-size: 10px;
+    width: 100px;
+  }
+  
+  .mat-label {
+    font-size: 8px;
+  }
+  
+  .brand-text-mobile {
+    font-size: 10px;
+  }
+  
+  .logo-img {
+    width: 25px !important;
+    height: 25px !important;
+  }
+  
+  button[mat-icon-button] {
+    width: 30px !important;
+    height: 30px;
+    margin: 0 1px;
+  }
+  
+  .toolbar-buttons {
+    gap: 1px;
+  }
+}
+
+/* Modal responsivo */
+@media (max-width: 768px) {
+  ::ng-deep .mat-mdc-form-field {
+    font-size: 12px;
+  }
+  
+  ::ng-deep .mat-mdc-form-field-infix {
+    min-height: 35px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  ::ng-deep .mat-mdc-form-field {
+    font-size: 11px;
+  }
+  
+  ::ng-deep .mat-mdc-form-field-infix {
+    min-height: 30px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+  }
+}

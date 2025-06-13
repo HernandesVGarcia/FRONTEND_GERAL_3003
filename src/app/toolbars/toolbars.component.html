@@ -1,23 +1,33 @@
 
 <mat-toolbar color="primary">
-  <span> <img src="/assets/logo fiber 2025.png" width="35px" height="35px"> F I B E R W O R K S&nbsp;&nbsp;&nbsp;&nbsp;W E B&nbsp;&nbsp;&nbsp;&nbsp; </span>
+  <span class="toolbar-brand">
+    <img src="/assets/logo fiber 2025.png"
+     class="logo-img"
+     width="35px"
+     height="35px">
+     <span class="brand-text-full"> F I B E R W O R K S&nbsp;&nbsp;&nbsp;&nbsp;W E B&nbsp;&nbsp;&nbsp;&nbsp; </span>
+     <span class="brand-text-mobile">FIBER</span>
   
   <span class="example-spacer"></span>
-  <button mat-icon-button class="example-icon" aria-label="Example icon-button with menu icon" style="width: 60px">
+
+
+   <div class="toolbar-buttons">
+  <button mat-icon-button class="example-icon" aria-label="Menu" >
     <mat-icon>menu</mat-icon>
   </button>
-  <button mat-icon-button class="example-icon favorite-icon" aria-label="Example icon-button with heart icon">
+  <button mat-icon-button class="example-icon favorite-icon" aria-label="Cancelar">
     <mat-icon>cancelar</mat-icon>
   </button>
-  <button mat-icon-button class="example-icon" aria-label="Example icon-button with share icon">
+  <button mat-icon-button class="example-icon" aria-label="Compartilhar">
     <mat-icon>share</mat-icon>
   </button>
   <button mat-icon-button class="toolbar-button ml-2" aria-label="Cidades" (click)="openCityModal()">
     <mat-icon>location_city</mat-icon>
   </button>
   <button mat-icon-button class="toolbar-button ml-2" aria-label="CaixaInterna" (click)="openCaixaModal()">
-    <mat-icon>location_city</mat-icon>
+    <mat-icon>inventory</mat-icon>
   </button>
+  </div>
   <!-- Novo botão para abrir CaixaInternasync -->
   
   
