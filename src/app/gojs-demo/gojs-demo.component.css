@@ -54,6 +54,33 @@
   height: 67px;
   background-color: #fafafc;
   z-index: 1000;
+  display: flex;
+  align-items: center;
+  /*justify-content: flex-end;
+  padding-right: 15px;*/
+  justify-content: flex-start;
+  padding-left: 15px;
+}
+
+.export-pdf-button {
+  background-color: #007bff;
+  color: rgb(248, 245, 245);
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.export-pdf-button:hover {
+  background-color: #5e95d1;
+}
+
+.export-pdf-button:active {
+  transform: translateY(1px);
 }
 
 .modal {
@@ -132,5 +159,32 @@
 .modal-content.dragging {
   opacity: 0.8;
 }
+
+
+/* ajustes para celular*/
+@media (max-width: 768px) {
+  .modal {
+    left: 0;
+    width: 100%;
+    padding: 10px;
+  }
+  
+  .modal-content {
+    width: 95%;
+    max-height: 90vh;
+    margin: 0 auto;
+  }
+  
+  .export-pdf-button {
+    font-size: 12px;
+    padding: 6px 12px;
+  }
+}
+
+
+
+
+
+
 
 /* Removemos os estilos personalizados de scrollbar, pois agora o GoJS controlará suas próprias barras */

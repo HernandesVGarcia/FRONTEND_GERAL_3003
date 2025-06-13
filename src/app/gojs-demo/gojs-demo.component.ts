@@ -8,7 +8,12 @@ import { Component,
   NgZone, 
   ChangeDetectorRef, 
   ElementRef, 
-  ViewChild, AfterViewInit, OnChanges, SimpleChanges } from '@angular/core';
+  ViewChild,
+  AfterViewInit, 
+  OnChanges,
+  OnDestroy, 
+  SimpleChanges } from '@angular/core';
+import { firstValueFrom } from 'rxjs';  
 import { CommonModule } from '@angular/common';
 import * as go from 'gojs';
 import { Cabo6FNacDComponent } from '../Stencil/cabo-6-f-nac-d/cabo-6-f-nac-d.component';
@@ -49,6 +54,8 @@ import { ConexaoSplitter } from '../modelo/ConexaoSplitter';
 import { Cabo_TipoService } from '../servico/cabo-tipo.service';
 import { GojsDropComponent } from '../gojs-drop/gojs-drop.component';
 import { ZoomPanTool } from '@syncfusion/ej2-angular-diagrams';
+import { PopClienteService } from '../servico/pop-cliente.service';
+import jsPDF from 'jspdf';
 
 @Component({
   selector: 'app-gojs-demo',
@@ -65,6 +72,14 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
   public diagramInitialized = false;
   public initializationError: string | null = null;
   public diagram: go.Diagram | null = null;
+
+  // 🚀 NOVO - Flag apenas para controle de inicialização dos cabos
+  private cabosInicializados: boolean = false;
+  private splittersInicializados: boolean = false;
+  // 🆕 NOVO - Flag para controle de inicialização dos drops
+  private dropsInicializados: boolean = false;
+
+
 
   // Flag para controlar se as conexões já foram criadas
   // Novas propriedades para controle de conexões
@@ -129,7 +144,8 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
   VetorPopsCli:string[]=[]
   VetorSplitter: Splitter[]=[];
   VetorTipoCabos: Cabo_tipo[]=[];
- 
+  // 🆕 NOVO - Vetor para dados dos POPs
+  VetorDadosPops: any[] = [];
   
  
   constructor(
@@ -142,32 +158,304 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
      private conexBocasService: ConexBocasService,
      private conexSplitterService: ConexSplitterService,
      private conexSpSpService:ConexSpSpService,
-     private gojsDropComponent: GojsDropComponent
+     private gojsDropComponent: GojsDropComponent,
+     // 🆕 NOVO - Serviço para POPs
+     private popClienteService: PopClienteService,
     ) {}
 
 
   //==============================================================================================================  
 
   ngOnInit(): void {
+    /*
     console.log('GoJSDemo Component inicializado');
-    setTimeout(() => {this.selecionar_Bocas()},1);// <-----função para ler bocas para desenhar cabos
+    /////////////////////setTimeout(() => {this.selecionar_Bocas()},1);// <-----função para ler bocas para desenhar cabos
     //this.selecionar_Splitters(); // <-----função para le splitters dentro da caixa
 
     
+    ////////////setTimeout(() => {this.extraiTipoCabosBocas()},1000);
 
+    // 🚀 NOVO - Carregamento async dos cabos apenas
+    this.carregarDadosCabosAsync();
+    
 
-    setTimeout(() => {this.extraiTipoCabosBocas()},1000);
     setTimeout(() => {this.selecionar_Splitters()},500);
-    setTimeout(() => {this.carregarConexoesBocas()},2000);
-    //setTimeout(() => {this.selecionar_Splitters()},1000);
-    setTimeout(() => {this.carregarConexoesSplitters()},3000);
-    setTimeout(() => {this.carregarConexoesBocas9798()},2000);
-    setTimeout(() => {this.selecionar_cabo99()},2000); 
+
+    */
+
+    this.carregarDadosCompletosAsync();
+
+    //setTimeout(() => {this.carregarConexoesBocas()},1);
+    //setTimeout(() => {this.carregarConexoesSplitters()},3000);
+    //setTimeout(() => {this.carregarConexoesBocas9798()},2000);
+    //setTimeout(() => {this.selecionar_cabo99()},2000); 
+    
+        console.log('GoJSDemo Component inicializado');
         
   }
 
+//================================================================================================
+
+// 🚀 NOVA FUNÇÃO - Carregamento async de cabos e splitters
+  private async carregarDadosCompletosAsync(): Promise<void> {
+    try {
+      this.mostrarCursorEspera();
+      console.log('🚀 Iniciando carregamento async completo...');
+      
+      // 1. Carregar dados dos cabos
+      await this.carregarDadosCabosAsync();
+      
+      // 2. Carregar dados dos splitters
+      await this.carregarDadosSplittersAsync();
+
+      // 3. Carregar drops (cabo 99)
+      await this.gojsDropComponent.carregarDadosDropsAsync(this.VetorBocas, this.serviceCabo99);
+
+      // 3. Carregar drops (cabo 99)
+      //console.log('💧 Carregando drops...');
+      //await this.carregarDadosDropsAsync(); //await this.selecionar_cabo99();
+      
+      /*
+      // 3. Carregar conexões das bocas
+      console.log('🔗 Carregando conexões das bocas...');
+      await this.carregarConexoesBocas();
+      
+      // 4. Carregar conexões dos splitters
+      console.log('🔗 Carregando conexões dos splitters...');
+      await this.carregarConexoesSplitters();
+      
+      // 5. Carregar conexões entre splitters (bocas 97/98)
+      console.log('🔗 Carregando conexões entre splitters...');
+      await this.carregarConexoesBocas9798();
+      
+      // 6. Carregar drops (cabo 99)
+      console.log('💧 Carregando drops...');
+      await this.selecionar_cabo99();
+
+      */
+      
+      console.log('✅ Carregamento completo concluído com sucesso!');
+      
+    } catch (error) {
+      console.error('❌ Erro durante o carregamento completo:', error);
+    } finally {
+      this.restaurarCursor();
+    }
+  }
+
+
+
+
+// 🚀 NOVA FUNÇÃO - Carregamento async dos splitters
+  private async carregarDadosSplittersAsync(): Promise<void> {
+    try {
+      console.log('🔧 Carregando dados dos splitters...');
+      
+      const retorno = await firstValueFrom(this.servicoSplitter.selecionar());
+      this.VetorSplitter = retorno;
+      
+      console.log('✅ Dados dos splitters carregados:', this.VetorSplitter.length, 'splitters');
+      
+      // Se o diagrama já estiver inicializado, adicionar splitters
+      if (this.diagram && !this.splittersInicializados) {
+        console.log('🎨 Adicionando splitters ao diagrama...');
+        this.adicionarSplittersAoDiagrama();
+        this.splittersInicializados = true;
+      }
+      
+    } catch (error) {
+      console.error('❌ Erro ao carregar splitters:', error);
+      throw error;
+    }
+  }
+
+//================================================================================================
+
+
+// 🚀 NOVA FUNÇÃO - Adicionar splitters ao diagrama
+  private adicionarSplittersAoDiagrama(): void {
+    if (!this.diagram || this.VetorSplitter.length === 0) {
+      console.log('Não foi possível adicionar splitters: diagrama não inicializado ou não há splitters');
+      return;
+    }
+
+    console.log('🎨 Adicionando splitters ao diagrama:', this.VetorSplitter);
+    
+    const model = this.diagram.model as go.GraphLinksModel;
+    const splitterNodes: go.ObjectData[] = [];
+    const posicoesSplitters: {id: string, x: number, y: number}[] = [];
+    
+    this.VetorSplitter.forEach((splitter, index) => {
+      const posX = 350;
+      const posY = 400 + (index * 400);
+
+      posicoesSplitters.push({
+        id: `Splitter${splitter.IDMETA || index}`,
+        x: posX,
+        y: posY
+      });
+      
+      let splitterModelDefinition: go.ObjectData;
+      
+      switch (splitter.TIPO_SPLITTER) {
+        case 12:
+          splitterModelDefinition = this.splitter12.getModelDefinition();
+          break;
+        case 13:
+          splitterModelDefinition = this.splitter14.getModelDefinition();
+          break;
+        case 14:
+          splitterModelDefinition = this.splitter18.getModelDefinition();
+          break;
+        case 15:
+          splitterModelDefinition = this.splitter116.getModelDefinition();
+          break;
+        default:
+          splitterModelDefinition = this.splitterDesb.getModelDefinition();
+          break;
+      }
+      
+      const splitterNode: go.ObjectData = {
+        ...splitterModelDefinition,
+        key: `Splitter${splitter.IDMETA || index}`,
+        labelText: `${splitter.LABEL || 'Splitter'} (${this.servicoSplitter.getSplitterName(splitter.TIPO_SPLITTER || 12)})`,
+        loc: `${posX} ${posY}`,
+        idmeta: splitter.IDMETA,
+        tipoSplitter: splitter.TIPO_SPLITTER,
+      };
+      
+      splitterNodes.push(splitterNode);
+    });
+    
+    model.addNodeDataCollection(splitterNodes);
+    
+    setTimeout(() => {
+      if (this.diagram) {
+        posicoesSplitters.forEach(posicao => {
+          const node = this.diagram?.findNodeForKey(posicao.id);
+          if (node) {
+            node.resizable = true;
+            node.rotatable = true;
+            node.movable = true;
+            node.position = new go.Point(posicao.x, posicao.y);
+          }
+        });
+      }
+    }, 100);
+  }
+
+
+//================================================================================================
+
+
+
+
+
+
+  // 🚀 NOVA FUNÇÃO - Carregamento async completo dos cabos
+  private async carregarDadosCabosAsync(): Promise<void> {
+    try {
+      this.mostrarCursorEspera();
+      console.log('🚀 Iniciando carregamento async dos dados dos cabos...');
+      
+      // 1. Carregar dados das bocas
+      console.log('📡 Carregando dados das bocas...');
+      await this.carregarBocasAsync();
+      
+      // 2. Carregar tipos de cabos baseado nas bocas
+      console.log('🔧 Carregando tipos de cabos...');
+      await this.carregarTiposCabosAsync();
+      
+      // 3. Adicionar cabos ao diagrama (se já estiver inicializado)
+      if (this.diagram && !this.cabosInicializados) {
+        console.log('🎨 Adicionando cabos ao diagrama...');
+        this.adicionarCabosAoDiagrama();
+        this.cabosInicializados = true;
+      }
+      
+      console.log('✅ Carregamento dos cabos concluído com sucesso!');
+
+
+      
+    } catch (error) {
+      console.error('❌ Erro durante o carregamento dos cabos:', error);
+    } finally {
+      this.restaurarCursor();
+    }
+  }
+//================================================================================================================
+// 🚀 NOVA FUNÇÃO - Carregar bocas de forma async
+  private async carregarBocasAsync(): Promise<void> {
+    try {
+      const retorno = await firstValueFrom(this.servicoBocas.selecionar()); // serviço bocas usa observable
+      
+      if ('response' in retorno) {
+        this.VetorBocas = (retorno as any).response;
+      } else {
+        this.VetorBocas = retorno as Bocas[];
+      }
+      
+      console.log('✅ Dados das bocas carregados:', this.VetorBocas[0]?.BOCA1);
+    } catch (error) {
+      console.error('❌ Erro ao carregar Bocas:', error);
+      throw error;
+    }
+  }
+//=================================================================================================================
+
+  // 🚀 NOVA FUNÇÃO - Carregar tipos de cabos de forma async
+  private async carregarTiposCabosAsync(): Promise<void> {
+    console.log('🔧 Extraindo capacidade das bocas...');
+    
+    const promessasTiposCabos: Promise<void>[] = [];
+
+    // Processar todas as 18 bocas
+    for (let i = 1; i <= 18; i++) {
+      const bocaInfo = this.getBocaValue(i);
+      if (bocaInfo && bocaInfo !== " ") {
+        const promessa = this.processarBocaAsync(bocaInfo, i);
+        promessasTiposCabos.push(promessa);
+      }
+    }
+
+    // Aguardar todas as consultas de tipos de cabo terminarem
+    await Promise.all(promessasTiposCabos);
+    
+    console.log('✅ Todos os tipos de cabo foram carregados');
+  }
 
 //=================================================================================================================
+
+
+// 🚀 NOVA FUNÇÃO - Processar boca de forma async
+  private async processarBocaAsync(bocaInfo: string, bocaNumero: number): Promise<void> {
+    const match = bocaInfo.match(/cabo(\d+)[AB]/);
+    if (match) {
+      const idmetacabo = parseInt(match[1]);
+      console.log(`🔍 Processando boca ${bocaNumero} com idmeta ${idmetacabo}...`);
+      
+      await this.selecionar_TipoCabos(idmetacabo, bocaNumero);
+    } else {
+      console.warn(`⚠️ Padrão de cabo não encontrado para boca ${bocaNumero}: ${bocaInfo}`);
+    }
+  }
+
+
+
+
+//=================================================================================================================
+
+// Helper para obter valor de BOCAX com tratamento de tipo
+  private getBocaValue(bocaNum: number): string {
+    if (this.VetorBocas && this.VetorBocas.length > 0) {
+      const property = `BOCA${bocaNum}` as keyof Bocas;
+      return this.VetorBocas[0][property] as string || "";
+    }
+    return "";
+  }
+
+//=================================================================================================================
+
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['isOpen'] && changes['isOpen'].currentValue === true) {
       console.log('Modal está sendo aberto');
@@ -198,59 +486,9 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
 
     }
 
-    
-//=============================
-async selecionar_cabo99() {
-// acessa component gojs-drop  
-//=============================
+ /*   
 
-  await this.gojsDropComponent.selecionarCabo99(this.VetorBocas,this.serviceCabo99,
-      (vetorDropsSp: ConexaoBoca[], vetorPopsCli: string[]) => {
-        this.VetorDrops_Sp = vetorDropsSp; // sera a resposta da API
-        this.VetorPopsCli = vetorPopsCli;
-        setTimeout(() => { this.desenharDrops() }, 500);
-      }
-    );
-
-    this.gojsDropComponent.selecionarPOP(711718);
-
-  }
-
-  private desenharDrops() {
-    const posicoesDrops = this.gojsDropComponent.desenharDrops(this.diagram, this.VetorPopsCli);
-    
-    setTimeout(() => {
-      if (this.diagram) {
-        this.gojsDropComponent.configurarPropriedadesDrops(this.diagram, posicoesDrops);
-        setTimeout(() => { this.gojsDropComponent.criarConexoesDrops(this.diagram, this.VetorDrops_Sp) }, 2000);
-      }
-    }, 100);
-
-    
-
-
-}
-//CABOS:=========================função que le os Cabos das Bocas das caixas , Boca1, Boca2....Boca18  
-selecionar_Bocas() {
-    console.log('Iniciando seleção de Bocas...');
-
-    
-    this.servicoBocas.selecionar().subscribe({
-      next: (retorno) => {
-        console.log('Dados recebidos:', retorno);
-        if ('response' in retorno) {
-          this.VetorBocas = (retorno as any).response;
-        } else {
-          this.VetorBocas = retorno as Bocas[];
-        }
-        console.log(this.VetorBocas[0].BOCA1);
-      },
-      error: (erro) => {
-        console.error('Erro ao carregar Bocas:', erro);
-      }
-    });
-  }
-
+*/
 
   //CABOS:=========================
 
@@ -320,14 +558,9 @@ selecionar_Bocas() {
     }
   }
 
-  // Helper para obter valor de BOCAX com tratamento de tipo
-  private getBocaValue(bocaNum: number): string {
-    if (this.VetorBocas && this.VetorBocas.length > 0) {
-      const property = `BOCA${bocaNum}` as keyof Bocas;
-      return this.VetorBocas[0][property] as string || "";
-    }
-    return "";
-  }
+  //=======================================================================================================================
+
+  
 
 
 
@@ -377,9 +610,11 @@ selecionar_Bocas() {
       // Depois que todas as bocas forem carregadas, criar as conexões
       console.log('Todas as bocas foram carregadas:', this.bocasCarregadas.size);
       console.log('Total de conexões carregadas após filtragem:', this.conexoesCarregadas.length);
+      console.log('this.diagram :',this.diagram, '!this.conexoesCriadas:', !this.conexoesCriadas, 'this.conexoesCarregadas.length :',this.conexoesCarregadas.length ) 
       
       if (this.diagram && !this.conexoesCriadas && this.conexoesCarregadas.length > 0) {
-        this.criarConexoesAutomaticas();
+        //this.criarConexoesAutomaticas();
+        await this.aguardarNosECriarConexoes();
       }
     } catch (error) {
       console.error('Erro durante o carregamento de conexões:', error);
@@ -389,95 +624,52 @@ selecionar_Bocas() {
 
     }
   }
-
-
-
-
-
-
-
-
-
-//CABOS=====================================================================================
-  private extraiTipoCabosBocas() {
-
-       this.mostrarCursorEspera();
-
-       console.log('Extraindo capacidade das bocas');
+//=========================================================================================================================
+    // 🎯 Nova função para aguardar nós existirem no diagrama
+  private async aguardarNosECriarConexoes(): Promise<void> {
+    console.log('🎯 Aguardando nós existirem no diagrama...');
     
-       // Processamento para Boca 1
-       this.processarBoca(this.VetorBocas[0].BOCA1, 1);
-       
-       // Processamento para Boca 2
-       this.processarBoca(this.VetorBocas[0].BOCA2, 2);
-       
-       // Processamento para Boca 3
-       this.processarBoca(this.VetorBocas[0].BOCA3, 3);
+    const maxTentativas = 50;
+    const intervalo = 100;
+    
+    for (let tentativa = 0; tentativa < maxTentativas; tentativa++) {
 
-       // Processamento para Boca 4
-       this.processarBoca(this.VetorBocas[0].BOCA4, 4);
+      console.log('==>tentativa :',tentativa );
+      if (this.verificarSeNosExistem()) {
+        console.log('🎯 Nós encontrados no diagrama, criando conexões...');
+        this.criarConexoesAutomaticas();
+        return;
+      }
+      
+      await new Promise(resolve => setTimeout(resolve, intervalo));
+    }
+    
+    console.warn('⚠️ Timeout aguardando nós no diagrama');
+  }
 
-       // Processamento para Boca 5
-       this.processarBoca(this.VetorBocas[0].BOCA5, 5);
-
-       // Processamento para Boca 6
-       this.processarBoca(this.VetorBocas[0].BOCA6, 6);
-
-       // Processamento para Boca 7
-       this.processarBoca(this.VetorBocas[0].BOCA7, 7);
-
-       // Processamento para Boca 8
-       this.processarBoca(this.VetorBocas[0].BOCA8, 8);
-
-       // Processamento para Boca 9
-       this.processarBoca(this.VetorBocas[0].BOCA9, 9);
-
-       // Processamento para Boca 10
-       this.processarBoca(this.VetorBocas[0].BOCA10, 10);
-
-       // Processamento para Boca 11
-       this.processarBoca(this.VetorBocas[0].BOCA11, 11);
-
-       // Processamento para Boca 12
-       this.processarBoca(this.VetorBocas[0].BOCA12, 12);
-
-       // Processamento para Boca 13
-       this.processarBoca(this.VetorBocas[0].BOCA13, 13);
-
-       // Processamento para Boca 14
-       this.processarBoca(this.VetorBocas[0].BOCA14, 14);
-
-       // Processamento para Boca 15
-       this.processarBoca(this.VetorBocas[0].BOCA15, 15);
-
-       // Processamento para Boca 16
-       this.processarBoca(this.VetorBocas[0].BOCA16, 16);
-
-       // Processamento para Boca 17
-       this.processarBoca(this.VetorBocas[0].BOCA17, 17);
-
-       // Processamento para Boca 18
-       this.processarBoca(this.VetorBocas[0].BOCA18, 18);
-
-       this.restaurarCursor();
-       
-     }
-     
-     private processarBoca(bocaInfo: string | undefined, bocaNumero: number) {
-       if (!bocaInfo || bocaInfo === " ") {
-         console.log(`Boca ${bocaNumero} está vazia ou indefinida`);
-         return;
-       }
-       
-       const match = bocaInfo.match(/cabo(\d+)[AB]/);
-       if (match) {
-         const idmetacabo = parseInt(match[1]);
-         console.log(`Este é o idmeta do cabo boca ${bocaNumero}:`, idmetacabo);
-         this.selecionar_TipoCabos(idmetacabo, bocaNumero);
-       } else {
-         console.warn(`Padrão de cabo não encontrado para boca ${bocaNumero}: ${bocaInfo}`);
-       }
-     }
+//=========================================================================================================================
+  // 🎯 Nova função para verificar se os nós necessários existem
+  private verificarSeNosExistem(): boolean {
+    if (!this.diagram) return false;
+    
+    const nosNecessarios = new Set<string>();
+    
+    this.conexoesCarregadas.forEach(conexao => {
+      nosNecessarios.add(conexao.bocaOrigem);
+      nosNecessarios.add(conexao.bocaDestino);
+    });
+    
+    for (const nomeNo of nosNecessarios) {
+      const no = this.diagram.findNodeForKey(nomeNo);
+      if (!no) {
+        console.log(`🎯 Nó ${nomeNo} ainda não existe no diagrama`);
+        return false;
+      }
+    }
+    
+    console.log('🎯 Todos os nós necessários existem no diagrama');
+    return true;
+  }
 
 
      //CABOS=============================================seleciona modelo do cabo através do tipo ========================
@@ -583,10 +775,6 @@ selecionar_Bocas() {
       }
     }
   }
-
-
-
-
 
 
 
@@ -746,10 +934,12 @@ selecionar_Bocas() {
 }
 
   
-
+//========================permite movimentar o modal===========================================================================================================
 
   private setupDragFunctionality(): void {
     setTimeout(() => {
+
+      console.log('entrou em setupDragFunctionality');
       this.modalElement = document.querySelector('.modal') as HTMLElement;
       this.modalContentElement = document.querySelector('.modal-content') as HTMLElement;
       this.modalHeaderElement = document.querySelector('.modal-header') as HTMLElement;
@@ -766,8 +956,11 @@ selecionar_Bocas() {
     }, 500);
   }
 
+  //==========================permite movimentar o modal========================================================================================================
+
   private dragStart(event: MouseEvent): void {
     // Verificamos se o evento ocorreu no cabeçalho (não necessário, mas adicionado por segurança)
+    console.log('entrou em dragStart');
     if (this.modalHeaderElement && 
       (event.target === this.modalHeaderElement || 
        this.modalHeaderElement.contains(event.target as Node))) {
@@ -782,7 +975,11 @@ selecionar_Bocas() {
     }
   }
 
+  //==========================permite movimentar o modal========================================================================================================
+
   private dragMove(event: MouseEvent): void {
+
+    //console.log('entrou em dragMove');
     if (this.isDragging && this.modalContentElement) {
       event.preventDefault();
       
@@ -805,6 +1002,8 @@ selecionar_Bocas() {
     }
   }
 
+  //================================================================================================================================
+
   private setTranslate(xPos: number, yPos: number, el: HTMLElement): void {
     if (el) {
       el.style.transform = `translate3d(${xPos}px, ${yPos}px, 0)`;
@@ -812,7 +1011,7 @@ selecionar_Bocas() {
   }
 
 //SPLITTER====================================================================================================== 
-
+/*
 // Adicionar o método para selecionar splitters
 selecionar_Splitters() {
   console.log('Iniciando seleção de Splitters dentro da caixa...');
@@ -834,6 +1033,7 @@ selecionar_Splitters() {
     }
   });
 }
+
 
 
 //SPLITTER======================================================================================================
@@ -982,7 +1182,7 @@ private desenharSplitters() {
   }, 100);
 
 }
-
+*/
 
 //DIAGRAMA=============================================================================================================
   private updateDiagramLayout(): void {
@@ -993,156 +1193,23 @@ private desenharSplitters() {
     }
   }
 
-//DIAGRAMA=============================================================================================================
-//==============================================================================================================
-//======================================= inicicialise diagrama ===============================================
-  private initializeDiagram(): void {
-    if (!this.diagramDiv?.nativeElement) {
-      console.error('Elemento DOM do diagrama não encontrado');
-      this.initializationError = 'Erro: Elemento do diagrama não encontrado';
-      this.cdr.detectChanges();
+//====================================================================================================================
+// 🔄 MANTIDA - Função para adicionar cabos ao diagrama
+  private adicionarCabosAoDiagrama(): void {
+    if (!this.diagram) {
+      console.error('Diagrama não está inicializado');
       return;
     }
 
-    try {
-      
-      console.log('Iniciando criação do diagrama');
-      this.ngZone.runOutsideAngular(() => {
-        // Remover diagrama existente se houver
-        if (this.diagram) {
-          this.diagram.allowVerticalScroll=true;
-          this.diagram.allowHorizontalScroll=true;
-          this.diagram.scrollMode
-          this.diagram.commandHandler.zoomToFit
-          //this.diagram.allowZoom=false;
-          
-          console.log('Removendo diagrama existente');
-          this.diagram.div = null;
-          this.diagram = null;
-          // Resetar a flag quando o diagrama for recriado
-          this.conexoesCriadas = false;
-        }
+    console.log('🎨 Adicionando cabos ao diagrama com dados completos...');
+    
+    const model = this.diagram.model as go.GraphLinksModel;
+    const cabosParaAdicionar: go.ObjectData[] = [];
 
-        // Criando um novo diagrama
-        this.diagram = new go.Diagram(this.diagramDiv?.nativeElement, {
-          "undoManager.isEnabled": true,
-          //"toolManager.mouseWheelBehavior": go.ToolManager.WheelZoom,
-          "toolManager.mouseWheelBehavior": go.WheelMode.Zoom,
-          "grid.visible": true,
-          "grid.gridCellSize": new go.Size(20, 20),
-          allowDrop: true,
-          allowLink: true,
-          allowRelink: true,
-          
-          //"initialAutoScale": go.Diagram.Uniform,
-          "initialAutoScale": go.AutoScale.Uniform,
-          "initialContentAlignment": go.Spot.Center,
-          "maxScale": 3,
-          "minScale": 0.09,
-          padding: new go.Margin(200, 40, 40, 40),
-          "linkingTool.isUnconnectedLinkValid": false,
-          "linkingTool.portGravity": 20,
-          "relinkingTool.isUnconnectedLinkValid": false,
-          "relinkingTool.portGravity": 20,
-          "relinkingTool.fromHandleArchetype":
-            new go.Shape("Diamond", { 
-              segmentIndex: 0, 
-              cursor: "pointer", 
-              desiredSize: new go.Size(8, 8), 
-              fill: "tomato", 
-              stroke: "darkred" 
-            }),
-          "relinkingTool.toHandleArchetype":
-            new go.Shape("Diamond", { 
-              segmentIndex: -1, 
-              cursor: "pointer", 
-              desiredSize: new go.Size(8, 8), 
-              fill: "darkred", 
-              stroke: "tomato" 
-            })
-        });
-        this.diagram.commandHandler.zoomFactor=1.3;
-        this.diagram.scrollToRect=scroll;
-        //this.diagram.zoomToFit;;
-        //this.diagram.toolManager.showToolTip;
-
-        // Inicializar e configurar o AvoidsLinksRouter
-        this.avoidsLinksRouter = new AvoidsLinksRouter();
-        this.avoidsLinksRouter.epsilonDistance = 15; // Distância entre links paralelos
-        this.avoidsLinksRouter.linkSpacing=30;
-        this.diagram.routers.push(this.avoidsLinksRouter);
-        console.log('AvoidsLinksRouter adicionado ao diagrama');
+   
 
 
-
-        // Definindo o modelo de nós para o diagrama
-        // Agora usando o nodeTemplate definido no componente do modelo
-
-        const caboTemplateMap = new go.Map<string, go.Node>();
-        caboTemplateMap.add("cabo6F_D", this.cabo6FNAC_D.getNodeTemplate());
-        caboTemplateMap.add("cabo6F", this.cabo6FNAC.getNodeTemplate());
-        caboTemplateMap.add("cabo8F_D", this.cabo8FNAC_D.getNodeTemplate());
-        caboTemplateMap.add("cabo8F", this.cabo8FNAC.getNodeTemplate());
-        caboTemplateMap.add("cabo", this.cabo12FNAC.getNodeTemplate());
-        caboTemplateMap.add("caboD", this.cabo12FNAC_D.getNodeTemplate());
-        caboTemplateMap.add("cabo24F", this.cabo24FNAC.getNodeTemplate());
-        caboTemplateMap.add("cabo24F_D", this.cabo24FNAC_D.getNodeTemplate());
-        caboTemplateMap.add("cabo36F", this.cabo36FNAC.getNodeTemplate());
-        caboTemplateMap.add("cabo36F_D", this.cabo36FNAC_D.getNodeTemplate());
-        caboTemplateMap.add("cabo48F_D", this.cabo48FNAC_D.getNodeTemplate());
-        caboTemplateMap.add("cabo48F", this.cabo48FNAC.getNodeTemplate());
-        caboTemplateMap.add("cabo72F_D", this.cabo72FNAC_D.getNodeTemplate());
-        caboTemplateMap.add("cabo72F", this.cabo72FNAC.getNodeTemplate());
-        caboTemplateMap.add("splitter12", this.splitter12.getNodeTemplate());
-        // Adicionar templates para cada tipo de splitter
-        caboTemplateMap.add("splitter12", this.splitter12.getNodeTemplate());
-        caboTemplateMap.add("splitter14", this.splitter14.getNodeTemplate());
-        caboTemplateMap.add("splitter18", this.splitter18.getNodeTemplate());
-        caboTemplateMap.add("splitter116", this.splitter116.getNodeTemplate());
-        caboTemplateMap.add("splitterDesb", this.splitterDesb.getNodeTemplate());
-        
-        // Adicionar templates genéricos para outros tipos de splitters que ainda não têm componentes específicos
-        caboTemplateMap.add("splitter132", this.splitter116.getNodeTemplate());
-        caboTemplateMap.add("splitter164", this.splitter116.getNodeTemplate());
-        caboTemplateMap.add("splitter1128", this.splitter116.getNodeTemplate());
-        caboTemplateMap.add("splitter1256", this.splitter116.getNodeTemplate());
-
-        // Adicionar templates DROPS
-        caboTemplateMap.add("cabo1F", this.cabo1FNAC.getNodeTemplate());
-        caboTemplateMap.add("cabo1F_D", this.cabo1FNAC_D.getNodeTemplate());
-
-        // Obtendo a definição do modelo do componente Cabo_12F_NAC
-        this.diagram.nodeTemplateMap = caboTemplateMap;
-
-        
-       
-
-        
-       // Adicionar um template para o texto do título --- texto adicionado para o diagram sempre esta abaixo da marca dagua
-       this.diagram.nodeTemplateMap.add("text",
-        new go.Node("Spot")
-          .add(
-            new go.TextBlock({
-              font: "bold 16pt sans-serif",
-              stroke: "white",
-              margin: 10,
-              editable: false,
-              
-            })
-            .bind("text")
-          )
-          // Garantir que o nó de texto não seja movido pelas outras partes do diagrama
-          .bind(new go.Binding("position", "loc", go.Point.parse).makeTwoWay(go.Point.stringify))
-          // Desabilitar a movimentação pelo usuário
-          //.movable(false)
-         
-      );
-        
-
-
-        // Declare as variáveis fora dos blocos condicionais
-        // Declaração correta das variáveis com tipos compatíveis
-      let Boca1: go.ObjectData | null = null;
+    let Boca1: go.ObjectData | null = null;
       let Boca2: go.ObjectData | null = null;
       let Boca3: go.ObjectData | null = null;
       let Boca4: go.ObjectData | null = null;
@@ -1163,7 +1230,7 @@ private desenharSplitters() {
       let Splitter1: go.ObjectData | null = null;//= this.splitter12.getModelDefinition();
       let Drop1: go.ObjectData | null = null;
 
-
+      /*
       //setTimeout(() => {this.extraiTipoCabosBocas()},500)
 
       if (this.VetorTipoCabos[0]) {setTimeout(() => {console.log('capacidade do cabo na boca 1',this.VetorTipoCabos[0].capacidade);},1000)}
@@ -1177,7 +1244,7 @@ private desenharSplitters() {
 
       //  if (this.VetorBocas[0].BOCA1!=" ") {
           
-
+      */
 
        
         // -----------------------------------------------define MODELO cabo BOCA01 --------------------------------------
@@ -1633,130 +1700,17 @@ private desenharSplitters() {
             };
           }
         }
-       
-      
- // -----------------------------------------------
-
-
-
-        // Configurando o LinkTemplate para conexões entre cabos
-        // Modificando para que as conexões liguem diretamente aos portos
-        this.diagram.linkTemplate =
-          new go.Link({
-            routing:go.Routing.AvoidsNodes, // go.Routing.Orthogonal ,  // Conexões ortogonais (90 graus)
-            curve: go.Curve.None, // fica confuso as opçoes
-            corner: 8,
-            toShortLength: 5,
-            reshapable: true,
-            resegmentable: true,                    
-            // Essencial: conecções de porta para porta (não do centro do nó)
-            fromEndSegmentLength: 25,
-            toEndSegmentLength: 25,
-            // Adicione validação de conexão para respeitar os limites
-            relinkableFrom: true,
-            relinkableTo: true,
-            
-          })
-          .add(
-            new go.Shape({
-              strokeWidth: 3.5,
-              stroke: "#2196F3"
-            })
-          )
-          .add(
-            new go.Shape({  // Seta na ponta da linha
-              toArrow: "Standard",
-              stroke: null,
-              fill: "#2F4F4F",
-              scale: 0.8
-            })
-          );
-        
-                 
-
-
-        const model = new go.GraphLinksModel({
-
-      // Importante: uso explícito das propriedades da porta
-        linkFromPortIdProperty: "fromPort",
-        linkToPortIdProperty: "toPort",
-        
-        
-        
-      });
-
-        // Configurando os nós no modelo
-
-
-        //model.nodeDataArray = [Boca1, Boca2, Boca3];
-        // Filtre valores nulos antes de adicioná-los ao array
-        // comentei em 030525 para por texto digrama da caixa model.nodeDataArray = [Boca1, Boca2, Boca3, Boca4, Boca5, Boca6, Boca7, Boca8].filter(boca => boca !== null );
 
 
         const nodeDataArray = [
           Boca1, Boca2, Boca3, Boca4, Boca5, Boca6, Boca7, Boca8, Boca9, Boca10, Boca11, Boca12, Boca13, Boca14, Boca15, Boca16, Boca17, Boca18, Splitter1, Drop1,
           { key: "title", category: "text", text: "Diagrama da Caixa", loc: "-500 -200",layerName: "Foreground" }
         ].filter(node => node !== null);
-        
-        model.nodeDataArray = nodeDataArray;
 
 
-        
-        model.linkDataArray = [];  // Inicialmente sem conexões
-        
-        // Atribuindo o modelo ao diagrama
-        this.diagram.model = model;
+        model.nodeDataArray = nodeDataArray
 
 
-        
-        //this.carregarConexoesBocas();
-
-
-
-
-
-        //=================================detectar conexoes==========================================
-        //=================================//=================================//======================
-
-        this.diagram.addDiagramListener("LinkDrawn", (e: go.DiagramEvent) => {
-          const link = e.subject as go.Link;
-
-          // Verificar se o objeto clicado é realmente um link
-          if (!(link instanceof go.Link)) return;
-          
-          // Obtendo os nós (cabos) de origem e destino
-          const fromNode = link.fromNode;
-          const toNode = link.toNode;
-          
-          // Obtendo as portas de origem e destino
-          const fromPort = link.fromPort;
-          const toPort = link.toPort;
-
-          if (fromNode && toNode && fromPort && toPort) {
-            // Obtendo os números das portas (F1, F2, etc)
-            const fromPortNumber = fromPort.portId;
-            const toPortNumber = toPort.portId;
-            
-            // Obtendo os identificadores dos cabos
-            const fromCableKey = fromNode.data.key;
-            const toCableKey = toNode.data.key;
-
-            console.log("Nova Conexão Detectada:");
-            console.log("  Cabo Origem:", fromCableKey);
-            console.log("  Porta Origem:", fromPortNumber);
-            console.log("  Cabo Destino:", toCableKey);
-            console.log("  Porta Destino:", toPortNumber);
-
-          }});
-
-        //=================================//=================================//=================================
-        //=================================     
-       
-
-
-
-        // Aplicar o flip horizontal ao cabo2 após o diagrama ser inicializado
-        // Verificar e manipular o cabo2 após inicialização
         setTimeout(() => {
           if (!this.diagram) return;
           // Métodos alternativos para encontrar o nó
@@ -2070,8 +2024,7 @@ private desenharSplitters() {
           
             }
           
-            
-          
+                     
           
              else {
             console.error("Não foi possível encontrar o cabo por nenhum método");
@@ -2079,9 +2032,275 @@ private desenharSplitters() {
           }
           // Finaliza a transação única
           
-        }, 100);
+        }, 1);
+
+
+     
+  }
+
+
+
+//DIAGRAMA=============================================================================================================
+//==============================================================================================================
+//======================================= inicicialise diagrama ===============================================
+  private initializeDiagram(): void {
+    if (!this.diagramDiv?.nativeElement) {
+      console.error('Elemento DOM do diagrama não encontrado');
+      this.initializationError = 'Erro: Elemento do diagrama não encontrado';
+      this.cdr.detectChanges();
+      return;
+    }
+
+    try {
+      
+      console.log('Iniciando criação do diagrama');
+      this.ngZone.runOutsideAngular(() => {
+        // Remover diagrama existente se houver
+        if (this.diagram) {
+          this.diagram.allowVerticalScroll=true;
+          this.diagram.allowHorizontalScroll=true;
+          this.diagram.scrollMode
+          this.diagram.commandHandler.zoomToFit
+          //this.diagram.allowZoom=false;
+          
+          console.log('Removendo diagrama existente');
+          this.diagram.div = null;
+          this.diagram = null;
+          // Resetar a flag quando o diagrama for recriado
+          this.conexoesCriadas = false;
+        }
+
+        // Criando um novo diagrama
+        this.diagram = new go.Diagram(this.diagramDiv?.nativeElement, {
+          "undoManager.isEnabled": true,
+          //"toolManager.mouseWheelBehavior": go.ToolManager.WheelZoom,
+          "toolManager.mouseWheelBehavior": go.WheelMode.Zoom,
+          "grid.visible": true,
+          "grid.gridCellSize": new go.Size(20, 20),
+          allowDrop: true,
+          allowLink: true,
+          allowRelink: true,
+          
+          //"initialAutoScale": go.Diagram.Uniform,
+          "initialAutoScale": go.AutoScale.Uniform,
+          "initialContentAlignment": go.Spot.Center,
+          "maxScale": 3,
+          "minScale": 0.09,
+          padding: new go.Margin(200, 40, 40, 40),
+          "linkingTool.isUnconnectedLinkValid": false,
+          "linkingTool.portGravity": 20,
+          "relinkingTool.isUnconnectedLinkValid": false,
+          "relinkingTool.portGravity": 20,
+          "relinkingTool.fromHandleArchetype":
+            new go.Shape("Diamond", { 
+              segmentIndex: 0, 
+              cursor: "pointer", 
+              desiredSize: new go.Size(8, 8), 
+              fill: "tomato", 
+              stroke: "darkred" 
+            }),
+          "relinkingTool.toHandleArchetype":
+            new go.Shape("Diamond", { 
+              segmentIndex: -1, 
+              cursor: "pointer", 
+              desiredSize: new go.Size(8, 8), 
+              fill: "darkred", 
+              stroke: "tomato" 
+            })
+        });
+        this.diagram.commandHandler.zoomFactor=1.3;
+        this.diagram.scrollToRect=scroll;
+        //this.diagram.zoomToFit;;
+        //this.diagram.toolManager.showToolTip;
+
+        // Inicializar e configurar o AvoidsLinksRouter
+        this.avoidsLinksRouter = new AvoidsLinksRouter();
+        this.avoidsLinksRouter.epsilonDistance = 15; // Distância entre links paralelos
+        this.avoidsLinksRouter.linkSpacing=30;
+        this.diagram.routers.push(this.avoidsLinksRouter);
+        console.log('AvoidsLinksRouter adicionado ao diagrama');
+
+
+
+        // Adicionar listener para capturar movimento de cabos
+        this.diagram.addDiagramListener("SelectionMoved", (e: go.DiagramEvent) => {
+          e.subject.each((node: go.Node) => {
+            if (node.data.key && node.data.key.startsWith("Boca")) {
+              console.log(`Cabo ${node.data.key} movido para:`, {
+                x: node.position.x,
+                y: node.position.y
+              });
+            }
+          });
+        });
+
+
+
+
+
+
+        // Definindo o modelo de nós para o diagrama
+        // Agora usando o nodeTemplate definido no componente do modelo
+
+        const caboTemplateMap = new go.Map<string, go.Node>();
+        caboTemplateMap.add("cabo6F_D", this.cabo6FNAC_D.getNodeTemplate());
+        caboTemplateMap.add("cabo6F", this.cabo6FNAC.getNodeTemplate());
+        caboTemplateMap.add("cabo8F_D", this.cabo8FNAC_D.getNodeTemplate());
+        caboTemplateMap.add("cabo8F", this.cabo8FNAC.getNodeTemplate());
+        caboTemplateMap.add("cabo", this.cabo12FNAC.getNodeTemplate());
+        caboTemplateMap.add("caboD", this.cabo12FNAC_D.getNodeTemplate());
+        caboTemplateMap.add("cabo24F", this.cabo24FNAC.getNodeTemplate());
+        caboTemplateMap.add("cabo24F_D", this.cabo24FNAC_D.getNodeTemplate());
+        caboTemplateMap.add("cabo36F", this.cabo36FNAC.getNodeTemplate());
+        caboTemplateMap.add("cabo36F_D", this.cabo36FNAC_D.getNodeTemplate());
+        caboTemplateMap.add("cabo48F_D", this.cabo48FNAC_D.getNodeTemplate());
+        caboTemplateMap.add("cabo48F", this.cabo48FNAC.getNodeTemplate());
+        caboTemplateMap.add("cabo72F_D", this.cabo72FNAC_D.getNodeTemplate());
+        caboTemplateMap.add("cabo72F", this.cabo72FNAC.getNodeTemplate());
+        caboTemplateMap.add("splitter12", this.splitter12.getNodeTemplate());
+        // Adicionar templates para cada tipo de splitter
+        caboTemplateMap.add("splitter12", this.splitter12.getNodeTemplate());
+        caboTemplateMap.add("splitter14", this.splitter14.getNodeTemplate());
+        caboTemplateMap.add("splitter18", this.splitter18.getNodeTemplate());
+        caboTemplateMap.add("splitter116", this.splitter116.getNodeTemplate());
+        caboTemplateMap.add("splitterDesb", this.splitterDesb.getNodeTemplate());
+        
+        // Adicionar templates genéricos para outros tipos de splitters que ainda não têm componentes específicos
+        caboTemplateMap.add("splitter132", this.splitter116.getNodeTemplate());
+        caboTemplateMap.add("splitter164", this.splitter116.getNodeTemplate());
+        caboTemplateMap.add("splitter1128", this.splitter116.getNodeTemplate());
+        caboTemplateMap.add("splitter1256", this.splitter116.getNodeTemplate());
+
+        // Adicionar templates DROPS
+        caboTemplateMap.add("cabo1F", this.cabo1FNAC.getNodeTemplate());
+        caboTemplateMap.add("cabo1F_D", this.cabo1FNAC_D.getNodeTemplate());
+
+        // Obtendo a definição do modelo do componente Cabo_12F_NAC
+        this.diagram.nodeTemplateMap = caboTemplateMap;
 
         
+       
+
+        
+       // Adicionar um template para o texto do título --- texto adicionado para o diagram sempre esta abaixo da marca dagua
+       this.diagram.nodeTemplateMap.add("text",
+        new go.Node("Spot")
+          .add(
+            new go.TextBlock({
+              font: "bold 16pt sans-serif",
+              stroke: "white",
+              margin: 10,
+              editable: false,
+              
+            })
+            .bind("text")
+          )
+          // Garantir que o nó de texto não seja movido pelas outras partes do diagrama
+          .bind(new go.Binding("position", "loc", go.Point.parse).makeTwoWay(go.Point.stringify))
+          // Desabilitar a movimentação pelo usuário
+          //.movable(false)
+         
+      );
+        
+
+
+     
+
+        // Configurando o LinkTemplate para conexões entre cabos
+        // Modificando para que as conexões liguem diretamente aos portos
+        this.diagram.linkTemplate =
+          new go.Link({
+            routing:go.Routing.AvoidsNodes, // go.Routing.Orthogonal ,  // Conexões ortogonais (90 graus)
+            curve: go.Curve.None, // fica confuso as opçoes
+            corner: 8,
+            toShortLength: 5,
+            reshapable: true,
+            resegmentable: true,                    
+            // Essencial: conecções de porta para porta (não do centro do nó)
+            fromEndSegmentLength: 25,
+            toEndSegmentLength: 25,
+            // Adicione validação de conexão para respeitar os limites
+            relinkableFrom: true,
+            relinkableTo: true,
+            
+          })
+          .add(
+            new go.Shape({
+              strokeWidth: 3.5,
+              stroke: "#2196F3"
+            })
+          )
+          .add(
+            new go.Shape({  // Seta na ponta da linha
+              toArrow: "Standard",
+              stroke: null,
+              fill: "#2F4F4F",
+              scale: 0.8
+            })
+          );
+        
+                 
+
+
+        const model = new go.GraphLinksModel({
+
+      // Importante: uso explícito das propriedades da porta
+        linkFromPortIdProperty: "fromPort",
+        linkToPortIdProperty: "toPort",
+        
+        
+        
+      });
+
+        
+  
+        model.linkDataArray = [];  // Inicialmente sem conexões
+        
+        // Atribuindo o modelo ao diagrama
+        this.diagram.model = model;
+
+        
+        
+
+        //=================================detectar conexoes==========================================
+        //=================================//=================================//======================
+
+        this.diagram.addDiagramListener("LinkDrawn", (e: go.DiagramEvent) => {
+          const link = e.subject as go.Link;
+
+          // Verificar se o objeto clicado é realmente um link
+          if (!(link instanceof go.Link)) return;
+          
+          // Obtendo os nós (cabos) de origem e destino
+          const fromNode = link.fromNode;
+          const toNode = link.toNode;
+          
+          // Obtendo as portas de origem e destino
+          const fromPort = link.fromPort;
+          const toPort = link.toPort;
+
+          if (fromNode && toNode && fromPort && toPort) {
+            // Obtendo os números das portas (F1, F2, etc)
+            const fromPortNumber = fromPort.portId;
+            const toPortNumber = toPort.portId;
+            
+            // Obtendo os identificadores dos cabos
+            const fromCableKey = fromNode.data.key;
+            const toCableKey = toNode.data.key;
+
+            console.log("Nova Conexão Detectada:");
+            console.log("  Cabo Origem:", fromCableKey);
+            console.log("  Porta Origem:", fromPortNumber);
+            console.log("  Cabo Destino:", toCableKey);
+            console.log("  Porta Destino:", toPortNumber);
+
+          }});
+
+        //=================================//=================================//=================================
+        //=================================     
+       
+
+
         
 
         console.log('Diagrama criado com dois cabos do modelo Cabo_12F_NAC com suporte a conexões específicas de porta');
@@ -2092,21 +2311,50 @@ private desenharSplitters() {
           this.diagramInitialized = true;
           this.initializationError = null;
           this.cdr.detectChanges();
+
+          // 🚀 NOVO - Tentar adicionar cabos se já carregados
+          if (this.VetorBocas.length > 0 && this.VetorTipoCabos.length > 0 && !this.cabosInicializados) {
+            console.log('🎨 Dados dos cabos já carregados, adicionando ao diagrama...');
+            this.adicionarCabosAoDiagrama();
+            this.cabosInicializados = true;
+          }
                     
-          // Criar conexões automáticas apenas uma vez após o diagrama estar pronto
-          // e todos os nós terem sido configurados
+          
+
+          // 🚀 NOVO - Tentar adicionar splitters se já carregados
+          if (this.VetorSplitter.length > 0 && !this.splittersInicializados) {
+            console.log('🎨 Dados dos splitters já carregados, adicionando ao diagrama...');
+            this.adicionarSplittersAoDiagrama();
+            this.splittersInicializados = true;
+          }
+
+          console.log('drop this.diagram:',this.diagram,'!this.gojsDropComponent.isDropsInicializados:',!this.gojsDropComponent.isDropsInicializados,'this.gojsDropComponent.vetorPopsCli.length > 0',this.gojsDropComponent.vetorPopsCli.length > 0)
+          
+
+          // 🔄 NOVO - Adicionar drops usando o serviço
           setTimeout(() => {
-            if (!this.conexoesCriadas) {
-              //this.criarConexoesAutomaticas();
-              this.carregarConexoesBocas()
-              //this.conexoesCriadas = true;
-            }
-            // Desenhar splitters se já estiverem carregados
-            if (this.VetorSplitter && this.VetorSplitter.length > 0) {
-              this.desenharSplitters();
-            }
-          }, 300);
+          if (this.diagram && !this.gojsDropComponent.isDropsInicializados && this.gojsDropComponent.vetorPopsCli.length > 0) {
+            console.log('🎨 Adicionando drops ao diagrama...');
+            
+            this.gojsDropComponent.adicionarDropsAoDiagrama(this.diagram);
+          } 
+          },100);
+
+          
+
+
+       /*   if (this.diagram && !this.dropsInicializados && this.VetorPopsCli.length > 0) {
+        console.log('🎨 Adicionando drops ao diagrama...');
+        this.adicionarDropsAoDiagrama();
+        this.dropsInicializados = true;
+      }
+      */
+          
+
+
         });
+
+
       });
     } catch (err: any) {
       console.error('Erro ao inicializar diagrama:', err);
@@ -2114,10 +2362,18 @@ private desenharSplitters() {
       this.diagramInitialized = false;
       this.cdr.detectChanges();
     }
+
+
+
+    setTimeout(() => {this.carregarConexoesBocas()},1); 
+    setTimeout(() => {this.carregarConexoesSplitters()},1);
+    setTimeout(() => {this.carregarConexoesBocas9798()},1);
+    //setTimeout(() => {this.adicionarDropsAoDiagrama()},1);
+    
+    //setTimeout(() => {this.selecionar_cabo99()},1); 
+
+
   }
-
-
-      
 
 
   
@@ -2154,10 +2410,62 @@ private restaurarCursor(): void {
   }
 }
 
+  exportarDiagramaParaPDF(): void {
+    if (!this.diagram) {
+      console.log('Diagrama não está disponível para exportação');
+      return;
+    }
 
- 
+    try {
+      console.log('Iniciando exportação do diagrama para PDF...');
+      
+      // Capturar imagem do diagrama com alta qualidade
+      const imageData = this.diagram.makeImageData({
+        scale: 2,
+        maxSize: new go.Size(6000, 7000),
+        type: "image/png",
+        background: "white",
+        returnType: "string"
+      });
 
+      if (!imageData) {
+        console.error('Falha ao gerar imagem do diagrama');
+        return;
+      }
 
-
-  
+      // Criar PDF em formato landscape para melhor visualização
+      //const pdf = new jsPDF('landscape', 'mm', 'a4');
+      const pdf = new jsPDF('portrait', 'mm', 'a4');
+      
+      // Dimensões da página A4 landscape: 297x210mm
+      const pageWidth = 210;
+      const pageHeight = 297;
+      const margin = 10;
+      
+      // Calcular dimensões da imagem mantendo proporção
+      const maxWidth = pageWidth - (margin * 2);
+      const maxHeight = pageHeight - (margin * 2);
+      
+      // Adicionar título
+      pdf.setFontSize(16);
+      pdf.text('Diagrama de Conexões - FiberWorks', pageWidth / 2, 15, { align: 'center' });
+      
+      // Adicionar imagem
+      pdf.addImage(imageData, 'PNG', margin, 25, maxWidth, maxHeight - 15);
+      
+      // Adicionar rodapé com data
+      pdf.setFontSize(10);
+      const dataAtual = new Date().toLocaleDateString('pt-BR');
+      pdf.text(`Gerado em: ${dataAtual}`, margin, pageHeight - 5);
+      
+      // Salvar o PDF
+      const nomeArquivo = `diagrama-conexoes-${new Date().getTime()}.pdf`;
+      pdf.save(nomeArquivo);
+      
+      console.log(`PDF exportado com sucesso: ${nomeArquivo}`);
+      
+    } catch (error) {
+      console.error('Erro ao exportar diagrama para PDF:', error);
+    }
+  }
 }

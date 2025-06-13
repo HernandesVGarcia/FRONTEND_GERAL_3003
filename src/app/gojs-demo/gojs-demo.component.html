@@ -26,14 +26,19 @@
           
         </div>
         <div class="gojs-container">
-          <span class="close-button" (click)="close()">&times;</span>
+          <span class="close-button" (click)="close($event)">&times;</span>
 
           <div class="instruction-panel">
             
             
           </div>
           <div class="diagram-container">
-            <div class="watermark-cover"></div>
+            <div class="watermark-cover">
+            <button class="export-pdf-button" (click)="exportarDiagramaParaPDF()">
+            📄 Imprimir PDF
+          </button>
+        </div>
+
             <div #diagramDiv class="diagram-div"></div>
           </div>
           <div class="diagram-info" *ngIf="diagramInitialized">

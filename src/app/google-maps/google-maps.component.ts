@@ -90,7 +90,7 @@ private map?: (google.maps.Map);
     clickable: true,
     visible: true,
     zIndex: 1,
-    draggable: true,
+    draggable: false,
     editable: false
 
   }
@@ -102,7 +102,7 @@ private map?: (google.maps.Map);
     clickable: true,
     visible: true,
     zIndex: 1,
-    draggable: true,
+    draggable: false,
     editable: false
 
   }
@@ -114,7 +114,7 @@ private map?: (google.maps.Map);
     clickable: true,
     visible: true,
     zIndex: 1,
-    draggable: true,
+    draggable: false,
     editable: false
 
   }
@@ -126,7 +126,7 @@ private map?: (google.maps.Map);
       clickable: true,
       visible: true,
       zIndex: 1,
-      draggable: true,
+      draggable: false,
       editable: false
 
      
@@ -141,7 +141,7 @@ private map?: (google.maps.Map);
     clickable: true,
     visible: true,
     zIndex: 1,
-    draggable: true,
+    draggable: false,
     editable: false
 
    
@@ -156,7 +156,7 @@ polylineOptions48f: google.maps.PolylineOptions = {
   clickable: true,
   visible: true,
   zIndex: 1,
-  draggable: true,
+  draggable: false,
   editable: false
  
 
@@ -169,7 +169,7 @@ polylineOptions72f: google.maps.PolylineOptions = {
   clickable: true,
   visible: true,
   zIndex: 1,
-  draggable: true,
+  draggable: false,
   editable: false
 
   
@@ -274,7 +274,7 @@ polylineOptions72f: google.maps.PolylineOptions = {
           const markerOptions: google.maps.MarkerOptions = {
             position: position,
             title: location.numero || 'Sem número',
-            draggable: true,
+            draggable: false,
             label: {
               text: location.numero || 'S/N',
               color: 'blue',
@@ -355,7 +355,7 @@ polylineOptions72f: google.maps.PolylineOptions = {
       const markerOptions: google.maps.MarkerOptions = {
         position: position,
         title: location.numero || 'Sem número',
-        draggable: true,
+        draggable: false,
         label: {
           text: location.numero || 'S/N',
           color: 'blue',
@@ -689,6 +689,16 @@ polylineOptions72f: google.maps.PolylineOptions = {
   //==2 dispara o evento para monitorar os boundsChange para executar o callback de visible markers===========================
 
   onMapInitialized(map: google.maps.Map) {
+
+    //==========================================================para mobile
+    if (window.innerWidth < 768) {
+    map.setOptions({
+      gestureHandling: 'greedy', // Permite zoom com um dedo
+      disableDoubleClickZoom: false,
+      scrollwheel: true
+    });
+  } //===========================================================
+
     console.log('Map initialized successfully');
     this.map=map;
 

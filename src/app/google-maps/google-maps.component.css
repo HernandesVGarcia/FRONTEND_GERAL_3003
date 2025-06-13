@@ -2,4 +2,13 @@
     width: 100%;
     height: 100vh;
     position: relative;
+    overflow: hidden; /* Previne scroll desnecessário */
   }
+
+
+  /* Para telas menores (mobile) */
+@media (max-width: 768px) {
+  .map-container {
+    height: calc(100vh - 60px); /* Considera barras de navegação mobile */
+  }
+}
