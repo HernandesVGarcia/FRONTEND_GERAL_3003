@@ -55,6 +55,8 @@ import { Cabo_TipoService } from '../servico/cabo-tipo.service';
 import { GojsDropComponent } from '../gojs-drop/gojs-drop.component';
 import { ZoomPanTool } from '@syncfusion/ej2-angular-diagrams';
 import { PopClienteService } from '../servico/pop-cliente.service';
+import { UpdateBocaXYService} from '../servico/update-boca-xy.service';
+import { UpdateSplitterXYService} from '../servico/update-splitter-xy.service';
 import jsPDF from 'jspdf';
 
 @Component({
@@ -159,6 +161,8 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
      private conexSplitterService: ConexSplitterService,
      private conexSpSpService:ConexSpSpService,
      private gojsDropComponent: GojsDropComponent,
+     private UpdateBCXYService: UpdateBocaXYService,
+     private UpdateSPXYService: UpdateSplitterXYService,
      // 🆕 NOVO - Serviço para POPs
      private popClienteService: PopClienteService,
     ) {}
@@ -284,15 +288,28 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
     const model = this.diagram.model as go.GraphLinksModel;
     const splitterNodes: go.ObjectData[] = [];
     const posicoesSplitters: {id: string, x: number, y: number}[] = [];
+    let POSX=0;
+    let POSY=0;
     
     this.VetorSplitter.forEach((splitter, index) => {
-      const posX = 350;
-      const posY = 400 + (index * 400);
+
+      const posX = 750;
+      const posY = 1500 + (index * 400);
+
+      if (this.VetorSplitter[index].X != 0 || this.VetorSplitter[index].Y != 0 ){ 
+        POSX=Math.round(this.VetorSplitter[index].X),
+        POSY=Math.round(this.VetorSplitter[index].Y)
+         } else {
+          POSX= posX,
+          POSY= posY
+      }
+
+      
 
       posicoesSplitters.push({
         id: `Splitter${splitter.IDMETA || index}`,
-        x: posX,
-        y: posY
+        x: POSX,//posX,
+        y: POSY //posy,
       });
       
       let splitterModelDefinition: go.ObjectData;
@@ -319,7 +336,7 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
         ...splitterModelDefinition,
         key: `Splitter${splitter.IDMETA || index}`,
         labelText: `${splitter.LABEL || 'Splitter'} (${this.servicoSplitter.getSplitterName(splitter.TIPO_SPLITTER || 12)})`,
-        loc: `${posX} ${posY}`,
+        loc: `${POSX} ${POSY}`,
         idmeta: splitter.IDMETA,
         tipoSplitter: splitter.TIPO_SPLITTER,
       };
@@ -1704,7 +1721,7 @@ private desenharSplitters() {
 
         const nodeDataArray = [
           Boca1, Boca2, Boca3, Boca4, Boca5, Boca6, Boca7, Boca8, Boca9, Boca10, Boca11, Boca12, Boca13, Boca14, Boca15, Boca16, Boca17, Boca18, Splitter1, Drop1,
-          { key: "title", category: "text", text: "Diagrama da Caixa", loc: "-500 -200",layerName: "Foreground" }
+          { key: "title", category: "text", text: "Diagrama da Caixa", loc: "300 300",layerName: "Foreground" }
         ].filter(node => node !== null);
 
 
@@ -1730,7 +1747,9 @@ private desenharSplitters() {
                         node1.rotatable=true; 
                         node1.scale=1;
                         node1.movable=true;
-                        node1.position=new go.Point(0,0);
+                        if (this.VetorBocas[0].X1!=0 || this.VetorBocas[0].Y1 != 0) {node1.position=new go.Point(Math.round(this.VetorBocas[0].X1),Math.round(this.VetorBocas[0].Y1));}
+                        else {node1.position=new go.Point(500,500);
+                        }
                         this.diagram?.commitTransaction()
 
                         node1.data.labelText = this.VetorBocas[0].BOCA1 + "__Boca:1";
@@ -1738,11 +1757,8 @@ private desenharSplitters() {
 
                           
 
-
-
           }
-                        
-          
+                                  
           // Método 2: Como alternativa, usando findNodeForKey
           let node2 = this.diagram!.findNodeForKey("Boca2");
           //if (this.diagram) {console.log(this.diagram.model.nodeDataArray)}
@@ -1753,7 +1769,9 @@ private desenharSplitters() {
                         node2.resizable=true;
                         node2.rotatable=true;
                         node2.movable=true;
-                        node2.position=new go.Point(800,0);
+                        if (this.VetorBocas[0].X2!=0 || this.VetorBocas[0].Y2 != 0) {node2.position=new go.Point(Math.round(this.VetorBocas[0].X2),Math.round(this.VetorBocas[0].Y2));}
+                        else {node2.position=new go.Point(1500,500);
+                        }
                         node2.scale=1;                        
                         
                           node2.data.labelText = this.VetorBocas[0].BOCA2 + "__Boca:2";
@@ -1778,7 +1796,9 @@ private desenharSplitters() {
                         node3.resizable=true;
                         node3.rotatable=true;
                         node3.scale=1;  
-                        node3.position=new go.Point(-200,700);
+                        if (this.VetorBocas[0].X3!=0 || this.VetorBocas[0].Y3 != 0) {node3.position=new go.Point(Math.round(this.VetorBocas[0].X3),Math.round(this.VetorBocas[0].Y3));}
+                        else {node3.position=new go.Point(200,1000);
+                        }
                         node3.data.labelText = this.VetorBocas[0].BOCA3 + "__Boca:3";
                           this.diagram?.updateAllTargetBindings();  // força atualização do bindin}})             
 
@@ -1795,8 +1815,9 @@ private desenharSplitters() {
                         console.log("Aplicando transformação ao cabo4");
                         node4.resizable=true;
                         node4.rotatable=true;
-                        node4.scale=1;  
-                        node4.position=new go.Point(1000,700);
+                        node4.scale=1;
+                        if (this.VetorBocas[0].X4!=0 || this.VetorBocas[0].Y4 != 0) {node4.position=new go.Point(Math.round(this.VetorBocas[0].X4),Math.round(this.VetorBocas[0].Y4));}  
+                        else {node4.position=new go.Point(1000,1000);}
                         node4.data.labelText = this.VetorBocas[0].BOCA4 + "__Boca:4";
                           this.diagram?.updateAllTargetBindings();  // força atualização do bindin}})             
           
@@ -1811,8 +1832,9 @@ private desenharSplitters() {
                         console.log("Aplicando transformação ao cabo5");
                         node5.resizable=true;
                         node5.rotatable=true;
-                        node5.scale=1;  
-                        node5.position=new go.Point(0,1200);
+                        node5.scale=1;
+                        if (this.VetorBocas[0].X5!=0 || this.VetorBocas[0].Y5 != 0) {node5.position=new go.Point(Math.round(this.VetorBocas[0].X5),Math.round(this.VetorBocas[0].Y5));}    
+                        else {node5.position=new go.Point(200,1500)};
                         node5.data.labelText = this.VetorBocas[0].BOCA5 + "__Boca:5";
                           this.diagram?.updateAllTargetBindings();  // força atualização do bindin}})             
           
@@ -1826,8 +1848,9 @@ private desenharSplitters() {
                         console.log("Aplicando transformação ao cabo6");
                         node6.resizable=true;
                         node6.rotatable=true;
-                        node6.scale=1;  
-                        node6.position=new go.Point(800,1200);
+                        node6.scale=1;
+                        if (this.VetorBocas[0].X6!=0 || this.VetorBocas[0].Y6 != 0) {node6.position=new go.Point(Math.round(this.VetorBocas[0].X6),Math.round(this.VetorBocas[0].Y6));}    
+                        else {node6.position=new go.Point(1000,1500)};
                         node6.data.labelText = this.VetorBocas[0].BOCA6 + "__Boca:6";
                           this.diagram?.updateAllTargetBindings();  // força atualização do bindin}})             
           
@@ -1842,8 +1865,9 @@ private desenharSplitters() {
                         console.log("Aplicando transformação ao cabo7");
                         node7.resizable=true;
                         node7.rotatable=true;
-                        node7.scale=1;  
-                        node7.position=new go.Point(-200,1600);
+                        node7.scale=1;
+                        if (this.VetorBocas[0].X7!=0 || this.VetorBocas[0].Y7 != 0) {node7.position=new go.Point(Math.round(this.VetorBocas[0].X7),Math.round(this.VetorBocas[0].Y7));}  
+                        else {node7.position=new go.Point(0,1800)};
                         node7.data.labelText = this.VetorBocas[0].BOCA7 + "__Boca:7";
                           this.diagram?.updateAllTargetBindings();  // força atualização do bindin}})             
           
@@ -1858,8 +1882,9 @@ private desenharSplitters() {
                         console.log("Aplicando transformação ao cabo8");
                         node8.resizable=true;
                         node8.rotatable=true;
-                        node8.scale=1;  
-                        node8.position=new go.Point(1000,1600);
+                        node8.scale=1;
+                        if (this.VetorBocas[0].X8!=0 || this.VetorBocas[0].Y8 != 0) {node8.position=new go.Point(Math.round(this.VetorBocas[0].X8),Math.round(this.VetorBocas[0].Y8));}    
+                        else {node8.position=new go.Point(1200,1800);}
                         node8.data.labelText = this.VetorBocas[0].BOCA8 + "__Boca:8";
                           this.diagram?.updateAllTargetBindings();  // força atualização do bindin}})             
           
@@ -1874,8 +1899,9 @@ private desenharSplitters() {
                         console.log("Aplicando transformação ao cabo9");
                         node9.resizable=true;
                         node9.rotatable=true;
-                        node9.scale=1;  
-                        node9.position=new go.Point(-200,1900);
+                        node9.scale=1;
+                        if (this.VetorBocas[0].X9!=0 || this.VetorBocas[0].Y9 != 0) {node9.position=new go.Point(Math.round(this.VetorBocas[0].X9),Math.round(this.VetorBocas[0].Y9));}  
+                        else {node9.position=new go.Point(200,2000);}
                         node9.data.labelText = this.VetorBocas[0].BOCA9 + "__Boca:9";
                           this.diagram?.updateAllTargetBindings();  // força atualização do bindin}})             
           
@@ -1891,7 +1917,8 @@ private desenharSplitters() {
                         node10.resizable=true;
                         node10.rotatable=true;
                         node10.scale=1;  
-                        node10.position=new go.Point(1000,1900);
+                        if (this.VetorBocas[0].X10!=0 || this.VetorBocas[0].Y10 != 0) {node10.position=new go.Point(Math.round(this.VetorBocas[0].X10),Math.round(this.VetorBocas[0].Y10));}  
+                        else {node10.position=new go.Point(1000,2000);}
                         node10.data.labelText = this.VetorBocas[0].BOCA10 + "__Boca:10";
                           this.diagram?.updateAllTargetBindings();  // força atualização do bindin}})             
           
@@ -1906,8 +1933,9 @@ private desenharSplitters() {
                         console.log("Aplicando transformação ao cabo11");
                         node11.resizable=true;
                         node11.rotatable=true;
-                        node11.scale=1;  
-                        node11.position=new go.Point(0,2400);
+                        node11.scale=1; 
+                        if (this.VetorBocas[0].X11!=0 || this.VetorBocas[0].Y11 != 0) {node11.position=new go.Point(Math.round(this.VetorBocas[0].X11),Math.round(this.VetorBocas[0].Y11));}   
+                        else {node11.position=new go.Point(200,2500);}
                         node11.data.labelText = this.VetorBocas[0].BOCA11 + "__Boca:11";
                           this.diagram?.updateAllTargetBindings();  // força atualização do bindin}})             
           
@@ -1921,8 +1949,9 @@ private desenharSplitters() {
                         console.log("Aplicando transformação ao cabo12");
                         node12.resizable=true;
                         node12.rotatable=true;
-                        node12.scale=1;  
-                        node12.position=new go.Point(1000,2400);
+                        node12.scale=1;
+                        if (this.VetorBocas[0].X12!=0 || this.VetorBocas[0].Y12 != 0) {node12.position=new go.Point(Math.round(this.VetorBocas[0].X12),Math.round(this.VetorBocas[0].Y12));}  
+                        else{node12.position=new go.Point(1000,2500);}
                         node12.data.labelText = this.VetorBocas[0].BOCA12 + "__Boca:12";
                           this.diagram?.updateAllTargetBindings();  // força atualização do bindin}})             
           
@@ -1937,8 +1966,9 @@ private desenharSplitters() {
                         console.log("Aplicando transformação ao cabo13");
                         node13.resizable=true;
                         node13.rotatable=true;
-                        node13.scale=1;  
-                        node13.position=new go.Point(1000,2400);
+                        node13.scale=1;
+                        if (this.VetorBocas[0].X13!=0 || this.VetorBocas[0].Y13 != 0) {node13.position=new go.Point(Math.round(this.VetorBocas[0].X13),Math.round(this.VetorBocas[0].Y13));}  
+                        else{node13.position=new go.Point(200,3000);}
                         node13.data.labelText = this.VetorBocas[0].BOCA13 + "__Boca:13";
                           this.diagram?.updateAllTargetBindings();  // força atualização do bindin}})             
           
@@ -1953,8 +1983,9 @@ private desenharSplitters() {
                         console.log("Aplicando transformação ao cabo14");
                         node14.resizable=true;
                         node14.rotatable=true;
-                        node14.scale=1;  
-                        node14.position=new go.Point(1000,2400);
+                        node14.scale=1;
+                        if (this.VetorBocas[0].X14!=0 || this.VetorBocas[0].Y14 != 0) {node14.position=new go.Point(Math.round(this.VetorBocas[0].X14),Math.round(this.VetorBocas[0].Y14));}  
+                        else {node14.position=new go.Point(1000,3000);}
                         node14.data.labelText = this.VetorBocas[0].BOCA14 + "__Boca:14";
                           this.diagram?.updateAllTargetBindings();  // força atualização do bindin}})             
           
@@ -1969,8 +2000,9 @@ private desenharSplitters() {
                         console.log("Aplicando transformação ao cabo15");
                         node15.resizable=true;
                         node15.rotatable=true;
-                        node15.scale=1;  
-                        node15.position=new go.Point(-200,2800);
+                        node15.scale=1; 
+                        if (this.VetorBocas[0].X15!=0 || this.VetorBocas[0].Y15 != 0) {node15.position=new go.Point(Math.round(this.VetorBocas[0].X15),Math.round(this.VetorBocas[0].Y15));} 
+                        else {node15.position=new go.Point(200,3500);}
                         node15.data.labelText = this.VetorBocas[0].BOCA15 + "__Boca:15";
                           this.diagram?.updateAllTargetBindings();  // força atualização do bindin}})             
           
@@ -1985,8 +2017,9 @@ private desenharSplitters() {
                         console.log("Aplicando transformação ao cabo16");
                         node16.resizable=true;
                         node16.rotatable=true;
-                        node16.scale=1;  
-                        node16.position=new go.Point(1200,2800);
+                        node16.scale=1;
+                        if (this.VetorBocas[0].X16!=0 || this.VetorBocas[0].Y16 != 0) {node16.position=new go.Point(Math.round(this.VetorBocas[0].X16),Math.round(this.VetorBocas[0].Y16));}  
+                        else{node16.position=new go.Point(1000,3500);}
                         node16.data.labelText = this.VetorBocas[0].BOCA16 + "__Boca:16";
                           this.diagram?.updateAllTargetBindings();  // força atualização do bindin}})             
           
@@ -2001,8 +2034,9 @@ private desenharSplitters() {
                         console.log("Aplicando transformação ao cabo17");
                         node17.resizable=true;
                         node17.rotatable=true;
-                        node17.scale=1;  
-                        node17.position=new go.Point(0,3200);
+                        node17.scale=1; 
+                        if (this.VetorBocas[0].X17!=0 || this.VetorBocas[0].Y17 != 0) {node17.position=new go.Point(Math.round(this.VetorBocas[0].X17),Math.round(this.VetorBocas[0].Y17));} 
+                        else {node17.position=new go.Point(200,4000);}
                         node17.data.labelText = this.VetorBocas[0].BOCA17 + "__Boca:17";
                           this.diagram?.updateAllTargetBindings();  // força atualização do bindin}})             
           
@@ -2017,8 +2051,9 @@ private desenharSplitters() {
                         console.log("Aplicando transformação ao cabo18");
                         node18.resizable=true;
                         node18.rotatable=true;
-                        node18.scale=1;  
-                        node18.position=new go.Point(1000,3200);
+                        node18.scale=1;
+                        if (this.VetorBocas[0].X18!=0 || this.VetorBocas[0].Y18 != 0) {node18.position=new go.Point(Math.round(this.VetorBocas[0].X18),Math.round(this.VetorBocas[0].Y18));}  
+                        else {node18.position=new go.Point(1000,4000);}
                         node18.data.labelText = this.VetorBocas[0].BOCA18 + "__Boca:18";
                           this.diagram?.updateAllTargetBindings();  // força atualização do bindin}})             
           
@@ -2038,6 +2073,17 @@ private desenharSplitters() {
      
   }
 
+  private validarPosicaoYMinima(node: go.Node, newPosition: go.Point): go.Point {
+    // ⚠️ LIMITAÇÃO DE Y NEGATIVO: Impede que os nodes sejam arrastados para Y < 0
+    const minY = 10; // Coordenada Y mínima permitida
+    
+    if (newPosition.y < minY) {
+      console.log(`🚫 Node ${node.data.key} tentou mover para Y=${newPosition.y}, limitando para Y=${minY}`);
+      return new go.Point(newPosition.x, minY);
+    }
+    
+    return newPosition;
+  }
 
 
 //DIAGRAMA=============================================================================================================
@@ -2084,8 +2130,8 @@ private desenharSplitters() {
           //"initialAutoScale": go.Diagram.Uniform,
           "initialAutoScale": go.AutoScale.Uniform,
           "initialContentAlignment": go.Spot.Center,
-          "maxScale": 3,
-          "minScale": 0.09,
+          "maxScale": 2,    //====> ajuste zoom
+          "minScale": 0.2, //====> ajuste zoom
           padding: new go.Margin(200, 40, 40, 40),
           "linkingTool.isUnconnectedLinkValid": false,
           "linkingTool.portGravity": 20,
@@ -2106,7 +2152,21 @@ private desenharSplitters() {
               desiredSize: new go.Size(8, 8), 
               fill: "darkred", 
               stroke: "tomato" 
-            })
+
+
+              
+            }),
+
+        
+
+          // ⚠️ LIMITAÇÃO DE ARRASTE: Função para validar posições durante o movimento
+          "positionComputation": (diagram: go.Diagram, pt: go.Point) => {
+            // 🚫 Impede coordenadas X e Y negativas
+            return new go.Point(Math.max(-3000, pt.x), Math.max(0, pt.y));
+          }
+        
+
+
         });
         this.diagram.commandHandler.zoomFactor=1.3;
         this.diagram.scrollToRect=scroll;
@@ -2125,17 +2185,50 @@ private desenharSplitters() {
         // Adicionar listener para capturar movimento de cabos
         this.diagram.addDiagramListener("SelectionMoved", (e: go.DiagramEvent) => {
           e.subject.each((node: go.Node) => {
+
+            // ⚠️ VALIDAÇÃO DE POSIÇÃO Y: Verificar se o node foi movido para coordenada Y negativa
+            const currentPos = node.position;
+            const validatedPos = this.validarPosicaoYMinima(node, currentPos);
+            
+            // Se a posição foi ajustada, aplicar a correção
+            if (validatedPos.y !== currentPos.y) {
+              node.position = validatedPos;
+            }
+            //======================================================================================
+
+
+           
+
+
+
             if (node.data.key && node.data.key.startsWith("Boca")) {
-              console.log(`Cabo ${node.data.key} movido para:`, {
+              const apenasNumBoca = node.data.key.replace('Boca','');
+              console.log(`Cabo ${node.data.key} movido para POSIÇÃO:`, {
                 x: node.position.x,
                 y: node.position.y
               });
-            }
+              const xboca= node.position.x;
+              const yboca= node.position.y;
+              this.UpdateBCXYService.atualizar(xboca, yboca, apenasNumBoca).subscribe({next:(response)=>{console.log ('Coordenas Cabo atualizadas', response)}})
+              }
+              
+              if (node.data.key && node.data.key.startsWith("Splitter")) {
+              const apenasNumBoca = node.data.key.replace('Splitter','');
+              console.log(`Splitter ${node.data.key} movido para POSIÇÃO:`, {
+                x: node.position.x,
+                y: node.position.y
+              });
+              const xboca= node.position.x;
+              const yboca= node.position.y;
+              this.UpdateSPXYService.atualizar(xboca, yboca, apenasNumBoca).subscribe({next:(response)=>{console.log ('Coordenas Splitter atualizadas', response)}})
+              }
+
+
+
+
+
           });
         });
-
-
-
 
 
 
@@ -2366,7 +2459,7 @@ private desenharSplitters() {
 
 
     setTimeout(() => {this.carregarConexoesBocas()},1); 
-    setTimeout(() => {this.carregarConexoesSplitters()},1);
+    setTimeout(() => {this.carregarConexoesSplitters()},1000);
     setTimeout(() => {this.carregarConexoesBocas9798()},1);
     //setTimeout(() => {this.adicionarDropsAoDiagrama()},1);
     
@@ -2410,6 +2503,8 @@ private restaurarCursor(): void {
   }
 }
 
+ 
+
   exportarDiagramaParaPDF(): void {
     if (!this.diagram) {
       console.log('Diagrama não está disponível para exportação');
@@ -2419,50 +2514,77 @@ private restaurarCursor(): void {
     try {
       console.log('Iniciando exportação do diagrama para PDF...');
       
-      // Capturar imagem do diagrama com alta qualidade
+      // 🎯 CONFIGURAÇÃO PARA MANTER TAMANHO ORIGINAL:
       const imageData = this.diagram.makeImageData({
-        scale: 2,
-        maxSize: new go.Size(6000, 7000),
+        scale: 0.8,                    // 🔧 Escala 1:1 - sem ampliar
         type: "image/png",
         background: "white",
-        returnType: "string"
-      });
+        returnType: "string",
+        size: new go.Size(NaN, NaN)    // 🔧 Usa tamanho natural do diagrama
+      }) as string; // 🔧 CORRIGIDO: Cast explícito para string
 
       if (!imageData) {
         console.error('Falha ao gerar imagem do diagrama');
         return;
       }
 
-      // Criar PDF em formato landscape para melhor visualização
-      //const pdf = new jsPDF('landscape', 'mm', 'a4');
       const pdf = new jsPDF('portrait', 'mm', 'a4');
-      
-      // Dimensões da página A4 landscape: 297x210mm
       const pageWidth = 210;
       const pageHeight = 297;
-      const margin = 10;
+      const margin = 10; // 🔧 Margem maior para não encostar nas bordas
       
-      // Calcular dimensões da imagem mantendo proporção
-      const maxWidth = pageWidth - (margin * 2);
-      const maxHeight = pageHeight - (margin * 2);
+      // 🎯 SEM ESTICAMENTO - Usa tamanho natural da imagem:
+      const tempImg = new Image();
+      tempImg.onload = () => {
+        const imgWidth = tempImg.width;
+        const imgHeight = tempImg.height;
+        
+        // 🔧 Converte pixels para mm (72 DPI padrão)
+        const widthMM = imgWidth * 0.264583;
+        const heightMM = imgHeight * 0.264583;
+        
+        // 🔧 Calcula escala APENAS se a imagem for maior que a página
+        const maxWidth = pageWidth - (margin * 2);
+        const maxHeight = pageHeight - 20; // Espaço para título e rodapé
+        
+        let finalWidth = widthMM;
+        let finalHeight = heightMM;
+        
+        // 🔧 Só reduz se necessário, nunca aumenta
+        if (widthMM > maxWidth || heightMM > maxHeight) {
+          const scaleX = maxWidth / widthMM;
+          const scaleY = maxHeight / heightMM;
+          const scale = Math.min(scaleX, scaleY);
+          
+          finalWidth = widthMM * scale;
+          finalHeight = heightMM * scale;
+        }
+        
+        // 🔧 Centraliza na página
+        const x = (pageWidth - finalWidth) / 2;
+        const y = 10 + (maxHeight - finalHeight) / 2;
+        
+        // Adiciona título
+        pdf.setFontSize(12);
+        pdf.text('Diagrama de Conexões - FiberWorks', pageWidth / 2, 15, { align: 'center' });
+        
+        // 🎯 Adiciona imagem com tamanho calculado (sem esticar)
+        pdf.addImage(imageData, 'PNG', x, y, finalWidth, finalHeight);
+        
+        // Adiciona rodapé
+        pdf.setFontSize(10);
+        const dataAtual = new Date().toLocaleDateString('pt-BR');
+        pdf.text(`Gerado em: ${dataAtual}`, margin, pageHeight - 10);
+        
+        const nomeArquivo = `diagrama-conexoes-${new Date().getTime()}.pdf`;
+        pdf.save(nomeArquivo);
+        
+        console.log(`PDF exportado sem esticamento: ${nomeArquivo}`);
+        console.log(`Tamanho original: ${imgWidth}x${imgHeight}px`);
+        console.log(`Tamanho no PDF: ${finalWidth.toFixed(1)}x${finalHeight.toFixed(1)}mm`);
+      };
       
-      // Adicionar título
-      pdf.setFontSize(16);
-      pdf.text('Diagrama de Conexões - FiberWorks', pageWidth / 2, 15, { align: 'center' });
-      
-      // Adicionar imagem
-      pdf.addImage(imageData, 'PNG', margin, 25, maxWidth, maxHeight - 15);
-      
-      // Adicionar rodapé com data
-      pdf.setFontSize(10);
-      const dataAtual = new Date().toLocaleDateString('pt-BR');
-      pdf.text(`Gerado em: ${dataAtual}`, margin, pageHeight - 5);
-      
-      // Salvar o PDF
-      const nomeArquivo = `diagrama-conexoes-${new Date().getTime()}.pdf`;
-      pdf.save(nomeArquivo);
-      
-      console.log(`PDF exportado com sucesso: ${nomeArquivo}`);
+      tempImg.src = imageData;
       
     } catch (error) {
       console.error('Erro ao exportar diagrama para PDF:', error);

@@ -137,17 +137,17 @@ export class GojsDropComponent {
     
     vetorPopsCli.forEach((drop, index) => {
       const isLadoEsquerdo = index % 2 === 0;
-      const posX = isLadoEsquerdo ? -200 : 1200;
-      const posY = 400 + (index * 200);
+      const posX = isLadoEsquerdo ? 300 : 1700;// -200:1200
+      const posY = 800 + (index * 200);
      
       posicoesDrops.push({
         id: `${drop || index}`,
-        x: posX,
+        x: posX,  
         y: posY
       });
       
       let dropModelDefinition: go.ObjectData;
-      if (posX === -200) {
+      if (posX === 300) {
         dropModelDefinition = this.cabo1FNAC.getModelDefinition();
       } else {
         dropModelDefinition = this.cabo1FNAC_D.getModelDefinition();
