@@ -169,16 +169,20 @@
     left: 0;
     width: 100%;/*80%;*/
     height: 100%;
-    padding: 10px;
+    padding: 5px !important;
+    box-sizing: border-box;
   }
   
   .modal-content {
-    width: 95% !important;
+    width: calc(100% - 20px) !important;
     min-width: unset !important;
     max-width: none !important;
     max-height: 95vh !important;
     margin: 0 auto;
     position: static;
+    box-sizing: border-box;
+    left: 0 !important;
+    right: 0 !important;
   }
 
   .close-button {
@@ -191,7 +195,8 @@
   .gojs-container {
     margin-top: 0;
     height: 70vh;
-    padding: 10px;
+    padding: 8px;
+    box-sizing: border-box;
   }
 
   .diagram-container {
@@ -201,6 +206,8 @@
   .modal-header {
     position: relative;
     margin-bottom: 10px;
+    padding: 8px 12px;
+    box-sizing: border-box;
   }
   
   .export-pdf-button {
