@@ -167,14 +167,40 @@
 @media (max-width: 768px) {
   .modal {
     left: 0;
-    width: 80%;
+    width: 100%;/*80%;*/
+    height: 100%;
     padding: 10px;
   }
   
   .modal-content {
-    width: 95%;
-    max-height: 90vh;
+    width: 95% !important;
+    min-width: unset !important;
+    max-width: none !important;
+    max-height: 95vh !important;
     margin: 0 auto;
+    position: static;
+  }
+
+  .close-button {
+    top: 5px;
+    right: 10px;
+    font-size: 24px;
+    z-index: 1001;
+  }
+
+  .gojs-container {
+    margin-top: 0;
+    height: 70vh;
+    padding: 10px;
+  }
+
+  .diagram-container {
+    min-height: 400px;
+  }
+
+  .modal-header {
+    position: relative;
+    margin-bottom: 10px;
   }
   
   .export-pdf-button {
