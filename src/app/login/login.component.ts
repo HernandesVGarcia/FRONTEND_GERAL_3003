@@ -36,12 +36,23 @@ export class LoginComponent {
       .subscribe({
         next: (response: any) => {
           console.log('Login bem-sucedido:', response);
+          console.log('=================> response.lat' , response.lat, response.lng) 
+          console.log('=================> response.menu_ON', response.menu_ON)
           
           // Armazenar o token usando o AuthService
           if (response && response.token) {
             this.authService.setToken(response.token);
             // Armazenar o valor do polo
             this.authService.setPolo(response.polo);
+            this.authService.setLat(response.lat);
+            this.authService.setLng(response.lng);
+            this.authService.setceo_layer(response.ceo_layer);
+            this.authService.setcto_layer(response.cto_layer);
+            this.authService.setclientes_layer(response.clientes_layer);
+            this.authService.setmenu_on(response.menu_on);
+
+
+
             //this.router.navigate(['/mapa']);
             this.showCityModal = true;
             this.loading = false;

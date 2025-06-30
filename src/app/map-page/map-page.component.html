@@ -1,7 +1,10 @@
 <main>
     <app-toolbars></app-toolbars>
-    <app-menus></app-menus>
-    
+
+    <div
+    *ngIf="authService.getmenus_on() === '1'">
+    <app-menus></app-menus> 
+    </div>
 
     <app-fiber-map></app-fiber-map>
     

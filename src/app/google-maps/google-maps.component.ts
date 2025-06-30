@@ -39,9 +39,12 @@ export class GoogleMapsComponent implements OnInit, OnChanges {
 
   caixaSelecionada: string | null = null;
 
+  
+
   title: string = "Fiberworks";
   center: google.maps.LatLngLiteral = { lat: -23.326803, lng: -52.114882 };
-  zoom = 15;
+  //center: google.maps.LatLngLiteral = { lat: authService.getLat, lng: this.authService.lng };
+  zoom = 13;
   mapID = "My Project Angular";
 
   markerCaixas: google.maps.Marker[] = [];
@@ -182,6 +185,10 @@ polylineOptions72f: google.maps.PolylineOptions = {
   ngOnInit() {
     console.log('GoogleMapsComponent initialized');
     this.checkGoogleMapsAPI();
+    //const lat= this.authService.getLat
+    //const lng= this.authService.getLng
+    //center:google.maps.LatLngLiteral = { lat: lat, lng: lng};
+
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -414,7 +421,7 @@ polylineOptions72f: google.maps.PolylineOptions = {
 
       return [];
     } catch (e) {
-      console.error('Erro ao converter coordenadas:', e);
+      console.error('Erro ao converter coordenadas:', e ,coordString);
       return [];
     }
   }
@@ -715,10 +722,20 @@ polylineOptions72f: google.maps.PolylineOptions = {
   });
   //=========================================================== 
 
-    console.log('Map initialized successfully');
+    console.log('===================================>Map initialized successfully');
     this.map=map;
+    let lati:  string | null ;
+    let lngi:  string | null ;
 
-  
+    lati=this.authService.getLat() ;
+    lngi=this.authService.getLng() ;
+
+    console.log('====================================>coordenadas da cidade ===================================>', lati,lngi)
+
+    
+    if (lati && lngi ){
+    this.map.setCenter({lat:Number(lati), lng:Number(lngi)})
+    }
     this.map.addListener('zoom_changed', () => {
       if (!this.map) return;
       

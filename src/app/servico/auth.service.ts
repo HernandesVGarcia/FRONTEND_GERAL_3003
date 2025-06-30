@@ -9,6 +9,14 @@ export class AuthService {
   private readonly POLO_KEY = 'auth_polo';
   private readonly IDCIDADE_KEY = 'auth_idcidade';
   private readonly IDMETACX = 'auth_idmetacx'
+
+  private readonly LAT_PERFIL = 'auth_perfil_lat'
+  private readonly LNG_PERFIL = 'auth_perfil_lng'
+  private readonly CEO_PERFIL = 'auth_perfil_ceo'
+  private readonly CTO_PERFIL = 'auth_perfil_cto'
+  private readonly CLIENTES_PERFIL = 'auth_perfil_clientes'
+  private readonly MENUS_PERFIL = 'auth_perfil_menus'
+
   //constructor() {}
 
   // BehaviorSubject para monitorar mudanças no ID da cidade ***inserido*******/
@@ -87,9 +95,91 @@ export class AuthService {
     }
   }
 
+  setLat (lat:string |null): void {
+    if (lat) {
+      localStorage.setItem(this.LAT_PERFIL, lat);
+    } else {
+      localStorage.removeItem(this.LAT_PERFIL);
+    }
+  }
+
+  setLng (lng:string |null): void {
+    if (lng) {
+      localStorage.setItem(this.LNG_PERFIL, lng);
+    } else {
+      localStorage.removeItem(this.LNG_PERFIL);
+    }
+  }
+
+  setceo_layer (ceo_layer:string |null): void {
+    if (ceo_layer) {
+      localStorage.setItem(this.CEO_PERFIL, ceo_layer);
+    } else {
+      localStorage.removeItem(this.CEO_PERFIL);
+    }
+  }
+
+  setcto_layer (cto_layer:string |null): void {
+    if (cto_layer) {
+      localStorage.setItem(this.CTO_PERFIL, cto_layer);
+    } else {
+      localStorage.removeItem(this.CTO_PERFIL);
+    }
+  }
+
+  setclientes_layer (clientes_layer:string |null): void {
+    if (clientes_layer) {
+      localStorage.setItem(this.CLIENTES_PERFIL, clientes_layer);
+    } else {
+      localStorage.removeItem(this.CLIENTES_PERFIL);
+    }
+  }
+
+  setmenu_on (menus_on:string |null): void {
+    if (menus_on) {
+      localStorage.setItem(this.MENUS_PERFIL, menus_on);
+    } else {
+      localStorage.removeItem(this.MENUS_PERFIL);
+    }
+  }
+
+
+  
+
   getPolo(): string | null {
     return localStorage.getItem(this.POLO_KEY);
   }
+ 
+  getLat(): string | null {
+    return localStorage.getItem(this.LAT_PERFIL);
+  }
+
+  getLng(): string | null {
+    return localStorage.getItem(this.LNG_PERFIL);
+  }
+
+  getceo_layer(): string | null {
+    return localStorage.getItem(this.CEO_PERFIL);
+  }
+
+  getcto_layer(): string | null {
+    return localStorage.getItem(this.CTO_PERFIL);
+  }
+
+  getclientes_layer(): string | null {
+    return localStorage.getItem(this.CLIENTES_PERFIL);
+  }
+
+  getmenus_on(): string | null {
+    return localStorage.getItem(this.MENUS_PERFIL);
+  }
+
+
+
+
+
+
+
 
   isLoggedIn(): boolean {
     return !!this.getToken();

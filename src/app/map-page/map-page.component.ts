@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FiberMapComponent } from '../fiber-map/fiber-map.component';
 import { ToolbarsComponent} from '../toolbars/toolbars.component';
 import { MenusComponent } from '../menus/menus.component';
+import { AuthService} from '../servico/auth.service'
 //import { CaixaInternaSyncComponent } from '../caixa-interna-sync/caixa-interna-sync.component';
 
 
@@ -14,4 +15,14 @@ import { MenusComponent } from '../menus/menus.component';
   templateUrl: './map-page.component.html',   
   styleUrls: ['./map-page.component.css']
 })
-export class MapPageComponent {}
+export class MapPageComponent {
+
+constructor( 
+  public authService:AuthService
+){}
+
+ngOnInit(){
+
+  console.log ('---------------------->valor de menu_on ' , this.authService.getmenus_on())
+}
+}
