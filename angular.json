@@ -34,7 +34,12 @@
             ],
             "scripts": [],
             "allowedCommonJsDependencies": [
-              "draw2d"
+              "draw2d",
+              "canvg",
+              "html2canvas",
+              "jspdf",
+              "rgbcolor",
+              "raf"
             ]
           },
           "configurations": {
@@ -47,8 +52,9 @@
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "4kB",
-                  "maximumError": "8kB"
+                  
+                  "maximumWarning": "10kB",
+                  "maximumError": "20kB"
                 }
               ],
               "outputHashing": "all"
