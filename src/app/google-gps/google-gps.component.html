@@ -1,0 +1,20 @@
+<div class="gps-container">
+  <button 
+    class="gps-button"
+    (click)="getCurrentLocation()"
+    [disabled]="loading"
+    [class.loading]="loading">
+    <span class="gps-icon">📍</span>
+    <span class="gps-text">{{ loading ? 'Localizando...' : 'Minha Localização' }}</span>
+  </button>
+  
+  <div *ngIf="errorMessage" class="error-message">
+    {{ errorMessage }}
+  </div>
+  
+  <div *ngIf="locationInfo" class="location-info">
+    <p>Lat: {{ locationInfo.lat.toFixed(6) }}</p>
+    <p>Lng: {{ locationInfo.lng.toFixed(6) }}</p>
+    <p>Precisão: ~{{ locationInfo.accuracy }}m</p>
+  </div>
+</div>

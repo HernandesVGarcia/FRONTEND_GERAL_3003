@@ -23,12 +23,25 @@
     
     [center]="center"
     [zoom]="zoom"
+    [options]="mapOptions"
     width="99%"
     height="90vh"
     (mapInitialized)="onMapInitialized($event)">
 
+    <!-- Marcador da localização atual do usuário -->
+    <map-marker
+    class="custom-gps-overlay"
+    *ngIf="currentLocationMarker"
+      [position]="currentLocationMarker"
+      [options]="currentLocationMarkerOptions">
+          
+      
     
+    </map-marker>
 
+  
+    
+    
 
     <!--
     map-marker

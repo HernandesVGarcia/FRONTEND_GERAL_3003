@@ -14,6 +14,7 @@ import { Cto } from '../modelo/Cto';
 import { ChangeDetectorRef } from '@angular/core'; /// ============novo
 import { GoJSDemoComponent } from '../gojs-demo/gojs-demo.component';
 import { AuthService } from '../servico/auth.service';
+import { animate, animation } from '@angular/animations';
 
 @Component({
   selector: 'app-google-maps',
@@ -45,7 +46,31 @@ export class GoogleMapsComponent implements OnInit, OnChanges {
   center: google.maps.LatLngLiteral = { lat: -23.326803, lng: -52.114882 };
   //center: google.maps.LatLngLiteral = { lat: authService.getLat, lng: this.authService.lng };
   zoom = 13;
-  mapID = "My Project Angular";
+
+  mapOptions: google.maps.MapOptions = {
+  mapId : "My Project Angular",};
+
+
+  // Marcador da posição atual do usuário
+  currentLocationMarker: google.maps.LatLngLiteral | null = null;
+  currentLocationMarkerOptions: any = {
+    icon: {
+      path: google.maps.SymbolPath.BACKWARD_CLOSED_ARROW,
+      scale: 4,
+      fillColor: '#4285f4',
+      fillOpacity: 0.2,
+      strokeColor: '#4285f4',
+      strokeWeight: 3,
+      strokeOpacity: 0.3,
+      
+    },
+    
+    title: 'Sua localização atual',
+    animation: google.maps.Animation.BOUNCE,
+    
+    
+    
+  };
 
   markerCaixas: google.maps.Marker[] = [];
   markerCtos:google.maps.Marker[]=[];
@@ -185,11 +210,42 @@ polylineOptions72f: google.maps.PolylineOptions = {
   ngOnInit() {
     console.log('GoogleMapsComponent initialized');
     this.checkGoogleMapsAPI();
+    this.checkForGPSLocation();
     //const lat= this.authService.getLat
     //const lng= this.authService.getLng
     //center:google.maps.LatLngLiteral = { lat: lat, lng: lng};
 
   }
+
+  //MÉTODOS========================================================
+  checkForGPSLocation(): void {
+    // Verifica se há coordenadas GPS salvas no AuthService
+    const lat = this.authService.getLat();
+    const lng = this.authService.getLng();
+    
+    if (lat && lng) {
+      const latitude = parseFloat(lat);
+      const longitude = parseFloat(lng);
+      
+      if (!isNaN(latitude) && !isNaN(longitude)) {
+        this.centerMapOnLocation(latitude, longitude);
+      }
+    }
+  }
+
+  centerMapOnLocation(lat: number, lng: number): void {
+    // Centraliza o mapa na localização
+    this.center = { lat, lng };
+    this.zoom = 19; // Zoom mais próximo para localização GPS
+    
+    // Define o marcador da posição atual
+    this.currentLocationMarker = { lat, lng };
+    
+    
+
+console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
+}
+
 
   ngOnChanges(changes: SimpleChanges): void {
     console.log('ngOnChanges detectou mudança em destino:', changes['destino']);

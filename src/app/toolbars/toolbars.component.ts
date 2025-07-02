@@ -1,10 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import {MatToolbarModule} from '@angular/material/toolbar';
 import {MatIconModule} from '@angular/material/icon';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatSelectModule} from '@angular/material/select';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 import {MatInputModule} from '@angular/material/input';
 import {MatAutocompleteModule} from '@angular/material/autocomplete';
@@ -19,6 +20,7 @@ import { CitySelectModalComponent } from '../city-select-modal/city-select-modal
 //import { CaixaInternasyncComponent } from '../caixa-internasync/caixa-internasync.component';
 //import { AppComponent } from '../app.component';
 import {CaixaInternaSyncComponent} from '../caixa-interna-sync/caixa-interna-sync.component'
+import { GoogleGpsComponent } from '../google-gps/google-gps.component';
 
 @Component({
   selector: 'app-toolbars',
@@ -33,12 +35,15 @@ import {CaixaInternaSyncComponent} from '../caixa-interna-sync/caixa-interna-syn
     ReactiveFormsModule,
     CitySelectModalComponent,
     MatSelectModule,
-    CaixaInternaSyncComponent],
+    CaixaInternaSyncComponent,
+    GoogleGpsComponent,
+    MatTooltipModule],
   templateUrl: './toolbars.component.html',
   styleUrls: ['./toolbars.component.css'],
   standalone: true
 })
 export class ToolbarsComponent {
+  @ViewChild('gpsComponent') gpsComponent!: GoogleGpsComponent;
 
   cities: any[] = [];
   selectedCity: any;
@@ -129,9 +134,37 @@ export class ToolbarsComponent {
       onModalClosed(): void {
         console.log('Modal fechado sem seleção na toolbar');
         this.showCityModal = false;
+        window.location.reload();
       }
 
-      // Métodos para controlar o componente CaixaInternasync
+
+      // Métodos GPS
+  getCurrentLocation(): void {
+    console.log('Botão GPS clicado na toolbar');
+    this.gpsComponent.getCurrentLocation();
+  }
+
+  onLocationFound(location: {lat: number, lng: number, accuracy: number}): void {
+    console.log('Localização encontrada na toolbar:', location);
+    
+    // Armazenar a localização atual no AuthService
+    this.authService.setLat(location.lat.toString());
+    this.authService.setLng(location.lng.toString());
+    
+    // Aqui você pode adicionar lógica para centralizar o mapa na localização atual
+    // Por exemplo, emitir um evento para o componente do mapa
+    setTimeout(() => {
+      window.location.reload();
+    }, 1000);
+    //alert(`Localização encontrada!\nLat: ${location.lat.toFixed(6)}\nLng: ${location.lng.toFixed(6)}\nPrecisão: ~${location.accuracy}m`);
+  }
+
+  onLocationError(error: string): void {
+    console.error('Erro de localização na toolbar:', error);
+    alert(`Erro ao obter localização: ${error}`);
+  }
+
+  
   
 
 

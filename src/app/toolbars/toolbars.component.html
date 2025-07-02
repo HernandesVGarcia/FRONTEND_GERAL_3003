@@ -12,21 +12,25 @@
 
 
    <div class="toolbar-buttons">
-  <button mat-icon-button class="example-icon" aria-label="Menu" >
+  <button mat-icon-button class="example-icon" aria-label="Menu" matTooltip="Menu" matTooltipPosition="below">
     <mat-icon>menu</mat-icon>
   </button>
-  <button mat-icon-button class="example-icon favorite-icon" aria-label="Cancelar">
-    <mat-icon>cancelar</mat-icon>
+  <button mat-icon-button class="example-icon favorite-icon" aria-label="Cancelar" matTooltip="Cancelar" matTooltipPosition="below">
+    <mat-icon class="text-lg sm:text-xl">cancel</mat-icon>
   </button>
   <button mat-icon-button class="example-icon" aria-label="Compartilhar">
     <mat-icon>share</mat-icon>
   </button>
-  <button mat-icon-button class="toolbar-button ml-2" aria-label="Cidades" (click)="openCityModal()">
+  <button mat-icon-button class="toolbar-button ml-2" aria-label="Cidades" matTooltip="Selecionar Cidade" matTooltipPosition="below" (click)="openCityModal()">
     <mat-icon>location_city</mat-icon>
   </button>
-  <button mat-icon-button class="toolbar-button ml-2" aria-label="CaixaInterna" (click)="openCaixaModal()">
+  <!--<button mat-icon-button class="toolbar-button ml-2" aria-label="CaixaInterna" (click)="openCaixaModal()">
     <mat-icon>inventory</mat-icon>
-  </button>
+  </button> -->
+  <!-- Botão GPS -->
+    <button mat-icon-button class="toolbar-button ml-1 sm:ml-2" aria-label="Minha Localização" matTooltip="Minha Localização" matTooltipPosition="below" (click)="getCurrentLocation()">
+        <mat-icon class="text-lg sm:text-xl">my_location</mat-icon>
+    </button>
   </div>
   <!-- Novo botão para abrir CaixaInternasync -->
   
@@ -45,6 +49,17 @@
 </app-city-select-modal>
 
 
+<!-- Componente GPS (invisível, apenas para funcionalidade) -->
+<app-google-gps 
+  #gpsComponent
+  (locationFound)="onLocationFound($event)"
+  (locationError)="onLocationError($event)"
+  style="display: none;">
+</app-google-gps>
+
+
+
+
 <app-caixa-interna-sync
 *ngIf="showCaixaInterna"
 (onClose)="closeCaixaModal()"
@@ -52,3 +67,4 @@
   
 
 </app-caixa-interna-sync>
+
