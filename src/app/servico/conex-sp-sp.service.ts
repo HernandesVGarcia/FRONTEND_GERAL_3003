@@ -21,9 +21,6 @@ export class ConexSpSpService {
     private authService: AuthService
   ) {}
 
-
-  //====================================================================================================================
-
   private transformarConexoesBc97(dados: any, idMetaCx: string): ConexaoSplitter[] {
     const conexoes: ConexaoSplitter[] = [];
     
@@ -51,8 +48,7 @@ export class ConexSpSpService {
             
             conexoes.push({
               bocaOrigem: `Splitter${splitterId}`,
-              //fibraOrigem: chave, // F1, F2, etc
-              fibraOrigem: `F${fibraOrigem}`, // F1, F2, etc
+              fibraOrigem: `F${fibraOrigem}`,
               bocaDestino: `Splitter${splitterId}`,
               fibraDestino: chave
             });
@@ -64,8 +60,6 @@ export class ConexSpSpService {
     return conexoes;
   }
 
-  //==========================================================================================================
-
   private transformarConexoesBc98(dados: any, idMetaCx: string): ConexaoSplitter[] {
     const conexoes: ConexaoSplitter[] = [];
     
@@ -74,11 +68,8 @@ export class ConexSpSpService {
     
     if (dados && Array.isArray(dados)) {
       dadosArray = dados;
-      
     } else if (dados && dados.response && Array.isArray(dados.response)) {
       dadosArray = dados.response;
-      
-
     } else {
       console.error('Formato de dados inválido para BC98:', dados);
       return conexoes; // Retorna array vazio se os dados estiverem em formato inválido
@@ -104,73 +95,46 @@ export class ConexSpSpService {
       });
     });
     
-    //console.log('====> Conexões BC98:', conexoes);
     return conexoes;
   }
 
-
-  //============================================================================================================
   private processarConexoesEntreSplitters(conexoesBc97: ConexaoSplitter[], conexoesBc98: ConexaoSplitter[]): ConexaoSplitter[] {
-    // Criar um mapeamento de todas as saídas de splitters (BC97)
-    const mapaSaidasSplitter: Record<string, ConexaoSplitter[]> = {};
-    
-    // Agrupar todas as conexões BC97 (saídas) por splitter
-    conexoesBc97.forEach(conn => {
-      const key = conn.bocaOrigem;
-      if (!mapaSaidasSplitter[key]) {
-        mapaSaidasSplitter[key] = [];
-      }
-      mapaSaidasSplitter[key].push(conn);
-    });
-    
-    // Criar um mapeamento de todas as entradas de splitters (BC98)
-    const mapaEntradasSplitter: Record<string, ConexaoSplitter[]> = {};
-    
-    // Agrupar todas as conexões BC98 (entradas) por splitter
-    conexoesBc98.forEach(conn => {
-      const key = conn.bocaOrigem;
-      if (!mapaEntradasSplitter[key]) {
-        mapaEntradasSplitter[key] = [];
-      }
-      mapaEntradasSplitter[key].push(conn);
-    });
-    
-    // Agora criar conexões combinadas entre splitters
     const conexoesCombinadas: ConexaoSplitter[] = [];
     
-    // Para cada splitter que tem saídas
-    Object.entries(mapaSaidasSplitter).forEach(([splitterSaida, conexoesSaida]) => {
-      // Para cada splitter que tem entradas
-      Object.entries(mapaEntradasSplitter).forEach(([splitterEntrada, conexoesEntrada]) => {
-        // Se são splitters diferentes
-        if (splitterSaida !== splitterEntrada) {
-          // Para cada conexão de saída
-          conexoesSaida.forEach(saida => {
-            // Para cada conexão de entrada
-            conexoesEntrada.forEach(entrada => {
-              // Criar uma conexão entre os splitters
-              conexoesCombinadas.push({
-                bocaOrigem: saida.bocaOrigem,
-                fibraOrigem: saida.fibraOrigem,
-                bocaDestino: entrada.bocaOrigem,
-                fibraDestino: entrada.fibraDestino
-              });
-            });
-          });
-        }
-      });
+    // Criar um mapa das origens (BC97) organizadas por posição da fibra
+    const mapaOrigens: Record<string, ConexaoSplitter> = {};
+    conexoesBc97.forEach(conn => {
+      // Usar a fibraDestino (que é a posição F1, F2, etc.) como chave
+      mapaOrigens[conn.fibraDestino] = conn;
     });
     
-    //console.log('====> Conexões combinadas entre splitters:', conexoesCombinadas);
+    // Criar um mapa dos destinos (BC98) organizadas por posição da fibra
+    const mapaDestinos: Record<string, ConexaoSplitter> = {};
+    conexoesBc98.forEach(conn => {
+      // Usar a fibraOrigem (que é a posição F1, F2, etc.) como chave
+      mapaDestinos[conn.fibraOrigem] = conn;
+    });
     
-    // Se não encontramos nenhuma combinação, retornamos as conexões originais
-    if (conexoesCombinadas.length === 0) {
-      return [...conexoesBc97, ...conexoesBc98];
-    }
+    // Fazer o mapeamento correto: F1 da origem conecta com F1 do destino, etc.
+    Object.keys(mapaOrigens).forEach(posicaoFibra => {
+      const origem = mapaOrigens[posicaoFibra];
+      const destino = mapaDestinos[posicaoFibra];
+      
+      if (origem && destino) {
+        // Criar a conexão correta entre splitters diferentes
+        conexoesCombinadas.push({
+          bocaOrigem: origem.bocaOrigem,
+          fibraOrigem: origem.fibraOrigem,
+          bocaDestino: destino.bocaOrigem,
+          fibraDestino: 'ENTRADA'
+        });
+      }
+    });
     
+    console.log(`====> Conexões mapeadas corretamente: ${conexoesCombinadas.length}`);
     return conexoesCombinadas;
   }
-  //=============================================================================================================
+
   selecionarConexoesEntreSplitters(idMetaCx: string | undefined): Observable<ConexaoSplitter[]> {
     if (!idMetaCx) {
       console.error('ID META da caixa não definido');
@@ -216,19 +180,20 @@ export class ConexSpSpService {
     // Combinando os resultados das duas requisições
     return forkJoin([reqBc97, reqBc98]).pipe(
       map(([conexoesBc97, conexoesBc98]) => {
-        //console.log('====> Todas conexões da Boca 97 e 98 recebidas:', [...conexoesBc97, ...conexoesBc98]);
+        console.log('====bc97 data:', conexoesBc97);
+        console.log('====bc98 data:', conexoesBc98);
         
         // Processa as conexões para criar conexões combinadas entre splitters diferentes
         const conexoesProcessadas = this.processarConexoesEntreSplitters(conexoesBc97, conexoesBc98);
         
-        console.log(`Total de conexões entre splitters encontradas: ${conexoesProcessadas.length}`);
+        console.log(`===============> Total de conexões entre splitters encontradas: ${conexoesProcessadas.length}`);
         return conexoesProcessadas;
       }),
       catchError(this.handleError)
     );
   }
 
-  // =========================================================Método para permitir o uso de async/await
+  // Método para permitir o uso de async/await
   async selecionarConexoesEntreSplittersAsync(): Promise<ConexaoSplitter[]> {
     const idMetaCx = this.authService.getIDmetaCaixa();
     try {

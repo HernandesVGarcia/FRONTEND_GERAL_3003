@@ -876,6 +876,8 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
   }
   
   const linkDataArray = this.conexoesSPCarregadas.map(conexao => {
+console.log('======================================>Conexão: ' ,conexao.bocaOrigem,conexao.fibraOrigem,conexao.bocaDestino,conexao.fibraDestino)
+
     return {
       from: conexao.bocaOrigem,
       fromPort: conexao.fibraOrigem,
@@ -924,6 +926,8 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
   }
   
   const linkDataArray = this.conexoesCarregadasSpSp.map(conexaoSpSp => {
+  console.log('======================================>Conexão SPSP: ' ,conexaoSpSp.bocaOrigem,conexaoSpSp.fibraOrigem,conexaoSpSp.bocaDestino,conexaoSpSp.fibraDestino)
+
     return {
       from: conexaoSpSp.bocaOrigem,
       fromPort: conexaoSpSp.fibraOrigem,
@@ -2503,7 +2507,7 @@ private restaurarCursor(): void {
   }
 }
 
- 
+ //==========================================================IMPRIME PDF=====================================================
 
   exportarDiagramaParaPDF(): void {
     if (!this.diagram) {

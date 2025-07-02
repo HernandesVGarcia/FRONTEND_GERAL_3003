@@ -104,7 +104,7 @@ export class Cabo72FNacDComponent implements OnInit {
               strokeWidth: 1,
               width: this.width / 2,
               height: this.height / 6,
-              position: new go.Point(-0, 0),
+              position: new go.Point(-0, this.height / 6),
               name: "cabo72F_D_tube1"
             })
           )

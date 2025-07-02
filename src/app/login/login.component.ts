@@ -46,10 +46,12 @@ export class LoginComponent {
             this.authService.setPolo(response.polo);
             this.authService.setLat(response.lat);
             this.authService.setLng(response.lng);
-            this.authService.setceo_layer(response.ceo_layer);
-            this.authService.setcto_layer(response.cto_layer);
-            this.authService.setclientes_layer(response.clientes_layer);
-            this.authService.setmenu_on(response.menu_on);
+            this.authService.setceo_layer(response.ceo_layer.toString());
+            console.log('*************** ceo_layer vindo da api:', response.ceo_layer)
+            this.authService.setcto_layer(response.cto_layer.toString());
+            this.authService.setclientes_layer(response.clientes_layer.toString());
+            this.authService.setmenu_on(response.menu_on.toString());
+            this.authService.setcabos_layer(response.cabos_layer.toString());
 
 
 

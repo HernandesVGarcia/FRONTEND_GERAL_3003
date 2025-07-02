@@ -5,6 +5,9 @@ import { BehaviorSubject } from 'rxjs';
   providedIn: 'root'
 })
 export class AuthService {
+  static getmenus_on() {
+    throw new Error('Method not implemented.');
+  }
   private readonly TOKEN_KEY = 'auth_token';
   private readonly POLO_KEY = 'auth_polo';
   private readonly IDCIDADE_KEY = 'auth_idcidade';
@@ -16,6 +19,7 @@ export class AuthService {
   private readonly CTO_PERFIL = 'auth_perfil_cto'
   private readonly CLIENTES_PERFIL = 'auth_perfil_clientes'
   private readonly MENUS_PERFIL = 'auth_perfil_menus'
+  private readonly CABOS_PERFIL = 'auth_perfil_cabos'
 
   //constructor() {}
 
@@ -37,7 +41,7 @@ export class AuthService {
 
   getToken(): string | null {
     return localStorage.getItem(this.TOKEN_KEY);
-    return localStorage.getItem(this.POLO_KEY);
+    //return localStorage.getItem(this.POLO_KEY);
   }
 
 
@@ -143,6 +147,14 @@ export class AuthService {
     }
   }
 
+  setcabos_layer (cabos_layer:string |null): void {
+    if (cabos_layer) {
+      localStorage.setItem(this.CABOS_PERFIL, cabos_layer);
+    } else {
+      localStorage.removeItem(this.CABOS_PERFIL);
+    }
+  }
+
 
   
 
@@ -172,6 +184,10 @@ export class AuthService {
 
   getmenus_on(): string | null {
     return localStorage.getItem(this.MENUS_PERFIL);
+  }
+
+  getcabos_layer(): string | null {
+    return localStorage.getItem(this.CABOS_PERFIL);
   }
 
 

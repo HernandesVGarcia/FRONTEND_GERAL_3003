@@ -266,6 +266,9 @@ polylineOptions72f: google.maps.PolylineOptions = {
 
     // =============================== função para carregar o marcadores Caixas na tela =========
     private updateMarkers() {
+
+    const ceo_layer= this.authService.getceo_layer();
+    if(ceo_layer == '0')  {return} // flag visualiza CEO
     if (this.destino && this.destino.length > 0 && this.map) {
       this.markerCaixas.forEach(marker => marker.setMap(null));
       this.markerCaixas = [];
@@ -427,6 +430,13 @@ polylineOptions72f: google.maps.PolylineOptions = {
   }
 
   private updatePolylinesCabos6f() {
+
+    const cabo_layer= this.authService.getcabos_layer();
+    console.log(' cabos layer = ', cabo_layer);
+    if (cabo_layer =='0') return;
+
+
+
     if (!this.destinoCabos6f?.length) return;
     
     try {
@@ -467,6 +477,10 @@ polylineOptions72f: google.maps.PolylineOptions = {
 
 
   private updatePolylinesCabos8f() {
+
+    const cabo_layer= this.authService.getcabos_layer();
+    if (cabo_layer =='0') return;
+
     if (!this.destinoCabos8f?.length) return;
     
     try {
@@ -509,6 +523,11 @@ polylineOptions72f: google.maps.PolylineOptions = {
 
 
   private updatePolylinesCabos12f() {
+
+    const cabo_layer= this.authService.getcabos_layer();
+    if (cabo_layer =='0') return;
+
+
     if (!this.destinoCabos12f?.length) return;
     
     try {
@@ -548,6 +567,10 @@ polylineOptions72f: google.maps.PolylineOptions = {
 
 
   private updatePolylinesCabos24f() {
+
+    const cabo_layer= this.authService.getcabos_layer();
+    if (cabo_layer =='0') return;
+
     if (!this.destinoCabos24f?.length) return;
     
     try {
@@ -586,6 +609,11 @@ polylineOptions72f: google.maps.PolylineOptions = {
 
 
   private updatePolylinesCabos36f() {
+    
+    const cabo_layer= this.authService.getcabos_layer();
+    if (cabo_layer =='0') return;
+
+
     if (!this.destinoCabos36f?.length) return;
     
     try {
@@ -621,6 +649,10 @@ polylineOptions72f: google.maps.PolylineOptions = {
 
 
   private updatePolylinesCabos48f() {
+
+    const cabo_layer= this.authService.getcabos_layer();
+    if (cabo_layer =='0') return;
+
     if (!this.destinoCabos48f?.length) return;
     
     try {
@@ -655,6 +687,11 @@ polylineOptions72f: google.maps.PolylineOptions = {
   }
 
   private updatePolylinesCabos72f() {
+
+    const cabo_layer= this.authService.getcabos_layer();
+    if (cabo_layer =='0') return;
+
+
     if (!this.destinoCabos72f?.length) return;
     
     try {
@@ -772,40 +809,55 @@ polylineOptions72f: google.maps.PolylineOptions = {
 // verifica bounds.contains(position)se o marcador está dentro dos limites visíveis do mapa atual
 
 private updateVisibleMarkers() {
-  if (!this.map) return;
+
   
-  const bounds = this.map.getBounds();
-  if (!bounds) return;
+
+    if (!this.map) return;
   
-  console.log('Atualizando marcadores visíveis com base nos limites do mapa');
+    const bounds = this.map.getBounds();
+    if (!bounds) return;
+
+
+    
   
-  // Atualizar visibilidade das caixas
-  let visibleCaixasCount = 0;
-  this.markerCaixas.forEach(marker => {
-    if (marker) {
-      const position = marker.getPosition();
-      if (position && 
-          bounds.contains(position) && 
-          this.currentZoom >= this.ZOOM_LEVEL_CAIXAS &&
-          visibleCaixasCount < this.MAX_VISIBLE_MARKERS_CEO) {
+    console.log('Atualizando marcadores visíveis com base nos limites do mapa');
+
+
+  const ceo_layer= this.authService.getceo_layer(); //----------------- Visibilidade das Caixas ----------------------------
+  if (ceo_layer == '1') {
+  
+    // Atualizar visibilidade das caixas
+    let visibleCaixasCount = 0;
+    this.markerCaixas.forEach(marker => {
+      if (marker) {
+       const position = marker.getPosition();
+       if (position && 
+            bounds.contains(position) && 
+            this.currentZoom >= this.ZOOM_LEVEL_CAIXAS &&
+            visibleCaixasCount < this.MAX_VISIBLE_MARKERS_CEO) {
         
-        if (this.map) {marker.setMap(this.map)};//xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-        marker.setVisible(true);
+          if (this.map) {marker.setMap(this.map)};//xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+          marker.setVisible(true);
 
-        // Readicionar os event listeners para garantir que funcionem
-        this.addMarkerEventListeners(marker, false);
-        //console.log("ADICIONANDO LISTERNER MARKER DLBCLICK")
+          // Readicionar os event listeners para garantir que funcionem
+          this.addMarkerEventListeners(marker, false);
+          //console.log("ADICIONANDO LISTERNER MARKER DLBCLICK")
 
-        visibleCaixasCount++;
-      } else {
-        marker.setVisible(false);
-        marker.setMap(null);//xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-        //console.log("retirando LISTERNER MARKER DLBCLICK")
+          visibleCaixasCount++;
+        } else {
+         marker.setVisible(false);
+          marker.setMap(null);//xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+          //console.log("retirando LISTERNER MARKER DLBCLICK")
+        }
+
+        console.log(`Caixas visíveis: ${visibleCaixasCount}`)
       }
-    }
-  });
-
+    });
+}
   
+
+ const cto_layer= this.authService.getcto_layer(); //----------------- Visibilidade das Caixas ----------------------------
+  if (cto_layer == '1') {
   
   // Atualizar visibilidade de CTOs
   let visibleCTOsCount = 0;
@@ -830,10 +882,12 @@ private updateVisibleMarkers() {
     }
   });
 
+  console.log(` CTOs visíveis: ${visibleCTOsCount}`);
 
+  }
 
   
-  console.log(`Caixas visíveis: ${visibleCaixasCount}, CTOs visíveis: ${visibleCTOsCount}`);
+  
 
 } 
 // *****************************************************************************************************
