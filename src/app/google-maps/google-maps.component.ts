@@ -236,7 +236,7 @@ polylineOptions72f: google.maps.PolylineOptions = {
   centerMapOnLocation(lat: number, lng: number): void {
     // Centraliza o mapa na localização
     this.center = { lat, lng };
-    this.zoom = 19; // Zoom mais próximo para localização GPS
+    this.zoom = 14; // Zoom mais próximo para localização GPS
     
     // Define o marcador da posição atual
     this.currentLocationMarker = { lat, lng };
