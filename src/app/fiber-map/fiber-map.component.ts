@@ -3,6 +3,9 @@ import { CommonModule } from '@angular/common';
 import { ListaCaixasComponent } from '../lista-caixas/lista-caixas.component';
 import { ListaCtosComponent } from '../lista-ctos/lista-ctos.component';
 import { GoogleMapsComponent } from '../google-maps/google-maps.component';
+import { ListaCabos1fComponent } from '../lista-cabos1f/lista-cabos1f.component';
+import { ListaCabos2fComponent } from '../lista-cabos2f/lista-cabos2f.component';
+import { ListaCabos4fComponent } from '../lista-cabos4f/lista-cabos4f.component';
 import { ListaCabos6fComponent } from '../lista-cabos6f/lista-cabos6f.component';
 import { ListaCabos8fComponent } from '../lista-cabos8f/lista-cabos8f.component';
 import { ListaCabos12fComponent } from '../lista-cabos12f/lista-cabos12f.component';
@@ -10,6 +13,9 @@ import { ListaCabos24fComponent} from '../lista-cabos24f/lista-cabos24f.componen
 import { ListaCabos36fComponent} from '../lista-cabos36f/lista-cabos36f.component';
 import { ListaCabos48fComponent} from '../lista-cabos48f/lista-cabos48f.component';
 import { ListaCabos72fComponent} from '../lista-cabos72f/lista-cabos72f.component';
+import { Cabos1f } from '../modelo/Cabos1f';
+import { Cabos2f } from '../modelo/Cabos2f';
+import { Cabos4f } from '../modelo/Cabos4f';
 import { Cabos6f } from '../modelo/Cabos6f';
 import { Cabos8f } from '../modelo/Cabos8f';
 import { Cabos12f } from '../modelo/Cabos12f';
@@ -38,12 +44,19 @@ import { Cto} from '../modelo/Cto'
     ListaCabos48fComponent,
     ListaCabos72fComponent,   
     ListaCabos8fComponent, 
-    ListaCabos6fComponent
+    ListaCabos6fComponent,
+    ListaCabos4fComponent,
+    ListaCabos2fComponent,
+    ListaCabos1fComponent
     ]
 })
 export class FiberMapComponent {
   caixasCEO: any[] = [];
   caixasCTO: any[] = [];
+
+  cabos1f: Cabos1f []=[];
+  cabos2f: Cabos2f []=[];
+  cabos4f: Cabos4f []=[];
   cabos6f: Cabos6f []=[];
   cabos8f: Cabos8f []=[];
   cabos12f: Cabos12f[]=[];
@@ -64,6 +77,20 @@ export class FiberMapComponent {
 
   onCabosSelecionada(cabos: Cabos12f[]) {
     this.cabos12f = cabos;
+  }
+
+  onCabos1fSelecionada(cabos: Cabos1f[]) {
+    this.cabos1f = cabos;
+  }
+
+  onCabos2fSelecionada(cabos: Cabos2f[]) {
+    this.cabos2f = cabos;
+
+  }
+
+  onCabos4fSelecionada(cabos: Cabos4f[]) {
+    this.cabos4f = cabos;
+
   }
 
 

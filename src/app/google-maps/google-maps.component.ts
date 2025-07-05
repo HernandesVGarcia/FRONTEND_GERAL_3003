@@ -1,6 +1,9 @@
 import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { GoogleMapsModule } from '@angular/google-maps';
+import { Cabos1f } from '../modelo/Cabos1f';
+import { Cabos2f } from '../modelo/Cabos2f';
+import { Cabos4f } from '../modelo/Cabos4f';
 import { Cabos6f } from '../modelo/Cabos6f';
 import { Cabos8f } from '../modelo/Cabos8f';
 import { Cabos12f } from '../modelo/Cabos12f';
@@ -15,6 +18,7 @@ import { ChangeDetectorRef } from '@angular/core'; /// ============novo
 import { GoJSDemoComponent } from '../gojs-demo/gojs-demo.component';
 import { AuthService } from '../servico/auth.service';
 import { animate, animation } from '@angular/animations';
+//import { GoogleInfoWindowComponent } from '../google-infowindow/google-infowindow.component';
 
 @Component({
   selector: 'app-google-maps',
@@ -26,6 +30,9 @@ import { animate, animation } from '@angular/animations';
 export class GoogleMapsComponent implements OnInit, OnChanges {
   @Input() destino: Caixa[] = [];
   @Input() destinoCTO: Cto[] = [];
+  @Input() destinoCabos1f: Cabos1f[] = [];
+  @Input() destinoCabos2f: Cabos2f[] = [];
+  @Input() destinoCabos4f: Cabos4f[] = [];
   @Input() destinoCabos6f: Cabos6f[] = [];
   @Input() destinoCabos8f: Cabos8f[] = [];
   @Input() destinoCabos12f: Cabos12f[] = [];
@@ -35,8 +42,14 @@ export class GoogleMapsComponent implements OnInit, OnChanges {
   @Input() destinoCabos72f: Cabos72f[] = [];
 
   isGoJSModalOpen = false;
+ // private isMapFullyInitialized = false;
+ // private isInfoWindowsSetup = false;
 
-  constructor(private cdr: ChangeDetectorRef, private authService : AuthService) {};
+  constructor(private cdr: ChangeDetectorRef, private authService : AuthService) {
+  
+    
+  };
+  
 
   caixaSelecionada: string | null = null;
 
@@ -77,6 +90,9 @@ export class GoogleMapsComponent implements OnInit, OnChanges {
   //markerCtos: google.maps.LatLngLiteral[] = [];
   markerOptions: google.maps.MarkerOptions[] = [];
   markerOptionsCTO: google.maps.MarkerOptions[] = [];
+  polylinePaths1f: google.maps.LatLngLiteral[][] = [];
+  polylinePaths2f: google.maps.LatLngLiteral[][] = [];
+  polylinePaths4f: google.maps.LatLngLiteral[][] = [];
   polylinePaths6f: google.maps.LatLngLiteral[][] = [];
   polylinePaths8f: google.maps.LatLngLiteral[][] = [];
   polylinePaths12f: google.maps.LatLngLiteral[][] = [];
@@ -85,9 +101,20 @@ export class GoogleMapsComponent implements OnInit, OnChanges {
   polylinePaths48f: google.maps.LatLngLiteral[][] = [];
   polylinePaths72f: google.maps.LatLngLiteral[][] = [];
 
+  // 🔥 INFOWINDOW: Array para armazenar as polylines 6f com InfoWindow
+  polylines6f: google.maps.Polyline[] = [];
+
+  // Array para armazenar os InfoWindows dos cabos 6f
+  infoWindows6f: google.maps.InfoWindow[] = [];
+
+  // Propriedades que estavam faltando
+  isMapFullyInitialized: boolean = false;
+  isInfoWindowsSetup: boolean = false;
+
 
 private ZOOM_LEVEL_CAIXAS = 15; // Caixas CEO visíveis em zoom >= 14
 private ZOOM_LEVEL_CTOS = 16;   // CTOs visíveis em zoom >= 16
+
 
 private map?: (google.maps.Map);
   isMapReady: any;
@@ -106,9 +133,74 @@ private map?: (google.maps.Map);
  // Propriedade para controlar o limiar de densidade
  private MAX_VISIBLE_MARKERS_CEO = 200; // Ajuste este valor conforme necessário
  private MAX_VISIBLE_MARKERS_CTO = 150; // Ajuste este valor conforme necessário
+ 
 // **********************************************************************************************inserido
 
+  polylineOptions1f: google.maps.PolylineOptions = {
+    strokeColor: 'blue',
+    strokeOpacity: 0.7,
+    strokeWeight: 0.1,
+    clickable: true,
+    visible: true,
+    zIndex: 1,
+    draggable: false,
+    editable: false,
+    //traceja linha
+    icons: [{
+    icon: {
+      path: 'M 0,-1 0,1',
+      strokeOpacity: 0.7,
+      scale: 2
+    },
+    offset: '0',
+    repeat: '10px'
+  }]
 
+  }
+
+  polylineOptions2f: google.maps.PolylineOptions = {
+    strokeColor: ' #00FFFF ',
+    strokeOpacity: 0.7,
+    strokeWeight: 0.1,
+    clickable: true,
+    visible: true,
+    zIndex: 1,
+    draggable: false,
+    editable: false,
+    //traceja linha
+    icons: [{
+    icon: {
+      path: 'M 0,-1 0,1',
+      strokeOpacity: 0.7,
+      scale: 3
+    },
+    offset: '0',
+    repeat: '10px'
+  }]
+
+  }
+
+  polylineOptions4f: google.maps.PolylineOptions = {
+    strokeColor: 'rgb(41, 161, 216) ',
+    strokeOpacity: 0.7,
+    strokeWeight: 0.1,
+    clickable: true,
+    visible: true,
+    zIndex: 1,
+    draggable: false,
+    editable: false,
+    //traceja linha
+    icons: [{
+    icon: {
+      path: 'M 0,-1 0,1',
+      strokeOpacity: 0.7,
+      scale: 3
+    },
+    offset: '0',
+    repeat: '10px'
+  }]
+
+  }
 
 
   polylineOptions6f: google.maps.PolylineOptions = {
@@ -120,6 +212,8 @@ private map?: (google.maps.Map);
     zIndex: 1,
     draggable: false,
     editable: false
+
+     
 
   }
 
@@ -205,12 +299,46 @@ polylineOptions72f: google.maps.PolylineOptions = {
 
 }
 
-//isMapReady: any;
+
+polylineOptions144f: google.maps.PolylineOptions = {
+  strokeColor: ' #FFAE42 ',
+  strokeOpacity: 0.8,
+  strokeWeight: 6,
+  clickable: true,
+  visible: true,
+  zIndex: 1,
+  draggable: false,
+  editable: false
+
+  
+
+
+}
+
+
+// Novo array para controlar os InfoWindows dos cabos
+  caboInfoWindows: Array<{
+    map: google.maps.Map | undefined;
+    position: google.maps.LatLngLiteral;
+    title: string;
+    content: string;
+    caboId: string;
+    caboType: string;
+    isVisible: boolean;
+    zoomThreshold: number;
+    currentZoom: number;
+  }> = [];
+
+  
+
+
 
   ngOnInit() {
     console.log('GoogleMapsComponent initialized');
     this.checkGoogleMapsAPI();
     this.checkForGPSLocation();
+    
+    
     //const lat= this.authService.getLat
     //const lng= this.authService.getLng
     //center:google.maps.LatLngLiteral = { lat: lat, lng: lng};
@@ -266,9 +394,31 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
       this.updateMarkersCTO();
     }
 
+    if (changes['destinoCabos1f'] && changes['destinoCabos1f'].currentValue) {
+      console.log('Atualizando polilinhas de cabos 1f ',this.destinoCabos1f);
+      this.updatePolylinesCabos1f();
+    }
+
+    if (changes['destinoCabos2f'] && changes['destinoCabos2f'].currentValue) {
+      console.log('Atualizando polilinhas de cabos 2f ',this.destinoCabos2f);
+      this.updatePolylinesCabos2f();
+    }
+
+    if (changes['destinoCabos4f'] && changes['destinoCabos4f'].currentValue) {
+      console.log('Atualizando polilinhas de cabos 4f ',this.destinoCabos4f);
+      this.updatePolylinesCabos4f();
+    }
+
     if (changes['destinoCabos6f'] && changes['destinoCabos6f'].currentValue) {
       console.log('Atualizando polilinhas de cabos 6f ',this.destinoCabos6f);
       this.updatePolylinesCabos6f();
+      // Criar polylines programaticamente quando os dados mudarem
+      setTimeout(() => {
+        this.createCabo6fPolylines();
+      }, 100);
+       
+         
+      
     }
 
     if (changes['destinoCabos8f'] && changes['destinoCabos8f'].currentValue) {
@@ -485,6 +635,132 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
     }
   }
 
+  private updatePolylinesCabos1f() {
+
+    const cabo_layer= this.authService.getcabos_layer();
+    console.log(' cabos layer = ', cabo_layer);
+    if (cabo_layer =='0') return;
+
+
+
+    if (!this.destinoCabos1f?.length) return;
+    
+    try {
+      this.polylinePaths1f = [];
+      
+      this.destinoCabos1f.forEach(cabo => {
+        try {
+          if (!cabo.GOOGLE_LATLNG) return;
+          //console.log('valor de Google_latlng antes da conversão: ', cabo.GOOGLE_LATLNG);
+          
+          const coords = this.convertStringToCoords(cabo.GOOGLE_LATLNG);
+          
+          if (coords.length > 0) {
+            this.polylinePaths1f.push(coords);
+            //console.log(`Cabo 6f  ${cabo.id_meta} processado com sucesso:`, coords);
+          }
+        } catch (e) {
+          console.error(`Erro ao processar cabo ${cabo.id_meta}:`, e);
+        }
+      });
+
+      if (this.polylinePaths1f.length > 0) {
+        const firstPoint = this.polylinePaths1f[0][0];
+        
+      }
+
+      console.log(`Total de ${this.polylinePaths1f.length} cabos processados`);
+    } catch (e) {
+      console.error('Erro ao processar cabos:', e);
+      this.polylinePaths1f = [];
+    }
+
+     
+
+
+  }
+
+  private updatePolylinesCabos2f() {
+
+    const cabo_layer= this.authService.getcabos_layer();
+    console.log(' cabos layer = ', cabo_layer);
+    if (cabo_layer =='0') return;
+
+
+
+    if (!this.destinoCabos2f?.length) return;
+    
+    try {
+      this.polylinePaths2f = [];
+      
+      this.destinoCabos2f.forEach(cabo => {
+        try {
+          if (!cabo.GOOGLE_LATLNG) return;
+                    
+          const coords = this.convertStringToCoords(cabo.GOOGLE_LATLNG);
+          
+          if (coords.length > 0) {
+            this.polylinePaths2f.push(coords);
+            
+          }
+        } catch (e) {
+          console.error(`Erro ao processar cabo ${cabo.id_meta}:`, e);
+        }
+      });
+
+      if (this.polylinePaths2f.length > 0) {
+        const firstPoint = this.polylinePaths2f[0][0];
+        
+      }
+
+      console.log(`Total de ${this.polylinePaths2f.length} cabos processados`);
+    } catch (e) {
+      console.error('Erro ao processar cabos:', e);
+      this.polylinePaths2f = [];
+    }
+  }
+
+
+  private updatePolylinesCabos4f() {
+
+    const cabo_layer= this.authService.getcabos_layer();
+    console.log(' cabos layer = ', cabo_layer);
+    if (cabo_layer =='0') return;
+
+
+
+    if (!this.destinoCabos4f?.length) return;
+    
+    try {
+      this.polylinePaths4f = [];
+      
+      this.destinoCabos4f.forEach(cabo => {
+        try {
+          if (!cabo.GOOGLE_LATLNG) return;
+                    
+          const coords = this.convertStringToCoords(cabo.GOOGLE_LATLNG);
+          
+          if (coords.length > 0) {
+            this.polylinePaths4f.push(coords);
+            
+          }
+        } catch (e) {
+          console.error(`Erro ao processar cabo ${cabo.id_meta}:`, e);
+        }
+      });
+
+      if (this.polylinePaths4f.length > 0) {
+        const firstPoint = this.polylinePaths4f[0][0];
+        
+      }
+
+      console.log(`Total de ${this.polylinePaths4f.length} cabos processados`);
+    } catch (e) {
+      console.error('Erro ao processar cabos:', e);
+      this.polylinePaths2f = [];
+    }
+  }
+
   private updatePolylinesCabos6f() {
 
     const cabo_layer= this.authService.getcabos_layer();
@@ -523,10 +799,23 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
       }
 
       console.log(`Total de ${this.polylinePaths6f.length} cabos processados`);
+
+      
+
+      
+
+      
+
     } catch (e) {
       console.error('Erro ao processar cabos:', e);
       this.polylinePaths6f = [];
     }
+
+
+
+
+
+
   }
 
 
@@ -819,6 +1108,9 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
     this.map=map;
     let lati:  string | null ;
     let lngi:  string | null ;
+    
+    
+
 
     lati=this.authService.getLat() ;
     lngi=this.authService.getLng() ;
@@ -855,7 +1147,34 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
     if (this.map) {
       this.currentZoom = this.map.getZoom() || 0;
       this.updateVisibleMarkers();
+
+
+    
+    
+    // Criar polylines 6f programaticamente após mapa inicializado
+    setTimeout(() => {
+      this.createCabo6fPolylines();
+    }, 500);
+
+
+
+
+
+
+
+      
     }
+
+    //setTimeout(() => {
+     // if (this.destinoCabos6f && this.destinoCabos6f.length > 0) {
+     //   console.log('🔥 Configurando InfoWindows após inicialização do mapa');
+     //   this.setupCabo6fInfoWindows();
+     // }
+    //}, 1000);
+
+    
+
+
   }//================================================================================================
 
  
@@ -909,6 +1228,14 @@ private updateVisibleMarkers() {
         console.log(`Caixas visíveis: ${visibleCaixasCount}`)
       }
     });
+
+
+    
+
+
+
+
+
 }
   
 
@@ -1040,6 +1367,110 @@ closeGoJSModal() {
   this.isGoJSModalOpen = false;
 }
 
+ // Novo método para criar polylines 6f programaticamente com clique simples e duplo clique
+  private createCabo6fPolylines(): void {
+    if (!this.map) {
+      console.log('Mapa não inicializado ainda, aguardando...');
+      return;
+    }
 
+    // Limpar polylines e InfoWindows anteriores
+    console.log('Limpando', this.polylines6f.length, 'polylines anteriores...');
+    this.polylines6f.forEach(polyline => {
+      google.maps.event.clearInstanceListeners(polyline);
+      polyline.setMap(null);
+    });
+    this.polylines6f = [];
 
+    // Limpar InfoWindows anteriores
+    this.infoWindows6f.forEach(infoWindow => {
+      infoWindow.close();
+    });
+    this.infoWindows6f = [];
+
+    if (!this.destinoCabos6f || this.destinoCabos6f.length === 0 || !this.polylinePaths6f || this.polylinePaths6f.length === 0) {
+      console.log('Dados dos cabos 6f não disponíveis ainda');
+      return;
+    }
+
+    console.log('Criando', this.polylinePaths6f.length, 'polylines de cabos 6f com clique simples e duplo');
+
+    // Criar novas polylines com eventos de clique simples e duplo clique
+    this.polylinePaths6f.forEach((path, index) => {
+      if (path.length > 0) {
+        const polyline = new google.maps.Polyline({
+          path: path,
+          ...this.polylineOptions6f,
+          map: this.map
+        });
+
+        const cabo = this.destinoCabos6f[index];
+        
+        // Criar InfoWindow para este cabo
+        const infoWindow = new google.maps.InfoWindow({
+          content: `
+            <div style="padding: 10px;">
+              <h4 style="margin: 0 0 8px 0; color: #333;">Cabo 6F</h4>
+              <p style="margin: 4px 0;"><strong>ID:</strong> ${cabo.id_meta || 'N/A'}</p>
+              <p style="margin: 4px 0;"><strong>Fibras:</strong> 6</p>
+              <p style="margin: 4px 0; font-size: 12px; color: #666;">Duplo-clique para abrir diagrama</p>
+            </div>
+          `
+        });
+
+        // Variáveis para controlar cliques
+        let clickTimeout: any;
+
+        // Adicionar evento de clique (simples e duplo)
+        polyline.addListener('click', (event: google.maps.MapMouseEvent) => {
+          // Limpar timeout anterior se existir
+          if (clickTimeout) {
+            clearTimeout(clickTimeout);
+            clickTimeout = null;
+          }
+
+          // Definir timeout para clique simples
+          clickTimeout = setTimeout(() => {
+            // Clique simples - mostrar InfoWindow
+            console.log('Clique simples detectado no cabo 6f:', cabo.id_meta);
+            if (event.latLng) {
+              infoWindow.setPosition(event.latLng);
+              infoWindow.open(this.map);
+            }
+          }, 300); // Delay de 300ms para distinguir de duplo clique
+        });
+
+        // Adicionar evento de duplo clique
+        polyline.addListener('dblclick', (event: google.maps.MapMouseEvent) => {
+          console.log('Double-click detectado no cabo 6f:', cabo.id_meta);
+          
+          // Cancelar clique simples se estiver pendente
+          if (clickTimeout) {
+            clearTimeout(clickTimeout);
+            clickTimeout = null;
+          }
+          
+          // Fechar InfoWindow se estiver aberto
+          infoWindow.close();
+          
+          // Abrir modal GoJS
+          //const idMetaString = cabo.id_meta?.toString() || '';
+          //this.authService.setIDmetaCaixa(idMetaString);
+          this.isGoJSModalOpen = true;
+          this.cdr.detectChanges();
+        });
+
+        // Adicionar evento para fechar InfoWindow quando clicar fora
+        this.map?.addListener('click', () => {
+          infoWindow.close();
+        });
+
+        this.polylines6f.push(polyline);
+        this.infoWindows6f.push(infoWindow);
+      }
+    });
+
+    console.log('Polylines de cabos 6f criadas:', this.polylines6f.length);
+    console.log('InfoWindows de cabos 6f criados:', this.infoWindows6f.length);
+  }
 }

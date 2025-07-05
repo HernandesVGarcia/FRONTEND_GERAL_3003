@@ -58,11 +58,33 @@
       (mapDragend)="onMarkerDragEnd($event,i,true)">
     </map-marker>-->
 
+
+    
+
     <map-polyline 
+    *ngFor="let pathj of polylinePaths1f"
+    [path]="pathj"
+    [options]="polylineOptions1f"
+    ></map-polyline>
+
+    <map-polyline 
+    *ngFor="let pathj of polylinePaths2f"
+    [path]="pathj"
+    [options]="polylineOptions2f"
+    ></map-polyline>
+
+    <map-polyline 
+    *ngFor="let pathj of polylinePaths4f"
+    [path]="pathj"
+    [options]="polylineOptions4f"
+    ></map-polyline>
+
+    <!--<map-polyline 
     *ngFor="let pathj of polylinePaths6f"
     [path]="pathj"
     [options]="polylineOptions6f"
-    ></map-polyline>
+    
+    ></map-polyline> -->
 
     <map-polyline 
     *ngFor="let pathj of polylinePaths8f"
@@ -109,6 +131,9 @@
     (onClose)="onCaixaInternaClose()"
     >
   </app-caixa-interna>-->
+
+  <!-- Tooltip para cabos -->
+  
 
 
 <app-gojs-demo
