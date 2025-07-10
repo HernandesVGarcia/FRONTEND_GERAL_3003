@@ -102,11 +102,31 @@ export class GoogleMapsComponent implements OnInit, OnChanges {
   polylinePaths72f: google.maps.LatLngLiteral[][] = [];
 
   // 🔥 INFOWINDOW: Array para armazenar as polylines 6f com InfoWindow
+  // Arrays para armazenar as polylines criadas programaticamente
+  polylines1f: google.maps.Polyline[] = [];
+  polylines2f: google.maps.Polyline[] = [];
+  polylines4f: google.maps.Polyline[] = [];
   polylines6f: google.maps.Polyline[] = [];
+  polylines8f: google.maps.Polyline[] = [];
+  polylines12f: google.maps.Polyline[] = [];
+  polylines24f: google.maps.Polyline[] = [];
+  polylines36f: google.maps.Polyline[] = [];
+  polylines48f: google.maps.Polyline[] = [];
+  polylines72f: google.maps.Polyline[] = [];
 
-  // Array para armazenar os InfoWindows dos cabos 6f
+  // Arrays para armazenar os InfoWindows
+  infoWindows1f: google.maps.InfoWindow[] = [];
+  infoWindows2f: google.maps.InfoWindow[] = [];
+  infoWindows4f: google.maps.InfoWindow[] = [];
   infoWindows6f: google.maps.InfoWindow[] = [];
+  infoWindows8f: google.maps.InfoWindow[] = [];
+  infoWindows12f: google.maps.InfoWindow[] = [];
+  infoWindows24f: google.maps.InfoWindow[] = [];
+  infoWindows36f: google.maps.InfoWindow[] = [];
+  infoWindows48f: google.maps.InfoWindow[] = [];
+  infoWindows72f: google.maps.InfoWindow[] = [];
 
+  
   // Propriedades que estavam faltando
   isMapFullyInitialized: boolean = false;
   isInfoWindowsSetup: boolean = false;
@@ -139,7 +159,7 @@ private map?: (google.maps.Map);
   polylineOptions1f: google.maps.PolylineOptions = {
     strokeColor: 'blue',
     strokeOpacity: 0.7,
-    strokeWeight: 0.1,
+    strokeWeight: 0.5,
     clickable: true,
     visible: true,
     zIndex: 1,
@@ -161,7 +181,7 @@ private map?: (google.maps.Map);
   polylineOptions2f: google.maps.PolylineOptions = {
     strokeColor: ' #00FFFF ',
     strokeOpacity: 0.7,
-    strokeWeight: 0.1,
+    strokeWeight: 0.5,
     clickable: true,
     visible: true,
     zIndex: 1,
@@ -183,7 +203,7 @@ private map?: (google.maps.Map);
   polylineOptions4f: google.maps.PolylineOptions = {
     strokeColor: 'rgb(41, 161, 216) ',
     strokeOpacity: 0.7,
-    strokeWeight: 0.1,
+    strokeWeight: 0.5,
     clickable: true,
     visible: true,
     zIndex: 1,
@@ -198,7 +218,7 @@ private map?: (google.maps.Map);
     },
     offset: '0',
     repeat: '10px'
-  }]
+  }] 
 
   }
 
@@ -397,16 +417,31 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
     if (changes['destinoCabos1f'] && changes['destinoCabos1f'].currentValue) {
       console.log('Atualizando polilinhas de cabos 1f ',this.destinoCabos1f);
       this.updatePolylinesCabos1f();
+      // Criar polylines programaticamente quando os dados mudarem
+      setTimeout(() => {
+        this.createCabo1fPolylines();
+      }, 1);
+     
     }
 
     if (changes['destinoCabos2f'] && changes['destinoCabos2f'].currentValue) {
       console.log('Atualizando polilinhas de cabos 2f ',this.destinoCabos2f);
       this.updatePolylinesCabos2f();
+      // Criar polylines programaticamente quando os dados mudarem
+      setTimeout(() => {
+        this.createCabo2fPolylines();
+      }, 1);
+    
     }
 
     if (changes['destinoCabos4f'] && changes['destinoCabos4f'].currentValue) {
       console.log('Atualizando polilinhas de cabos 4f ',this.destinoCabos4f);
       this.updatePolylinesCabos4f();
+      // Criar polylines programaticamente quando os dados mudarem
+      setTimeout(() => {
+        this.createCabo4fPolylines();
+      }, 1);
+     
     }
 
     if (changes['destinoCabos6f'] && changes['destinoCabos6f'].currentValue) {
@@ -415,40 +450,70 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
       // Criar polylines programaticamente quando os dados mudarem
       setTimeout(() => {
         this.createCabo6fPolylines();
-      }, 100);
-       
-         
+      }, 1);
+      
+                
       
     }
 
     if (changes['destinoCabos8f'] && changes['destinoCabos8f'].currentValue) {
       console.log('Atualizando polilinhas de cabos 8f ',this.destinoCabos8f);
       this.updatePolylinesCabos8f();
+      setTimeout(() => {
+        this.createCabo8fPolylines();
+      }, 1);
+      
     }
 
     if (changes['destinoCabos12f'] && changes['destinoCabos12f'].currentValue) {
       console.log('Atualizando polilinhas de cabos 12f ',this.destinoCabos12f);
       this.updatePolylinesCabos12f();
+      // Criar polylines programaticamente quando os dados mudarem
+      setTimeout(() => {
+        this.createCabo12fPolylines();
+      }, 1);
+
+      
     }
 
     if (changes['destinoCabos24f'] && changes['destinoCabos24f'].currentValue) {
       console.log('Atualizando polilinhas de cabos 24f ',this.destinoCabos24f);
       this.updatePolylinesCabos24f();
+      // Criar polylines programaticamente quando os dados mudarem
+      setTimeout(() => {
+        this.createCabo24fPolylines();
+      }, 1);
+      
     }    
 
     if (changes['destinoCabos36f'] && changes['destinoCabos36f'].currentValue) {
       console.log('Atualizando polilinhas de cabos 36f ',this.destinoCabos36f);
       this.updatePolylinesCabos36f();
+      // Criar polylines programaticamente quando os dados mudarem
+      setTimeout(() => {
+        this.createCabo36fPolylines();
+      }, 1);
+      
     } 
     
     if (changes['destinoCabos48f'] && changes['destinoCabos48f'].currentValue) {
       console.log('Atualizando polilinhas de cabos 48f ',this.destinoCabos48f);
       this.updatePolylinesCabos48f();
+      // Criar polylines programaticamente quando os dados mudarem
+      setTimeout(() => {
+        this.createCabo48fPolylines();
+      }, 1);
+      
     }   
 
     if (changes['destinoCabos72f'] && changes['destinoCabos72f'].currentValue) {
       console.log('Atualizando polilinhas de cabos 72f ',this.destinoCabos72f);
       this.updatePolylinesCabos72f();
+      // Criar polylines programaticamente quando os dados mudarem
+      setTimeout(() => {
+        this.createCabo72fPolylines();
+      }, 1);
+      
     }   
         
       
@@ -1151,10 +1216,21 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
 
     
     
-    // Criar polylines 6f programaticamente após mapa inicializado
-    setTimeout(() => {
-      this.createCabo6fPolylines();
-    }, 500);
+    // Criar polylines programaticamente após mapa inicializado
+    //setTimeout(() => {
+    //  this.createCabo1fPolylines();
+    //  this.createCabo2fPolylines();
+    //  this.createCabo4fPolylines();
+    //  this.createCabo6fPolylines();
+    //  this.createCabo8fPolylines();
+    //  this.createCabo12fPolylines();
+    //  this.createCabo24fPolylines();
+    //  this.createCabo36fPolylines();
+    //  this.createCabo48fPolylines();
+    //  this.createCabo72fPolylines();
+
+    //}, 1000);
+    
 
 
 
@@ -1367,52 +1443,113 @@ closeGoJSModal() {
   this.isGoJSModalOpen = false;
 }
 
- // Novo método para criar polylines 6f programaticamente com clique simples e duplo clique
+
+// Método para criar polylines 1f programaticamente
+  private createCabo1fPolylines(): void {
+    this.createCaboPolylines('1f', this.destinoCabos1f, this.polylinePaths1f, this.polylines1f, this.infoWindows1f, this.polylineOptions1f);
+  }
+
+   //Método para criar polylines 2f programaticamente
+ private createCabo2fPolylines(): void {
+    this.createCaboPolylines('2f', this.destinoCabos2f, this.polylinePaths2f, this.polylines2f, this.infoWindows2f, this.polylineOptions2f);
+  }
+
+  // Método para criar polylines 4f programaticamente
+  private createCabo4fPolylines(): void {
+    this.createCaboPolylines('4f', this.destinoCabos4f, this.polylinePaths4f, this.polylines4f, this.infoWindows4f, this.polylineOptions4f);
+  }
+
+  // Método para criar polylines 6f programaticamente com clique simples e duplo clique
   private createCabo6fPolylines(): void {
+    this.createCaboPolylines('6f', this.destinoCabos6f, this.polylinePaths6f, this.polylines6f, this.infoWindows6f, this.polylineOptions6f);
+  }
+
+  // Método para criar polylines 8f programaticamente
+  private createCabo8fPolylines(): void {
+    this.createCaboPolylines('8f', this.destinoCabos8f, this.polylinePaths8f, this.polylines8f, this.infoWindows8f, this.polylineOptions8f);
+  }
+
+   //Método para criar polylines 12f programaticamente
+  private createCabo12fPolylines(): void {
+    this.createCaboPolylines('12f', this.destinoCabos12f, this.polylinePaths12f, this.polylines12f, this.infoWindows12f, this.polylineOptions12f);
+  }
+
+  // Método para criar polylines 24f programaticamente
+  private createCabo24fPolylines(): void {
+    this.createCaboPolylines('24f', this.destinoCabos24f, this.polylinePaths24f, this.polylines24f, this.infoWindows24f, this.polylineOptions24f);
+  }
+
+  // Método para criar polylines 36f programaticamente
+  private createCabo36fPolylines(): void {
+    this.createCaboPolylines('36f', this.destinoCabos36f, this.polylinePaths36f, this.polylines36f, this.infoWindows36f, this.polylineOptions36f);
+  }
+
+  // Método para criar polylines 48f programaticamente
+  private createCabo48fPolylines(): void {
+    this.createCaboPolylines('48f', this.destinoCabos48f, this.polylinePaths48f, this.polylines48f, this.infoWindows48f, this.polylineOptions48f);
+  }
+
+  // Método para criar polylines 72f programaticamente
+  private createCabo72fPolylines(): void {
+    this.createCaboPolylines('72f', this.destinoCabos72f, this.polylinePaths72f, this.polylines72f, this.infoWindows72f, this.polylineOptions72f);
+  } 
+
+ 
+
+  //=============================================================================================================================
+// Método genérico para criar polylines com clique simples e duplo clique
+  private createCaboPolylines(
+    tipoFibra: string,
+    cabos: any[],
+    paths: google.maps.LatLngLiteral[][],
+    polylinesArray: google.maps.Polyline[],
+    infoWindowsArray: google.maps.InfoWindow[],
+    options: google.maps.PolylineOptions
+  ): void {
     if (!this.map) {
       console.log('Mapa não inicializado ainda, aguardando...');
       return;
     }
 
     // Limpar polylines e InfoWindows anteriores
-    console.log('Limpando', this.polylines6f.length, 'polylines anteriores...');
-    this.polylines6f.forEach(polyline => {
+    console.log('Limpando', polylinesArray.length, `polylines ${tipoFibra} anteriores...`);
+    polylinesArray.forEach(polyline => {
       google.maps.event.clearInstanceListeners(polyline);
       polyline.setMap(null);
     });
-    this.polylines6f = [];
+    polylinesArray.length = 0;
 
     // Limpar InfoWindows anteriores
-    this.infoWindows6f.forEach(infoWindow => {
+    infoWindowsArray.forEach(infoWindow => {
       infoWindow.close();
     });
-    this.infoWindows6f = [];
+    infoWindowsArray.length = 0;
 
-    if (!this.destinoCabos6f || this.destinoCabos6f.length === 0 || !this.polylinePaths6f || this.polylinePaths6f.length === 0) {
-      console.log('Dados dos cabos 6f não disponíveis ainda');
+    if (!cabos || cabos.length === 0 || !paths || paths.length === 0) {
+      console.log(`Dados dos cabos ${tipoFibra} não disponíveis ainda`);
       return;
     }
 
-    console.log('Criando', this.polylinePaths6f.length, 'polylines de cabos 6f com clique simples e duplo');
+    console.log('Criando', paths.length, `polylines de cabos ${tipoFibra} com clique simples e duplo`);
 
     // Criar novas polylines com eventos de clique simples e duplo clique
-    this.polylinePaths6f.forEach((path, index) => {
+    paths.forEach((path, index) => {
       if (path.length > 0) {
         const polyline = new google.maps.Polyline({
           path: path,
-          ...this.polylineOptions6f,
+          ...options,
           map: this.map
         });
 
-        const cabo = this.destinoCabos6f[index];
+        const cabo = cabos[index];
         
         // Criar InfoWindow para este cabo
         const infoWindow = new google.maps.InfoWindow({
           content: `
             <div style="padding: 10px;">
-              <h4 style="margin: 0 0 8px 0; color: #333;">Cabo 6F</h4>
+              <h4 style="margin: 0 0 8px 0; color: #333;">Cabo ${tipoFibra.toUpperCase()}</h4>
               <p style="margin: 4px 0;"><strong>ID:</strong> ${cabo.id_meta || 'N/A'}</p>
-              <p style="margin: 4px 0;"><strong>Fibras:</strong> 6</p>
+              <p style="margin: 4px 0;"><strong>Fibras:</strong> ${tipoFibra.replace('f', '')}</p>
               <p style="margin: 4px 0; font-size: 12px; color: #666;">Duplo-clique para abrir diagrama</p>
             </div>
           `
@@ -1432,7 +1569,7 @@ closeGoJSModal() {
           // Definir timeout para clique simples
           clickTimeout = setTimeout(() => {
             // Clique simples - mostrar InfoWindow
-            console.log('Clique simples detectado no cabo 6f:', cabo.id_meta);
+            console.log(`Clique simples detectado no cabo ${tipoFibra}:`, cabo.id_meta);
             if (event.latLng) {
               infoWindow.setPosition(event.latLng);
               infoWindow.open(this.map);
@@ -1442,7 +1579,7 @@ closeGoJSModal() {
 
         // Adicionar evento de duplo clique
         polyline.addListener('dblclick', (event: google.maps.MapMouseEvent) => {
-          console.log('Double-click detectado no cabo 6f:', cabo.id_meta);
+          console.log(`Double-click detectado no cabo ${tipoFibra}:`, cabo.id_meta);
           
           // Cancelar clique simples se estiver pendente
           if (clickTimeout) {
@@ -1454,8 +1591,8 @@ closeGoJSModal() {
           infoWindow.close();
           
           // Abrir modal GoJS
-          //const idMetaString = cabo.id_meta?.toString() || '';
-          //this.authService.setIDmetaCaixa(idMetaString);
+          const idMetaString = cabo.id_meta?.toString() || '';
+          this.authService.setIDmetaCaixa(idMetaString);
           this.isGoJSModalOpen = true;
           this.cdr.detectChanges();
         });
@@ -1465,12 +1602,17 @@ closeGoJSModal() {
           infoWindow.close();
         });
 
-        this.polylines6f.push(polyline);
-        this.infoWindows6f.push(infoWindow);
+        polylinesArray.push(polyline);
+        infoWindowsArray.push(infoWindow);
       }
     });
 
-    console.log('Polylines de cabos 6f criadas:', this.polylines6f.length);
-    console.log('InfoWindows de cabos 6f criados:', this.infoWindows6f.length);
+    console.log(`Polylines de cabos ${tipoFibra} criadas:`, polylinesArray.length);
+    console.log(`InfoWindows de cabos ${tipoFibra} criados:`, infoWindowsArray.length);
   }
 }
+
+
+
+
+

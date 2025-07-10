@@ -16,6 +16,13 @@ import { Component,
 import { firstValueFrom } from 'rxjs';  
 import { CommonModule } from '@angular/common';
 import * as go from 'gojs';
+
+import { Cabo1FNacComponent} from '../Stencil/cabo-drop/cabo-drop.component'
+import { Cabo1FNacDComponent} from '../Stencil/cabo-drop-d/cabo-drop-d.component'
+import { Cabo2FNacComponent} from '../Stencil/cabo-2-f-nac/cabo-2-f-nac.component'
+import { Cabo2FNacDComponent} from '../Stencil/cabo-2-f-nac-d/cabo-2-f-nac-d.component'
+import { Cabo4FNacDComponent } from '../Stencil/cabo-4-f-nac-d/cabo-4-f-nac-d.component';
+import { Cabo4FNacComponent } from '../Stencil/cabo-4-f-nac/cabo-4-f-nac.component';
 import { Cabo6FNacDComponent } from '../Stencil/cabo-6-f-nac-d/cabo-6-f-nac-d.component';
 import { Cabo6FNacComponent } from '../Stencil/cabo-6-f-nac/cabo-6-f-nac.component';
 import { Cabo8FNacDComponent } from '../Stencil/cabo-8-f-nac-d/cabo-8-f-nac-d.component';
@@ -31,14 +38,22 @@ import { Cabo48FNacComponent } from '../Stencil/cabo-48-f-nac/cabo-48-f-nac.comp
 import { Cabo72FNacDComponent } from '../Stencil/cabo-72-f-nac-d/cabo-72-f-nac-d.component';
 import { Cabo72FNacComponent } from '../Stencil/cabo-72-f-nac/cabo-72-f-nac.component';
 
+import { Cabo24FIntComponent } from '../Stencil/cabo-24-f-int/cabo-24-f-int.component';
+import { Cabo24FIntDComponent } from '../Stencil/cabo-24-f-int-d/cabo-24-f-int-d.component';
+import { Cabo24FNacTb24Component } from '../Stencil/cabo-24-f-nac-tb24/cabo-24-f-nac-tb24.component';
+import { Cabo24FNacDTb24Component } from '../Stencil/cabo-24-f-nac-d-tb24/cabo-24-f-nac-d-tb24.component';
+import { Cabo24FIntTb24Component } from '../Stencil/cabo-24-f-int-tb24/cabo-24-f-int-tb24.component';
+import { Cabo24FIntDTb24Component } from '../Stencil/cabo-24-f-int-d-tb24/cabo-24-f-int-d-tb24.component';
+
+
+
 import { Splitter12Component } from '../Stencil/spliter-1-p2/spliter-1-p2.component';
 import { Splitter14Component } from '../Stencil/spliter-1-p4/spliter-1-p4.component';
 import { Splitter18Component } from '../Stencil/spliter-1-p8/spliter-1-p8.component';
 import { Splitter116Component } from '../Stencil/spliter-1-p16/spliter-1-p16.component';
 import { SplitterDesbComponent } from '../Stencil/spliter-desbalanceado/spliter-desbalanceado.component';
 
-import { Cabo1FNacComponent} from '../Stencil/cabo-drop/cabo-drop.component'
-import { Cabo1FNacDComponent} from '../Stencil/cabo-drop-d/cabo-drop-d.component'
+
 
 import { BocasService } from '../servico/bocas.service';
 import { ConexCabopb99Service} from '../servico/conex-cabopb99.service';
@@ -111,7 +126,12 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
   private initialX = 0;
   private initialY = 0;
 
-
+  private cabo1FNAC: Cabo1FNacComponent= new Cabo1FNacComponent();
+  private cabo1FNAC_D: Cabo1FNacDComponent= new Cabo1FNacDComponent();
+  private cabo2FNAC_D: Cabo2FNacDComponent = new Cabo2FNacDComponent();
+  private cabo2FNAC: Cabo2FNacComponent = new Cabo2FNacComponent();
+  private cabo4FNAC_D: Cabo4FNacDComponent = new Cabo4FNacDComponent();
+  private cabo4FNAC: Cabo4FNacComponent = new Cabo4FNacComponent();
   private cabo6FNAC_D: Cabo6FNacDComponent = new Cabo6FNacDComponent();
   private cabo6FNAC: Cabo6FNacComponent = new Cabo6FNacComponent();
   private cabo8FNAC_D: Cabo8FNacDComponent = new Cabo8FNacDComponent();
@@ -127,6 +147,13 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
   private cabo72FNAC_D: Cabo72FNacDComponent = new Cabo72FNacDComponent();
   private cabo72FNAC: Cabo72FNacComponent = new Cabo72FNacComponent();
 
+  private cabo24FINT: Cabo24FIntComponent = new Cabo24FIntComponent();
+  private cabo24FINT_D: Cabo24FIntDComponent = new Cabo24FIntDComponent();
+  private cabo24FNAC_TB24: Cabo24FNacTb24Component = new Cabo24FNacTb24Component();
+  private cabo24FNAC_D_TB24: Cabo24FNacDTb24Component = new Cabo24FNacDTb24Component();
+  private cabo24FINT_TB24: Cabo24FIntTb24Component = new Cabo24FIntTb24Component();
+  private cabo24FINT_D_TB24: Cabo24FIntDTb24Component = new Cabo24FIntDTb24Component();
+
     // Instâncias dos diferentes componentes de splitter
   private splitter12: Splitter12Component = new Splitter12Component();
   private splitter14: Splitter14Component = new Splitter14Component();
@@ -134,8 +161,7 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
   private splitter116: Splitter116Component = new Splitter116Component();
   private splitterDesb: SplitterDesbComponent = new SplitterDesbComponent();
 
-  private cabo1FNAC: Cabo1FNacComponent= new Cabo1FNacComponent();
-  private cabo1FNAC_D: Cabo1FNacDComponent= new Cabo1FNacDComponent();
+  
 
 
 
@@ -691,32 +717,85 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
 
      //CABOS=============================================seleciona modelo do cabo através do tipo ========================
 
-     private selecionarModeloCaboPorCapacidade(capacidade: number , isLadoDireito: boolean): go.ObjectData {
-      console.log(`Selecionando modelo para cabo com capacidade ${capacidade}, lado direito: ${isLadoDireito}`);
+     private selecionarModeloCaboPorCapacidade(capacidade: number ,codigo: number, tubo: number , isLadoDireito: boolean): go.ObjectData {
+      console.log(`Selecionando modelo para: capacidade=${capacidade}, codigo=${codigo}, tubo=${tubo}, direito=${isLadoDireito}`);
       
-     
+      
 
+      if (capacidade <= 1) {
+        return isLadoDireito 
+          ? this.cabo1FNAC_D.getModelDefinition() 
+          : this.cabo1FNAC.getModelDefinition();
+      }  
 
-      if (capacidade <= 6) {
+      
+      else if (capacidade <= 2) {
+        return isLadoDireito 
+          ? this.cabo2FNAC_D.getModelDefinition() 
+          : this.cabo2FNAC.getModelDefinition();
+      }  
+                  
+      else if (capacidade <= 4) {
+        return isLadoDireito 
+          ? this.cabo4FNAC_D.getModelDefinition() 
+          : this.cabo4FNAC.getModelDefinition();
+      }       
+
+      else if (capacidade <= 6) {
         return isLadoDireito 
           ? this.cabo6FNAC_D.getModelDefinition() 
           : this.cabo6FNAC.getModelDefinition();
       } 
-      if (capacidade <= 8) {
+      else if (capacidade <= 8) {
         return isLadoDireito 
           ? this.cabo8FNAC_D.getModelDefinition() 
           : this.cabo8FNAC.getModelDefinition();
       } 
-      if (capacidade <= 12) {
+      else if (capacidade <= 12) {
         return isLadoDireito 
           ? this.cabo12FNAC_D.getModelDefinition() 
           : this.cabo12FNAC.getModelDefinition();
       } 
+
+      //================================================================
       else if (capacidade <= 24) {
-        return isLadoDireito 
-          ? this.cabo24FNAC_D.getModelDefinition() 
-          : this.cabo24FNAC.getModelDefinition();
-      } 
+      if (codigo === 2) { // NAC
+        if (tubo === 6) {
+          return isLadoDireito 
+            ? this.cabo24FNAC_D.getModelDefinition() 
+            : this.cabo24FNAC.getModelDefinition();
+        } else if (tubo === 24) {
+          return isLadoDireito 
+            ? this.cabo24FNAC_D_TB24.getModelDefinition() 
+            : this.cabo24FNAC_TB24.getModelDefinition();
+            } else {
+          // Default para NAC quando tubo não é 6 nem 24
+          return isLadoDireito 
+            ? this.cabo24FNAC_D.getModelDefinition() 
+            : this.cabo24FNAC.getModelDefinition();
+
+            
+        }
+      } else { // INT
+        if (tubo === 6) {
+          return isLadoDireito 
+            ? this.cabo24FINT_D.getModelDefinition() 
+            : this.cabo24FINT.getModelDefinition();
+            } else if (tubo === 24) {
+          return isLadoDireito 
+            ? this.cabo24FINT_D_TB24.getModelDefinition() 
+            : this.cabo24FINT_TB24.getModelDefinition();
+            } else {
+          // Default para INT quando tubo não é 6 nem 24
+          return isLadoDireito 
+            ? this.cabo24FINT_D.getModelDefinition() 
+            : this.cabo24FINT.getModelDefinition();
+
+        } 
+      }
+    }
+
+    //=====================================================================
       else if (capacidade <= 36) {
         // Para capacidades acima de 24, assumimos o modelo de 36 fibras
         return isLadoDireito 
@@ -907,7 +986,7 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
 //SPLITTERS===============================================================================================================
 //==============================================================================================================
 
-//=========================função que le Bocas 97 e 98 
+//=========================função que le Bocas 97 e 98 e faz conexoes somente entre splitters
 
 // Método atualizado para carregar conexões sequencialmente usando async/await
   async carregarConexoesBocas9798() {
@@ -1270,13 +1349,15 @@ private desenharSplitters() {
        
         // -----------------------------------------------define MODELO cabo BOCA01 --------------------------------------
         if (this.VetorBocas[0].BOCA1 !== " ") {
-        // Verifica se temos informações de capacidade para esta boca
-        if (this.VetorTipoCabos.length >= 1 && this.VetorTipoCabos[0]) {
+          if (this.VetorTipoCabos.length >= 1 && this.VetorTipoCabos[0]) {
+         
           const capacidade = this.VetorTipoCabos[0].capacidade || 0;
-          console.log(`Boca 1: Usando capacidade ${capacidade} para selecionar modelo`);
-          
+          const codigo = this.VetorTipoCabos[0].codigo || 2;
+          const tubo = this.VetorTipoCabos[0].tubo || 6;
+
+          console.log(`Boca 1: Usando capacidade ${capacidade} para selecionar modelo`);  
           // Selecionar o modelo com base na capacidade
-          const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, false);
+          const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, codigo, tubo, false);
           
           Boca1 = { 
             ...modeloSelecionado, 
@@ -1299,9 +1380,11 @@ private desenharSplitters() {
         if (this.VetorBocas[0].BOCA2 !== " ") {
           if (this.VetorTipoCabos.length >= 2 && this.VetorTipoCabos[1]) {
             const capacidade = this.VetorTipoCabos[1].capacidade || 0; // Use default 0 if undefined
+            const codigo = this.VetorTipoCabos[1].codigo || 2;
+            const tubo = this.VetorTipoCabos[1].tubo || 6;
             console.log(`Boca 2: Usando capacidade ${capacidade} para selecionar modelo`);
             
-            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, true);
+            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, codigo, tubo, true);
             
             Boca2 = { 
               ...modeloSelecionado, 
@@ -1325,9 +1408,11 @@ private desenharSplitters() {
         if (this.VetorBocas[0].BOCA3 !== " ") {
           if (this.VetorTipoCabos.length >= 3 && this.VetorTipoCabos[2]) {
             const capacidade = this.VetorTipoCabos[2].capacidade || 0; // Use default 0 if undefined
+            const codigo = this.VetorTipoCabos[2].codigo || 2;
+            const tubo = this.VetorTipoCabos[2].tubo || 6;
             console.log(`Boca 3: Usando capacidade ${capacidade} para selecionar modelo`);
             
-            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, false);
+            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, codigo, tubo, false);
             
             Boca3 = { 
               ...modeloSelecionado, 
@@ -1348,9 +1433,11 @@ private desenharSplitters() {
         if (this.VetorBocas[0].BOCA4 !== " ") {
           if (this.VetorTipoCabos.length >= 4 && this.VetorTipoCabos[3]) {
             const capacidade = this.VetorTipoCabos[3].capacidade || 0; // Use default 0 if undefined
+            const codigo = this.VetorTipoCabos[3].codigo || 2;
+            const tubo = this.VetorTipoCabos[3].tubo || 6;
             console.log(`Boca 4: Usando capacidade ${capacidade} para selecionar modelo`);
             
-            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, true);
+            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, codigo, tubo, true);
             
             Boca4 = { 
               ...modeloSelecionado, 
@@ -1372,9 +1459,11 @@ private desenharSplitters() {
         if (this.VetorBocas[0].BOCA5 !== " ") {
           if (this.VetorTipoCabos.length >= 5 && this.VetorTipoCabos[4]) {
             const capacidade = this.VetorTipoCabos[4].capacidade || 0; // Use default 0 if undefined
+            const codigo = this.VetorTipoCabos[4].codigo || 2;
+            const tubo = this.VetorTipoCabos[4].tubo || 6;
             console.log(`Boca 5: Usando capacidade ${capacidade} para selecionar modelo`);
             
-            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, false);
+            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, codigo, tubo, false);
             
             Boca5 = { 
               ...modeloSelecionado, 
@@ -1397,8 +1486,10 @@ private desenharSplitters() {
           if (this.VetorTipoCabos.length >= 6 && this.VetorTipoCabos[5]) {
             const capacidade = this.VetorTipoCabos[5].capacidade || 0; // Use default 0 if undefined
             console.log(`Boca 6: Usando capacidade ${capacidade} para selecionar modelo`);
+            const codigo = this.VetorTipoCabos[5].codigo || 2;
+            const tubo = this.VetorTipoCabos[5].tubo || 6;
             
-            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, true);
+            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, codigo, tubo, true);
             
             Boca6 = { 
               ...modeloSelecionado, 
@@ -1420,9 +1511,11 @@ private desenharSplitters() {
         if (this.VetorBocas[0].BOCA7 !== " ") {
           if (this.VetorTipoCabos.length >= 7 && this.VetorTipoCabos[6]) {
             const capacidade = this.VetorTipoCabos[6].capacidade || 0; // Use default 0 if undefined
+            const codigo = this.VetorTipoCabos[6].codigo || 2;
+            const tubo = this.VetorTipoCabos[6].tubo || 6;
             console.log(`Boca 7: Usando capacidade ${capacidade} para selecionar modelo`);
             
-            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, false);
+            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, codigo, tubo, false);
             
             Boca7 = { 
               ...modeloSelecionado, 
@@ -1444,9 +1537,11 @@ private desenharSplitters() {
         if (this.VetorBocas[0].BOCA8 !== " ") {
           if (this.VetorTipoCabos.length >= 8 && this.VetorTipoCabos[7]) {
             const capacidade = this.VetorTipoCabos[7].capacidade || 0; // Use default 0 if undefined
+            const codigo = this.VetorTipoCabos[7].codigo || 2;
+            const tubo = this.VetorTipoCabos[7].tubo || 6;
             console.log(`Boca 8: Usando capacidade ${capacidade} para selecionar modelo`);
             
-            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, true);
+            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, codigo, tubo, true);
             
             Boca8 = { 
               ...modeloSelecionado, 
@@ -1468,9 +1563,11 @@ private desenharSplitters() {
         if (this.VetorBocas[0].BOCA9 !== " ") {
           if (this.VetorTipoCabos.length >= 9 && this.VetorTipoCabos[8]) {
             const capacidade = this.VetorTipoCabos[8].capacidade || 0; // Use default 0 if undefined
+            const codigo = this.VetorTipoCabos[8].codigo || 2;
+            const tubo = this.VetorTipoCabos[8].tubo || 6;
             console.log(`Boca 9: Usando capacidade ${capacidade} para selecionar modelo`);
             
-            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, false);
+            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, codigo, tubo, false);
             
             Boca9 = { 
               ...modeloSelecionado, 
@@ -1493,9 +1590,11 @@ private desenharSplitters() {
         if (this.VetorBocas[0].BOCA10 !== " ") {
           if (this.VetorTipoCabos.length >= 10 && this.VetorTipoCabos[9]) {
             const capacidade = this.VetorTipoCabos[9].capacidade || 0; // Use default 0 if undefined
+            const codigo = this.VetorTipoCabos[9].codigo || 2;
+            const tubo = this.VetorTipoCabos[9].tubo || 6;
             console.log(`Boca 10: Usando capacidade ${capacidade} para selecionar modelo`);
             
-            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, true);
+            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, codigo, tubo, true);
             
             Boca10 = { 
               ...modeloSelecionado, 
@@ -1517,9 +1616,11 @@ private desenharSplitters() {
         if (this.VetorBocas[0].BOCA11 !== " ") {
           if (this.VetorTipoCabos.length >= 11 && this.VetorTipoCabos[10]) {
             const capacidade = this.VetorTipoCabos[10].capacidade || 0; // Use default 0 if undefined
+            const codigo = this.VetorTipoCabos[10].codigo || 2;
+            const tubo = this.VetorTipoCabos[10].tubo || 6;
             console.log(`Boca 11: Usando capacidade ${capacidade} para selecionar modelo`);
             
-            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, false);
+            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, codigo, tubo, false);
             
             Boca11 = { 
               ...modeloSelecionado, 
@@ -1541,9 +1642,11 @@ private desenharSplitters() {
         if (this.VetorBocas[0].BOCA12 !== " ") {
           if (this.VetorTipoCabos.length >= 12 && this.VetorTipoCabos[11]) {
             const capacidade = this.VetorTipoCabos[11].capacidade || 0; // Use default 0 if undefined
+            const codigo = this.VetorTipoCabos[11].codigo || 2;
+            const tubo = this.VetorTipoCabos[11].tubo || 6;
             console.log(`Boca 12: Usando capacidade ${capacidade} para selecionar modelo`);
             
-            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, true);
+            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, codigo, tubo, true);
             
             Boca12 = { 
               ...modeloSelecionado, 
@@ -1568,9 +1671,11 @@ private desenharSplitters() {
         if (this.VetorBocas[0].BOCA13 !== " ") {
           if (this.VetorTipoCabos.length >= 13 && this.VetorTipoCabos[12]) {
             const capacidade = this.VetorTipoCabos[12].capacidade || 0; // Use default 0 if undefined
+            const codigo = this.VetorTipoCabos[12].codigo || 2;
+            const tubo = this.VetorTipoCabos[12].tubo || 6;
             console.log(`Boca 13: Usando capacidade ${capacidade} para selecionar modelo`);
             
-            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, true);
+            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, codigo, tubo, false);
             
             Boca13 = { 
               ...modeloSelecionado, 
@@ -1596,9 +1701,11 @@ private desenharSplitters() {
         if (this.VetorBocas[0].BOCA14 !== " ") {
           if (this.VetorTipoCabos.length >= 14 && this.VetorTipoCabos[13]) {
             const capacidade = this.VetorTipoCabos[13].capacidade || 0; // Use default 0 if undefined
+            const codigo = this.VetorTipoCabos[13].codigo || 2;
+            const tubo = this.VetorTipoCabos[13].tubo || 6;
             console.log(`Boca 14: Usando capacidade ${capacidade} para selecionar modelo`);
             
-            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, true);
+            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, codigo, tubo, true);
             
             Boca14 = { 
               ...modeloSelecionado, 
@@ -1623,9 +1730,11 @@ private desenharSplitters() {
         if (this.VetorBocas[0].BOCA15 !== " ") {
           if (this.VetorTipoCabos.length >= 15 && this.VetorTipoCabos[14]) {
             const capacidade = this.VetorTipoCabos[14].capacidade || 0; // Use default 0 if undefined
+            const codigo = this.VetorTipoCabos[14].codigo || 2;
+            const tubo = this.VetorTipoCabos[14].tubo || 6;
             console.log(`Boca 15: Usando capacidade ${capacidade} para selecionar modelo`);
             
-            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, true);
+            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, codigo, tubo, false);
             
             Boca15 = { 
               ...modeloSelecionado, 
@@ -1650,9 +1759,11 @@ private desenharSplitters() {
         if (this.VetorBocas[0].BOCA16 !== " ") {
           if (this.VetorTipoCabos.length >= 16 && this.VetorTipoCabos[15]) {
             const capacidade = this.VetorTipoCabos[15].capacidade || 0; // Use default 0 if undefined
+            const codigo = this.VetorTipoCabos[15].codigo || 2;
+            const tubo = this.VetorTipoCabos[15].tubo || 6;
             console.log(`Boca 16: Usando capacidade ${capacidade} para selecionar modelo`);
             
-            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, true);
+            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, codigo, tubo, true);
             
             Boca16 = { 
               ...modeloSelecionado, 
@@ -1677,9 +1788,11 @@ private desenharSplitters() {
         if (this.VetorBocas[0].BOCA17 !== " ") {
           if (this.VetorTipoCabos.length >= 17 && this.VetorTipoCabos[16]) {
             const capacidade = this.VetorTipoCabos[16].capacidade || 0; // Use default 0 if undefined
+            const codigo = this.VetorTipoCabos[16].codigo || 2;
+            const tubo = this.VetorTipoCabos[16].tubo || 6;
             console.log(`Boca 17: Usando capacidade ${capacidade} para selecionar modelo`);
             
-            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, true);
+            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, codigo, tubo, false);
             
             Boca17 = { 
               ...modeloSelecionado, 
@@ -1703,9 +1816,11 @@ private desenharSplitters() {
         if (this.VetorBocas[0].BOCA18 !== " ") {
           if (this.VetorTipoCabos.length >= 18 && this.VetorTipoCabos[17]) {
             const capacidade = this.VetorTipoCabos[17].capacidade || 0; // Use default 0 if undefined
+            const codigo = this.VetorTipoCabos[17].codigo || 2;
+            const tubo = this.VetorTipoCabos[17].tubo || 6;
             console.log(`Boca 18: Usando capacidade ${capacidade} para selecionar modelo`);
             
-            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, true);
+            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, codigo, tubo, true);
             
             Boca18 = { 
               ...modeloSelecionado, 
@@ -2240,6 +2355,15 @@ private desenharSplitters() {
         // Agora usando o nodeTemplate definido no componente do modelo
 
         const caboTemplateMap = new go.Map<string, go.Node>();
+
+        // Adicionar templates DROPS
+        caboTemplateMap.add("cabo1F", this.cabo1FNAC.getNodeTemplate());
+        caboTemplateMap.add("cabo1F_D", this.cabo1FNAC_D.getNodeTemplate());
+
+        caboTemplateMap.add("cabo2F", this.cabo2FNAC.getNodeTemplate());
+        caboTemplateMap.add("cabo2F_D", this.cabo2FNAC_D.getNodeTemplate());
+        caboTemplateMap.add("cabo4F_D", this.cabo4FNAC_D.getNodeTemplate());
+        caboTemplateMap.add("cabo4F", this.cabo4FNAC.getNodeTemplate());
         caboTemplateMap.add("cabo6F_D", this.cabo6FNAC_D.getNodeTemplate());
         caboTemplateMap.add("cabo6F", this.cabo6FNAC.getNodeTemplate());
         caboTemplateMap.add("cabo8F_D", this.cabo8FNAC_D.getNodeTemplate());
@@ -2248,6 +2372,14 @@ private desenharSplitters() {
         caboTemplateMap.add("caboD", this.cabo12FNAC_D.getNodeTemplate());
         caboTemplateMap.add("cabo24F", this.cabo24FNAC.getNodeTemplate());
         caboTemplateMap.add("cabo24F_D", this.cabo24FNAC_D.getNodeTemplate());
+
+        caboTemplateMap.add("cabo24F_INT", this.cabo24FINT.getNodeTemplate());
+        caboTemplateMap.add("cabo24F_INT_D", this.cabo24FINT_D.getNodeTemplate());
+        caboTemplateMap.add("cabo24F_NAC_TB24", this.cabo24FNAC_TB24.getNodeTemplate());
+        caboTemplateMap.add("cabo24F_NAC_D_TB24", this.cabo24FNAC_D_TB24.getNodeTemplate());
+        caboTemplateMap.add("cabo24F_INT_TB24", this.cabo24FINT_TB24.getNodeTemplate());
+        caboTemplateMap.add("cabo24F_INT_D_TB24", this.cabo24FINT_D_TB24.getNodeTemplate());
+
         caboTemplateMap.add("cabo36F", this.cabo36FNAC.getNodeTemplate());
         caboTemplateMap.add("cabo36F_D", this.cabo36FNAC_D.getNodeTemplate());
         caboTemplateMap.add("cabo48F_D", this.cabo48FNAC_D.getNodeTemplate());
@@ -2268,9 +2400,7 @@ private desenharSplitters() {
         caboTemplateMap.add("splitter1128", this.splitter116.getNodeTemplate());
         caboTemplateMap.add("splitter1256", this.splitter116.getNodeTemplate());
 
-        // Adicionar templates DROPS
-        caboTemplateMap.add("cabo1F", this.cabo1FNAC.getNodeTemplate());
-        caboTemplateMap.add("cabo1F_D", this.cabo1FNAC_D.getNodeTemplate());
+        
 
         // Obtendo a definição do modelo do componente Cabo_12F_NAC
         this.diagram.nodeTemplateMap = caboTemplateMap;
