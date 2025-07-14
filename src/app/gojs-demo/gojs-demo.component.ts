@@ -19,25 +19,45 @@ import * as go from 'gojs';
 
 import { Cabo1FNacComponent} from '../Stencil/cabo-drop/cabo-drop.component'
 import { Cabo1FNacDComponent} from '../Stencil/cabo-drop-d/cabo-drop-d.component'
+import { Cabo1FIntComponent } from '../Stencil/cabo-1-f-int/cabo-1-f-int.component';
+import { Cabo1FIntDComponent } from '../Stencil/cabo-1-f-int-d/cabo-1-f-int-d.component';
+
 import { Cabo2FNacComponent} from '../Stencil/cabo-2-f-nac/cabo-2-f-nac.component'
 import { Cabo2FNacDComponent} from '../Stencil/cabo-2-f-nac-d/cabo-2-f-nac-d.component'
+import { Cabo2FIntComponent } from '../Stencil/cabo-2-f-int/cabo-2-f-int.component';
+import { Cabo2FIntDComponent } from '../Stencil/cabo-2-f-int-d/cabo-2-f-int-d.component';
+
 import { Cabo4FNacDComponent } from '../Stencil/cabo-4-f-nac-d/cabo-4-f-nac-d.component';
 import { Cabo4FNacComponent } from '../Stencil/cabo-4-f-nac/cabo-4-f-nac.component';
+import { Cabo4FIntComponent } from '../Stencil/cabo-4-f-int/cabo-4-f-int.component';
+import { Cabo4FIntDComponent } from '../Stencil/cabo-4-f-int-d/cabo-4-f-int-d.component';
+
 import { Cabo6FNacDComponent } from '../Stencil/cabo-6-f-nac-d/cabo-6-f-nac-d.component';
 import { Cabo6FNacComponent } from '../Stencil/cabo-6-f-nac/cabo-6-f-nac.component';
+import { Cabo6FIntComponent } from '../Stencil/cabo-6-f-int/cabo-6-f-int.component';
+import { Cabo6FIntDComponent } from '../Stencil/cabo-6-f-int-d/cabo-6-f-int-d.component';
+
+
 import { Cabo8FNacDComponent } from '../Stencil/cabo-8-f-nac-d/cabo-8-f-nac-d.component';
 import { Cabo8FNacComponent } from '../Stencil/cabo-8-f-nac/cabo-8-f-nac.component';
+import { Cabo8FIntComponent } from '../Stencil/cabo-8-f-int/cabo-8-f-int.component';
+import { Cabo8FIntDComponent } from '../Stencil/cabo-8-f-int-d/cabo-8-f-int-d.component';
+
 import { Cabo12FNacComponent } from '../Stencil/cabo-12-f-nac/cabo-12-f-nac.component';
 import { Cabo12FNacDComponent } from '../Stencil/cabo-12-f-nac-d/cabo-12-f-nac-d.component';
+import { Cabo12FIntComponent } from '../Stencil/cabo-12-f-int/cabo-12-f-int.component';
+import { Cabo12FIntDComponent } from '../Stencil/cabo-12-f-int-d/cabo-12-f-int-d.component';
+import { Cabo12FNacTb12Component } from '../Stencil/cabo-12-f-nac-tb12/cabo-12-f-nac-tb12.component';
+import { Cabo12FNacDTb12Component } from '../Stencil/cabo-12-f-nac-d-tb12/cabo-12-f-nac-d-tb12.component';
+import { Cabo12FIntTb12Component } from '../Stencil/cabo-12-f-int-tb12/cabo-12-f-int-tb12.component';
+import { Cabo12FIntDTb12Component } from '../Stencil/cabo-12-f-int-d-tb12/cabo-12-f-int-d-tb12.component';
+import { Cabo12FNacTb2Component } from '../Stencil/cabo-12-f-nac-tb2/cabo-12-f-nac-tb2.component';
+import { Cabo12FNacDTb2Component } from '../Stencil/cabo-12-f-nac-d-tb2/cabo-12-f-nac-d-tb2.component';
+import { Cabo12FIntTb2Component } from '../Stencil/cabo-12-f-int-tb2/cabo-12-f-int-tb2.component';
+import { Cabo12FIntDTb2Component } from '../Stencil/cabo-12-f-int-d-tb2/cabo-12-f-int-d-tb2.component';
+
 import { Cabo24FNacComponent } from '../Stencil/cabo-24-f-nac/cabo-24-f-nac.component';
 import { Cabo24FNacDComponent } from '../Stencil/cabo-24-f-nac-d/cabo-24-f-nac-d.component';
-import { Cabo36FNacComponent } from '../Stencil/cabo-36-f-nac/cabo-36-f-nac.component';
-import { Cabo36FNacDComponent } from '../Stencil/cabo-36-f-nac-d/cabo-36-f-nac-d.component';
-import { Cabo48FNacDComponent } from '../Stencil/cabo-48-f-nac-d/cabo-48-f-nac-d.component';
-import { Cabo48FNacComponent } from '../Stencil/cabo-48-f-nac/cabo-48-f-nac.component';
-import { Cabo72FNacDComponent } from '../Stencil/cabo-72-f-nac-d/cabo-72-f-nac-d.component';
-import { Cabo72FNacComponent } from '../Stencil/cabo-72-f-nac/cabo-72-f-nac.component';
-
 import { Cabo24FIntComponent } from '../Stencil/cabo-24-f-int/cabo-24-f-int.component';
 import { Cabo24FIntDComponent } from '../Stencil/cabo-24-f-int-d/cabo-24-f-int-d.component';
 import { Cabo24FNacTb24Component } from '../Stencil/cabo-24-f-nac-tb24/cabo-24-f-nac-tb24.component';
@@ -45,7 +65,25 @@ import { Cabo24FNacDTb24Component } from '../Stencil/cabo-24-f-nac-d-tb24/cabo-2
 import { Cabo24FIntTb24Component } from '../Stencil/cabo-24-f-int-tb24/cabo-24-f-int-tb24.component';
 import { Cabo24FIntDTb24Component } from '../Stencil/cabo-24-f-int-d-tb24/cabo-24-f-int-d-tb24.component';
 
+import { Cabo36FNacComponent } from '../Stencil/cabo-36-f-nac/cabo-36-f-nac.component';
+import { Cabo36FNacDComponent } from '../Stencil/cabo-36-f-nac-d/cabo-36-f-nac-d.component';
+import { Cabo36FIntComponent } from '../Stencil/cabo-36-f-int/cabo-36-f-int.component';
+import { Cabo36FIntDComponent } from '../Stencil/cabo-36-f-int-d/cabo-36-f-int-d.component';
 
+import { Cabo48FNacDComponent } from '../Stencil/cabo-48-f-nac-d/cabo-48-f-nac-d.component';
+import { Cabo48FNacComponent } from '../Stencil/cabo-48-f-nac/cabo-48-f-nac.component';
+import { Cabo48FIntComponent } from '../Stencil/cabo-48-f-int/cabo-48-f-int.component';
+import { Cabo48FIntDComponent } from '../Stencil/cabo-48-f-int-d/cabo-48-f-int-d.component';
+
+import { Cabo72FNacDComponent } from '../Stencil/cabo-72-f-nac-d/cabo-72-f-nac-d.component';
+import { Cabo72FNacComponent } from '../Stencil/cabo-72-f-nac/cabo-72-f-nac.component';
+import { Cabo72FIntComponent } from '../Stencil/cabo-72-f-int/cabo-72-f-int.component';
+import { Cabo72FIntDComponent } from '../Stencil/cabo-72-f-int-d/cabo-72-f-int-d.component';
+
+import { Cabo144FNacComponent } from '../Stencil/cabo-144-f-nac/cabo-144-f-nac.component';
+import { Cabo144FNacDComponent } from '../Stencil/cabo-144-f-nac-d/cabo-144-f-nac-d.component';
+import { Cabo144FIntComponent } from '../Stencil/cabo-144-f-int/cabo-144-f-int.component';
+import { Cabo144FIntDComponent } from '../Stencil/cabo-144-f-int-d/cabo-144-f-int-d.component';
 
 import { Splitter12Component } from '../Stencil/spliter-1-p2/spliter-1-p2.component';
 import { Splitter14Component } from '../Stencil/spliter-1-p4/spliter-1-p4.component';
@@ -68,7 +106,6 @@ import { ConexaoBoca } from '../modelo/ConexaoBoca';
 import { ConexaoSplitter } from '../modelo/ConexaoSplitter';
 import { Cabo_TipoService } from '../servico/cabo-tipo.service';
 import { GojsDropComponent } from '../gojs-drop/gojs-drop.component';
-import { ZoomPanTool } from '@syncfusion/ej2-angular-diagrams';
 import { PopClienteService } from '../servico/pop-cliente.service';
 import { UpdateBocaXYService} from '../servico/update-boca-xy.service';
 import { UpdateSplitterXYService} from '../servico/update-splitter-xy.service';
@@ -128,25 +165,47 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
 
   private cabo1FNAC: Cabo1FNacComponent= new Cabo1FNacComponent();
   private cabo1FNAC_D: Cabo1FNacDComponent= new Cabo1FNacDComponent();
+  private cabo1FINT: Cabo1FIntComponent = new Cabo1FIntComponent();
+  private cabo1FINT_D: Cabo1FIntDComponent = new Cabo1FIntDComponent();
+
   private cabo2FNAC_D: Cabo2FNacDComponent = new Cabo2FNacDComponent();
   private cabo2FNAC: Cabo2FNacComponent = new Cabo2FNacComponent();
+  private cabo2FINT: Cabo2FIntComponent = new Cabo2FIntComponent();
+  private cabo2FINT_D: Cabo2FIntDComponent = new Cabo2FIntDComponent();
+
   private cabo4FNAC_D: Cabo4FNacDComponent = new Cabo4FNacDComponent();
   private cabo4FNAC: Cabo4FNacComponent = new Cabo4FNacComponent();
+  private cabo4FINT: Cabo4FIntComponent = new Cabo4FIntComponent();
+  private cabo4FINT_D: Cabo4FIntDComponent = new Cabo4FIntDComponent();
+
   private cabo6FNAC_D: Cabo6FNacDComponent = new Cabo6FNacDComponent();
   private cabo6FNAC: Cabo6FNacComponent = new Cabo6FNacComponent();
+  private cabo6FINT: Cabo6FIntComponent = new Cabo6FIntComponent();
+  private cabo6FINT_D: Cabo6FIntDComponent = new Cabo6FIntDComponent();
+  
+
+  
+
   private cabo8FNAC_D: Cabo8FNacDComponent = new Cabo8FNacDComponent();
   private cabo8FNAC: Cabo8FNacComponent = new Cabo8FNacComponent();
-  private cabo12FNAC: Cabo12FNacComponent = new Cabo12FNacComponent();
-  private cabo12FNAC_D: Cabo12FNacDComponent = new Cabo12FNacDComponent();
+  private cabo8FINT: Cabo8FIntComponent = new Cabo8FIntComponent();
+  private cabo8FINT_D: Cabo8FIntDComponent = new Cabo8FIntDComponent();
+
+  private cabo12F_NAC: Cabo12FNacComponent = new Cabo12FNacComponent();
+  private cabo12F_NAC_D: Cabo12FNacDComponent = new Cabo12FNacDComponent();
+  private cabo12FINT: Cabo12FIntComponent = new Cabo12FIntComponent();
+  private cabo12FINT_D: Cabo12FIntDComponent = new Cabo12FIntDComponent();
+  private cabo12FINT_TB2: Cabo12FIntTb2Component = new Cabo12FIntTb2Component();
+  private cabo12FINT_D_TB2: Cabo12FIntDTb2Component = new Cabo12FIntDTb2Component();
+  private cabo12FNAC_TB2: Cabo12FNacTb2Component = new Cabo12FNacTb2Component();
+  private cabo12FNAC_D_TB2: Cabo12FNacDTb2Component = new Cabo12FNacDTb2Component();
+  private cabo12FINT_TB12: Cabo12FIntTb12Component = new Cabo12FIntTb12Component();
+  private cabo12FINT_D_TB12: Cabo12FIntDTb12Component = new Cabo12FIntDTb12Component();
+  private cabo12FNAC_TB12: Cabo12FNacTb12Component = new Cabo12FNacTb12Component();
+  private cabo12FNAC_D_TB12: Cabo12FNacDTb12Component = new Cabo12FNacDTb12Component();
+
   private cabo24FNAC: Cabo24FNacComponent = new Cabo24FNacComponent();
   private cabo24FNAC_D: Cabo24FNacDComponent = new Cabo24FNacDComponent();
-  private cabo36FNAC: Cabo36FNacComponent = new Cabo36FNacComponent();
-  private cabo36FNAC_D: Cabo36FNacDComponent = new Cabo36FNacDComponent();
-  private cabo48FNAC_D: Cabo48FNacDComponent = new Cabo48FNacDComponent();
-  private cabo48FNAC: Cabo48FNacComponent = new Cabo48FNacComponent();
-  private cabo72FNAC_D: Cabo72FNacDComponent = new Cabo72FNacDComponent();
-  private cabo72FNAC: Cabo72FNacComponent = new Cabo72FNacComponent();
-
   private cabo24FINT: Cabo24FIntComponent = new Cabo24FIntComponent();
   private cabo24FINT_D: Cabo24FIntDComponent = new Cabo24FIntDComponent();
   private cabo24FNAC_TB24: Cabo24FNacTb24Component = new Cabo24FNacTb24Component();
@@ -154,6 +213,18 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
   private cabo24FINT_TB24: Cabo24FIntTb24Component = new Cabo24FIntTb24Component();
   private cabo24FINT_D_TB24: Cabo24FIntDTb24Component = new Cabo24FIntDTb24Component();
 
+  private cabo36FNAC: Cabo36FNacComponent = new Cabo36FNacComponent();
+  private cabo36FNAC_D: Cabo36FNacDComponent = new Cabo36FNacDComponent();
+  private cabo36FINT: Cabo36FIntComponent = new Cabo36FIntComponent();
+  private cabo36FINT_D: Cabo36FIntDComponent = new Cabo36FIntDComponent();
+
+
+  private cabo48FNAC_D: Cabo48FNacDComponent = new Cabo48FNacDComponent();
+  private cabo48FNAC: Cabo48FNacComponent = new Cabo48FNacComponent();
+  private cabo72FNAC_D: Cabo72FNacDComponent = new Cabo72FNacDComponent();
+  private cabo72FNAC: Cabo72FNacComponent = new Cabo72FNacComponent();
+
+  
     // Instâncias dos diferentes componentes de splitter
   private splitter12: Splitter12Component = new Splitter12Component();
   private splitter14: Splitter14Component = new Splitter14Component();
@@ -722,42 +793,119 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
       
       
 
-      if (capacidade <= 1) {
+      // Capacidade 1
+    if (capacidade <= 1) {
+      if (codigo === 2) { // NAC
         return isLadoDireito 
           ? this.cabo1FNAC_D.getModelDefinition() 
           : this.cabo1FNAC.getModelDefinition();
-      }  
+      } else { // INT (codigo 1)
+        return isLadoDireito 
+          ? this.cabo1FINT_D.getModelDefinition() 
+          : this.cabo1FINT.getModelDefinition();
+      }
+    }
 
       
-      else if (capacidade <= 2) {
+      // Capacidade 2
+    else if (capacidade <= 2) {
+      if (codigo === 2) { // NAC
         return isLadoDireito 
           ? this.cabo2FNAC_D.getModelDefinition() 
           : this.cabo2FNAC.getModelDefinition();
-      }  
+      } else { // INT
+        return isLadoDireito 
+          ? this.cabo2FINT_D.getModelDefinition() 
+          : this.cabo2FINT.getModelDefinition();
+      }
+    }
                   
-      else if (capacidade <= 4) {
+      // Capacidade 4
+    else if (capacidade <= 4) {
+      if (codigo === 2) { // NAC
         return isLadoDireito 
           ? this.cabo4FNAC_D.getModelDefinition() 
           : this.cabo4FNAC.getModelDefinition();
-      }       
-
-      else if (capacidade <= 6) {
+      } else { // INT
+        return isLadoDireito 
+          ? this.cabo4FINT_D.getModelDefinition() 
+          : this.cabo4FINT.getModelDefinition();
+      }
+    }  
+    
+    
+       // Capacidade 6
+    else if (capacidade <= 6) {
+      if (codigo === 2) { // NAC
         return isLadoDireito 
           ? this.cabo6FNAC_D.getModelDefinition() 
           : this.cabo6FNAC.getModelDefinition();
-      } 
-      else if (capacidade <= 8) {
+      } else { // INT
+        return isLadoDireito 
+          ? this.cabo6FINT_D.getModelDefinition() 
+          : this.cabo6FINT.getModelDefinition();
+      }
+    }
+
+    
+
+
+      // Capacidade 8
+    else if (capacidade <= 8) {
+      if (codigo === 2) { // NAC
         return isLadoDireito 
           ? this.cabo8FNAC_D.getModelDefinition() 
           : this.cabo8FNAC.getModelDefinition();
-      } 
-      else if (capacidade <= 12) {
+      } else { // INT
         return isLadoDireito 
-          ? this.cabo12FNAC_D.getModelDefinition() 
-          : this.cabo12FNAC.getModelDefinition();
-      } 
+          ? this.cabo8FINT_D.getModelDefinition() 
+          : this.cabo8FINT.getModelDefinition();
+      }
+    }
+
+
+      
+    //================================================================
+    // Capacidade 12
+    
+    
+    else if (capacidade <= 12) {
+  if (codigo === 2) { // NAC
+    if (tubo === 2) {
+      return isLadoDireito 
+        ? this.cabo12FNAC_D_TB2.getModelDefinition() 
+        : this.cabo12FNAC_TB2.getModelDefinition();
+    } else if (tubo === 6) {
+      return isLadoDireito 
+        ? this.cabo12F_NAC_D.getModelDefinition() 
+        : this.cabo12F_NAC.getModelDefinition();
+    } else   { //(tubo === 12)
+      return isLadoDireito 
+        ? this.cabo12FNAC_D_TB12.getModelDefinition() 
+        : this.cabo12FNAC_TB12.getModelDefinition();
+    }
+
+    
+  } else if (codigo === 1) { // INT
+    if (tubo === 2) {
+      return isLadoDireito 
+        ? this.cabo12FINT_D_TB2.getModelDefinition() 
+        : this.cabo12FINT_TB2.getModelDefinition();
+    } else if (tubo === 6) {
+      return isLadoDireito 
+        ? this.cabo12FINT_D.getModelDefinition() 
+        : this.cabo12FINT.getModelDefinition();
+    } else   { //(tubo === 12)
+      return isLadoDireito 
+        ? this.cabo12FINT_D_TB12.getModelDefinition() 
+        : this.cabo12FINT_TB12.getModelDefinition();
+    }
+}
+    }
+
 
       //================================================================
+      // Capacidade 24
       else if (capacidade <= 24) {
       if (codigo === 2) { // NAC
         if (tubo === 6) {
@@ -797,11 +945,19 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
 
     //=====================================================================
       else if (capacidade <= 36) {
+        if (codigo === 2) { // NAC
         // Para capacidades acima de 24, assumimos o modelo de 36 fibras
         return isLadoDireito 
           ? this.cabo36FNAC_D.getModelDefinition() 
           : this.cabo36FNAC.getModelDefinition();
+      }else { // INT
+        return isLadoDireito 
+          ? this.cabo36FINT_D.getModelDefinition() 
+          : this.cabo36FINT.getModelDefinition();
       }
+    }
+
+
 
       else if (capacidade <= 48) {
         // Para capacidades acima de 48, assumimos o modelo de 36 fibras
@@ -817,10 +973,16 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
           : this.cabo72FNAC.getModelDefinition();
       }
 
-      
+      // ✅ RETORNO PADRÃO - Este é o ponto chave da Opção 1
+  // Caso alguma condição não seja atendida, retorna um modelo padrão
+  console.warn(`Condição não prevista: capacidade=${capacidade}, codigo=${codigo}, tubo=${tubo}`);
+  return isLadoDireito 
+    ? this.cabo12F_NAC_D.getModelDefinition() 
+    : this.cabo12F_NAC.getModelDefinition();
 
       
-    }
+    } 
+  
   
   
 //CABOS===================================================== Função para criar conexões automáticas baseadas em dados da API
@@ -1110,179 +1272,7 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
     }
   }
 
-//SPLITTER====================================================================================================== 
-/*
-// Adicionar o método para selecionar splitters
-selecionar_Splitters() {
-  console.log('Iniciando seleção de Splitters dentro da caixa...');
-  
-  this.servicoSplitter.selecionar().subscribe({
-    next: (retorno) => {
-      console.log('Splitters recebidos ---> :', retorno);
-      this.VetorSplitter = retorno;
-      
-      // Se os splitters foram carregados e o diagrama já está inicializado, desenhar os splitters
-      if (this.diagram && this.VetorSplitter.length > 0) {
-        this.desenharSplitters();
-        // Após desenhar os splitters, carregar suas conexões
-        setTimeout(() => this.carregarConexoesSplitters(), 300);
-      }
-    },
-    error: (erro) => {
-      console.error('Erro ao carregar Splitters:', erro);
-    }
-  });
-}
 
-
-
-//SPLITTER======================================================================================================
-// Método para desenhar os splitters no diagrama
-private desenharSplitters() {
-  if (!this.diagram || this.VetorSplitter.length === 0) {
-    console.log('--->Não foi possível desenhar splitters: diagrama não inicializado ou não há splitters');
-    return;
-  }
-
-  console.log('--->Desenhando splitters no diagrama:', this.VetorSplitter);
-  
- // this.diagram.startTransaction('Adicionar Splitters');
-
-  this.diagram.layout = new go.Layout();
-
-  const autoLayout = this.diagram.layout;
-//const emptyLayout = new go.Layout();  // Layout que não faz nada
-//emptyLayout.isInitial = false;
-//emptyLayout.isOngoing = false;
-//this.diagram.layout = emptyLayout;
-  
-  const model = this.diagram.model as go.GraphLinksModel;
-  const splitterNodes: go.ObjectData[] = [];
-
-  // Primeiro, calculamos as posições para cada splitter
-  const posicoesSplitters: {id: string, x: number, y: number}[] = [];
-  
-  // Criar nós para cada splitter
-  this.VetorSplitter.forEach((splitter, index) => {
-    // Calcular posição dinâmica para não sobrepor os splitters
-    const posX = 350 //+ (index * 100);
-    const posY = 400 + (index * 400);
-   
-
-   // Armazenar a posição calculada para cada splitter
-   posicoesSplitters.push({
-    id: `Splitter${splitter.IDMETA || index}`,
-    x: posX,
-    y: posY
-  });
-    
-    // Obter tipo de componente baseado no TIPO_SPLITTER
-    const categoria = this.servicoSplitter.getSplitterComponentType(splitter.TIPO_SPLITTER || 12);
-    
-    console.log(`Splitter ${index} (ID: ${splitter.IDMETA}): usando categoria '${categoria}' para tipo ${splitter.TIPO_SPLITTER}`);
-      
-      // Obter o modelo adequado baseado no tipo de splitter
-      let splitterModelDefinition: go.ObjectData;
-      
-      switch (splitter.TIPO_SPLITTER) {
-        case 1:
-          splitterModelDefinition = this.splitterDesb.getModelDefinition();
-          break
-        case 2:
-          splitterModelDefinition = this.splitterDesb.getModelDefinition();
-          break
-        case 3:
-          splitterModelDefinition = this.splitterDesb.getModelDefinition();
-          break
-        case 4:
-          splitterModelDefinition = this.splitterDesb.getModelDefinition();
-          break
-        case 5:
-          splitterModelDefinition = this.splitterDesb.getModelDefinition();
-          break
-        case 6:
-          splitterModelDefinition = this.splitterDesb.getModelDefinition();
-          break
-        case 7:
-          splitterModelDefinition = this.splitterDesb.getModelDefinition();
-          break
-        case 8:
-          splitterModelDefinition = this.splitterDesb.getModelDefinition();
-          break
-        case 9:
-          splitterModelDefinition = this.splitterDesb.getModelDefinition();
-          break
-        case 10:
-          splitterModelDefinition = this.splitterDesb.getModelDefinition();
-          break
-        case 11:
-          splitterModelDefinition = this.splitterDesb.getModelDefinition();
-          break
-        case 13:
-          splitterModelDefinition = this.splitter14.getModelDefinition();
-          break;
-        case 14:
-          splitterModelDefinition = this.splitter18.getModelDefinition();
-          break;
-        case 15:
-          splitterModelDefinition = this.splitter116.getModelDefinition();
-          break;
-        case 16: // Usando modelo 1:16 para splitters maiores por enquanto
-        case 17:
-        case 18:
-        case 19:
-          splitterModelDefinition = this.splitter116.getModelDefinition();
-          break;
-        case 12:
-          splitterModelDefinition = this.splitter12.getModelDefinition();
-          break;
-        default:
-          splitterModelDefinition = this.splitter12.getModelDefinition();
-          break;
-      }
-      
-      // Criar dados do nó com a definição de modelo adequada
-      const splitterNode: go.ObjectData = {
-        ...splitterModelDefinition,
-      key: `Splitter${splitter.IDMETA || index}`,
-      labelText: `${splitter.LABEL || 'Splitter'} (${this.servicoSplitter.getSplitterName(splitter.TIPO_SPLITTER || 12)})`,
-      loc: `${posX} ${posY}`,
-      //loc: "500  1300",
-      idmeta: splitter.IDMETA,
-      tipoSplitter: splitter.TIPO_SPLITTER,
-      
-    };
-    
-    splitterNodes.push(splitterNode);
-  });
-  
-  // Adicionar nós ao modelo
-  model.addNodeDataCollection(splitterNodes);
-  
-  // Configurar propriedades dos nós após adicioná-los
-  
-  setTimeout(() => {
-    if (this.diagram){
-    //splitterNodes.forEach(nodeData => {
-     // const node = this.diagram?.findNodeForKey(nodeData['key']);
-     // Aplicar as posições armazenadas para cada splitter
-     posicoesSplitters.forEach(posicao => {
-      const node = this.diagram?.findNodeForKey(posicao.id);
-      if (node) {
-        node.resizable = true;
-        node.rotatable = true;
-        node.movable = true;
-        node.position=new go.Point(posicao.x,posicao.y)
-        
-      }
-    });
-
-    
- }
-  }, 100);
-
-}
-*/
 
 //DIAGRAMA=============================================================================================================
   private updateDiagramLayout(): void {
@@ -2359,20 +2349,49 @@ private desenharSplitters() {
         // Adicionar templates DROPS
         caboTemplateMap.add("cabo1F", this.cabo1FNAC.getNodeTemplate());
         caboTemplateMap.add("cabo1F_D", this.cabo1FNAC_D.getNodeTemplate());
+        caboTemplateMap.add("cabo1FINT", this.cabo1FINT.getNodeTemplate());
+        caboTemplateMap.add("cabo1FINT_D", this.cabo1FINT_D.getNodeTemplate());
 
         caboTemplateMap.add("cabo2F", this.cabo2FNAC.getNodeTemplate());
         caboTemplateMap.add("cabo2F_D", this.cabo2FNAC_D.getNodeTemplate());
+        caboTemplateMap.add("cabo2FINT", this.cabo2FINT.getNodeTemplate());
+        caboTemplateMap.add("cabo2FINT_D", this.cabo2FINT_D.getNodeTemplate());
+
+
         caboTemplateMap.add("cabo4F_D", this.cabo4FNAC_D.getNodeTemplate());
         caboTemplateMap.add("cabo4F", this.cabo4FNAC.getNodeTemplate());
+        caboTemplateMap.add("cabo4FINT_D", this.cabo4FINT_D.getNodeTemplate());
+        caboTemplateMap.add("cabo4FINT", this.cabo4FINT.getNodeTemplate());
+
+
         caboTemplateMap.add("cabo6F_D", this.cabo6FNAC_D.getNodeTemplate());
         caboTemplateMap.add("cabo6F", this.cabo6FNAC.getNodeTemplate());
+        caboTemplateMap.add("cabo6FINT_D", this.cabo6FINT_D.getNodeTemplate());
+        caboTemplateMap.add("cabo6FINT", this.cabo6FINT.getNodeTemplate());
+
+
         caboTemplateMap.add("cabo8F_D", this.cabo8FNAC_D.getNodeTemplate());
         caboTemplateMap.add("cabo8F", this.cabo8FNAC.getNodeTemplate());
-        caboTemplateMap.add("cabo", this.cabo12FNAC.getNodeTemplate());
-        caboTemplateMap.add("caboD", this.cabo12FNAC_D.getNodeTemplate());
+        caboTemplateMap.add("cabo8FINT_D", this.cabo8FINT_D.getNodeTemplate());
+        caboTemplateMap.add("cabo8FINT", this.cabo8FINT.getNodeTemplate());
+
+
+        caboTemplateMap.add("cabo12F_NAC", this.cabo12F_NAC.getNodeTemplate());
+        caboTemplateMap.add("cabo12F_NAC_D", this.cabo12F_NAC_D.getNodeTemplate());
+        caboTemplateMap.add("cabo12FINT", this.cabo12FINT.getNodeTemplate());
+        caboTemplateMap.add("cabo12FINT_D", this.cabo12FINT_D.getNodeTemplate());
+        caboTemplateMap.add("cabo12FNAC_TB12", this.cabo12FNAC_TB12.getNodeTemplate());
+        caboTemplateMap.add("cabo12FNAC_D_TB12", this.cabo12FNAC_D_TB12.getNodeTemplate());
+        caboTemplateMap.add("cabo12FINT_TB12", this.cabo12FINT_TB12.getNodeTemplate());
+        caboTemplateMap.add("cabo12FINT_D_TB12", this.cabo12FINT_D_TB12.getNodeTemplate());
+        caboTemplateMap.add("cabo12FNAC_TB2", this.cabo12FNAC_TB2.getNodeTemplate());
+        caboTemplateMap.add("cabo12FNAC_D_TB2", this.cabo12FNAC_D_TB2.getNodeTemplate());
+        caboTemplateMap.add("cabo12FINT_TB2", this.cabo12FINT_TB2.getNodeTemplate());
+        caboTemplateMap.add("cabo12FINT_D_TB2", this.cabo12FINT_D_TB2.getNodeTemplate());
+
+
         caboTemplateMap.add("cabo24F", this.cabo24FNAC.getNodeTemplate());
         caboTemplateMap.add("cabo24F_D", this.cabo24FNAC_D.getNodeTemplate());
-
         caboTemplateMap.add("cabo24F_INT", this.cabo24FINT.getNodeTemplate());
         caboTemplateMap.add("cabo24F_INT_D", this.cabo24FINT_D.getNodeTemplate());
         caboTemplateMap.add("cabo24F_NAC_TB24", this.cabo24FNAC_TB24.getNodeTemplate());
@@ -2380,13 +2399,21 @@ private desenharSplitters() {
         caboTemplateMap.add("cabo24F_INT_TB24", this.cabo24FINT_TB24.getNodeTemplate());
         caboTemplateMap.add("cabo24F_INT_D_TB24", this.cabo24FINT_D_TB24.getNodeTemplate());
 
+
         caboTemplateMap.add("cabo36F", this.cabo36FNAC.getNodeTemplate());
         caboTemplateMap.add("cabo36F_D", this.cabo36FNAC_D.getNodeTemplate());
+        caboTemplateMap.add("cabo36FINT", this.cabo36FINT.getNodeTemplate());
+        caboTemplateMap.add("cabo36FINT_D", this.cabo36FINT_D.getNodeTemplate());
+
         caboTemplateMap.add("cabo48F_D", this.cabo48FNAC_D.getNodeTemplate());
         caboTemplateMap.add("cabo48F", this.cabo48FNAC.getNodeTemplate());
+
+
         caboTemplateMap.add("cabo72F_D", this.cabo72FNAC_D.getNodeTemplate());
         caboTemplateMap.add("cabo72F", this.cabo72FNAC.getNodeTemplate());
         caboTemplateMap.add("splitter12", this.splitter12.getNodeTemplate());
+
+
         // Adicionar templates para cada tipo de splitter
         caboTemplateMap.add("splitter12", this.splitter12.getNodeTemplate());
         caboTemplateMap.add("splitter14", this.splitter14.getNodeTemplate());
@@ -2404,8 +2431,7 @@ private desenharSplitters() {
 
         // Obtendo a definição do modelo do componente Cabo_12F_NAC
         this.diagram.nodeTemplateMap = caboTemplateMap;
-
-        
+      
        
 
         
@@ -2429,9 +2455,6 @@ private desenharSplitters() {
          
       );
         
-
-
-     
 
         // Configurando o LinkTemplate para conexões entre cabos
         // Modificando para que as conexões liguem diretamente aos portos

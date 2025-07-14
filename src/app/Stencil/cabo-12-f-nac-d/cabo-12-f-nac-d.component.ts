@@ -23,10 +23,10 @@ export class Cabo12FNacDComponent implements OnInit {
   // Método para obter a definição do modelo para usar no GoJS
   getModelDefinition() {
     return {
-      key: "cabo12F_D",
+      key: "cabo12F_NAC_D",
       width: this.width,
       height: this.height,
-      category: "caboD",
+      category: "cabo12F_NAC_D",
       radius:30
     };
   }

@@ -101,7 +101,7 @@ export class Cabo24FIntComponent implements OnInit {
           .add(
             // Tubo 1 - Verde superior (Fibras 1-6)
             new go.Shape("RoundedRectangle", {
-              fill: "#00a8ff",  // AZUL (diferente do 12F)
+              fill: "#71AFE5",  // AZUL PARA TUBO
               stroke: "#2196F3",
               strokeWidth: 1,
               width: this.width / 2,
@@ -113,7 +113,7 @@ export class Cabo24FIntComponent implements OnInit {
           .add(
             // Tubo 2 - Amarelo (Fibras 7-12)
             new go.Shape("RoundedRectangle", {
-              fill: "#fe8330",  // laranja (diferente do 12F)
+              fill: "#FF9C4A",  // laranja PARA TUBO
               stroke: "#2196F3",
               strokeWidth: 1,
               width: this.width / 2,
@@ -125,7 +125,7 @@ export class Cabo24FIntComponent implements OnInit {
           .add(
             // Tubo 3 - Branco (Fibras 13-18)
             new go.Shape("RoundedRectangle", {
-              fill: "#229A00",  // Verde levemente diferente
+              fill: "#73C883",  // Verde levemente diferente
               stroke: "#2196F3",
               strokeWidth: 1,
               width: this.width / 2,

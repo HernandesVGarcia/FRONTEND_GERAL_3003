@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import * as go from 'gojs';
 
 @Component({
-  selector: 'app-splitter-1-p2',
+  selector: 'app-splitter-1-p2-desb',
   template: '<div></div>',
   standalone: true
 })

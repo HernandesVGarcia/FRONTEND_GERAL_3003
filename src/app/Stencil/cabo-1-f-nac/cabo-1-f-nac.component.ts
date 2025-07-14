@@ -9,7 +9,7 @@ import * as go from 'gojs';
   standalone: true,
   imports: [CommonModule]
 })
-export class Cabo4FNacComponent implements OnInit {
+export class Cabo1FNacComponent implements OnInit {
   @Input() positionX: number = 100;
   @Input() positionY: number = 100;
   

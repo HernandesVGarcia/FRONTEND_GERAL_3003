@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import * as go from 'gojs';
 
 @Component({
-  selector: 'app-cabo-24f-int',
+  selector: 'app-cabo-24f-int-tb24',
   template: `
     <div class="cabo-24f-container" [style.width.px]="width" [style.height.px]="height">
       <div class="cabo-24f-header">

@@ -5,14 +5,14 @@ import { MapPageComponent } from './map-page/map-page.component';
 import {MenusComponent} from './menus/menus.component';
 import { FiberMapComponent } from './fiber-map/fiber-map.component';
 //import { CaixaInternaSyncComponent } from './caixa-interna-sync/caixa-interna-sync.component';
-import { CaixaInternaComponent } from './caixa-interna/caixa-interna.component';
+////comentei em 10072025 import { CaixaInternaComponent } from './caixa-interna/caixa-interna.component';
 import {GoJSDemoComponent}from './gojs-demo/gojs-demo.component'
 
 export const routes: Routes =[
 {path:'login', component:LoginComponent},
 {path:'mapa', component:MapPageComponent},
 {path:'fibermap', component: FiberMapComponent },
-{path:'caixaInterna', component: CaixaInternaComponent },
+//comentei em 10072025{path:'caixaInterna', component: CaixaInternaComponent },
 //{path:'go',component:GoJSDemoComponent},
 {path:'', redirectTo:'/login', pathMatch:'full'},
 {path:'**', component:MenusComponent}
