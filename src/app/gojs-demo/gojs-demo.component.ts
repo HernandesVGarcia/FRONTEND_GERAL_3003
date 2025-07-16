@@ -221,8 +221,21 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
 
   private cabo48FNAC_D: Cabo48FNacDComponent = new Cabo48FNacDComponent();
   private cabo48FNAC: Cabo48FNacComponent = new Cabo48FNacComponent();
+  private cabo48FINT_D: Cabo48FIntDComponent = new Cabo48FIntDComponent();
+  private cabo48FINT: Cabo48FIntComponent = new Cabo48FIntComponent();
+
+
+
   private cabo72FNAC_D: Cabo72FNacDComponent = new Cabo72FNacDComponent();
   private cabo72FNAC: Cabo72FNacComponent = new Cabo72FNacComponent();
+  private cabo72FINT_D: Cabo72FIntDComponent = new Cabo72FIntDComponent();
+  private cabo72FINT: Cabo72FIntComponent = new Cabo72FIntComponent();
+
+
+  private cabo144FNAC_D: Cabo144FNacDComponent = new Cabo144FNacDComponent();
+  private cabo144FNAC: Cabo144FNacComponent = new Cabo144FNacComponent();
+  private cabo144FINT_D: Cabo144FIntDComponent = new Cabo144FIntDComponent();
+  private cabo144FINT: Cabo144FIntComponent = new Cabo144FIntComponent();
 
   
     // Instâncias dos diferentes componentes de splitter
@@ -960,18 +973,47 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
 
 
       else if (capacidade <= 48) {
+        if (codigo === 2) { // NAC
         // Para capacidades acima de 48, assumimos o modelo de 36 fibras
         return isLadoDireito 
           ? this.cabo48FNAC_D.getModelDefinition() 
           : this.cabo48FNAC.getModelDefinition();
+      }else { // INT
+        return isLadoDireito 
+          ? this.cabo48FINT_D.getModelDefinition() 
+          : this.cabo48FINT.getModelDefinition();
       }
+    }
 
-      else {
-        // Para capacidades acima de 24, assumimos o modelo de 48 fibras
+      else if (capacidade <= 72) {
+        if (codigo === 2) { // NAC
         return isLadoDireito 
           ? this.cabo72FNAC_D.getModelDefinition() 
           : this.cabo72FNAC.getModelDefinition();
+      }else { // INT
+        return isLadoDireito 
+          ? this.cabo72FINT_D.getModelDefinition() 
+          : this.cabo72FINT.getModelDefinition();
       }
+    }
+
+
+    else if (capacidade <= 144) {
+        if (codigo === 2) { // NAC
+        return isLadoDireito 
+          ? this.cabo144FNAC_D.getModelDefinition() 
+          : this.cabo144FNAC.getModelDefinition();
+      }else { // INT
+        return isLadoDireito 
+          ? this.cabo144FINT_D.getModelDefinition() 
+          : this.cabo144FINT.getModelDefinition();
+      }
+    }
+
+
+
+
+
 
       // ✅ RETORNO PADRÃO - Este é o ponto chave da Opção 1
   // Caso alguma condição não seja atendida, retorna um modelo padrão
@@ -2407,10 +2449,22 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
 
         caboTemplateMap.add("cabo48F_D", this.cabo48FNAC_D.getNodeTemplate());
         caboTemplateMap.add("cabo48F", this.cabo48FNAC.getNodeTemplate());
-
+        caboTemplateMap.add("cabo48FINT_D", this.cabo48FINT_D.getNodeTemplate());
+        caboTemplateMap.add("cabo48FINT", this.cabo48FINT.getNodeTemplate());
 
         caboTemplateMap.add("cabo72F_D", this.cabo72FNAC_D.getNodeTemplate());
         caboTemplateMap.add("cabo72F", this.cabo72FNAC.getNodeTemplate());
+        caboTemplateMap.add("cabo72FINT_D", this.cabo72FINT_D.getNodeTemplate());
+        caboTemplateMap.add("cabo72FINT", this.cabo72FINT.getNodeTemplate());
+
+        caboTemplateMap.add("cabo144F_D", this.cabo144FNAC_D.getNodeTemplate());
+        caboTemplateMap.add("cabo144F", this.cabo144FNAC.getNodeTemplate());
+        caboTemplateMap.add("cabo144FINT_D", this.cabo144FINT_D.getNodeTemplate());
+        caboTemplateMap.add("cabo144FINT", this.cabo144FINT.getNodeTemplate());
+
+
+
+        
         caboTemplateMap.add("splitter12", this.splitter12.getNodeTemplate());
 
 
@@ -2477,7 +2531,8 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
           .add(
             new go.Shape({
               strokeWidth: 3.5,
-              stroke: "#2196F3"
+              stroke: "#2196F3",
+              name: "LINKSHAPE"
             })
           )
           .add(
@@ -2485,7 +2540,8 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
               toArrow: "Standard",
               stroke: null,
               fill: "#2F4F4F",
-              scale: 0.8
+              scale: 0.8,
+              name: "ARROWSHAPE"
             })
           );
         
@@ -2544,10 +2600,23 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
             console.log("  Cabo Destino:", toCableKey);
             console.log("  Porta Destino:", toPortNumber);
 
-          }});
+
+
+            this.aplicarCorDoPortNaConexao(link);
+
+          }
+        }  );
+
+         //===================================================================================================
+        // Listener para aplicar cores quando layout é finalizado (conexões do banco)
+        //this.diagram.addDiagramListener("InitialLayoutCompleted", () => {
+        //  setTimeout(() => {
+        //    this.aplicarCoresEmTodasAsConexoes();
+        //  }, 2000);
+        //  });
 
         //=================================//=================================//=================================
-        //=================================     
+         
        
 
 
@@ -2621,6 +2690,13 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
     //setTimeout(() => {this.adicionarDropsAoDiagrama()},1);
     
     //setTimeout(() => {this.selecionar_cabo99()},1); 
+
+
+    setTimeout(() => {
+            this.aplicarCoresEmTodasAsConexoes();
+          }, 5000);
+
+
 
 
   }
@@ -2746,5 +2822,56 @@ private restaurarCursor(): void {
     } catch (error) {
       console.error('Erro ao exportar diagrama para PDF:', error);
     }
+
+
+
+    }
+  //===============================================================================================================
+  // 🎨 Função para aplicar cor do port de origem na conexão
+  private aplicarCorDoPortNaConexao(link: go.Link): void {
+    const fromPort = link.fromPort;
+    
+    if (fromPort && fromPort instanceof go.Shape) {
+      const portColor = (fromPort as go.Shape).fill;
+      
+      // Aplicar a cor na linha
+      const linkShape = link.findObject("LINKSHAPE") as go.Shape;
+      if (linkShape) {
+        // ⚡ Exceção para fibra branca: usar linha preta segmentada
+        if (portColor === "white" || portColor === "#FFFFFF" || portColor === "#ffffff") {
+          linkShape.stroke = "gray";
+          linkShape.strokeDashArray = [8, 4]; // Linha pontilhada
+          console.log(`  Fibra branca detectada - aplicando linha preta segmentada`);
+        } else {
+          linkShape.stroke = portColor;
+          linkShape.strokeDashArray = null; // Linha sólida
+        }
+      }
+      
+      // Aplicar a cor na seta também
+      const arrowShape = link.findObject("ARROWSHAPE") as go.Shape;
+      if (arrowShape) {
+        if (portColor === "white" || portColor === "#FFFFFF" || portColor === "#ffffff") {
+          arrowShape.fill = "black";
+        } else {
+          arrowShape.fill = portColor;
+        }
+      }
+      
+      console.log(`  Cor aplicada: ${portColor}`);
+    }
+  }
+
+  // 🎨 Função para aplicar cores em todas as conexões existentes (para conexões do banco)
+  private aplicarCoresEmTodasAsConexoes(): void {
+    if (!this.diagram) return;
+    
+    console.log('🎨 Aplicando cores em todas as conexões carregadas do banco...');
+    
+    this.diagram.links.each((link: go.Link) => {
+      this.aplicarCorDoPortNaConexao(link);
+    });
+    
+    console.log('✅ Cores aplicadas em todas as conexões existentes');
   }
 }

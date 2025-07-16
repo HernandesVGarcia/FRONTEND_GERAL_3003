@@ -55,7 +55,7 @@ export class Splitter12Component {
       // Porta de saída 1 (superior direita)
       .add(
         new go.Shape("Rectangle", {
-          fill: "#FB8C00",
+          fill: "#71afe5",
           stroke: "#E65100",
           desiredSize: new go.Size(24, 5),
           portId: "F1",
@@ -72,7 +72,7 @@ export class Splitter12Component {
       // Porta de saída 2 (inferior direita)
       .add(
         new go.Shape("Rectangle", {
-          fill: "#FB8C00",
+          fill: "#ff9c4a",
           stroke: "#E65100",
           desiredSize: new go.Size(24, 5),
           portId: "F2",

@@ -99,7 +99,7 @@ export class Cabo48FNacComponent implements OnInit {
           .add(
             // Tubo 1 - Verde (Fibras 1-6)
             new go.Shape("RoundedRectangle", {
-              fill: "#006400",  // Verde escuro
+              fill: "#229A00",  // Verde escuro
               stroke: "#2196F3",
               strokeWidth: 1,
               width: this.width / 2,

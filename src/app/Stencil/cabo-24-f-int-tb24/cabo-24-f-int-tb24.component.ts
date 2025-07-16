@@ -131,6 +131,9 @@ export class Cabo24FIntTb24Component implements OnInit {
       const index = (i - 1) % this.portColors24F.length;
       const yPosition = panelY + ((i - startFiber) * (panelHeight / (endFiber - startFiber + 1))) + (portHeight / 2) - (portHeight / 4);
       
+
+      const temTracinho = i >= 13;
+      
       // Adicionar o label (F1, F2, etc.) com nome único
       panel.add(
         new go.TextBlock(`F${i}`, {
@@ -162,6 +165,21 @@ export class Cabo24FIntTb24Component implements OnInit {
           name: `cabo24F_port_F${i}`
         })
       );
+
+      // 🎨 Adicionar tracinho apenas para fibras 13-24
+            if (temTracinho) {
+              panel.add(
+                new go.Shape("Rectangle", {
+                  fill: "black",
+                  stroke: null,
+                  width: portWidth * 0.8,
+                  height: 2.2,
+                  position: new go.Point(panelX + this.width  / 3, yPosition + 4),
+                  name: `cabo24F_tracinho_F${i}`
+                })
+              );
+            }
+
     }
 
     return panel;

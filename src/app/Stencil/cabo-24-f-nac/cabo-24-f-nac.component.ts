@@ -55,7 +55,7 @@ export class Cabo24FNacComponent implements OnInit {
 
   // Define as cores para os ports - usando cores distintas do cabo 12F
   // Usando cores modificadas para evitar compartilhamento
-  portColors24F = ["#006400", "#FFD700", "#F5F5F5", "#0000CD", "#cc1f36", "#7a68d2"];
+  portColors24F = ["#006400", "#FFD700", "#ffffff", "#0000CD", "#cc1f36", "#7a68d2"];
   
   // Método para obter a definição do modelo para usar no GoJS com identificador único
   getModelDefinition() {

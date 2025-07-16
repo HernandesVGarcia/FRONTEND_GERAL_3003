@@ -55,7 +55,7 @@ export class Cabo24FNacDTb24Component implements OnInit {
 
   // Define as cores para os ports - usando cores distintas do cabo 24F comum
   // Usando cores levemente modificadas para evitar compartilhamento
-  portColors24F_D = ["#006400", "#FFD700", "#F5F5F5", "#0000CD", "#cc1f36", "#7a68d2","brown","pink","black","gray","orange","cyan"];
+  portColors24F_D = ["#006400", "#FFD700", "#ffffff", "#0000CD", "#cc1f36", "#7a68d2","brown","pink","black","gray","orange","cyan"];
   
   // Método para obter a definição do modelo para usar no GoJS com identificador único
   getModelDefinition() {
@@ -130,7 +130,9 @@ export class Cabo24FNacDTb24Component implements OnInit {
     for (let i = startFiber; i <= endFiber; i++) {
       const index = (i - 1) % this.portColors24F_D.length;
       const yPosition = panelY + ((i - startFiber) * (panelHeight / (endFiber - startFiber + 1))) + (portHeight / 2) - (portHeight / 4);
+      const portXPosition = panelX - portMargin - portWidth - 15;
       
+      const temTracinho = i >= 13;
       // Adicionar o label (F1, F2, etc.) agora à direita do port
       panel.add(
         new go.TextBlock(`F${i}`, {
@@ -162,6 +164,24 @@ export class Cabo24FNacDTb24Component implements OnInit {
           name: `cabo24F_D_port_F${i}`
         })
       );
+
+         // 🎨 Adicionar tracinho APENAS para fibras 13-24 (segunda metade do cabo)
+      if (i >= 13) {
+        panel.add(
+          new go.Shape("Rectangle", {
+            fill: "black",
+            stroke: null,
+            width: portWidth * 0.2, // Tracinho um pouco menor que o port
+            height: 2, // Altura do tracinho
+            position: new go.Point(
+              portXPosition , // Centralizado horizontalmente no port
+              yPosition + 4 // Posicionado acima do port
+            ),
+            name: `cabo24F_D_dash_F${i}`
+          })
+        );
+      }
+
     }
 
     return panel;

@@ -55,7 +55,7 @@ export class Splitter116Component {
       // Porta de saída 1 (superior direita)
       .add(
         new go.Shape("Rectangle", {
-          fill: "#FB8C00",
+          fill: "#4169e1", // azul
           stroke: "#E65100",
           desiredSize: new go.Size(34, 6),
           portId: "F1",
@@ -72,7 +72,7 @@ export class Splitter116Component {
       // Porta de saída 2 (inferior direita)
       .add(
         new go.Shape("Rectangle", {
-          fill: "#FB8C00",
+          fill: "#ff9c4a", // laranja
           stroke: "#E65100",
           desiredSize: new go.Size(34, 6),
           portId: "F2",
@@ -89,7 +89,7 @@ export class Splitter116Component {
 
       .add(
         new go.Shape("Rectangle", {
-          fill: "#FB8C00",
+          fill: "#73c883", // verde
           stroke: "#E65100",
           desiredSize: new go.Size(34, 6),
           portId: "F3",
@@ -106,7 +106,7 @@ export class Splitter116Component {
       // Porta de saída 2 (inferior direita)
       .add(
         new go.Shape("Rectangle", {
-          fill: "#FB8C00",
+          fill: "#aa7444", // marrom
           stroke: "#E65100",
           desiredSize: new go.Size(34, 6),
           portId: "F4",
@@ -125,7 +125,7 @@ export class Splitter116Component {
       // Porta de saída 1 (superior direita)
       .add(
         new go.Shape("Rectangle", {
-          fill: "#FB8C00",
+          fill: "gray", // cinza
           stroke: "#E65100",
           desiredSize: new go.Size(34, 6),
           portId: "F5",
@@ -142,7 +142,7 @@ export class Splitter116Component {
       // Porta de saída 2 (inferior direita)
       .add(
         new go.Shape("Rectangle", {
-          fill: "#FB8C00",
+          fill: "#ffffff", // branco
           stroke: "#E65100",
           desiredSize: new go.Size(34, 6),
           portId: "F6",
@@ -159,7 +159,7 @@ export class Splitter116Component {
 
       .add(
         new go.Shape("Rectangle", {
-          fill: "#FB8C00",
+          fill: "red", // vermelho
           stroke: "#E65100",
           desiredSize: new go.Size(34, 6),
           portId: "F7",
@@ -176,7 +176,7 @@ export class Splitter116Component {
       // Porta de saída 2 (inferior direita)
       .add(
         new go.Shape("Rectangle", {
-          fill: "#FB8C00",
+          fill: "black", // preto
           stroke: "#E65100",
           desiredSize: new go.Size(34, 6),
           portId: "F8",
@@ -194,7 +194,7 @@ export class Splitter116Component {
        // Porta de saída 1 (superior direita)
       .add(
         new go.Shape("Rectangle", {
-          fill: "#FB8C00",
+          fill: "yellow", // amarelo
           stroke: "#E65100",
           desiredSize: new go.Size(34, 6),
           portId: "F9",
@@ -211,7 +211,7 @@ export class Splitter116Component {
       // Porta de saída 2 (inferior direita)
       .add(
         new go.Shape("Rectangle", {
-          fill: "#FB8C00",
+          fill: "#aa46db", // violeta
           stroke: "#E65100",
           desiredSize: new go.Size(34, 6),
           portId: "F10",
@@ -228,7 +228,7 @@ export class Splitter116Component {
 
       .add(
         new go.Shape("Rectangle", {
-          fill: "#FB8C00",
+          fill: "#ffcbdb", //rosa
           stroke: "#E65100",
           desiredSize: new go.Size(34, 6),
           portId: "F11",
@@ -245,7 +245,7 @@ export class Splitter116Component {
       // Porta de saída 2 (inferior direita)
       .add(
         new go.Shape("Rectangle", {
-          fill: "#FB8C00",
+          fill: "#00ffff", //ciano
           stroke: "#E65100",
           desiredSize: new go.Size(34, 6),
           portId: "F12",
@@ -264,7 +264,7 @@ export class Splitter116Component {
       // Porta de saída 1 (superior direita)
       .add(
         new go.Shape("Rectangle", {
-          fill: "#FB8C00",
+          fill: "blue",
           stroke: "#E65100",
           desiredSize: new go.Size(34, 6),
           portId: "F13",
@@ -281,7 +281,7 @@ export class Splitter116Component {
       // Porta de saída 2 (inferior direita)
       .add(
         new go.Shape("Rectangle", {
-          fill: "#FB8C00",
+          fill: "green",
           stroke: "#E65100",
           desiredSize: new go.Size(34, 6),
           portId: "F14",
@@ -298,7 +298,7 @@ export class Splitter116Component {
 
       .add(
         new go.Shape("Rectangle", {
-          fill: "#FB8C00",
+          fill: "brown",
           stroke: "#E65100",
           desiredSize: new go.Size(34, 6),
           portId: "F15",
@@ -315,7 +315,7 @@ export class Splitter116Component {
       // Porta de saída 2 (inferior direita)
       .add(
         new go.Shape("Rectangle", {
-          fill: "#FB8C00",
+          fill: "#99e89d",
           stroke: "#E65100",
           desiredSize: new go.Size(34, 6),
           portId: "F16",

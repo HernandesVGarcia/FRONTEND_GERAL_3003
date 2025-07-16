@@ -17,8 +17,8 @@ export class Splitter14Component {
         new go.Panel("Auto")
           .add(
             new go.Shape("Triangle", {
-              fill: "#AFE4DE", 
-              stroke: "#000000",
+              fill: "#9FFFFF", 
+              stroke: "#0097A9",
               strokeWidth: 2,
               desiredSize: new go.Size(120, 100),
               // Rotação para apontar entrada à esquerda e saídas à direita
@@ -55,7 +55,7 @@ export class Splitter14Component {
       // Porta de saída 1 (superior direita)
       .add(
         new go.Shape("Rectangle", {
-          fill: "#FB8C00",
+          fill: "#71afe5", // blue
           stroke: "#E65100",
           desiredSize: new go.Size(24, 6),
           portId: "F1",
@@ -72,7 +72,7 @@ export class Splitter14Component {
       // Porta de saída 2 (inferior direita)
       .add(
         new go.Shape("Rectangle", {
-          fill: "#FB8C00",
+          fill: "#ff9c4a", // laranja
           stroke: "#E65100",
           desiredSize: new go.Size(24, 6),
           portId: "F2",
@@ -89,7 +89,7 @@ export class Splitter14Component {
 
       .add(
         new go.Shape("Rectangle", {
-          fill: "#FB8C00",
+          fill: "#73c883", //verde
           stroke: "#E65100",
           desiredSize: new go.Size(24, 6),
           portId: "F3",
@@ -106,7 +106,7 @@ export class Splitter14Component {
       // Porta de saída 2 (inferior direita)
       .add(
         new go.Shape("Rectangle", {
-          fill: "#FB8C00",
+          fill: "#aa7444",
           stroke: "#E65100",
           desiredSize: new go.Size(24, 6),
           portId: "F4",
