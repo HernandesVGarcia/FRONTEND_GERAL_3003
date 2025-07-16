@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { TokenService } from '../servico/token.service';
 import { AuthService } from '../servico/auth.service';
 import { CitySelectModalComponent } from '../city-select-modal/city-select-modal.component';
+import { HeartbeatService } from '../servico/heartbeat.service';
 
 @Component({
   selector: 'app-login',
@@ -23,7 +24,8 @@ export class LoginComponent {
   constructor(
     private tokenService: TokenService,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private heartbeatService: HeartbeatService,
   ) {}
 
   onSubmit(event: Event): void {
@@ -53,6 +55,9 @@ export class LoginComponent {
             this.authService.setmenu_on(response.menu_on.toString());
             this.authService.setcabos_layer(response.cabos_layer.toString());
 
+            // Iniciar heartbeat após login bem-sucedido
+            console.log('🔄 Iniciando heartbeat após login...');
+            this.heartbeatService.startHeartbeat();
 
 
             //this.router.navigate(['/mapa']);

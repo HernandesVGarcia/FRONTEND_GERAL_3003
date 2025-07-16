@@ -2749,7 +2749,7 @@ private restaurarCursor(): void {
       
       // 🎯 CONFIGURAÇÃO PARA MANTER TAMANHO ORIGINAL:
       const imageData = this.diagram.makeImageData({
-        scale: 0.8,                    // 🔧 Escala 1:1 - sem ampliar
+        scale: 1,                    // 🔧 Escala 1:1 - sem ampliar
         type: "image/png",
         background: "white",
         returnType: "string",
