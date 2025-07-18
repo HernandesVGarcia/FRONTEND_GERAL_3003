@@ -13,6 +13,7 @@ import { ListaCabos24fComponent} from '../lista-cabos24f/lista-cabos24f.componen
 import { ListaCabos36fComponent} from '../lista-cabos36f/lista-cabos36f.component';
 import { ListaCabos48fComponent} from '../lista-cabos48f/lista-cabos48f.component';
 import { ListaCabos72fComponent} from '../lista-cabos72f/lista-cabos72f.component';
+import { ListaPopsESTComponent} from '../lista-pops-est/lista-pops-est.component';
 import { Cabos1f } from '../modelo/Cabos1f';
 import { Cabos2f } from '../modelo/Cabos2f';
 import { Cabos4f } from '../modelo/Cabos4f';
@@ -23,8 +24,9 @@ import { Cabos24f } from '../modelo/Cabos24f';
 import { Cabos36f } from '../modelo/Cabos36f';
 import { Cabos48f } from '../modelo/Cabos48f';
 import { Cabos72f } from '../modelo/Cabos72f';
-import { Caixa} from '../modelo/Caixa'
-import { Cto} from '../modelo/Cto'
+import { Caixa} from '../modelo/Caixa';
+import { Cto} from '../modelo/Cto';
+import { PopsEst} from '../modelo/popsEst'
 
 
 
@@ -47,12 +49,15 @@ import { Cto} from '../modelo/Cto'
     ListaCabos6fComponent,
     ListaCabos4fComponent,
     ListaCabos2fComponent,
-    ListaCabos1fComponent
+    ListaCabos1fComponent,
+    ListaPopsESTComponent
+
     ]
 })
 export class FiberMapComponent {
   caixasCEO: any[] = [];
   caixasCTO: any[] = [];
+  popEST: any[]=[];
 
   cabos1f: Cabos1f []=[];
   cabos2f: Cabos2f []=[];
@@ -66,6 +71,9 @@ export class FiberMapComponent {
   cabos72f: Cabos72f []=[];
    
 
+  onPopsEstSelecionada(pops: PopsEst[]) { 
+    this.popEST = pops;  
+  }
 
   onCaixaSelecionada(caixas: Caixa[]) { //recebe caixas do template que recebe de lista caixa
     this.caixasCEO = caixas;  

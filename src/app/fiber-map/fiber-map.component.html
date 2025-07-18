@@ -5,6 +5,10 @@
 
 
 <div class="container">
+
+    <!-- Lista de Caixas CEO -->
+    <app-lista-pops-est (popsEstSelecionada)="onPopsEstSelecionada($event)"></app-lista-pops-est>
+
     <!-- Lista de Caixas CEO -->
     <app-lista-caixas (caixaSelecionada)="onCaixaSelecionada($event)"></app-lista-caixas>
     
@@ -44,6 +48,7 @@
   </div>
   
   <app-google-maps 
+  [destinoPopsEst]="popEST"
   [destino]="caixasCEO" 
   [destinoCTO]="caixasCTO"
   [destinoCabos1f]="cabos1f"

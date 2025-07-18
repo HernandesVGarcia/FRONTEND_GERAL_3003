@@ -13,6 +13,7 @@ import { Cabos48f } from '../modelo/Cabos48f';
 import { Cabos72f } from '../modelo/Cabos72f';
 import { Caixa } from '../modelo/Caixa';
 import { Cto } from '../modelo/Cto';
+import { PopsEst } from '../modelo/popsEst';
 //import { CaixaInternaComponent } from '../caixa-interna/caixa-interna.component';
 import { ChangeDetectorRef } from '@angular/core'; /// ============novo
 import { GoJSDemoComponent } from '../gojs-demo/gojs-demo.component';
@@ -28,6 +29,7 @@ import { animate, animation } from '@angular/animations';
   imports: [CommonModule, GoogleMapsModule,GoJSDemoComponent],
 })
 export class GoogleMapsComponent implements OnInit, OnChanges {
+  @Input() destinoPopsEst: PopsEst[] = [];
   @Input() destino: Caixa[] = [];
   @Input() destinoCTO: Cto[] = [];
   @Input() destinoCabos1f: Cabos1f[] = [];
@@ -84,7 +86,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges {
     
     
   };
-
+  markerPopsEst: google.maps.Marker[] = [];
   markerCaixas: google.maps.Marker[] = [];
   markerCtos:google.maps.Marker[]=[];
   //markerCtos: google.maps.LatLngLiteral[] = [];
@@ -134,6 +136,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges {
 
 private ZOOM_LEVEL_CAIXAS = 15; // Caixas CEO visíveis em zoom >= 14
 private ZOOM_LEVEL_CTOS = 16;   // CTOs visíveis em zoom >= 16
+private ZOOM_LEVEL_POPS = 13;   // CTOs visíveis em zoom >= 13
 
 
 private map?: (google.maps.Map);
@@ -153,6 +156,7 @@ private map?: (google.maps.Map);
  // Propriedade para controlar o limiar de densidade
  private MAX_VISIBLE_MARKERS_CEO = 200; // Ajuste este valor conforme necessário
  private MAX_VISIBLE_MARKERS_CTO = 150; // Ajuste este valor conforme necessário
+ private MAX_VISIBLE_MARKERS_POPs = 30; // Ajuste este valor conforme necessário
  
 // **********************************************************************************************inserido
 
@@ -403,6 +407,11 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
     console.log('Número da caixa alterado para');
   }
 
+
+    if (changes['destinoPopsEst'] && changes['destinoPopsEst'].currentValue) {
+      console.log('Atualizando marcadores de Estações ',this.destinoPopsEst);
+      this.updateMarkersPopsEst();
+    }
     
     if (changes['destino'] && changes['destino'].currentValue) {
       console.log('Atualizando marcadores de caixas ',this.destino);
@@ -533,6 +542,71 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
     }
     return [];
   }  
+
+
+//=====================================função para carregar as CTOs na Tela================================
+  private updateMarkersPopsEst() {
+    
+
+      if (this.destinoPopsEst && this.destinoPopsEst.length > 0 && this.map) {
+        this.markerPopsEst.forEach(marker => marker.setMap(null));
+        this.markerPopsEst = [];
+        
+        this.destinoPopsEst.forEach(location => {
+          const position = {
+            lat: Number(location.LAT),
+            lng: Number(location.LNG)
+          };
+
+    
+
+      const markerOptions: google.maps.MarkerOptions = {
+        position: position,
+        title: location.sigla || 'Sem nome',
+        draggable: false,
+        label: {
+          text: location.sigla || 'S/N',
+          color: 'blue',
+          fontSize: '10px'
+        } as google.maps.MarkerLabel,
+        icon: {
+          url: '/assets/TORRE4.png',
+          labelOrigin: new google.maps.Point(50, 0),
+          scaledSize: new google.maps.Size(30, 30)
+        },
+
+        visible: this.currentZoom >= this.ZOOM_LEVEL_POPS
+        ///visible: false
+
+      };
+      
+      const marker = new google.maps.Marker(markerOptions);
+      if (this.map) {
+        marker.setMap(this.map);
+      }
+      
+      marker.addListener('dragend', (event: google.maps.MapMouseEvent) => {
+        const index = this.markerPopsEst.indexOf(marker);
+        if (index !== -1) {
+          this.onMarkerDragEnd(event, index, true);
+        }
+      });
+
+      this.addMarkerEventListeners(marker, true);
+      
+      this.markerPopsEst.push(marker);
+    });
+      
+      console.log('Estações atualizadas:', this.markerPopsEst);
+    }
+  }
+
+
+
+
+
+
+
 
 
     // =============================== função para carregar o marcadores Caixas na tela =========
@@ -1345,10 +1419,46 @@ private updateVisibleMarkers() {
 
   }
 
+  // Atualizar visibilidade de Estações  //----------------- Visibilidade de Estações ----------------------------
+  let visiblePOPsCount = 0;
+  console.log ('atualiza Estações visibles')
+  this.markerPopsEst.forEach(marker => {
+    if (marker) {
+      const position = marker.getPosition();
+      if (position && 
+          bounds.contains(position) && 
+          this.currentZoom >= this.ZOOM_LEVEL_POPS &&
+          visiblePOPsCount < this.MAX_VISIBLE_MARKERS_POPs) {
+        
+        if (this.map) {marker.setMap(this.map)};//xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+        marker.setVisible(true);
+        visiblePOPsCount++;
+      } else {
+        marker.setVisible(false);
+        marker.setMap(null);
+      }
+
+      //console.log ('caixas visiveis', visibleCTOsCount)
+    }
+  });
+
+  console.log(` Estações visíveis: ${visiblePOPsCount}`);
+
   
   
 
 } 
+
+
+
+
+
+
+
+
+
+
+
 // *****************************************************************************************************
 
 
