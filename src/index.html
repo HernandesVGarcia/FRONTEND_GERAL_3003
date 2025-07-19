@@ -8,8 +8,52 @@
   <link rel="icon" type="image/x-icon" href="favicon.ico">
 
 
-  <script async loading ="async" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCfJrOfhVGCOKdAOz1LagKl7yi4PAWLQ8Q&callback=console.debug&libraries=maps,marker&v=beta"></script>
+ <!-- <script async loading ="async" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCfJrOfhVGCOKdAOz1LagKl7yi4PAWLQ8Q&callback=console.debug&libraries=maps,marker&v=beta"></script> -->
 
+<!-- Google Maps Script - carregamento dinâmico baseado no ambiente -->
+    <script>
+      // Função para carregar Google Maps
+
+      console.log('Script do Google Maps iniciado');
+
+      function loadGoogleMaps() {
+
+        console.log('Função loadGoogleMaps() executada');
+        // Tentar usar a variável de ambiente do Vite primeiro (produção)
+        let apiKey = '%VITE_GOOGLE_MAPS_API_KEY%';
+        console.log('Valor inicial da apiKey:', apiKey);
+        
+        // Se a variável não foi substituída pelo build, usar a chave de desenvolvimento
+        if (apiKey.startsWith('%VITE_') || !apiKey || apiKey === 'undefined') {
+          apiKey = 'AIzaSyCfJrOfhVGCOKdAOz1LagKl7yi4PAWLQ8Q';
+          console.log('Usando chave do Google Maps para desenvolvimento');
+        } else {
+          console.log('Usando chave do Google Maps de produção');
+        }
+        
+        const script = document.createElement('script');
+        script.async = true;
+        script.defer = true;
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&callback=console.debug&libraries=maps,marker&v=beta`;
+        script.onerror = function() {
+          console.error('Erro ao carregar Google Maps API');
+        };
+
+        console.log('Adicionando script do Google Maps ao head');
+        document.head.appendChild(script);
+      }
+
+      console.log('Estado do DOM:', document.readyState);
+      
+      // Carregar quando o DOM estiver pronto
+      if (document.readyState === 'loading') {
+        console.log('DOM ainda carregando, adicionando listener');
+        document.addEventListener('DOMContentLoaded', loadGoogleMaps);
+      } else {
+        console.log('DOM já carregado, executando loadGoogleMaps imediatamente');
+        loadGoogleMaps();
+      }
+    </script>
 
 <!-- jQuery UI CSS 
 <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">  -->
@@ -26,7 +70,19 @@
 <!--
 <script src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.3.0/raphael.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/shifty/2.8.3/shifty.min.js"></script>
+
+
+
+
+</script>
+
 -->
+    
+    
+
+
+
+
 
 <!-- Draw2D versão atualizada (6.1.66) 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/draw2d/6.1.66/draw2d.js"></script>-->
