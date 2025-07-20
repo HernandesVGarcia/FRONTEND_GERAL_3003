@@ -22,8 +22,6 @@ frontend:
           value: "default-src 'self' https://15.229.242.119:3001 https://www.fiberworks-quantum.com:3001 https://*.dmkd08pl2z96g.amplifyapp.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://maps.googleapis.com https://*.googleapis.com https://code.jquery.com https://*.code.jquery.com https://cdnjs.cloudflare.com https://*.cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://code.jquery.com https://*.code.jquery.com; img-src 'self' data: https://*.googleapis.com https://*.gstatic.com; font-src 'self' https://fonts.gstatic.com https://*.fonts.gstatic.com; connect-src 'self' https://15.229.242.119:3001 https://www.fiberworks-quantum.com:3001 https://*.googleapis.com https://*.dmkd08pl2z96g.amplifyapp.com https://fiberworks-quantum.com:3001;"
         - key: 'Access-Control-Allow-Origin'
           value: '*'
-  environmentVariables:
-    - name: VITE_GOOGLE_MAPS_API_KEY
-      value: $GOOGLE_MAPS_API_KEY         
+          
 
   

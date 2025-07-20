@@ -14,6 +14,8 @@ import { Cabos72f } from '../modelo/Cabos72f';
 import { Caixa } from '../modelo/Caixa';
 import { Cto } from '../modelo/Cto';
 import { PopsEst } from '../modelo/popsEst';
+import { Condominios } from '../modelo/Condominios';
+
 //import { CaixaInternaComponent } from '../caixa-interna/caixa-interna.component';
 import { ChangeDetectorRef } from '@angular/core'; /// ============novo
 import { GoJSDemoComponent } from '../gojs-demo/gojs-demo.component';
@@ -29,6 +31,7 @@ import { animate, animation } from '@angular/animations';
   imports: [CommonModule, GoogleMapsModule,GoJSDemoComponent],
 })
 export class GoogleMapsComponent implements OnInit, OnChanges {
+  @Input() destinoCondominios: Condominios[]=[];
   @Input() destinoPopsEst: PopsEst[] = [];
   @Input() destino: Caixa[] = [];
   @Input() destinoCTO: Cto[] = [];
@@ -86,6 +89,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges {
     
     
   };
+  markerCondominios: google.maps.Marker[] = [];
   markerPopsEst: google.maps.Marker[] = [];
   markerCaixas: google.maps.Marker[] = [];
   markerCtos:google.maps.Marker[]=[];
@@ -136,7 +140,8 @@ export class GoogleMapsComponent implements OnInit, OnChanges {
 
 private ZOOM_LEVEL_CAIXAS = 15; // Caixas CEO visíveis em zoom >= 14
 private ZOOM_LEVEL_CTOS = 16;   // CTOs visíveis em zoom >= 16
-private ZOOM_LEVEL_POPS = 13;   // CTOs visíveis em zoom >= 13
+private ZOOM_LEVEL_POPS = 14;   // CTOs visíveis em zoom >= 13
+private ZOOM_LEVEL_CONDOMINIOS = 16;   // CTOs visíveis em zoom >= 16
 
 
 private map?: (google.maps.Map);
@@ -157,6 +162,7 @@ private map?: (google.maps.Map);
  private MAX_VISIBLE_MARKERS_CEO = 200; // Ajuste este valor conforme necessário
  private MAX_VISIBLE_MARKERS_CTO = 150; // Ajuste este valor conforme necessário
  private MAX_VISIBLE_MARKERS_POPs = 30; // Ajuste este valor conforme necessário
+ private MAX_VISIBLE_MARKERS_CONDOMINIOS = 100; // Ajuste este valor conforme necessário
  
 // **********************************************************************************************inserido
 
@@ -406,7 +412,12 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
   if (changes['numeroCaixa']) {
     console.log('Número da caixa alterado para');
   }
+     
 
+    if (changes['destinoCondominios'] && changes['destinoCondominios'].currentValue) {
+      console.log('Atualizando marcadores de Condominios ',this.destinoCondominios);
+      this.updateMarkersCondominios();
+    }
 
     if (changes['destinoPopsEst'] && changes['destinoPopsEst'].currentValue) {
       console.log('Atualizando marcadores de Estações ',this.destinoPopsEst);
@@ -544,7 +555,75 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
   }  
 
 
-//=====================================função para carregar as CTOs na Tela================================
+
+
+//=====================================função para carregar as POPs na Tela================================
+  private updateMarkersCondominios() {
+    
+
+      if (this.destinoCondominios && this.destinoCondominios.length > 0 && this.map) {
+        this.markerCondominios.forEach(marker => marker.setMap(null));
+        this.markerCondominios = [];
+        
+        this.destinoCondominios.forEach(location => {
+          const position = {
+            lat: Number(location.LAT),
+            lng: Number(location.LNG)
+          };
+
+    
+
+      const markerOptions: google.maps.MarkerOptions = {
+        position: position,
+        title: location.sigla || 'Sem nome',
+        draggable: false,
+        opacity:0.8,
+        label: {
+          text: location.sigla || 'S/N',
+          color: 'blue',
+          fontSize: '9px'
+          
+        } as google.maps.MarkerLabel,
+        icon: {
+          url: '/assets/BLOCO5.png',
+          labelOrigin: new google.maps.Point(50, 0),
+          scaledSize: new google.maps.Size(50, 50),
+                 
+          
+        },
+
+        visible: this.currentZoom >= this.ZOOM_LEVEL_POPS
+        ///visible: false
+
+      };
+      
+      const marker = new google.maps.Marker(markerOptions);
+      if (this.map) {
+        marker.setMap(this.map);
+      }
+      
+      marker.addListener('dragend', (event: google.maps.MapMouseEvent) => {
+        const index = this.markerCondominios.indexOf(marker);
+        if (index !== -1) {
+          this.onMarkerDragEnd(event, index, true);
+        }
+      });
+
+      this.addMarkerEventListeners(marker, true);
+      
+      this.markerCondominios.push(marker);
+    });
+      
+      console.log('Condominios atualizadas:', this.markerCondominios);
+    }
+  }
+
+
+
+
+
+
+//=====================================função para carregar as POPs na Tela================================
   private updateMarkersPopsEst() {
     
 
@@ -564,15 +643,19 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
         position: position,
         title: location.sigla || 'Sem nome',
         draggable: false,
+        opacity:0.8,
         label: {
           text: location.sigla || 'S/N',
-          color: 'blue',
-          fontSize: '10px'
+          color: 'red',
+          fontSize: '13px'
         } as google.maps.MarkerLabel,
         icon: {
           url: '/assets/TORRE4.png',
           labelOrigin: new google.maps.Point(50, 0),
-          scaledSize: new google.maps.Size(30, 30)
+          scaledSize: new google.maps.Size(25, 25),
+          
+          
+          
         },
 
         visible: this.currentZoom >= this.ZOOM_LEVEL_POPS
@@ -1443,14 +1526,38 @@ private updateVisibleMarkers() {
   });
 
   console.log(` Estações visíveis: ${visiblePOPsCount}`);
+   
 
-  
-  
+
+
+
+// Atualizar visibilidade de Estações  //----------------- Visibilidade de Condominios ----------------------------
+  let visibleCondominiosCount = 0;
+  console.log ('atualiza Condominios visibles')
+  this.markerCondominios.forEach(marker => {
+    if (marker) {
+      const position = marker.getPosition();
+      if (position && 
+          bounds.contains(position) && 
+          this.currentZoom >= this.ZOOM_LEVEL_CONDOMINIOS &&
+          visibleCondominiosCount < this.MAX_VISIBLE_MARKERS_CONDOMINIOS) {
+        
+        if (this.map) {marker.setMap(this.map)};//xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+        marker.setVisible(true);
+        visibleCondominiosCount++;
+      } else {
+        marker.setVisible(false);
+        marker.setMap(null);
+      }
+
+      //console.log ('caixas visiveis', visibleCTOsCount)
+    }
+  });
+
+  console.log(` Condominios visíveis: ${visibleCondominiosCount}`);
+   
 
 } 
-
-
-
 
 
 
