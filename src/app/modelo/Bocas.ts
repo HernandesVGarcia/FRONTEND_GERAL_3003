@@ -54,6 +54,24 @@ export class Bocas {
     Y17:number | any;
     X18:number | any;
     Y18:number | any;
+    ROT1:number | any;
+    ROT2:number | any;
+    ROT3:number | any;
+    ROT4:number | any;
+    ROT5:number | any;
+    ROT6:number | any;
+    ROT7:number | any;
+    ROT8:number | any;
+    ROT9:number | any;
+    ROT10:number | any;
+    ROT11:number | any;
+    ROT12:number | any;
+    ROT13:number | any;
+    ROT14:number | any;
+    ROT15:number | any;
+    ROT16:number | any;
+    ROT17:number | any;
+    ROT18:number | any;
 
 
 

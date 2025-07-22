@@ -245,7 +245,9 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
   private splitter116: Splitter116Component = new Splitter116Component();
   private splitterDesb: SplitterDesbComponent = new SplitterDesbComponent();
 
-  
+  private savedViewportBounds: go.Rect | null = null;
+  private savedScale: number = 1;
+
 
 
 
@@ -2257,7 +2259,7 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
           this.diagram.allowVerticalScroll=true;
           this.diagram.allowHorizontalScroll=true;
           this.diagram.scrollMode
-          this.diagram.commandHandler.zoomToFit
+          //this.diagram.commandHandler.zoomToFit
           //this.diagram.allowZoom=false;
           
           console.log('Removendo diagrama existente');
@@ -2319,6 +2321,11 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
 
 
         });
+
+        this.diagram.toolManager.rotatingTool.isEnabled = true;
+        this.diagram.toolManager.rotatingTool.snapAngleMultiple = 15; // Snap a cada 15°
+        this.diagram.toolManager.rotatingTool.computeRotate;
+
         this.diagram.commandHandler.zoomFactor=1.3;
         this.diagram.scrollToRect=scroll;
         //this.diagram.zoomToFit;;
@@ -2331,8 +2338,10 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
         this.diagram.routers.push(this.avoidsLinksRouter);
         console.log('AvoidsLinksRouter adicionado ao diagrama');
 
+        
 
 
+        //*************************************************movimento do cabo capturar X Y cabos e splitters ******************************************************** */ 
         // Adicionar listener para capturar movimento de cabos
         this.diagram.addDiagramListener("SelectionMoved", (e: go.DiagramEvent) => {
           e.subject.each((node: go.Node) => {
@@ -2346,10 +2355,6 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
               node.position = validatedPos;
             }
             //======================================================================================
-
-
-           
-
 
 
             if (node.data.key && node.data.key.startsWith("Boca")) {
@@ -2376,12 +2381,62 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
 
 
 
-
-
           });
         });
 
+       // 🔄 NOVO - Listener específico para rotação com PartRotated
+        this.diagram.addDiagramListener("PartRotated", (e: go.DiagramEvent) => {
+          const rotatedObject = e.subject as go.GraphObject;
+          const originalAngleDegrees = e.parameter as number; // Ângulo original em graus
+          
+          // Obter o nó pai do objeto rotacionado
+          let node: go.Node | null = null;
+          if (rotatedObject instanceof go.Node) {
+            node = rotatedObject;
+          } else {
+            // Se for uma parte do nó, encontrar o nó pai
+            node = rotatedObject.part as go.Node;
+          }
+          
+          if (node && node.data && node.data.key) {
+            const currentAngleRadians = node.angle; // Ângulo atual em radianos
+            const currentAngleDegrees = currentAngleRadians * 180 / Math.PI; // Converter para graus
+            
+            console.log(`🔄 [PartRotated] Rotação detectada no node ${node.data.key}:`, {
+              originalAngleDegrees: originalAngleDegrees,
+              currentAngleRadians: currentAngleRadians,
+              currentAngleDegrees: currentAngleDegrees.toFixed(1) + '°',
+              rotationDelta: (currentAngleDegrees - originalAngleDegrees).toFixed(1) + '°'
+            });
 
+            // Detectar se é um cabo (Boca)
+            if (node.data.key.startsWith("Boca")) {
+              const apenasNumBoca = node.data.key.replace('Boca','');
+              console.log(`🔄 Cabo ${node.data.key} rotacionado:`, {
+                de: originalAngleDegrees.toFixed(1) + '°',
+                para: currentAngleDegrees.toFixed(1) + '°',
+                radianos: currentAngleRadians
+              });
+              
+              // TODO: Implementar serviço para salvar ângulo do cabo
+              // this.UpdateBCAngleService.atualizar(currentAngleRadians, apenasNumBoca)
+            }
+            
+            // Detectar se é um splitter
+            if (node.data.key.startsWith("Splitter")) {
+              const apenasNumSplitter = node.data.key.replace('Splitter','');
+              console.log(`🔄 Splitter ${node.data.key} rotacionado:`, {
+                de: originalAngleDegrees.toFixed(1) + '°',
+                para: currentAngleDegrees.toFixed(1) + '°',
+                radianos: currentAngleRadians
+              });
+
+              // this.UpdateSPAngleService.atualizar(currentAngleRadians, apenasNumSplitter)
+            }
+          }
+        });
+
+        
 
         // Definindo o modelo de nós para o diagrama
         // Agora usando o nodeTemplate definido no componente do modelo
@@ -2874,4 +2929,202 @@ private restaurarCursor(): void {
     
     console.log('✅ Cores aplicadas em todas as conexões existentes');
   }
+
+   // 🆕 NOVO - Função para redesenhar completamente o diagrama
+  redesenharDiagrama(): void {
+    console.log('🔄 Iniciando redesenho completo do diagrama...');
+    
+    try {
+      this.mostrarCursorEspera();
+
+      // 1. Salvar estado da visualização antes de resetar
+      this.salvarEstadoVisualizacao();
+      
+      // 2 Resetar todos os estados
+      this.resetarEstados();
+
+      // 3. RECARREGAR dados do banco
+      this.carregarDadosCompletosAsync();
+           
+      
+      // 4. Só então redesenhar
+      setTimeout(() => {
+        this.initializeDiagram();
+        console.log('✅ Diagrama redesenhado com sucesso!');
+      }, 1000);
+
+
+      setTimeout(() => {
+      // 5. Restaurar estado da visualização
+      this.restaurarEstadoVisualizacao();
+      }, 1000);
+
+      
+    } catch (error) {
+      console.error('❌ Erro durante o redesenho:', error);
+      this.initializationError = 'Erro ao redesenhar o diagrama';
+    } finally {
+      setTimeout(() => {
+        this.restaurarCursor();
+      }, 1000);
+    }
+  }
+   //==============================================================================================================
+  // 🆕 NOVO - Função para resetar todos os estados
+  private resetarEstados(): void {
+    console.log('🔄 Resetando estados...');
+    
+    // Resetar flags de inicialização
+    this.cabosInicializados = false;
+    this.splittersInicializados = false;
+    this.dropsInicializados = false;
+    this.diagramInitialized = false;
+    
+    // Resetar flags de conexões
+    this.conexoesCriadas = false;
+    this.conexoesSPCriadas = false;
+    
+    // Resetar flags de carregamento
+    this.carregamentoEmAndamento = false;
+    this.carregamentoEmAndamento99 = false;
+    this.carregamentoSPEmAndamento = false;
+    
+    // Limpar conjuntos de controle
+    
+    
+    this.bocasCarregadas.clear();
+    this.splittersCarregados.clear();
+    this.bocasProcessadas.clear();
+    this.splittersProcessados.clear();
+    
+    // Limpar mapas de conexões
+    this.conexoesPorBoca.clear();
+    this.conexoesPorSplitter.clear();
+    
+    // Resetar arrays de conexões
+    this.conexoesCarregadas = [];
+    this.conexoesCarregadasSpSp = [];
+    this.conexoesSPCarregadas = [];
+
+
+    // Limpar vetores de dados para forçar recarregamento do banco
+    this.VetorBocas = [];
+    this.VetorSplitter = [];
+    this.VetorTipoCabos = [];
+    this.VetorDrops_Sp = [];
+    this.VetorPopsCli = [];
+    this.VetorDadosPops = [];
+
+    // Limpar e reinicializar o diagrama
+      this.limparDiagrama();
+    
+    // Resetar estado do componente de drops
+    this.gojsDropComponent.resetarEstado();
+    
+    console.log('✅ Estados resetados');
+  }
+
+  // 🆕 NOVO - Função para limpar completamente o diagrama
+  private limparDiagrama(): void {
+    console.log('🗑️ Limpando diagrama...');
+    
+    if (this.diagram) {
+      
+      
+      // Limpar modelo
+      if (this.diagram.model) {
+        const model = this.diagram.model as go.GraphLinksModel;
+        model.nodeDataArray = [];
+        model.linkDataArray = [];
+      }
+      
+      // Remover diagram do DOM
+      this.diagram.div = null;
+      this.diagram = null;
+    }
+    
+    // Limpar erro de inicialização
+    this.initializationError = null;
+    
+    console.log('✅ Diagrama limpo');
+  }
+
+//==============================================================================
+
+// 🆕 NOVO - Função para salvar estado da visualização
+  private salvarEstadoVisualizacao(): void {
+    if (!this.diagram) return;
+    
+    console.log('💾 Salvando estado da visualização...');
+    
+    // Salvar bounds da viewport
+    this.savedViewportBounds = this.diagram.viewportBounds.copy();
+    
+    // Salvar nível de zoom
+    this.savedScale = this.diagram.scale;
+    
+    console.log('✅ Estado salvo:', {
+      bounds: this.savedViewportBounds,
+      scale: this.savedScale
+    });
+  }
+
+  // 🆕 NOVO - Função para restaurar estado da visualização (melhorada)
+  private restaurarEstadoVisualizacao(): void {
+    if (!this.diagram || !this.savedViewportBounds) return;
+    
+    console.log('🔄 Restaurando estado da visualização...');
+    console.log('Estado a restaurar:', {
+      bounds: this.savedViewportBounds,
+      scale: this.savedScale
+    });
+    
+    // Aguardar o diagrama ser totalmente renderizado
+    setTimeout(() => {
+      if (this.diagram && this.savedViewportBounds) {
+        // 1. Primeiro aplicar o zoom
+        this.diagram.scale = this.savedScale;
+        
+        // 2. Aguardar um pouco e depois ajustar a posição
+        setTimeout(() => {
+          if (this.diagram && this.savedViewportBounds) {
+            // Calcular o centro da viewport salva
+            const centerX = this.savedViewportBounds.centerX;
+            const centerY = this.savedViewportBounds.centerY;
+            
+            // Centralizar nesse ponto
+            this.diagram.centerRect(this.savedViewportBounds);
+            
+            console.log('✅ Estado da visualização restaurado:', {
+              centerX,
+              centerY,
+              scale: this.savedScale,
+              finalPosition: this.diagram.position,
+              finalScale: this.diagram.scale
+            });
+          }
+        }, 100);
+      }
+    }, 300); // Aumentei o tempo inicial também
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }
+
+
+
+
