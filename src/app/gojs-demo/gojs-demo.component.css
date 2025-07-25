@@ -110,6 +110,32 @@
   box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
+.espelhar-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  margin-left: 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transition: background-color 0.3s ease;
+}
+
+.espelhar-button:hover {
+  background-color: #5e95d1;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.25);
+}
+
+.espelhar-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+
 .modal {
   position: fixed;
   z-index: 1000;

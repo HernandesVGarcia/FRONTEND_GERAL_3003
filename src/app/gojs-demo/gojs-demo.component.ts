@@ -109,6 +109,8 @@ import { GojsDropComponent } from '../gojs-drop/gojs-drop.component';
 import { PopClienteService } from '../servico/pop-cliente.service';
 import { UpdateBocaXYService} from '../servico/update-boca-xy.service';
 import { UpdateSplitterXYService} from '../servico/update-splitter-xy.service';
+import { UpdateBocaAngleService} from '../servico/update-boca-angle.service';
+import { UpdateBocaLadoService} from '../servico/update-boca-lado.service';
 import jsPDF from 'jspdf';
 
 @Component({
@@ -182,9 +184,7 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
   private cabo6FNAC: Cabo6FNacComponent = new Cabo6FNacComponent();
   private cabo6FINT: Cabo6FIntComponent = new Cabo6FIntComponent();
   private cabo6FINT_D: Cabo6FIntDComponent = new Cabo6FIntDComponent();
-  
-
-  
+   
 
   private cabo8FNAC_D: Cabo8FNacDComponent = new Cabo8FNacDComponent();
   private cabo8FNAC: Cabo8FNacComponent = new Cabo8FNacComponent();
@@ -275,6 +275,8 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
      private gojsDropComponent: GojsDropComponent,
      private UpdateBCXYService: UpdateBocaXYService,
      private UpdateSPXYService: UpdateSplitterXYService,
+     private UpdateBCAngleService:UpdateBocaAngleService,
+     private UpdateBCLadoService:UpdateBocaLadoService,
      // 🆕 NOVO - Serviço para POPs
      private popClienteService: PopClienteService,
     ) {}
@@ -1388,15 +1390,20 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
           const capacidade = this.VetorTipoCabos[0].capacidade || 0;
           const codigo = this.VetorTipoCabos[0].codigo || 2;
           const tubo = this.VetorTipoCabos[0].tubo || 6;
+          let lado = false; // bocas impares são esquerda (false) bocas pares direita (true)
+
+          if (this.VetorBocas[0].LD1 === 'D') {lado=true } 
 
           console.log(`Boca 1: Usando capacidade ${capacidade} para selecionar modelo`);  
           // Selecionar o modelo com base na capacidade
-          const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, codigo, tubo, false);
+          const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, codigo, tubo, lado);
           
           Boca1 = { 
             ...modeloSelecionado, 
             key: "Boca1",
             loc: "0 0"
+            
+
           };
         } else {
           console.log('Boca 1: Capacidade não disponível, usando modelo padrão 36F');
@@ -1416,14 +1423,19 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
             const capacidade = this.VetorTipoCabos[1].capacidade || 0; // Use default 0 if undefined
             const codigo = this.VetorTipoCabos[1].codigo || 2;
             const tubo = this.VetorTipoCabos[1].tubo || 6;
+            let lado=true;
+
+            if (this.VetorBocas[0].LD2 === 'E') {lado=false } 
+
             console.log(`Boca 2: Usando capacidade ${capacidade} para selecionar modelo`);
             
-            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, codigo, tubo, true);
+            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, codigo, tubo, lado);
             
             Boca2 = { 
               ...modeloSelecionado, 
               key: "Boca2",
-              loc: "400 0"
+              loc: "400 0",
+              
             };
           } else {
             console.log('Boca 2: Capacidade não disponível, usando modelo padrão 36F_D');
@@ -1444,9 +1456,13 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
             const capacidade = this.VetorTipoCabos[2].capacidade || 0; // Use default 0 if undefined
             const codigo = this.VetorTipoCabos[2].codigo || 2;
             const tubo = this.VetorTipoCabos[2].tubo || 6;
+            let lado=false;
+
+            if (this.VetorBocas[0].LD3 === 'D') {lado=true } 
+            
             console.log(`Boca 3: Usando capacidade ${capacidade} para selecionar modelo`);
             
-            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, codigo, tubo, false);
+            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, codigo, tubo, lado);
             
             Boca3 = { 
               ...modeloSelecionado, 
@@ -1470,13 +1486,17 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
             const codigo = this.VetorTipoCabos[3].codigo || 2;
             const tubo = this.VetorTipoCabos[3].tubo || 6;
             console.log(`Boca 4: Usando capacidade ${capacidade} para selecionar modelo`);
+            let lado=true;
+
+            if (this.VetorBocas[0].LD4 === 'E') {lado=false } 
             
-            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, codigo, tubo, true);
+            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, codigo, tubo, lado);
             
             Boca4 = { 
               ...modeloSelecionado, 
               key: "Boca4",
-              loc: "0 0"
+              loc: "0 0",
+              
             };
           } else {
             console.log('Boca 4: Capacidade não disponível, usando modelo padrão 24F');
@@ -1495,9 +1515,14 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
             const capacidade = this.VetorTipoCabos[4].capacidade || 0; // Use default 0 if undefined
             const codigo = this.VetorTipoCabos[4].codigo || 2;
             const tubo = this.VetorTipoCabos[4].tubo || 6;
+            let lado=false;
+
+            if (this.VetorBocas[0].LD5 === 'D') {lado=true } 
+
+
             console.log(`Boca 5: Usando capacidade ${capacidade} para selecionar modelo`);
             
-            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, codigo, tubo, false);
+            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, codigo, tubo, lado);
             
             Boca5 = { 
               ...modeloSelecionado, 
@@ -1519,11 +1544,16 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
         if (this.VetorBocas[0].BOCA6 !== " ") {
           if (this.VetorTipoCabos.length >= 6 && this.VetorTipoCabos[5]) {
             const capacidade = this.VetorTipoCabos[5].capacidade || 0; // Use default 0 if undefined
+            let lado=true;
+
+            if (this.VetorBocas[0].LD6 === 'E') {lado=false } 
+
+
             console.log(`Boca 6: Usando capacidade ${capacidade} para selecionar modelo`);
             const codigo = this.VetorTipoCabos[5].codigo || 2;
             const tubo = this.VetorTipoCabos[5].tubo || 6;
             
-            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, codigo, tubo, true);
+            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, codigo, tubo, lado);
             
             Boca6 = { 
               ...modeloSelecionado, 
@@ -1547,9 +1577,13 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
             const capacidade = this.VetorTipoCabos[6].capacidade || 0; // Use default 0 if undefined
             const codigo = this.VetorTipoCabos[6].codigo || 2;
             const tubo = this.VetorTipoCabos[6].tubo || 6;
+            let lado=false;
+
+            if (this.VetorBocas[0].LD7 === 'D') {lado=true } 
+
             console.log(`Boca 7: Usando capacidade ${capacidade} para selecionar modelo`);
             
-            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, codigo, tubo, false);
+            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, codigo, tubo, lado);
             
             Boca7 = { 
               ...modeloSelecionado, 
@@ -1573,9 +1607,13 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
             const capacidade = this.VetorTipoCabos[7].capacidade || 0; // Use default 0 if undefined
             const codigo = this.VetorTipoCabos[7].codigo || 2;
             const tubo = this.VetorTipoCabos[7].tubo || 6;
+            let lado=true;
+
+            if (this.VetorBocas[0].LD8 === 'E') {lado=false } 
+
             console.log(`Boca 8: Usando capacidade ${capacidade} para selecionar modelo`);
             
-            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, codigo, tubo, true);
+            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, codigo, tubo, lado);
             
             Boca8 = { 
               ...modeloSelecionado, 
@@ -1599,9 +1637,13 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
             const capacidade = this.VetorTipoCabos[8].capacidade || 0; // Use default 0 if undefined
             const codigo = this.VetorTipoCabos[8].codigo || 2;
             const tubo = this.VetorTipoCabos[8].tubo || 6;
+            let lado=false;
+
+            if (this.VetorBocas[0].LD9 === 'D') {lado=true } 
+
             console.log(`Boca 9: Usando capacidade ${capacidade} para selecionar modelo`);
             
-            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, codigo, tubo, false);
+            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, codigo, tubo, lado);
             
             Boca9 = { 
               ...modeloSelecionado, 
@@ -1626,9 +1668,14 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
             const capacidade = this.VetorTipoCabos[9].capacidade || 0; // Use default 0 if undefined
             const codigo = this.VetorTipoCabos[9].codigo || 2;
             const tubo = this.VetorTipoCabos[9].tubo || 6;
+            let lado=true;
+
+            if (this.VetorBocas[0].LD10 === 'E') {lado=false } 
+
+
             console.log(`Boca 10: Usando capacidade ${capacidade} para selecionar modelo`);
             
-            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, codigo, tubo, true);
+            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, codigo, tubo, lado);
             
             Boca10 = { 
               ...modeloSelecionado, 
@@ -1652,9 +1699,13 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
             const capacidade = this.VetorTipoCabos[10].capacidade || 0; // Use default 0 if undefined
             const codigo = this.VetorTipoCabos[10].codigo || 2;
             const tubo = this.VetorTipoCabos[10].tubo || 6;
+             let lado=false;
+
+             if (this.VetorBocas[0].LD11 === 'D') {lado=true } 
+
             console.log(`Boca 11: Usando capacidade ${capacidade} para selecionar modelo`);
             
-            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, codigo, tubo, false);
+            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, codigo, tubo, lado);
             
             Boca11 = { 
               ...modeloSelecionado, 
@@ -1678,9 +1729,13 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
             const capacidade = this.VetorTipoCabos[11].capacidade || 0; // Use default 0 if undefined
             const codigo = this.VetorTipoCabos[11].codigo || 2;
             const tubo = this.VetorTipoCabos[11].tubo || 6;
+            let lado=true;
+
+            if (this.VetorBocas[0].LD12 === 'E') {lado=false } 
+
             console.log(`Boca 12: Usando capacidade ${capacidade} para selecionar modelo`);
             
-            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, codigo, tubo, true);
+            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, codigo, tubo, lado);
             
             Boca12 = { 
               ...modeloSelecionado, 
@@ -1707,9 +1762,13 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
             const capacidade = this.VetorTipoCabos[12].capacidade || 0; // Use default 0 if undefined
             const codigo = this.VetorTipoCabos[12].codigo || 2;
             const tubo = this.VetorTipoCabos[12].tubo || 6;
+            let lado=false;
+
+            if (this.VetorBocas[0].LD13 === 'D') {lado=true } 
+
             console.log(`Boca 13: Usando capacidade ${capacidade} para selecionar modelo`);
             
-            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, codigo, tubo, false);
+            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, codigo, tubo, lado);
             
             Boca13 = { 
               ...modeloSelecionado, 
@@ -1737,9 +1796,13 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
             const capacidade = this.VetorTipoCabos[13].capacidade || 0; // Use default 0 if undefined
             const codigo = this.VetorTipoCabos[13].codigo || 2;
             const tubo = this.VetorTipoCabos[13].tubo || 6;
+            let lado=true;
+
+            if (this.VetorBocas[0].LD14 === 'E') {lado=false } 
+
             console.log(`Boca 14: Usando capacidade ${capacidade} para selecionar modelo`);
             
-            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, codigo, tubo, true);
+            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, codigo, tubo, lado);
             
             Boca14 = { 
               ...modeloSelecionado, 
@@ -1766,9 +1829,13 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
             const capacidade = this.VetorTipoCabos[14].capacidade || 0; // Use default 0 if undefined
             const codigo = this.VetorTipoCabos[14].codigo || 2;
             const tubo = this.VetorTipoCabos[14].tubo || 6;
+            let lado=false;
+
+            if (this.VetorBocas[0].LD15 === 'D') {lado=true } 
+
             console.log(`Boca 15: Usando capacidade ${capacidade} para selecionar modelo`);
             
-            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, codigo, tubo, false);
+            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, codigo, tubo, lado);
             
             Boca15 = { 
               ...modeloSelecionado, 
@@ -1795,9 +1862,13 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
             const capacidade = this.VetorTipoCabos[15].capacidade || 0; // Use default 0 if undefined
             const codigo = this.VetorTipoCabos[15].codigo || 2;
             const tubo = this.VetorTipoCabos[15].tubo || 6;
+            let lado=true;
+
+            if (this.VetorBocas[0].LD16 === 'E') {lado=false } 
+
             console.log(`Boca 16: Usando capacidade ${capacidade} para selecionar modelo`);
             
-            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, codigo, tubo, true);
+            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, codigo, tubo, lado);
             
             Boca16 = { 
               ...modeloSelecionado, 
@@ -1824,9 +1895,13 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
             const capacidade = this.VetorTipoCabos[16].capacidade || 0; // Use default 0 if undefined
             const codigo = this.VetorTipoCabos[16].codigo || 2;
             const tubo = this.VetorTipoCabos[16].tubo || 6;
+            let lado=false;
+
+            if (this.VetorBocas[0].LD17 === 'D') {lado=true } 
+
             console.log(`Boca 17: Usando capacidade ${capacidade} para selecionar modelo`);
             
-            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, codigo, tubo, false);
+            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, codigo, tubo, lado);
             
             Boca17 = { 
               ...modeloSelecionado, 
@@ -1852,9 +1927,13 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
             const capacidade = this.VetorTipoCabos[17].capacidade || 0; // Use default 0 if undefined
             const codigo = this.VetorTipoCabos[17].codigo || 2;
             const tubo = this.VetorTipoCabos[17].tubo || 6;
+            let lado=true;
+
+            if (this.VetorBocas[0].LD18 === 'E') {lado=false } 
+
             console.log(`Boca 18: Usando capacidade ${capacidade} para selecionar modelo`);
             
-            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, codigo, tubo, true);
+            const modeloSelecionado = this.selecionarModeloCaboPorCapacidade(capacidade, codigo, tubo, lado);
             
             Boca18 = { 
               ...modeloSelecionado, 
@@ -1897,9 +1976,19 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
                         console.log("Aplicando transformação ao cabo1");
                         
                         node1.resizable=true;
-                        node1.rotatable=true; 
+                        node1.rotatable=true;
+                        //node1.locationSpot=go.Spot.Center;
+                        node1.locationSpot=go.Spot.Center;
+                        
+                        
+                        node1.rotateObject.scale=1000;
                         node1.scale=1;
                         node1.movable=true;
+                        if (this.VetorBocas[0].ROT1 !== undefined && this.VetorBocas[0].ROT1 !== null) {
+                        const rotationDegrees = parseFloat(String(this.VetorBocas[0].ROT1));
+                        const rotationRadians = rotationDegrees;
+                        node1.angle = rotationRadians;}
+                        //node1.angle=this.VetorBocas[0].ROT1;
                         if (this.VetorBocas[0].X1!=0 || this.VetorBocas[0].Y1 != 0) {node1.position=new go.Point(Math.round(this.VetorBocas[0].X1),Math.round(this.VetorBocas[0].Y1));}
                         else {node1.position=new go.Point(500,500);
                         }
@@ -1922,6 +2011,11 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
                         node2.resizable=true;
                         node2.rotatable=true;
                         node2.movable=true;
+                        if (this.VetorBocas[0].ROT2 !== undefined && this.VetorBocas[0].ROT2 !== null) {
+                        const rotationDegrees = parseFloat(String(this.VetorBocas[0].ROT2));
+                        const rotationRadians = rotationDegrees;
+                        node2.angle = rotationRadians;}
+                        //node2.angle=this.VetorBocas[0].ROT2;
                         if (this.VetorBocas[0].X2!=0 || this.VetorBocas[0].Y2 != 0) {node2.position=new go.Point(Math.round(this.VetorBocas[0].X2),Math.round(this.VetorBocas[0].Y2));}
                         else {node2.position=new go.Point(1500,500);
                         }
@@ -1948,7 +2042,11 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
                         console.log("Aplicando transformação ao cabo3");
                         node3.resizable=true;
                         node3.rotatable=true;
-                        node3.scale=1;  
+                        node3.scale=1;
+                        if (this.VetorBocas[0].ROT3 !== undefined && this.VetorBocas[0].ROT3 !== null) {
+                        const rotationDegrees = parseFloat(String(this.VetorBocas[0].ROT3));
+                        const rotationRadians = rotationDegrees;
+                        node3.angle = rotationRadians;}  
                         if (this.VetorBocas[0].X3!=0 || this.VetorBocas[0].Y3 != 0) {node3.position=new go.Point(Math.round(this.VetorBocas[0].X3),Math.round(this.VetorBocas[0].Y3));}
                         else {node3.position=new go.Point(200,1000);
                         }
@@ -1969,6 +2067,11 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
                         node4.resizable=true;
                         node4.rotatable=true;
                         node4.scale=1;
+                        if (this.VetorBocas[0].ROT4 !== undefined && this.VetorBocas[0].ROT4 !== null) {
+                        const rotationDegrees = parseFloat(String(this.VetorBocas[0].ROT4));
+                        const rotationRadians = rotationDegrees;
+                        node4.angle = rotationRadians;}
+                        //node4.angle=this.VetorBocas[0].ROT4;
                         if (this.VetorBocas[0].X4!=0 || this.VetorBocas[0].Y4 != 0) {node4.position=new go.Point(Math.round(this.VetorBocas[0].X4),Math.round(this.VetorBocas[0].Y4));}  
                         else {node4.position=new go.Point(1000,1000);}
                         node4.data.labelText = this.VetorBocas[0].BOCA4 + "__Boca:4";
@@ -1986,6 +2089,10 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
                         node5.resizable=true;
                         node5.rotatable=true;
                         node5.scale=1;
+                        if (this.VetorBocas[0].ROT5 !== undefined && this.VetorBocas[0].ROT5 !== null) {
+                        const rotationDegrees = parseFloat(String(this.VetorBocas[0].ROT5));
+                        const rotationRadians = rotationDegrees;
+                        node5.angle = rotationRadians;}
                         if (this.VetorBocas[0].X5!=0 || this.VetorBocas[0].Y5 != 0) {node5.position=new go.Point(Math.round(this.VetorBocas[0].X5),Math.round(this.VetorBocas[0].Y5));}    
                         else {node5.position=new go.Point(200,1500)};
                         node5.data.labelText = this.VetorBocas[0].BOCA5 + "__Boca:5";
@@ -2002,6 +2109,10 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
                         node6.resizable=true;
                         node6.rotatable=true;
                         node6.scale=1;
+                        if (this.VetorBocas[0].ROT6 !== undefined && this.VetorBocas[0].ROT6 !== null) {
+                        const rotationDegrees = parseFloat(String(this.VetorBocas[0].ROT6));
+                        const rotationRadians = rotationDegrees;
+                        node6.angle = rotationRadians;}
                         if (this.VetorBocas[0].X6!=0 || this.VetorBocas[0].Y6 != 0) {node6.position=new go.Point(Math.round(this.VetorBocas[0].X6),Math.round(this.VetorBocas[0].Y6));}    
                         else {node6.position=new go.Point(1000,1500)};
                         node6.data.labelText = this.VetorBocas[0].BOCA6 + "__Boca:6";
@@ -2019,6 +2130,10 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
                         node7.resizable=true;
                         node7.rotatable=true;
                         node7.scale=1;
+                        if (this.VetorBocas[0].ROT7 !== undefined && this.VetorBocas[0].ROT7 !== null) {
+                        const rotationDegrees = parseFloat(String(this.VetorBocas[0].ROT7));
+                        const rotationRadians = rotationDegrees;
+                        node7.angle = rotationRadians;}
                         if (this.VetorBocas[0].X7!=0 || this.VetorBocas[0].Y7 != 0) {node7.position=new go.Point(Math.round(this.VetorBocas[0].X7),Math.round(this.VetorBocas[0].Y7));}  
                         else {node7.position=new go.Point(0,1800)};
                         node7.data.labelText = this.VetorBocas[0].BOCA7 + "__Boca:7";
@@ -2036,6 +2151,10 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
                         node8.resizable=true;
                         node8.rotatable=true;
                         node8.scale=1;
+                        if (this.VetorBocas[0].ROT8 !== undefined && this.VetorBocas[0].ROT8 !== null) {
+                        const rotationDegrees = parseFloat(String(this.VetorBocas[0].ROT8));
+                        const rotationRadians = rotationDegrees;
+                        node8.angle = rotationRadians;}
                         if (this.VetorBocas[0].X8!=0 || this.VetorBocas[0].Y8 != 0) {node8.position=new go.Point(Math.round(this.VetorBocas[0].X8),Math.round(this.VetorBocas[0].Y8));}    
                         else {node8.position=new go.Point(1200,1800);}
                         node8.data.labelText = this.VetorBocas[0].BOCA8 + "__Boca:8";
@@ -2053,6 +2172,10 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
                         node9.resizable=true;
                         node9.rotatable=true;
                         node9.scale=1;
+                        if (this.VetorBocas[0].ROT9 !== undefined && this.VetorBocas[0].ROT9 !== null) {
+                        const rotationDegrees = parseFloat(String(this.VetorBocas[0].ROT9));
+                        const rotationRadians = rotationDegrees;
+                        node9.angle = rotationRadians;}
                         if (this.VetorBocas[0].X9!=0 || this.VetorBocas[0].Y9 != 0) {node9.position=new go.Point(Math.round(this.VetorBocas[0].X9),Math.round(this.VetorBocas[0].Y9));}  
                         else {node9.position=new go.Point(200,2000);}
                         node9.data.labelText = this.VetorBocas[0].BOCA9 + "__Boca:9";
@@ -2069,7 +2192,11 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
                         console.log("Aplicando transformação ao cabo10");
                         node10.resizable=true;
                         node10.rotatable=true;
-                        node10.scale=1;  
+                        node10.scale=1;
+                        if (this.VetorBocas[0].ROT10 !== undefined && this.VetorBocas[0].ROT10 !== null) {
+                        const rotationDegrees = parseFloat(String(this.VetorBocas[0].ROT10));
+                        const rotationRadians = rotationDegrees;
+                        node10.angle = rotationRadians;}  
                         if (this.VetorBocas[0].X10!=0 || this.VetorBocas[0].Y10 != 0) {node10.position=new go.Point(Math.round(this.VetorBocas[0].X10),Math.round(this.VetorBocas[0].Y10));}  
                         else {node10.position=new go.Point(1000,2000);}
                         node10.data.labelText = this.VetorBocas[0].BOCA10 + "__Boca:10";
@@ -2086,7 +2213,11 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
                         console.log("Aplicando transformação ao cabo11");
                         node11.resizable=true;
                         node11.rotatable=true;
-                        node11.scale=1; 
+                        node11.scale=1;
+                        if (this.VetorBocas[0].ROT11 !== undefined && this.VetorBocas[0].ROT11 !== null) {
+                        const rotationDegrees = parseFloat(String(this.VetorBocas[0].ROT11));
+                        const rotationRadians = rotationDegrees;
+                        node11.angle = rotationRadians;} 
                         if (this.VetorBocas[0].X11!=0 || this.VetorBocas[0].Y11 != 0) {node11.position=new go.Point(Math.round(this.VetorBocas[0].X11),Math.round(this.VetorBocas[0].Y11));}   
                         else {node11.position=new go.Point(200,2500);}
                         node11.data.labelText = this.VetorBocas[0].BOCA11 + "__Boca:11";
@@ -2103,6 +2234,10 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
                         node12.resizable=true;
                         node12.rotatable=true;
                         node12.scale=1;
+                        if (this.VetorBocas[0].ROT12 !== undefined && this.VetorBocas[0].ROT12 !== null) {
+                        const rotationDegrees = parseFloat(String(this.VetorBocas[0].ROT12));
+                        const rotationRadians = rotationDegrees;
+                        node12.angle = rotationRadians;}
                         if (this.VetorBocas[0].X12!=0 || this.VetorBocas[0].Y12 != 0) {node12.position=new go.Point(Math.round(this.VetorBocas[0].X12),Math.round(this.VetorBocas[0].Y12));}  
                         else{node12.position=new go.Point(1000,2500);}
                         node12.data.labelText = this.VetorBocas[0].BOCA12 + "__Boca:12";
@@ -2120,6 +2255,10 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
                         node13.resizable=true;
                         node13.rotatable=true;
                         node13.scale=1;
+                        if (this.VetorBocas[0].ROT13 !== undefined && this.VetorBocas[0].ROT13 !== null) {
+                        const rotationDegrees = parseFloat(String(this.VetorBocas[0].ROT13));
+                        const rotationRadians = rotationDegrees;
+                        node13.angle = rotationRadians;}
                         if (this.VetorBocas[0].X13!=0 || this.VetorBocas[0].Y13 != 0) {node13.position=new go.Point(Math.round(this.VetorBocas[0].X13),Math.round(this.VetorBocas[0].Y13));}  
                         else{node13.position=new go.Point(200,3000);}
                         node13.data.labelText = this.VetorBocas[0].BOCA13 + "__Boca:13";
@@ -2137,6 +2276,10 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
                         node14.resizable=true;
                         node14.rotatable=true;
                         node14.scale=1;
+                        if (this.VetorBocas[0].ROT14 !== undefined && this.VetorBocas[0].ROT14 !== null) {
+                        const rotationDegrees = parseFloat(String(this.VetorBocas[0].ROT14));
+                        const rotationRadians = rotationDegrees;
+                        node14.angle = rotationRadians;}
                         if (this.VetorBocas[0].X14!=0 || this.VetorBocas[0].Y14 != 0) {node14.position=new go.Point(Math.round(this.VetorBocas[0].X14),Math.round(this.VetorBocas[0].Y14));}  
                         else {node14.position=new go.Point(1000,3000);}
                         node14.data.labelText = this.VetorBocas[0].BOCA14 + "__Boca:14";
@@ -2153,7 +2296,11 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
                         console.log("Aplicando transformação ao cabo15");
                         node15.resizable=true;
                         node15.rotatable=true;
-                        node15.scale=1; 
+                        node15.scale=1;
+                        if (this.VetorBocas[0].ROT15 !== undefined && this.VetorBocas[0].ROT15 !== null) {
+                        const rotationDegrees = parseFloat(String(this.VetorBocas[0].ROT15));
+                        const rotationRadians = rotationDegrees;
+                        node15.angle = rotationRadians;} 
                         if (this.VetorBocas[0].X15!=0 || this.VetorBocas[0].Y15 != 0) {node15.position=new go.Point(Math.round(this.VetorBocas[0].X15),Math.round(this.VetorBocas[0].Y15));} 
                         else {node15.position=new go.Point(200,3500);}
                         node15.data.labelText = this.VetorBocas[0].BOCA15 + "__Boca:15";
@@ -2171,6 +2318,10 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
                         node16.resizable=true;
                         node16.rotatable=true;
                         node16.scale=1;
+                        if (this.VetorBocas[0].ROT16 !== undefined && this.VetorBocas[0].ROT16 !== null) {
+                        const rotationDegrees = parseFloat(String(this.VetorBocas[0].ROT16));
+                        const rotationRadians = rotationDegrees;
+                        node16.angle = rotationRadians;}
                         if (this.VetorBocas[0].X16!=0 || this.VetorBocas[0].Y16 != 0) {node16.position=new go.Point(Math.round(this.VetorBocas[0].X16),Math.round(this.VetorBocas[0].Y16));}  
                         else{node16.position=new go.Point(1000,3500);}
                         node16.data.labelText = this.VetorBocas[0].BOCA16 + "__Boca:16";
@@ -2187,7 +2338,12 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
                         console.log("Aplicando transformação ao cabo17");
                         node17.resizable=true;
                         node17.rotatable=true;
-                        node17.scale=1; 
+                        node17.rotateObject.scale=10;
+                        node17.scale=1;
+                        if (this.VetorBocas[0].ROT17 !== undefined && this.VetorBocas[0].ROT17 !== null) {
+                        const rotationDegrees = parseFloat(String(this.VetorBocas[0].ROT17));
+                        const rotationRadians = rotationDegrees;
+                        node17.angle = rotationRadians;} 
                         if (this.VetorBocas[0].X17!=0 || this.VetorBocas[0].Y17 != 0) {node17.position=new go.Point(Math.round(this.VetorBocas[0].X17),Math.round(this.VetorBocas[0].Y17));} 
                         else {node17.position=new go.Point(200,4000);}
                         node17.data.labelText = this.VetorBocas[0].BOCA17 + "__Boca:17";
@@ -2205,6 +2361,10 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
                         node18.resizable=true;
                         node18.rotatable=true;
                         node18.scale=1;
+                        if (this.VetorBocas[0].ROT18 !== undefined && this.VetorBocas[0].ROT18 !== null) {
+                        const rotationDegrees = parseFloat(String(this.VetorBocas[0].ROT18));
+                        const rotationRadians = rotationDegrees;
+                        node18.angle = rotationRadians;}
                         if (this.VetorBocas[0].X18!=0 || this.VetorBocas[0].Y18 != 0) {node18.position=new go.Point(Math.round(this.VetorBocas[0].X18),Math.round(this.VetorBocas[0].Y18));}  
                         else {node18.position=new go.Point(1000,4000);}
                         node18.data.labelText = this.VetorBocas[0].BOCA18 + "__Boca:18";
@@ -2249,6 +2409,8 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
       this.cdr.detectChanges();
       return;
     }
+
+    
 
     try {
       
@@ -2384,6 +2546,8 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
           });
         });
 
+       //============================================ ROTAÇÃO CABO E SPLITTER ===================================================== 
+
        // 🔄 NOVO - Listener específico para rotação com PartRotated
         this.diagram.addDiagramListener("PartRotated", (e: go.DiagramEvent) => {
           const rotatedObject = e.subject as go.GraphObject;
@@ -2419,7 +2583,7 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
               });
               
               // TODO: Implementar serviço para salvar ângulo do cabo
-              // this.UpdateBCAngleService.atualizar(currentAngleRadians, apenasNumBoca)
+               this.UpdateBCAngleService.atualizar(currentAngleRadians, apenasNumBoca).subscribe();
             }
             
             // Detectar se é um splitter
@@ -2565,6 +2729,8 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
       );
         
 
+     
+        
         // Configurando o LinkTemplate para conexões entre cabos
         // Modificando para que as conexões liguem diretamente aos portos
         this.diagram.linkTemplate =
@@ -2600,7 +2766,9 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
             })
           );
         
-                 
+         
+          
+          
 
 
         const model = new go.GraphLinksModel({
@@ -2969,7 +3137,7 @@ private restaurarCursor(): void {
       }, 1000);
     }
   }
-   //==============================================================================================================
+   //=============================================função utilizada no redraw=================================================================
   // 🆕 NOVO - Função para resetar todos os estados
   private resetarEstados(): void {
     console.log('🔄 Resetando estados...');
@@ -3049,7 +3217,7 @@ private restaurarCursor(): void {
     console.log('✅ Diagrama limpo');
   }
 
-//==============================================================================
+//===================================função utilizada no Redraw===========================================
 
 // 🆕 NOVO - Função para salvar estado da visualização
   private salvarEstadoVisualizacao(): void {
@@ -3108,19 +3276,43 @@ private restaurarCursor(): void {
     }, 300); // Aumentei o tempo inicial também
   }
 
+//=========================================================== FUNÇÃO ESPELHAR BOCAS ==============================
+espelhar(): void {
+    if (!this.diagram) {
+      console.log('❌ Diagrama não inicializado');
+      return;
+    }
 
+    const selectedNode = this.diagram.selection.first();
+  
+    if (!(selectedNode instanceof go.Node)) {
+      console.log('❌ Nenhum node selecionado');
+      return;
+    }
 
+    const nodeData = selectedNode.data;
+    if (!nodeData || !nodeData.key) {
+      console.log('❌ Node sem dados válidos');
+      return;
+    }
 
+    let lado = ''
 
+    console.log('🔄 === FUNÇÃO ESPELHAR DISPARADA ===', nodeData.key);
 
+    const bocaNumber = nodeData.key.replace('Boca', '');
 
+    const ldValue = this.VetorBocas[0][`LD${bocaNumber}` as keyof typeof this.VetorBocas[0]]; 
 
+    console.log('🔄 === FUNÇÃO ESPELHAR BOCA:', bocaNumber);
 
+    if (ldValue === "D") {lado='E'} else {lado='D'}
+        
+    this.UpdateBCLadoService.atualizar(lado, bocaNumber).subscribe();
 
+    setTimeout(() => {this.redesenharDiagrama();},500)
 
-
-
-
+  }
 
 
 }

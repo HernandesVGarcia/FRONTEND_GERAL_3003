@@ -34,6 +34,8 @@ export class Cabo12FNacDComponent implements OnInit {
   // Método para obter a definição do nodeTemplate
   getNodeTemplate() {
     return new go.Node(go.Panel.Spot)
+
+      
       .add(
         new go.Shape("RoundedRectangle", {
           fill: "	#666666", 
@@ -43,6 +45,8 @@ export class Cabo12FNacDComponent implements OnInit {
           .bind("width", "width")
           .bind("height", "height")
       )
+
+      
       .add(new go.TextBlock("", {  // texto inicial vazio
         name: "LABEL",  // nome para referência
         font: "15px sans-serif",
@@ -52,10 +56,15 @@ export class Cabo12FNacDComponent implements OnInit {
         alignmentFocus: go.Spot.Left,
         stroke: "black"
       })
+
+      
       .bind("text", "labelText")  // bind com a propriedade labelText do node data
     )
       .add(
         new go.Panel(go.Panel.Position)
+
+        
+
           .add(
             // Retângulo verde superior - agora no lado esquerdo
             new go.Shape("RoundedRectangle", {
