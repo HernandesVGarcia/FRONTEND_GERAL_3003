@@ -4,13 +4,16 @@ import { Cabo_tipo } from '../modelo/Cabo_tipo';
 import { firstValueFrom } from 'rxjs';
 import { timeout, retry } from 'rxjs/operators';
 import { AuthService } from '../servico/auth.service';
+import { environment } from '../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class Cabo_TipoService {
+
+  private baseUrl: string = environment.apiUrlAbsolute;
   
-  url: string = 'https://www.fiberworks-quantum.com:3001/tipo_cabo'
+  //url: string = 'https://www.fiberworks-quantum.com:3001/tipo_cabo'
   //===============================================
   private readonly TIMEOUT = 10000; // 10 segundos
   private readonly RETRY_ATTEMPTS = 3;
@@ -26,6 +29,7 @@ export class Cabo_TipoService {
    */
   async selecionarAsync(id_meta_cabo: number): Promise<Cabo_tipo[]> {
     try {
+      const route = `/tipo_cabo`;
       const token = this.authService.getToken();
       const headers = new HttpHeaders()
         .set('Content-Type', 'application/json')
@@ -34,12 +38,14 @@ export class Cabo_TipoService {
       const body = {
         id_meta: id_meta_cabo,
       };
+
+      const url = `${this.baseUrl}${route}`; 
       
-      console.log(`Enviando requisição para ${this.url} com id_meta=${id_meta_cabo}`);
+      console.log(`Enviando requisição para ${url} com id_meta=${id_meta_cabo}`);
       
       // Convertendo Observable para Promise usando firstValueFrom
       const response = await firstValueFrom(
-        this.http.post<any>(this.url, body, { headers }).pipe(
+        this.http.post<any>(url, body, { headers }).pipe(
           timeout(this.TIMEOUT),
           retry(this.RETRY_ATTEMPTS)
         )
@@ -91,6 +97,7 @@ export class Cabo_TipoService {
    * Método original que retorna Observable (mantido para compatibilidade)
    */
   selecionar(id_meta_cabo: number) {
+    const route = `/tipo_cabo`;
     const token = this.authService.getToken();
     const headers = new HttpHeaders()
       .set('Content-Type', 'application/json')
@@ -99,8 +106,10 @@ export class Cabo_TipoService {
     const body = {
       id_meta: id_meta_cabo,
     };
+
+    const url = `${this.baseUrl}${route}`;
     
-    return this.http.post<Cabo_tipo[]>(this.url, body, { headers }).pipe(
+    return this.http.post<Cabo_tipo[]>(url, body, { headers }).pipe(
       timeout(this.TIMEOUT),
       retry(this.RETRY_ATTEMPTS)
     );

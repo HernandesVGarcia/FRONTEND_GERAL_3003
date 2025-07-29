@@ -4,6 +4,8 @@ import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http
 import { Observable, throwError } from 'rxjs';
 import { retry, timeout, catchError } from 'rxjs/operators';
 import { AuthService } from '../servico/auth.service';
+import { environment } from '../environments/environment';
+
 
 export interface UpdateAngleResponse {
   response: any;
@@ -15,8 +17,8 @@ export interface UpdateAngleResponse {
   providedIn: 'root'
 })
 export class UpdateBocaAngleService {
-
-  url: string = 'https://www.fiberworks-quantum.com:3001/update_bocaAngle'
+  private baseUrl: string = environment.apiUrlAbsolute; 
+  //url: string = 'https://www.fiberworks-quantum.com:3001/update_bocaAngle'
   private readonly TIMEOUT = 10000;
   private readonly RETRY_ATTEMPTS = 2;
   
@@ -27,6 +29,7 @@ export class UpdateBocaAngleService {
   }
      
   atualizar(ROTI: number, BC: number): Observable<UpdateAngleResponse> {
+    const route = `/update_bocaAngle`;
     const token = this.authService.getToken();
     const idmetacx = this.authService.getIDmetaCaixa();
     
@@ -47,8 +50,10 @@ export class UpdateBocaAngleService {
       ID_META: parseInt(idmetacx.toString()),
       ROT: Math.round(ROTI)
     };
+
+    const url = `${this.baseUrl}${route}`; 
   
-    return this.http.post<UpdateAngleResponse>(this.url, body, { headers }).pipe(
+    return this.http.post<UpdateAngleResponse>(url, body, { headers }).pipe(
       timeout(this.TIMEOUT),
       retry(this.RETRY_ATTEMPTS),
       catchError(this.handleError)

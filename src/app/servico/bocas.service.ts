@@ -4,6 +4,7 @@ import {Bocas} from '../modelo/Bocas';
 import {Observable, throwError } from 'rxjs';
 import { retry, timeout, catchError } from 'rxjs/operators';
 import { AuthService } from '../servico/auth.service';
+import { environment } from '../environments/environment';
 
 
 @Injectable({
@@ -11,11 +12,14 @@ import { AuthService } from '../servico/auth.service';
 })
 export class BocasService {
 
-  url:string = 'https://www.fiberworks-quantum.com:3001/bocas'
+  private baseUrl: string = environment.apiUrlAbsolute;
+
+  //url:string = 'https://www.fiberworks-quantum.com:3001/bocas'
     private readonly TIMEOUT = 10000; // 10 segundos
     private readonly RETRY_ATTEMPTS = 2;
   
     constructor(
+      
       private http:HttpClient,
       private authService : AuthService) {
           this.authService.refreshToken();
@@ -25,6 +29,8 @@ export class BocasService {
     // Método para Selecionar Caixa
     
     selecionar():Observable<Bocas[]>{
+      
+      const route = `/bocas`;
       const token = this.authService.getToken();
       const idcidade = this.authService.getIdCity();
       const idmetacx = this.authService.getIDmetaCaixa();
@@ -45,9 +51,11 @@ export class BocasService {
           idcidades: idcidade,
           idmeta:idmetacx
         };
+
+      const url = `${this.baseUrl}${route}`;  
   
   
-      return this.http.post<Bocas[]>(this.url,body,{ headers }).pipe(
+      return this.http.post<Bocas[]>(url,body,{ headers }).pipe(
         
         timeout(this.TIMEOUT),
         retry(this.RETRY_ATTEMPTS),

@@ -4,6 +4,7 @@ import {Caixa} from '../modelo/Caixa';
 import {Observable,throwError} from 'rxjs';
 import {catchError, retry, timeout } from 'rxjs/operators';
 import { AuthService } from '../servico/auth.service';
+import { environment } from '../environments/environment';
 
 
 console.log('inicialização do app-lista-caixa2-ok')
@@ -24,9 +25,9 @@ export class CaixaService {
   private readonly RETRY_ATTEMPTS = 2;
   //private readonly TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZF91c3VhcmlvIjoxMiwiZW1haWwiOiJzdXBvcnRlQGZpYmVyd29ya3MuY29tLmJyIiwiaWF0IjoxNzQyNDE1MDEzLCJleHAiOjE3NDI0MTg2MTN9.ATIDLq_4ZmMDx7rqsX-0ZSEYQOD-nuPh78Lyw9A4ECg';
 
+  private baseUrl: string = environment.apiUrlAbsolute;
   
-  
-  url:string = 'https://www.fiberworks-quantum.com:3001/caixas'
+  //url:string = 'https://www.fiberworks-quantum.com:3001/caixas'
 
   constructor(
     private http:HttpClient,
@@ -40,6 +41,7 @@ export class CaixaService {
   
   selecionar():Observable<Caixa[]>{
     //return this.http.get<Caixa[]>(this.url);
+    const route = `/caixas`;
     const token = this.authService.getToken();
     const idcidade = this.authService.getIdCity();
     
@@ -58,7 +60,9 @@ export class CaixaService {
       idCIDADES: idcidade
     };
 
-    return this.http.post<Caixa[]>(this.url,body,{ headers }).pipe(
+    const url = `${this.baseUrl}${route}`; 
+
+    return this.http.post<Caixa[]>(url,body,{ headers }).pipe(
       timeout(this.TIMEOUT),
       retry(this.RETRY_ATTEMPTS),
       catchError(this.handleError)

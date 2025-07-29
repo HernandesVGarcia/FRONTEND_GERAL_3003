@@ -4,6 +4,7 @@ import {Cto} from '../modelo/Cto';
 import {Observable, throwError } from 'rxjs';
 import { retry, timeout, catchError } from 'rxjs/operators';
 import { AuthService } from '../servico/auth.service';
+import { environment } from '../environments/environment';
 
 
 
@@ -13,8 +14,8 @@ import { AuthService } from '../servico/auth.service';
 })
 
 export class CtoService {
-  
-  url:string = 'https://www.fiberworks-quantum.com:3001/ctos'
+  private baseUrl: string = environment.apiUrlAbsolute;
+  //url:string = 'https://www.fiberworks-quantum.com:3001/ctos'
   private readonly TIMEOUT = 10000; // 10 segundos
   private readonly RETRY_ATTEMPTS = 2;
 
@@ -28,6 +29,7 @@ export class CtoService {
   // Método para Selecionar Caixa
   
   selecionar():Observable<Cto[]>{
+    const route = `/ctos`;
     const token = this.authService.getToken();
     const idcidade = this.authService.getIdCity();
 
@@ -47,8 +49,10 @@ export class CtoService {
         idCIDADES: idcidade
       };
 
+      const url = `${this.baseUrl}${route}`; 
 
-    return this.http.post<Cto[]>(this.url,body,{ headers }).pipe(
+
+    return this.http.post<Cto[]>(url,body,{ headers }).pipe(
       timeout(this.TIMEOUT),
       retry(this.RETRY_ATTEMPTS),
       catchError(this.handleError)

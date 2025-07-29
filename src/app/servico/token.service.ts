@@ -4,7 +4,7 @@ import {Token} from '../modelo/Token';
 import {Observable, throwError} from 'rxjs';
 import { retry, timeout, catchError} from 'rxjs/operators';
 //import { AuthService } from '../servico/auth.service';
-
+import { environment } from '../environments/environment';
 
 console.log('inicialização do app-lista-caixa2-ok')
 
@@ -17,8 +17,8 @@ console.log('inicialização do app-lista-caixa2-ok')
 export class TokenService {
 
   
-  
-  url:string = 'https://www.fiberworks-quantum.com:3001/usuarios/login'
+  private baseUrl: string = environment.apiUrlAbsolute; 
+  //url:string = 'https://www.fiberworks-quantum.com:3001/usuarios/login'
   //===============================================
   private readonly TIMEOUT = 10000; // 10 segundos
   private readonly RETRY_ATTEMPTS = 3;
@@ -33,6 +33,7 @@ export class TokenService {
  
   
   selecionar(usuario:string, senha:string):Observable<Token[]>{
+    const route = `/usuarios/login`;
     //const token = this.authService.getToken();
     const headers = new HttpHeaders()
     .set('Content-Type', 'application/json')
@@ -42,8 +43,10 @@ export class TokenService {
       chave: usuario,
       senha: senha
     };
+
+    const url = `${this.baseUrl}${route}`; 
     
-    return this.http.post<Token[]>(this.url, body,{headers}).pipe(
+    return this.http.post<Token[]>(url, body,{headers}).pipe(
       timeout(this.TIMEOUT),
       retry(this.RETRY_ATTEMPTS),
       catchError(this.handleError)

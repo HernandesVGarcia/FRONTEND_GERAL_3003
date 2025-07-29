@@ -5,6 +5,7 @@ import {Splitter} from '../modelo/Splitter';
 import {Observable, throwError } from 'rxjs';
 import { retry, timeout, catchError, map } from 'rxjs/operators';
 import { AuthService } from '../servico/auth.service';
+import { environment } from '../environments/environment';
 
 
 @Injectable({
@@ -12,7 +13,8 @@ import { AuthService } from '../servico/auth.service';
 })
 export class SplitterService {
 
-  url:string = 'https://www.fiberworks-quantum.com:3001/splitter'
+  private baseUrl: string = environment.apiUrlAbsolute; 
+  //url:string = 'https://www.fiberworks-quantum.com:3001/splitter'
     private readonly TIMEOUT = 10000; // 10 segundos
     private readonly RETRY_ATTEMPTS = 2;
   
@@ -26,6 +28,7 @@ export class SplitterService {
     // Método para Selecionar Caixa
     
     selecionar():Observable<Splitter[]>{
+      const route = `/splitter`;
       const token = this.authService.getToken();
       //const idcidade = this.authService.getIdCity();
       const idmetacx = this.authService.getIDmetaCaixa();
@@ -45,10 +48,12 @@ export class SplitterService {
         const body = {
           ID_META_CAIXA:idmetacx
         };
+
+        const url = `${this.baseUrl}${route}`; 
   
   
       //return this.http.post<Splitter[]>(this.url,body,{ headers }).pipe(
-      return this.http.post<{response: Splitter[]}>(this.url, body, { headers }).pipe(
+      return this.http.post<{response: Splitter[]}>(url, body, { headers }).pipe(
         
         timeout(this.TIMEOUT),
         retry(this.RETRY_ATTEMPTS),

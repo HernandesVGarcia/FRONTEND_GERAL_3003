@@ -5,6 +5,7 @@ import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http
 import { Observable, throwError } from 'rxjs';
 import { retry, timeout, catchError } from 'rxjs/operators';
 import { AuthService } from '../servico/auth.service';
+import { environment } from '../environments/environment';
 
 export interface UpdateLadoResponse {
   response: any;
@@ -16,8 +17,8 @@ export interface UpdateLadoResponse {
   providedIn: 'root'
 })
 export class UpdateBocaLadoService {
-
-  url: string = 'https://www.fiberworks-quantum.com:3001/update_bocaLado'
+  private baseUrl: string = environment.apiUrlAbsolute; 
+  //url: string = 'https://www.fiberworks-quantum.com:3001/update_bocaLado'
   private readonly TIMEOUT = 10000;
   private readonly RETRY_ATTEMPTS = 2;
   
@@ -28,6 +29,7 @@ export class UpdateBocaLadoService {
   }
      
   atualizar(LAD: string, BC: number): Observable<UpdateLadoResponse> {
+    const route = `/update_bocaLado`;
     const token = this.authService.getToken();
     const idmetacx = this.authService.getIDmetaCaixa();
     
@@ -48,8 +50,10 @@ export class UpdateBocaLadoService {
       ID_META: parseInt(idmetacx.toString()),
       LADO: LAD
     };
+
+    const url = `${this.baseUrl}${route}`; 
   
-    return this.http.post<UpdateLadoResponse>(this.url, body, { headers }).pipe(
+    return this.http.post<UpdateLadoResponse>(url, body, { headers }).pipe(
       timeout(this.TIMEOUT),
       retry(this.RETRY_ATTEMPTS),
       catchError(this.handleError)

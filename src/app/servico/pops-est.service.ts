@@ -4,6 +4,7 @@ import {PopsEst} from '../modelo/popsEst';
 import {Observable, throwError } from 'rxjs';
 import { retry, timeout, catchError } from 'rxjs/operators';
 import { AuthService } from '../servico/auth.service';
+import { environment } from '../environments/environment';
 
 
 
@@ -13,8 +14,9 @@ import { AuthService } from '../servico/auth.service';
 })
 
 export class PopsEstService {
-  
-  url:string = 'https://www.fiberworks-quantum.com:3001/pops_coordenadas'
+
+  private baseUrl: string = environment.apiUrlAbsolute; 
+  //url:string = 'https://www.fiberworks-quantum.com:3001/pops_coordenadas'
   private readonly TIMEOUT = 10000; // 10 segundos
   private readonly RETRY_ATTEMPTS = 2;
 
@@ -28,6 +30,7 @@ export class PopsEstService {
   // Método para Selecionar Caixa
   
   selecionar():Observable<PopsEst[]>{
+    const route = `/pops_coordenadas`;
     const token = this.authService.getToken();
     const idcidade = this.authService.getIdCity();
 
@@ -48,8 +51,10 @@ export class PopsEstService {
 
       };
 
+      const url = `${this.baseUrl}${route}`; 
 
-    return this.http.post<PopsEst[]>(this.url,body,{ headers }).pipe(
+
+    return this.http.post<PopsEst[]>(url,body,{ headers }).pipe(
       timeout(this.TIMEOUT),
       retry(this.RETRY_ATTEMPTS),
       catchError(this.handleError)

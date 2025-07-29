@@ -4,12 +4,14 @@ import {Cidades} from '../modelo/Cidades';
 import {Observable, throwError} from 'rxjs';
 import { retry, timeout, catchError} from 'rxjs/operators';
 import { AuthService } from '../servico/auth.service';
+import { environment } from '../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CidadesService {
-url:string = 'https://www.fiberworks-quantum.com:3001/cidades'
+private baseUrl: string = environment.apiUrlAbsolute;  
+//url:string = 'https://www.fiberworks-quantum.com:3001/cidades'
   //===============================================
   private readonly TIMEOUT = 10000; // 10 segundos
   private readonly RETRY_ATTEMPTS = 3;
@@ -24,6 +26,7 @@ url:string = 'https://www.fiberworks-quantum.com:3001/cidades'
  
   
   selecionar():Observable<Cidades[]>{
+    const route = `/cidades`;
     const token = this.authService.getToken();
     const polo = this.authService.getPolo();
     const headers = new HttpHeaders()
@@ -34,8 +37,10 @@ url:string = 'https://www.fiberworks-quantum.com:3001/cidades'
       POLO: polo
       
     };
+
+    const url = `${this.baseUrl}${route}`; 
     
-    return this.http.post<Cidades[]>(this.url, body,{headers}).pipe(
+    return this.http.post<Cidades[]>(url, body,{headers}).pipe(
       timeout(this.TIMEOUT),
       retry(this.RETRY_ATTEMPTS),
       catchError(this.handleError)

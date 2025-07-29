@@ -4,6 +4,7 @@ import {Splitter} from '../modelo/Splitter';
 import {Observable, throwError,tap } from 'rxjs';
 import { retry, timeout, catchError } from 'rxjs/operators';
 import { AuthService } from '../servico/auth.service';
+import { environment } from '../environments/environment';
 
 export interface UpdateCoordenadasResponse {
   response: any;
@@ -16,8 +17,8 @@ export interface UpdateCoordenadasResponse {
   providedIn: 'root'
 })
 export class UpdateSplitterXYService {
-
-  url:string = 'https://www.fiberworks-quantum.com:3001/update_splitterxy'
+  private baseUrl: string = environment.apiUrlAbsolute; 
+  //url:string = 'https://www.fiberworks-quantum.com:3001/update_splitterxy'
     private readonly TIMEOUT = 10000; // 10 segundos
     private readonly RETRY_ATTEMPTS = 2;
   
@@ -31,13 +32,14 @@ export class UpdateSplitterXYService {
     // Método para Selecionar Caixa
     
     atualizar(BCX:number,BCY:number,IDMETASP:number):Observable<UpdateCoordenadasResponse>{
-      
+      const route = `/update_splitterxy`; 
+      const url = `${this.baseUrl}${route}`;
       const token = this.authService.getToken();
       //const idcidade = this.authService.getIdCity();
       // const idmetacx = this.authService.getIDmetaCaixa();
       //console.log('X:' , BCX, 'Y:', BCY, 'BOCA:', BC, 'CAIXA:',idmetacx )
     console.log('=== INÍCIO DA REQUISIÇÃO ===');
-    console.log('URL:', this.url);
+    console.log('URL:', url);
     console.log('Token:', token ? 'Token presente' : 'Token ausente');
     //console.log('ID Meta Caixa:', idmetacx);
     console.log('Coordenadas - X:', BCX, 'Y:', BCY, 'IDMETASP:', IDMETASP);
@@ -74,7 +76,7 @@ export class UpdateSplitterXYService {
     console.log('=== ENVIANDO REQUISIÇÃO ===');
   
   
-      return this.http.post<UpdateCoordenadasResponse>(this.url,body,{ headers }).pipe(
+      return this.http.post<UpdateCoordenadasResponse>(url,body,{ headers }).pipe(
         tap((response: any) => {
         console.log('=== RESPOSTA RECEBIDA ===');
         console.log('Resposta da API:', response);

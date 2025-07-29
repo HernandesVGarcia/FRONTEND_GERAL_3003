@@ -4,6 +4,7 @@ import {Cabos12f} from '../modelo/Cabos12f';
 import {Observable, throwError} from 'rxjs';
 import { retry, timeout, catchError} from 'rxjs/operators';
 import { AuthService } from '../servico/auth.service';
+import { environment } from '../environments/environment';
 
 
 //console.log('inicialização do app-lista-caixa2-ok')
@@ -16,9 +17,9 @@ import { AuthService } from '../servico/auth.service';
 
 export class CaboService {
 
+  private baseUrl: string = environment.apiUrlAbsolute;
   
-  
-  url:string = 'https://www.fiberworks-quantum.com:3001/cabos'
+  //url:string = 'https://www.fiberworks-quantum.com:3001/cabos'
   //===============================================
   private readonly TIMEOUT = 10000; // 10 segundos
   private readonly RETRY_ATTEMPTS = 3;
@@ -33,6 +34,7 @@ export class CaboService {
  
   
   selecionar(idCidade:number, capacidade:number):Observable<Cabos12f[]>{
+    const route = `/cabos`;
     const token = this.authService.getToken();
     const headers = new HttpHeaders()
     .set('Content-Type', 'application/json')
@@ -42,8 +44,10 @@ export class CaboService {
       idCIDADES: idCidade,
       capacidade: capacidade
     };
+
+    const url = `${this.baseUrl}${route}`; 
     
-    return this.http.post<Cabos12f[]>(this.url, body,{headers}).pipe(
+    return this.http.post<Cabos12f[]>(url, body,{headers}).pipe(
       timeout(this.TIMEOUT),
       retry(this.RETRY_ATTEMPTS),
       catchError(this.handleError)
