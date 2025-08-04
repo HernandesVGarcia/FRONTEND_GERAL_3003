@@ -13,6 +13,7 @@ import { ListaCabos24fComponent} from '../lista-cabos24f/lista-cabos24f.componen
 import { ListaCabos36fComponent} from '../lista-cabos36f/lista-cabos36f.component';
 import { ListaCabos48fComponent} from '../lista-cabos48f/lista-cabos48f.component';
 import { ListaCabos72fComponent} from '../lista-cabos72f/lista-cabos72f.component';
+import { ListaCabos144fComponent} from '../lista-cabos144f/lista-cabos144f.component';
 import { ListaPopsESTComponent} from '../lista-pops-est/lista-pops-est.component';
 import { ListaCondominiosComponent} from '../lista-condominios/lista-condominios.component';
 import { Cabos1f } from '../modelo/Cabos1f';
@@ -25,6 +26,7 @@ import { Cabos24f } from '../modelo/Cabos24f';
 import { Cabos36f } from '../modelo/Cabos36f';
 import { Cabos48f } from '../modelo/Cabos48f';
 import { Cabos72f } from '../modelo/Cabos72f';
+import { Cabos144f } from '../modelo/Cabos144f';
 import { Caixa} from '../modelo/Caixa';
 import { Cto} from '../modelo/Cto';
 import { PopsEst} from '../modelo/popsEst'
@@ -46,7 +48,8 @@ import { Condominios} from '../modelo/Condominios'
     ListaCabos24fComponent,
     ListaCabos36fComponent,
     ListaCabos48fComponent,
-    ListaCabos72fComponent,   
+    ListaCabos72fComponent,
+    ListaCabos144fComponent,
     ListaCabos8fComponent, 
     ListaCabos6fComponent,
     ListaCabos4fComponent,
@@ -73,6 +76,7 @@ export class FiberMapComponent {
   cabos36f: Cabos36f []=[];
   cabos48f: Cabos48f []=[];
   cabos72f: Cabos72f []=[];
+  cabos144f: Cabos144f []=[];
    
 
   onCondominiosSelecionada(condominios: Condominios[]) { 
@@ -137,6 +141,11 @@ export class FiberMapComponent {
 
   onCabos72fSelecionada(cabos: Cabos72f[]) {
   this.cabos72f = cabos;
+
+}
+
+onCabos144fSelecionada(cabos: Cabos144f[]) {
+  this.cabos144f = cabos;
 
 }
 

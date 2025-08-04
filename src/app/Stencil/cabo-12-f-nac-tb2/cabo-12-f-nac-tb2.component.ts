@@ -4,8 +4,8 @@ import * as go from 'gojs';
 
 @Component({
   selector: 'app-cabo-12f-nac_tb2',
-  templateUrl: './cabo-12-f-nac_tb2.component.html',
-  styleUrls: ['./cabo-12-f-nac_tb2.component.css'],
+  templateUrl: './cabo-12-f-nac-tb2.component.html',
+  styleUrls: ['./cabo-12-f-nac-tb2.component.css'],
   standalone: true,
   imports: [CommonModule]
 })

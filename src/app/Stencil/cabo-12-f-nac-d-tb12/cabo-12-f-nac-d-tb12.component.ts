@@ -18,7 +18,7 @@ export class Cabo12FNacDTb12Component implements OnInit {
   height: number = 300;
   
   // Define as cores para os ports
-  portColors = ["#006400", "#FFD700", "#F5F5F5", "#0000CD", "#cc1f36", "#7a68d2","brown","pink","black","gray","orange","cyan"];
+  portColors = ["#006400", "#FFD700", "#FFFFFF", "#0000CD", "#cc1f36", "#7a68d2","brown","pink","black","gray","orange","cyan"];
   
   // Método para obter a definição do modelo para usar no GoJS
   getModelDefinition() {

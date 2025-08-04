@@ -4,8 +4,8 @@ import * as go from 'gojs';
 
 @Component({
   selector: 'app-cabo-12f-nac',
-  templateUrl: './cabo-12-f-nac.component.html',
-  styleUrls: ['./cabo-12-f-nac.component.css'],
+  templateUrl: './cabo-12-f-nac-tb12.component.html',
+  styleUrls: ['./cabo-12-f-nac-tb12.component.css'],
   standalone: true,
   imports: [CommonModule]
 })
@@ -18,7 +18,7 @@ export class Cabo12FNacTb12Component implements OnInit {
   height: number = 300;
 
   // Define as cores para os ports
-  portColors = ["#006400", "#FFD700", "#F5F5F5", "#0000CD", "#cc1f36", "#7a68d2","brown","pink","black","gray","orange","cyan"];
+  portColors = ["#006400", "#FFD700", "#FFFFFF", "#0000CD", "#cc1f36", "#7a68d2","brown","pink","black","gray","orange","cyan"];
   
   // Método para obter a definição do modelo para usar no GoJS
   getModelDefinition() {

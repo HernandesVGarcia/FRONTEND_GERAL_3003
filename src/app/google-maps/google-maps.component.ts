@@ -11,6 +11,7 @@ import { Cabos24f } from '../modelo/Cabos24f';
 import { Cabos36f } from '../modelo/Cabos36f';
 import { Cabos48f } from '../modelo/Cabos48f';
 import { Cabos72f } from '../modelo/Cabos72f';
+import { Cabos144f } from '../modelo/Cabos144f';
 import { Caixa } from '../modelo/Caixa';
 import { Cto } from '../modelo/Cto';
 import { PopsEst } from '../modelo/popsEst';
@@ -45,6 +46,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges {
   @Input() destinoCabos36f: Cabos36f[] = [];
   @Input() destinoCabos48f: Cabos48f[] = [];
   @Input() destinoCabos72f: Cabos72f[] = [];
+  @Input() destinoCabos144f: Cabos144f[] = [];
 
   isGoJSModalOpen = false;
  // private isMapFullyInitialized = false;
@@ -106,6 +108,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges {
   polylinePaths36f: google.maps.LatLngLiteral[][] = [];
   polylinePaths48f: google.maps.LatLngLiteral[][] = [];
   polylinePaths72f: google.maps.LatLngLiteral[][] = [];
+  polylinePaths144f: google.maps.LatLngLiteral[][] = [];
 
   // 🔥 INFOWINDOW: Array para armazenar as polylines 6f com InfoWindow
   // Arrays para armazenar as polylines criadas programaticamente
@@ -119,6 +122,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges {
   polylines36f: google.maps.Polyline[] = [];
   polylines48f: google.maps.Polyline[] = [];
   polylines72f: google.maps.Polyline[] = [];
+  polylines144f: google.maps.Polyline[] = [];
 
   // Arrays para armazenar os InfoWindows
   infoWindows1f: google.maps.InfoWindow[] = [];
@@ -131,6 +135,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges {
   infoWindows36f: google.maps.InfoWindow[] = [];
   infoWindows48f: google.maps.InfoWindow[] = [];
   infoWindows72f: google.maps.InfoWindow[] = [];
+  infoWindows144f: google.maps.InfoWindow[] = [];
 
   
   // Propriedades que estavam faltando
@@ -532,6 +537,16 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
       // Criar polylines programaticamente quando os dados mudarem
       setTimeout(() => {
         this.createCabo72fPolylines();
+      }, 1);
+      
+    }   
+
+    if (changes['destinoCabos144f'] && changes['destinoCabos144f'].currentValue) {
+      console.log('Atualizando polilinhas de cabos 144f ',this.destinoCabos144f);
+      this.updatePolylinesCabos144f();
+      // Criar polylines programaticamente quando os dados mudarem
+      setTimeout(() => {
+        this.createCabo144fPolylines();
       }, 1);
       
     }   
@@ -1292,6 +1307,45 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
     }
   }
 
+  private updatePolylinesCabos144f() {
+
+    const cabo_layer= this.authService.getcabos_layer();
+    if (cabo_layer =='0') return;
+
+
+    if (!this.destinoCabos144f?.length) return;
+    
+    try {
+      this.polylinePaths144f = [];
+      
+      this.destinoCabos144f.forEach(cabo => {
+        try {
+          if (!cabo.GOOGLE_LATLNG) return;
+          //console.log('valor de Google_latlng antes da conversão: ', cabo.GOOGLE_LATLNG);
+          
+          const coords = this.convertStringToCoords(cabo.GOOGLE_LATLNG);
+          
+          if (coords.length > 0) {
+            this.polylinePaths144f.push(coords);
+            //console.log(`Cabo 72f ${cabo.id_meta} processado com sucesso:`, coords);
+          }
+        } catch (e) {
+          console.error(`Erro ao processar cabo ${cabo.id_meta}:`, e);
+        }
+      });
+
+      if (this.polylinePaths144f.length > 0) {
+        const firstPoint = this.polylinePaths144f[0][0];
+        
+      }
+
+      console.log(`Total de ${this.polylinePaths144f.length} cabos processados`);
+    } catch (e) {
+      console.error('Erro ao processar cabos:', e);
+      this.polylinePaths144f = [];
+    }
+  }
+
 
 
 
@@ -1709,6 +1763,11 @@ closeGoJSModal() {
   // Método para criar polylines 72f programaticamente
   private createCabo72fPolylines(): void {
     this.createCaboPolylines('72f', this.destinoCabos72f, this.polylinePaths72f, this.polylines72f, this.infoWindows72f, this.polylineOptions72f);
+  } 
+
+  // Método para criar polylines 72f programaticamente
+  private createCabo144fPolylines(): void {
+    this.createCaboPolylines('144f', this.destinoCabos144f, this.polylinePaths144f, this.polylines144f, this.infoWindows144f, this.polylineOptions144f);
   } 
 
  
