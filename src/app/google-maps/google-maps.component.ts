@@ -14,6 +14,7 @@ import { Cabos72f } from '../modelo/Cabos72f';
 import { Cabos144f } from '../modelo/Cabos144f';
 import { Caixa } from '../modelo/Caixa';
 import { Cto } from '../modelo/Cto';
+import { Cto_SP } from '../modelo/Cto_SP';
 import { PopsEst } from '../modelo/popsEst';
 import { Condominios } from '../modelo/Condominios';
 
@@ -22,6 +23,7 @@ import { ChangeDetectorRef } from '@angular/core'; /// ============novo
 import { GoJSDemoComponent } from '../gojs-demo/gojs-demo.component';
 import { AuthService } from '../servico/auth.service';
 import { animate, animation } from '@angular/animations';
+//import { Cto_SP } from '../modelo/Cto_SP';
 //import { GoogleInfoWindowComponent } from '../google-infowindow/google-infowindow.component';
 
 @Component({
@@ -36,6 +38,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges {
   @Input() destinoPopsEst: PopsEst[] = [];
   @Input() destino: Caixa[] = [];
   @Input() destinoCTO: Cto[] = [];
+  @Input() destinoCTOSP: Cto_SP[] = [];
   @Input() destinoCabos1f: Cabos1f[] = [];
   @Input() destinoCabos2f: Cabos2f[] = [];
   @Input() destinoCabos4f: Cabos4f[] = [];
@@ -95,9 +98,11 @@ export class GoogleMapsComponent implements OnInit, OnChanges {
   markerPopsEst: google.maps.Marker[] = [];
   markerCaixas: google.maps.Marker[] = [];
   markerCtos:google.maps.Marker[]=[];
+  markerCtosSP:google.maps.Marker[]=[];
   //markerCtos: google.maps.LatLngLiteral[] = [];
   markerOptions: google.maps.MarkerOptions[] = [];
   markerOptionsCTO: google.maps.MarkerOptions[] = [];
+  markerOptionsCTOSP: google.maps.MarkerOptions[] = [];
   polylinePaths1f: google.maps.LatLngLiteral[][] = [];
   polylinePaths2f: google.maps.LatLngLiteral[][] = [];
   polylinePaths4f: google.maps.LatLngLiteral[][] = [];
@@ -145,6 +150,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges {
 
 private ZOOM_LEVEL_CAIXAS = 15; // Caixas CEO visíveis em zoom >= 14
 private ZOOM_LEVEL_CTOS = 16;   // CTOs visíveis em zoom >= 16
+private ZOOM_LEVEL_CTOSSP = 16;   // CTOs visíveis em zoom >= 16
 private ZOOM_LEVEL_POPS = 14;   // CTOs visíveis em zoom >= 13
 private ZOOM_LEVEL_CONDOMINIOS = 16;   // CTOs visíveis em zoom >= 16
 
@@ -166,6 +172,7 @@ private map?: (google.maps.Map);
  // Propriedade para controlar o limiar de densidade
  private MAX_VISIBLE_MARKERS_CEO = 200; // Ajuste este valor conforme necessário
  private MAX_VISIBLE_MARKERS_CTO = 150; // Ajuste este valor conforme necessário
+ private MAX_VISIBLE_MARKERS_CTOSP = 150; // Ajuste este valor conforme necessário
  private MAX_VISIBLE_MARKERS_POPs = 30; // Ajuste este valor conforme necessário
  private MAX_VISIBLE_MARKERS_CONDOMINIOS = 100; // Ajuste este valor conforme necessário
  
@@ -439,6 +446,11 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
       this.updateMarkersCTO();
     }
 
+    if (changes['destinoCTOSP'] && changes['destinoCTOSP'].currentValue) {
+      console.log('Atualizando marcadores de CTOs COM SP',this.destinoCTOSP);
+      this.updateMarkersCTOSP();
+    }
+
     if (changes['destinoCabos1f'] && changes['destinoCabos1f'].currentValue) {
       console.log('Atualizando polilinhas de cabos 1f ',this.destinoCabos1f);
       this.updatePolylinesCabos1f();
@@ -565,6 +577,13 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
   getVisibleMarkerCtos(): google.maps.Marker[] {
     if (this.currentZoom >= this.ZOOM_LEVEL_CTOS) {
       return this.markerCtos;
+    }
+    return [];
+  }  
+
+  getVisibleMarkerCtosSP(): google.maps.Marker[] {
+    if (this.currentZoom >= this.ZOOM_LEVEL_CTOSSP) {
+      return this.markerCtosSP;
     }
     return [];
   }  
@@ -734,9 +753,10 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
               fontSize: '12px'
             } as google.maps.MarkerLabel,
             icon: {
-              url: '/assets/caixa_plp_15.png',
+              //url: '/assets/caixa_plp_15.png',
+              url: '/assets/fosc ama.png',
               labelOrigin: new google.maps.Point(70, 10),
-              scaledSize: new google.maps.Size(15, 30)
+              scaledSize: new google.maps.Size(20, 40)
             },
             visible: this.currentZoom >= this.ZOOM_LEVEL_CAIXAS
             ///visible:false
@@ -764,7 +784,7 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
           //});
           // substituido pela funçõa addmarkereventlistener ************************************************
 
-          this.addMarkerEventListeners(marker, false);
+          this.addMarkerEventListeners(marker, false,false);
           
           this.markerCaixas.push(marker);
         });
@@ -817,7 +837,7 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
         icon: {
           url: '/assets/CTO80.png',
           labelOrigin: new google.maps.Point(50, 10),
-          scaledSize: new google.maps.Size(10, 15)
+          scaledSize: new google.maps.Size(18, 22)
         },
         visible: this.currentZoom >= this.ZOOM_LEVEL_CTOS
         ///visible: false
@@ -836,7 +856,7 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
         }
       });
 
-      this.addMarkerEventListeners(marker, true);
+      this.addMarkerEventListeners(marker, true, false);
       
       this.markerCtos.push(marker);
     });
@@ -844,6 +864,8 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
       console.log('CTOs atualizados:', this.markerCtos);
     }
   }
+
+  //=============================================CONVERSAO==============================
 
   private convertStringToCoords(coordString: string): google.maps.LatLngLiteral[] {
     try {
@@ -871,6 +893,68 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
       return [];
     }
   }
+
+
+//=====================================função para carregar as CTOs COM SPLITTER na Tela================================
+  private updateMarkersCTOSP() {
+    
+
+      if (this.destinoCTOSP && this.destinoCTOSP.length > 0 && this.map) {
+        this.markerCtosSP.forEach(marker => marker.setMap(null));
+        this.markerCtosSP = [];
+        
+        this.destinoCTOSP.forEach(location => {
+          const position = {
+            lat: Number(location.LAT),
+            lng: Number(location.LONGI)
+          };
+
+    
+
+      const markerOptions: google.maps.MarkerOptions = {
+        position: position,
+        title: location.numero || 'Sem número',
+        draggable: false,
+        label: {
+          text: location.numero || 'S/N',
+          color: 'blue',
+          fontSize: '10px'
+        } as google.maps.MarkerLabel,
+        icon: {
+          url: '/assets/CTOSP.png',
+          labelOrigin: new google.maps.Point(50, 10),
+          scaledSize: new google.maps.Size(18, 22)
+        },
+        visible: this.currentZoom >= this.ZOOM_LEVEL_CTOSSP
+        ///visible: false
+
+      };
+      
+      const marker = new google.maps.Marker(markerOptions);
+      if (this.map) {
+        marker.setMap(this.map);
+      }
+      
+      marker.addListener('dragend', (event: google.maps.MapMouseEvent) => {
+        const index = this.markerCtosSP.indexOf(marker);
+        if (index !== -1) {
+          this.onMarkerDragEnd(event, index, true);
+        }
+      });
+
+      this.addMarkerEventListeners(marker, false,true);
+      
+      this.markerCtosSP.push(marker);
+    });
+      
+      console.log('CTOs COM SPLITTER atualizados:', this.markerCtosSP);
+    }
+  }
+
+  
+
+
+  //==================================================CABOS=====================================
 
   private updatePolylinesCabos1f() {
 
@@ -1502,7 +1586,7 @@ private updateVisibleMarkers() {
           marker.setVisible(true);
 
           // Readicionar os event listeners para garantir que funcionem
-          this.addMarkerEventListeners(marker, false);
+          this.addMarkerEventListeners(marker, false,false);
           //console.log("ADICIONANDO LISTERNER MARKER DLBCLICK")
 
           visibleCaixasCount++;
@@ -1526,7 +1610,7 @@ private updateVisibleMarkers() {
 }
   
 
- const cto_layer= this.authService.getcto_layer(); //----------------- Visibilidade das Caixas ----------------------------
+ const cto_layer= this.authService.getcto_layer(); //----------------- Visibilidade das CTOS SEM SPLITTER ----------------------------
   if (cto_layer == '1') {
   
   // Atualizar visibilidade de CTOs
@@ -1553,6 +1637,36 @@ private updateVisibleMarkers() {
   });
 
   console.log(` CTOs visíveis: ${visibleCTOsCount}`);
+
+  }
+
+  const ctoSP_layer= this.authService.getcto_layer(); //----------------- Visibilidade das CTOS COM SPLITTER----------------------------
+  if (ctoSP_layer == '1') {
+  
+  // Atualizar visibilidade de CTOs
+  let visibleCTOsSPCount = 0;
+  console.log ('atualiza ctos visibles')
+  this.markerCtosSP.forEach(marker => {
+    if (marker) {
+      const position = marker.getPosition();
+      if (position && 
+          bounds.contains(position) && 
+          this.currentZoom >= this.ZOOM_LEVEL_CTOSSP &&
+          visibleCTOsSPCount < this.MAX_VISIBLE_MARKERS_CTOSP) {
+        
+        if (this.map) {marker.setMap(this.map)};//xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+        marker.setVisible(true);
+        visibleCTOsSPCount++;
+      } else {
+        marker.setVisible(false);
+        marker.setMap(null);
+      }
+
+      //console.log ('caixas visiveis', visibleCTOsCount)
+    }
+  });
+
+  console.log(` CTOs COM SP visíveis: ${visibleCTOsSPCount}`);
 
   }
 
@@ -1626,7 +1740,7 @@ private updateVisibleMarkers() {
 
 
 // Novo método para adicionar event listeners a um marcador
-private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = false) {
+private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = false, isCTOSP:boolean = false) {
   // Remover listeners existentes primeiro (caso já existam)
   google.maps.event.clearInstanceListeners(marker);
   
@@ -1635,17 +1749,43 @@ private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = fal
     // Eventos para marcadores de Caixas
     
     marker.addListener('dblclick', (event: google.maps.MapMouseEvent) => {
+      
       if (isCTO) {
       const index = this.markerCtos.indexOf(marker);
       if (index !== -1) {
-        this.onMarkerClick(event, index,true);}}
+        this.onMarkerClick(event, index,true,false);        
+      }}
 
+      else if (isCTOSP) {      
+      const index = this.markerCtosSP.indexOf(marker);
+      if (index !== -1) {
+        this.onMarkerClick(event, index,false,true);
+      }}  
+
+      else {
       const index = this.markerCaixas.indexOf(marker);
       if (index !== -1) {
-        this.onMarkerClick(event, index,false);}
+        this.onMarkerClick(event, index,false,false);} }
+
+        
     });
+
+    /*
+    marker.addListener('dblclick', (event: google.maps.MapMouseEvent) => {
+      console.log('duplo click');
+  if (isCTO) {
+    const index = marker.get('index'); // índice setado na criação
+    this.onMarkerClick(event, index, true);
+  } else if (isCTOSP) {
+    const index = marker.get('index');
+    this.onMarkerClick(event, index, true); // ou false, dependendo do que CTOSP representa
+  } else {
+    const index = marker.get('index');
+    this.onMarkerClick(event, index, false);
+  }
+});
   
-  
+  */
   
   // Evento dragend para ambos tipos de marcadores
 
@@ -1656,7 +1796,12 @@ private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = fal
       if (index !== -1) {
         this.onMarkerDragEnd(event, index, true);
       }
-    } else {
+    } else if(isCTOSP) {
+      const index = this.markerCtosSP.indexOf(marker);
+      if (index !== -1) {
+        this.onMarkerDragEnd(event, index, false);
+      }}
+      else {
       const index = this.markerCaixas.indexOf(marker);
       if (index !== -1) {
         this.onMarkerDragEnd(event, index, false);
@@ -1678,7 +1823,7 @@ private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = fal
     }
   }
 
-  onMarkerClick(event: google.maps.MapMouseEvent, index: number, isCTO: boolean = false) {
+  onMarkerClick(event: google.maps.MapMouseEvent, index: number, isCTO: boolean = false, isCTOSP: boolean=false) {
     if (isCTO) {
       if (this.destinoCTO[index]) {
         console.log('CTO clicada', this.destinoCTO[index].numero);
@@ -1686,6 +1831,14 @@ private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = fal
         this.isGoJSModalOpen = true;
         this.cdr.detectChanges();
       }
+    }else if (isCTOSP) {
+          if (this.destinoCTOSP[index]) {
+        console.log('CTO SP clicada', this.destinoCTOSP[index].numero);
+        this.authService.setIDmetaCaixa(this.destinoCTOSP[index].id_meta)//<---escrevo idmeta da cto no storage
+        this.isGoJSModalOpen = true;
+        this.cdr.detectChanges();
+      }
+
     } else {
       if (this.destino[index]) {
         console.log('caixa clicada', this.destino[index].numero);
@@ -1695,6 +1848,7 @@ private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = fal
       }
   }
 }
+  
   
 
   onCaixaInternaClose() {

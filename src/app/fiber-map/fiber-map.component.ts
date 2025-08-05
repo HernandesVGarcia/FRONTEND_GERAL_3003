@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ListaCaixasComponent } from '../lista-caixas/lista-caixas.component';
 import { ListaCtosComponent } from '../lista-ctos/lista-ctos.component';
+import { ListaCtosSpComponent } from '../lista-ctos-sp/lista-ctos-sp.component';
 import { GoogleMapsComponent } from '../google-maps/google-maps.component';
 import { ListaCabos1fComponent } from '../lista-cabos1f/lista-cabos1f.component';
 import { ListaCabos2fComponent } from '../lista-cabos2f/lista-cabos2f.component';
@@ -31,6 +32,7 @@ import { Caixa} from '../modelo/Caixa';
 import { Cto} from '../modelo/Cto';
 import { PopsEst} from '../modelo/popsEst'
 import { Condominios} from '../modelo/Condominios'
+import { Cto_SP } from '../modelo/Cto_SP';
 
 
 
@@ -42,7 +44,8 @@ import { Condominios} from '../modelo/Condominios'
   standalone: true,
   imports: [CommonModule, 
     ListaCaixasComponent, 
-    ListaCtosComponent, 
+    ListaCtosComponent,
+    ListaCtosSpComponent, 
     GoogleMapsComponent, 
     ListaCabos12fComponent, 
     ListaCabos24fComponent,
@@ -63,6 +66,7 @@ import { Condominios} from '../modelo/Condominios'
 export class FiberMapComponent {
   caixasCEO: any[] = [];
   caixasCTO: any[] = [];
+  caixasCTOSP: any[] = [];
   popEST: any[]=[];
   Condominios: any[]=[];
 
@@ -93,6 +97,10 @@ export class FiberMapComponent {
 
   onCTOSelecionada(ctos: Cto[]) {
     this.caixasCTO = ctos;
+  }
+
+  onCTOSPSelecionada(ctos_sp: Cto_SP[]) {
+    this.caixasCTOSP = ctos_sp;
   }
 
   onCabosSelecionada(cabos: Cabos12f[]) {

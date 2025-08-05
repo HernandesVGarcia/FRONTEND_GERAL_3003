@@ -16,8 +16,11 @@
     <!-- Lista de Caixas CEO -->
     <app-lista-caixas (caixaSelecionada)="onCaixaSelecionada($event)"></app-lista-caixas>
     
-    <!-- Lista de CTOs -->
+    <!-- Lista de CTOs-SP -->
     <app-lista-ctos (ctoSelecionada)="onCTOSelecionada($event)"></app-lista-ctos>
+
+    <!-- Lista de CTOs -->
+    <app-lista-ctos-sp (ctoSPSelecionada)="onCTOSPSelecionada($event)"></app-lista-ctos-sp>
 
     <!-- Lista de Cabos1 -->
     <app-lista-cabos1f (caboSelecionada)="onCabos1fSelecionada($event)"></app-lista-cabos1f>
@@ -59,6 +62,7 @@
   [destinoPopsEst]="popEST"
   [destino]="caixasCEO" 
   [destinoCTO]="caixasCTO"
+  [destinoCTOSP]="caixasCTOSP"
   [destinoCabos1f]="cabos1f"
   [destinoCabos2f]="cabos2f"
   [destinoCabos4f]="cabos4f"
