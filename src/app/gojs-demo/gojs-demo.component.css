@@ -139,10 +139,10 @@
 .modal {
   position: fixed;
   z-index: 1000;
-  left: 20%;
+  left: 5%;
   top: 0;
-  width: 60%;
-  height: 100%;
+  width: 90%; /*ajusta largura modal*/
+  height: 102%;
   background-color: transparent;
   display: flex;
   justify-content: center;
@@ -159,7 +159,7 @@
   margin: 0 auto;
   padding: 5px;
   border: 1px solid #888;
-  width: 90%;
+  width: 100%;
   max-width:500; /*2100px;*/
   max-height: 85vh;
   border-radius: 8px;

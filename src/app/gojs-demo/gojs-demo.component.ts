@@ -668,7 +668,8 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
           this.VetorTipoCabos.push({
             capacidade: 0,
             codigo: 0,
-            tubo: 0
+            tubo: 0,
+            Label_cabo:''
           });
         }
         
@@ -676,7 +677,8 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
         this.VetorTipoCabos[targetIndex] = {
           capacidade: tipos[0].capacidade,
           codigo: tipos[0].codigo,
-          tubo: tipos[0].tubo
+          tubo: tipos[0].tubo,
+          Label_cabo: tipos[0].Label_cabo
         };
         
         console.log(`Tipo de cabo para boca ${bocaNumero} armazenado no índice ${targetIndex}:`, 
@@ -1994,7 +1996,7 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
                         }
                         this.diagram?.commitTransaction()
 
-                        node1.data.labelText = this.VetorBocas[0].BOCA1 + "__Boca:1";
+                        node1.data.labelText = this.VetorBocas[0].BOCA1 + "__(Boca:1)__\n" + this.VetorTipoCabos[0].Label_cabo;
                           this.diagram.updateAllTargetBindings();  // força atualização do bindin}}
 
                           
@@ -2021,7 +2023,7 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
                         }
                         node2.scale=1;                        
                         
-                          node2.data.labelText = this.VetorBocas[0].BOCA2 + "__Boca:2";
+                          node2.data.labelText = this.VetorBocas[0].BOCA2 + "__Boca:2__\n" + this.VetorTipoCabos[1].Label_cabo;
                           this.diagram?.updateAllTargetBindings();  // força atualização do bindin}}
 
                           
@@ -2050,7 +2052,7 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
                         if (this.VetorBocas[0].X3!=0 || this.VetorBocas[0].Y3 != 0) {node3.position=new go.Point(Math.round(this.VetorBocas[0].X3),Math.round(this.VetorBocas[0].Y3));}
                         else {node3.position=new go.Point(200,1000);
                         }
-                        node3.data.labelText = this.VetorBocas[0].BOCA3 + "__Boca:3";
+                        node3.data.labelText = this.VetorBocas[0].BOCA3 + "__Boca:3__\n" + this.VetorTipoCabos[2].Label_cabo;
                           this.diagram?.updateAllTargetBindings();  // força atualização do bindin}})             
 
                             
@@ -2074,7 +2076,7 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
                         //node4.angle=this.VetorBocas[0].ROT4;
                         if (this.VetorBocas[0].X4!=0 || this.VetorBocas[0].Y4 != 0) {node4.position=new go.Point(Math.round(this.VetorBocas[0].X4),Math.round(this.VetorBocas[0].Y4));}  
                         else {node4.position=new go.Point(1000,1000);}
-                        node4.data.labelText = this.VetorBocas[0].BOCA4 + "__Boca:4";
+                        node4.data.labelText = this.VetorBocas[0].BOCA4 + "__Boca:4__\n" + this.VetorTipoCabos[3].Label_cabo;
                           this.diagram?.updateAllTargetBindings();  // força atualização do bindin}})             
           
             }
@@ -2095,7 +2097,7 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
                         node5.angle = rotationRadians;}
                         if (this.VetorBocas[0].X5!=0 || this.VetorBocas[0].Y5 != 0) {node5.position=new go.Point(Math.round(this.VetorBocas[0].X5),Math.round(this.VetorBocas[0].Y5));}    
                         else {node5.position=new go.Point(200,1500)};
-                        node5.data.labelText = this.VetorBocas[0].BOCA5 + "__Boca:5";
+                        node5.data.labelText = this.VetorBocas[0].BOCA5 + "__Boca:5__\n" + this.VetorTipoCabos[4].Label_cabo;
                           this.diagram?.updateAllTargetBindings();  // força atualização do bindin}})             
           
             }
@@ -2115,7 +2117,7 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
                         node6.angle = rotationRadians;}
                         if (this.VetorBocas[0].X6!=0 || this.VetorBocas[0].Y6 != 0) {node6.position=new go.Point(Math.round(this.VetorBocas[0].X6),Math.round(this.VetorBocas[0].Y6));}    
                         else {node6.position=new go.Point(1000,1500)};
-                        node6.data.labelText = this.VetorBocas[0].BOCA6 + "__Boca:6";
+                        node6.data.labelText = this.VetorBocas[0].BOCA6 + "__Boca:6__\n" + this.VetorTipoCabos[5].Label_cabo;
                           this.diagram?.updateAllTargetBindings();  // força atualização do bindin}})             
           
             }
@@ -2136,7 +2138,7 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
                         node7.angle = rotationRadians;}
                         if (this.VetorBocas[0].X7!=0 || this.VetorBocas[0].Y7 != 0) {node7.position=new go.Point(Math.round(this.VetorBocas[0].X7),Math.round(this.VetorBocas[0].Y7));}  
                         else {node7.position=new go.Point(0,1800)};
-                        node7.data.labelText = this.VetorBocas[0].BOCA7 + "__Boca:7";
+                        node7.data.labelText = this.VetorBocas[0].BOCA7 + "__Boca:7__\n" + this.VetorTipoCabos[6].Label_cabo;
                           this.diagram?.updateAllTargetBindings();  // força atualização do bindin}})             
           
             }
@@ -2157,7 +2159,7 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
                         node8.angle = rotationRadians;}
                         if (this.VetorBocas[0].X8!=0 || this.VetorBocas[0].Y8 != 0) {node8.position=new go.Point(Math.round(this.VetorBocas[0].X8),Math.round(this.VetorBocas[0].Y8));}    
                         else {node8.position=new go.Point(1200,1800);}
-                        node8.data.labelText = this.VetorBocas[0].BOCA8 + "__Boca:8";
+                        node8.data.labelText = this.VetorBocas[0].BOCA8 + "__Boca:8__\n" + this.VetorTipoCabos[7].Label_cabo;
                           this.diagram?.updateAllTargetBindings();  // força atualização do bindin}})             
           
             }
@@ -2178,7 +2180,7 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
                         node9.angle = rotationRadians;}
                         if (this.VetorBocas[0].X9!=0 || this.VetorBocas[0].Y9 != 0) {node9.position=new go.Point(Math.round(this.VetorBocas[0].X9),Math.round(this.VetorBocas[0].Y9));}  
                         else {node9.position=new go.Point(200,2000);}
-                        node9.data.labelText = this.VetorBocas[0].BOCA9 + "__Boca:9";
+                        node9.data.labelText = this.VetorBocas[0].BOCA9 + "__Boca:9__\n" + this.VetorTipoCabos[8].Label_cabo;
                           this.diagram?.updateAllTargetBindings();  // força atualização do bindin}})             
           
             }
@@ -2199,7 +2201,7 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
                         node10.angle = rotationRadians;}  
                         if (this.VetorBocas[0].X10!=0 || this.VetorBocas[0].Y10 != 0) {node10.position=new go.Point(Math.round(this.VetorBocas[0].X10),Math.round(this.VetorBocas[0].Y10));}  
                         else {node10.position=new go.Point(1000,2000);}
-                        node10.data.labelText = this.VetorBocas[0].BOCA10 + "__Boca:10";
+                        node10.data.labelText = this.VetorBocas[0].BOCA10 + "__Boca:10__\n" + this.VetorTipoCabos[9].Label_cabo;
                           this.diagram?.updateAllTargetBindings();  // força atualização do bindin}})             
           
             }
@@ -2220,7 +2222,7 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
                         node11.angle = rotationRadians;} 
                         if (this.VetorBocas[0].X11!=0 || this.VetorBocas[0].Y11 != 0) {node11.position=new go.Point(Math.round(this.VetorBocas[0].X11),Math.round(this.VetorBocas[0].Y11));}   
                         else {node11.position=new go.Point(200,2500);}
-                        node11.data.labelText = this.VetorBocas[0].BOCA11 + "__Boca:11";
+                        node11.data.labelText = this.VetorBocas[0].BOCA11 + "__Boca:11__\n" + this.VetorTipoCabos[10].Label_cabo;
                           this.diagram?.updateAllTargetBindings();  // força atualização do bindin}})             
           
             }
@@ -2240,7 +2242,7 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
                         node12.angle = rotationRadians;}
                         if (this.VetorBocas[0].X12!=0 || this.VetorBocas[0].Y12 != 0) {node12.position=new go.Point(Math.round(this.VetorBocas[0].X12),Math.round(this.VetorBocas[0].Y12));}  
                         else{node12.position=new go.Point(1000,2500);}
-                        node12.data.labelText = this.VetorBocas[0].BOCA12 + "__Boca:12";
+                        node12.data.labelText = this.VetorBocas[0].BOCA12 + "__Boca:12__\n" + this.VetorTipoCabos[11].Label_cabo;
                           this.diagram?.updateAllTargetBindings();  // força atualização do bindin}})             
           
             }
@@ -2261,7 +2263,7 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
                         node13.angle = rotationRadians;}
                         if (this.VetorBocas[0].X13!=0 || this.VetorBocas[0].Y13 != 0) {node13.position=new go.Point(Math.round(this.VetorBocas[0].X13),Math.round(this.VetorBocas[0].Y13));}  
                         else{node13.position=new go.Point(200,3000);}
-                        node13.data.labelText = this.VetorBocas[0].BOCA13 + "__Boca:13";
+                        node13.data.labelText = this.VetorBocas[0].BOCA13 + "__Boca:13__\n" + this.VetorTipoCabos[12].Label_cabo;
                           this.diagram?.updateAllTargetBindings();  // força atualização do bindin}})             
           
             }
@@ -2282,7 +2284,7 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
                         node14.angle = rotationRadians;}
                         if (this.VetorBocas[0].X14!=0 || this.VetorBocas[0].Y14 != 0) {node14.position=new go.Point(Math.round(this.VetorBocas[0].X14),Math.round(this.VetorBocas[0].Y14));}  
                         else {node14.position=new go.Point(1000,3000);}
-                        node14.data.labelText = this.VetorBocas[0].BOCA14 + "__Boca:14";
+                        node14.data.labelText = this.VetorBocas[0].BOCA14 + "__Boca:14__\n" + this.VetorTipoCabos[13].Label_cabo;
                           this.diagram?.updateAllTargetBindings();  // força atualização do bindin}})             
           
             }
@@ -2303,7 +2305,7 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
                         node15.angle = rotationRadians;} 
                         if (this.VetorBocas[0].X15!=0 || this.VetorBocas[0].Y15 != 0) {node15.position=new go.Point(Math.round(this.VetorBocas[0].X15),Math.round(this.VetorBocas[0].Y15));} 
                         else {node15.position=new go.Point(200,3500);}
-                        node15.data.labelText = this.VetorBocas[0].BOCA15 + "__Boca:15";
+                        node15.data.labelText = this.VetorBocas[0].BOCA15 + "__Boca:15__\n";
                           this.diagram?.updateAllTargetBindings();  // força atualização do bindin}})             
           
             }
@@ -2324,7 +2326,7 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
                         node16.angle = rotationRadians;}
                         if (this.VetorBocas[0].X16!=0 || this.VetorBocas[0].Y16 != 0) {node16.position=new go.Point(Math.round(this.VetorBocas[0].X16),Math.round(this.VetorBocas[0].Y16));}  
                         else{node16.position=new go.Point(1000,3500);}
-                        node16.data.labelText = this.VetorBocas[0].BOCA16 + "__Boca:16";
+                        node16.data.labelText = this.VetorBocas[0].BOCA16 + "__Boca:16__\n";
                           this.diagram?.updateAllTargetBindings();  // força atualização do bindin}})             
           
             }
@@ -2346,7 +2348,7 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
                         node17.angle = rotationRadians;} 
                         if (this.VetorBocas[0].X17!=0 || this.VetorBocas[0].Y17 != 0) {node17.position=new go.Point(Math.round(this.VetorBocas[0].X17),Math.round(this.VetorBocas[0].Y17));} 
                         else {node17.position=new go.Point(200,4000);}
-                        node17.data.labelText = this.VetorBocas[0].BOCA17 + "__Boca:17";
+                        node17.data.labelText = this.VetorBocas[0].BOCA17 + "__Boca:17__\n";
                           this.diagram?.updateAllTargetBindings();  // força atualização do bindin}})             
           
             }
@@ -2367,7 +2369,7 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
                         node18.angle = rotationRadians;}
                         if (this.VetorBocas[0].X18!=0 || this.VetorBocas[0].Y18 != 0) {node18.position=new go.Point(Math.round(this.VetorBocas[0].X18),Math.round(this.VetorBocas[0].Y18));}  
                         else {node18.position=new go.Point(1000,4000);}
-                        node18.data.labelText = this.VetorBocas[0].BOCA18 + "__Boca:18";
+                        node18.data.labelText = this.VetorBocas[0].BOCA18 + "__Boca:18__\n";
                           this.diagram?.updateAllTargetBindings();  // força atualização do bindin}})             
           
             }

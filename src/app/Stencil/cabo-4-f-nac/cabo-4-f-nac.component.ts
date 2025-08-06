@@ -60,6 +60,7 @@ export class Cabo4FNacComponent implements OnInit {
         stroke:"black",
         wrap: go.Wrap.Fit,
         width: 300,
+        textAlign: "center",  // Esta propriedade alinha texto no centro
         overflow: go.TextOverflow.Ellipsis
       })
       .bind("text", "labelText")  // bind com a propriedade labelText do node data

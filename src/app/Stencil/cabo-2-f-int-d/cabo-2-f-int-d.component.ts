@@ -53,6 +53,7 @@ export class Cabo2FIntDComponent implements OnInit {
                 stroke:"blue",
                 wrap: go.Wrap.Fit,
                 width: 300,
+                textAlign: "center",  // Esta propriedade alinha texto no centro
                 overflow: go.TextOverflow.Ellipsis
 
 

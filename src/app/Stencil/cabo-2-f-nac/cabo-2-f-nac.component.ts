@@ -60,9 +60,8 @@ export class Cabo2FNacComponent implements OnInit {
                 stroke:"blue",
                 wrap: go.Wrap.Fit,
                 width: 300,
-                overflow: go.TextOverflow.Ellipsis
-
-        
+                textAlign: "center",  // Esta propriedade alinha texto no centro
+                overflow: go.TextOverflow.Ellipsis      
                 
 
 

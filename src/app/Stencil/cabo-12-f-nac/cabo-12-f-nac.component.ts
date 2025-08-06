@@ -60,8 +60,7 @@ export class Cabo12FNacComponent implements OnInit {
         //margin:3,
         stroke: "black",
         alignmentFocus: go.Spot.Right,
-        //textAlign: "left",
-        
+        textAlign: "center",  // Esta propriedade alinha texto no centro              
         margin: new go.Margin(0,30,0,0)
       })
       .bind("text", "labelText")  // bind com a propriedade labelText do node data

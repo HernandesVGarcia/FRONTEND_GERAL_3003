@@ -59,6 +59,7 @@ export class Cabo12FIntTb12Component implements OnInit {
         alignment: go.Spot.Left,
         //margin:3,
         stroke: "black",
+        textAlign: "center",  // Esta propriedade alinha texto no centro
         alignmentFocus: go.Spot.Right,
         //textAlign: "left",
         

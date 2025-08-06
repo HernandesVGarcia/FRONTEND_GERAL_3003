@@ -54,7 +54,8 @@ export class Cabo12FNacDComponent implements OnInit {
         position: new go.Point(100, 0),
         alignment: go.Spot.Right,
         alignmentFocus: go.Spot.Left,
-        stroke: "black"
+        stroke: "black",
+        textAlign: "center",  // Esta propriedade alinha texto no centro
       })
 
       

@@ -33,7 +33,7 @@ export class Cabo6FNacDComponent implements OnInit {
   
   // Método para obter a definição do nodeTemplate
   getNodeTemplate() {
-    return new go.Node(go.Panel.Auto)
+    return new go.Node(go.Panel.Spot)
       .add(
         new go.Shape("RoundedRectangle", {
           fill: "	#666666", 
@@ -46,10 +46,12 @@ export class Cabo6FNacDComponent implements OnInit {
       .add(new go.TextBlock("", {  // texto inicial vazio
         name: "LABEL",  // nome para referência
         font: "12px sans-serif",
-        angle: -90,
-        position: new go.Point(100, 0),
-        alignment: go.Spot.Right,
-        stroke:"white"
+        angle: 90,
+                        position: new go.Point(0, 0),
+                        alignment: go.Spot.Right,
+                        stroke: "black",
+                        alignmentFocus: go.Spot.Left,
+                        textAlign: "center",  // Esta propriedade alinha texto no centro
       })
       .bind("text", "labelText")  // bind com a propriedade labelText do node data
     )

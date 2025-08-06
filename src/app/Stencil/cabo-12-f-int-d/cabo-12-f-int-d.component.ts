@@ -50,7 +50,8 @@ export class Cabo12FIntDComponent implements OnInit {
         position: new go.Point(100, 0),
         alignment: go.Spot.Right,
         alignmentFocus: go.Spot.Left,
-        stroke: "black"
+        stroke: "black",
+        textAlign: "center",  // Esta propriedade alinha texto no centro
       })
       .bind("text", "labelText")  // bind com a propriedade labelText do node data
     )

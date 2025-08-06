@@ -58,6 +58,7 @@ export class Cabo2FIntComponent implements OnInit {
                 alignment: go.Spot.Left,
                 alignmentFocus: go.Spot.Right,
                 stroke:"blue",
+                textAlign: "center",  // Esta propriedade alinha texto no centro
                 wrap: go.Wrap.Fit,
                 width: 300,
                 overflow: go.TextOverflow.Ellipsis

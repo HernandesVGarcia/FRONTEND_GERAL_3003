@@ -60,6 +60,7 @@ export class Cabo12FIntComponent implements OnInit {
         //margin:3,
         stroke: "black",
         alignmentFocus: go.Spot.Right,
+        textAlign: "center",  // Esta propriedade alinha texto no centro
         //textAlign: "left",
         
         margin: new go.Margin(0,30,0,0)
