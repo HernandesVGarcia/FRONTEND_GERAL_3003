@@ -12,6 +12,7 @@ export class AuthService {
   private readonly POLO_KEY = 'auth_polo';
   private readonly IDCIDADE_KEY = 'auth_idcidade';
   private readonly IDMETACX = 'auth_idmetacx'
+  private readonly USUARIO = 'auth_user'
 
   private readonly LAT_PERFIL = 'auth_perfil_lat'
   private readonly LNG_PERFIL = 'auth_perfil_lng'
@@ -64,7 +65,33 @@ export class AuthService {
   }
 
 
+  setUsuario(chave: string): void {
+    //console.log('🔧 setUsuario chamado com valor:', chave);
+    //console.log('🔧 Tipo do valor recebido:', typeof chave);
+    //console.log('🔧 Valor é válido?', chave && chave.trim() !== '');
+    
+    if (chave && chave.trim() !== '') {
+      localStorage.setItem(this.USUARIO, chave);
+      //console.log('✅ Usuario armazenado no localStorage');
+      //console.log('✅ Verificação imediata:', localStorage.getItem(this.USUARIO));
+    } else {
+      console.error('❌ Tentativa de salvar usuário com valor inválido:', chave);
+    }
+  }
 
+ 
+
+  getUsuario(): string | null {
+    const usuario = localStorage.getItem(this.USUARIO);
+    //console.log('🔍 getUsuario - valor recuperado:', usuario);
+    //console.log('🔍 Chave utilizada:', this.USUARIO);
+    //console.log('🔍 LocalStorage completo para debug:', {
+    //  auth_user: localStorage.getItem('auth_user'),
+    //  auth_token: localStorage.getItem('auth_token'),
+    //  auth_polo: localStorage.getItem('auth_polo')
+    //});
+    return usuario;
+  }
 
 
 
@@ -98,6 +125,9 @@ export class AuthService {
       localStorage.removeItem(this.POLO_KEY);
     }
   }
+
+
+
 
   setLat (lat:string |null): void {
     if (lat) {

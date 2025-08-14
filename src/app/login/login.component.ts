@@ -32,6 +32,10 @@ export class LoginComponent {
     event.preventDefault();
     this.loading = true;
     this.errorMessage = '';
+
+    //console.log('🔧 ANTES DO LOGIN - Valor da chave:', this.chave);
+    //console.log('🔧 ANTES DO LOGIN - Tipo da chave:', typeof this.chave);
+    //console.log('🔧 ANTES DO LOGIN - Chave está vazia?', this.chave === '');
     
 
     this.tokenService.selecionar(this.chave, this.senha)
@@ -45,6 +49,13 @@ export class LoginComponent {
           if (response && response.token) {
             this.authService.setToken(response.token);
             // Armazenar o valor do polo
+
+
+            //console.log('🔧 SALVANDO USUÁRIO - Valor da chave antes de salvar:', this.chave);
+            //console.log('🔧 SALVANDO USUÁRIO - Tipo da chave:', typeof this.chave);
+            //console.log('🔧 SALVANDO USUÁRIO - Chave é válida?', this.chave && this.chave.trim() !== '');
+
+            this.authService.setUsuario(this.chave);
             this.authService.setPolo(response.polo);
             this.authService.setLat(response.lat);
             this.authService.setLng(response.lng);

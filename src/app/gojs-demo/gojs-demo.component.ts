@@ -105,13 +105,17 @@ import { ConexSplitterService } from '../servico/conex-splitter.service';
 import { ConexaoBoca } from '../modelo/ConexaoBoca';
 import { ConexaoSplitter } from '../modelo/ConexaoSplitter';
 import { Cabo_TipoService } from '../servico/cabo-tipo.service';
+import { CaboDestinoCxService } from '../servico/cabo-destino-cx.service';
 import { GojsDropComponent } from '../gojs-drop/gojs-drop.component';
 import { PopClienteService } from '../servico/pop-cliente.service';
 import { UpdateBocaXYService} from '../servico/update-boca-xy.service';
 import { UpdateSplitterXYService} from '../servico/update-splitter-xy.service';
 import { UpdateBocaAngleService} from '../servico/update-boca-angle.service';
 import { UpdateBocaLadoService} from '../servico/update-boca-lado.service';
+import { PesquisaSiglaService } from '../servico/pesquisa-sigla.service';
 import jsPDF from 'jspdf';
+import { Cabo_destino_CX } from '../modelo/Cabo_destino_CX';
+import { DestinoSigla } from '../modelo/DestinoSigla';
 
 @Component({
   selector: 'app-gojs-demo',
@@ -258,6 +262,8 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
   VetorPopsCli:string[]=[]
   VetorSplitter: Splitter[]=[];
   VetorTipoCabos: Cabo_tipo[]=[];
+  VetorDestinoCabos:Cabo_destino_CX[]=[];
+  VetorDestinoSiglas: DestinoSigla[] = [];
   // 🆕 NOVO - Vetor para dados dos POPs
   VetorDadosPops: any[] = [];
   
@@ -269,6 +275,7 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
      private serviceCabo99: ConexCabopb99Service,
      private servicoSplitter: SplitterService,
      private servicoTipoCabos : Cabo_TipoService ,
+     private servicoDestinoCabos : CaboDestinoCxService,
      private conexBocasService: ConexBocasService,
      private conexSplitterService: ConexSplitterService,
      private conexSpSpService:ConexSpSpService,
@@ -276,9 +283,9 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
      private UpdateBCXYService: UpdateBocaXYService,
      private UpdateSPXYService: UpdateSplitterXYService,
      private UpdateBCAngleService:UpdateBocaAngleService,
-     private UpdateBCLadoService:UpdateBocaLadoService,
-     // 🆕 NOVO - Serviço para POPs
+     private UpdateBCLadoService:UpdateBocaLadoService,    
      private popClienteService: PopClienteService,
+     private pesquisaSiglaService: PesquisaSiglaService,
     ) {}
 
 
@@ -329,6 +336,8 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
       // 3. Carregar drops (cabo 99)
       await this.gojsDropComponent.carregarDadosDropsAsync(this.VetorBocas, this.serviceCabo99);
 
+      
+
       // 3. Carregar drops (cabo 99)
       //console.log('💧 Carregando drops...');
       //await this.carregarDadosDropsAsync(); //await this.selecionar_cabo99();
@@ -363,7 +372,7 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
 
 
 
-
+//===============================================================================================================
 // 🚀 NOVA FUNÇÃO - Carregamento async dos splitters
   private async carregarDadosSplittersAsync(): Promise<void> {
     try {
@@ -396,6 +405,8 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
       console.log('Não foi possível adicionar splitters: diagrama não inicializado ou não há splitters');
       return;
     }
+
+    //this.diagram.startTransaction("Adicionar Splitters ao diagrama ");
 
     console.log('🎨 Adicionando splitters ao diagrama:', this.VetorSplitter);
     
@@ -473,6 +484,11 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
         });
       }
     }, 100);
+
+    setTimeout(() => {this.carregarConexoesSplitters()},10);
+    setTimeout(() => {this.carregarConexoesBocas9798()},10)
+
+    //this.diagram.commitTransaction();
   }
 
 
@@ -496,7 +512,7 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
       // 2. Carregar tipos de cabos baseado nas bocas
       console.log('🔧 Carregando tipos de cabos...');
       await this.carregarTiposCabosAsync();
-      
+
       // 3. Adicionar cabos ao diagrama (se já estiver inicializado)
       if (this.diagram && !this.cabosInicializados) {
         console.log('🎨 Adicionando cabos ao diagrama...');
@@ -504,6 +520,36 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
         this.cabosInicializados = true;
       }
       
+      // 4. Carregar destino dos cabos das bocas da caixa
+      console.log('🔧 ---------------------------------------------->Carregando destino dos cabos das bocas da caixa...');
+      await this.carregarDestinoCabosSequencial(); 
+
+      // 4. Criar VetorDestinoSiglas
+      console.log('🏷️ Criando VetorDestinoSiglas...');
+      await this.criarVetorDestinoSiglasAsync();
+      
+
+      // 7. 🆕 NOVO - Aplicar labels com siglas após tudo carregado
+      console.log('🏷️ Aplicando labels com siglas...');
+      await this.aplicarLabelsComSiglas();
+
+      // 7. 🆕 ATUALIZADO - Aplicar labels com siglas apenas se o diagrama estiver disponível
+    //  if (this.diagram && this.cabosInicializados) {
+    //    console.log('🏷️ Aplicando labels com siglas...');
+    //    await this.aplicarLabelsComSiglas();
+    //  } else {
+    //    console.warn('⚠️ Diagrama não disponível ou cabos não inicializados, pulando aplicação de labels');
+    //    console.log(`   Diagrama disponível: ${!!this.diagram}`);
+    //    console.log(`   Cabos inicializados: ${this.cabosInicializados}`);
+    //  }
+
+
+
+      // 5. Buscar o nome do Objeto de destino
+      //await this.criarVetorDestinoSiglasAsync();
+     // console.log('🔍 Siglas dos destinos carregadas');
+
+
       console.log('✅ Carregamento dos cabos concluído com sucesso!');
 
 
@@ -558,6 +604,8 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
 //=================================================================================================================
 
 
+
+
 // 🚀 NOVA FUNÇÃO - Processar boca de forma async
   private async processarBocaAsync(bocaInfo: string, bocaNumero: number): Promise<void> {
     const match = bocaInfo.match(/cabo(\d+)[AB]/);
@@ -571,10 +619,7 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
     }
   }
 
-
-
-
-//=================================================================================================================
+  //================================================================================================================
 
 // Helper para obter valor de BOCAX com tratamento de tipo
   private getBocaValue(bocaNum: number): string {
@@ -586,6 +631,123 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
   }
 
 //=================================================================================================================
+
+ async carregarDestinoCabosSequencial(): Promise<void> {
+    try {
+      console.log('🚀 Iniciando carregamento sequencial de destinos...');
+      
+      if (!this.VetorBocas || this.VetorBocas.length === 0) {
+        console.warn('❌ VetorBocas vazio ou não inicializado');
+        return;
+      }
+
+      // Inicializar VetorDestinoCabos com 18 posições vazias
+      this.VetorDestinoCabos = new Array(18).fill(null).map(() => ({
+        tipo_objeto: '',
+        id_meta: '0'
+      }));
+
+      // Processar cada boca de 1 a 18 sequencialmente
+      for (let i = 1; i <= 18; i++) {
+        const arrayIndex = i - 1; // Índice do array (0-17)
+        const bocaKey = `BOCA${i}` as keyof typeof this.VetorBocas[0];
+        const bocaValue = this.VetorBocas[0][bocaKey];
+
+        console.log(`🔍 Processando Boca ${i}...`);
+
+        // Verificar se a boca tem valor válido
+        if (!bocaValue || bocaValue === ' ' || bocaValue === '0' || bocaValue.trim() === '') {
+          console.log(`   Boca ${i}: sem cabo válido, mantendo posição vazia`);
+          // Posição já está vazia pela inicialização
+          continue;
+        }
+
+        const bocaId = String(bocaValue).trim();
+        console.log(`   Boca ${i}: ID do cabo = ${bocaId}`);
+
+        try {
+          // 🆕 NOVO - Extrair apenas a parte numérica do ID do cabo
+          const ultimaLetra = bocaId.slice(-1).toUpperCase();
+          
+          // Extrair apenas os números do ID (remover "cabo" e a letra final)
+          const idNumerico = bocaId.replace(/^cabo/, '').replace(/[A-Za-z]$/, '');
+          
+          console.log(`   ID original: ${bocaId}, ID numérico extraído: ${idNumerico}, Última letra: ${ultimaLetra}`);
+
+          // Determinar tabela baseada na última letra
+          const tabela_cabo = ultimaLetra === 'A' ? "caboa_t1" : "cabob_t1";
+          
+          console.log(`   Consultando ${tabela_cabo} para ID numérico ${idNumerico}...`);
+
+          // 🆕 ALTERADO - Chamar o serviço com o ID numérico
+          const resultado = await this.servicoDestinoCabos.selecionarAsync(idNumerico, tabela_cabo);
+
+          if (resultado && resultado.length > 0) {
+            // Preencher na posição correta
+            this.VetorDestinoCabos[arrayIndex] = {
+              tipo_objeto: resultado[0].tipo_objeto || '',
+              id_meta: resultado[0].id_meta || '0'
+            };
+            console.log(`✅ Boca ${i}: ${this.VetorDestinoCabos[arrayIndex].tipo_objeto} - ${this.VetorDestinoCabos[arrayIndex].id_meta}`);
+          } else {
+            console.log(`⚠️  Boca ${i}: nenhum destino encontrado`);
+            // Posição permanece vazia
+          }
+
+        } catch (error) {
+          console.error(`❌ Erro ao processar Boca ${i}:`, error);
+          // Posição permanece vazia em caso de erro
+        }
+      }
+
+      console.log('✅ Carregamento sequencial concluído');
+      console.log('📊 VetorDestinoCabos final:', this.VetorDestinoCabos);
+
+    } catch (error) {
+      console.error('❌ Erro geral no carregamento sequencial:', error);
+    }
+  }
+
+//=================================================================================================================
+
+/**
+   * 🆕 NOVA FUNÇÃO - Criar VetorDestinoSiglas baseado no VetorDestinoCabos
+   */
+  async criarVetorDestinoSiglasAsync(): Promise<void> {
+    try {
+      console.log('🏷️ Iniciando criação do VetorDestinoSiglas...');
+      
+      if (!this.VetorDestinoCabos || this.VetorDestinoCabos.length === 0) {
+        console.warn('❌ VetorDestinoCabos vazio, inicializando VetorDestinoSiglas vazio');
+        this.VetorDestinoSiglas = new Array(18).fill(null).map(() => ({
+          tipo_objeto: '',
+          id_meta: '',
+          sigla: ''
+        }));
+        return;
+      }
+
+      // Usar o serviço para criar o vetor com siglas
+      this.VetorDestinoSiglas = await this.pesquisaSiglaService.criarVetorDestinoSiglasAsync(this.VetorDestinoCabos);
+      
+      console.log('✅ VetorDestinoSiglas criado com sucesso:');
+      console.log('📊 VetorDestinoSiglas final:', this.VetorDestinoSiglas);
+
+    } catch (error) {
+      console.error('❌ Erro ao criar VetorDestinoSiglas:', error);
+      // Inicializar vetor vazio em caso de erro
+      this.VetorDestinoSiglas = new Array(18).fill(null).map(() => ({
+        tipo_objeto: '',
+        id_meta: '',
+        sigla: ''
+      }));
+    }
+  }
+
+
+//=================================================================================================================
+
+
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['isOpen'] && changes['isOpen'].currentValue === true) {
@@ -691,8 +853,7 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
     }
   }
 
-  //=======================================================================================================================
-
+  
   
 
 
@@ -1163,6 +1324,8 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
     console.log("Conexões de splitter já foram criadas anteriormente ou não há conexões, pulando...");
     return;
   }
+
+  
   
   const linkDataArray = this.conexoesSPCarregadas.map(conexao => {
 console.log('======================================>Conexão: ' ,conexao.bocaOrigem,conexao.fibraOrigem,conexao.bocaDestino,conexao.fibraDestino)
@@ -1178,8 +1341,13 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
     };
   });
 
+  
+
   // Verificar se já existem links com estas conexões
   if (this.diagram && this.diagram.model) {
+
+    this.diagram.startTransaction("Criar conexões de splitters");
+
     const model = this.diagram.model as go.GraphLinksModel;
     
     console.log(`Adicionando ${linkDataArray.length} novas conexões de splitter ao diagrama`);
@@ -1188,6 +1356,7 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
     if (linkDataArray.length > 0) {
       model.addLinkDataCollection(linkDataArray);
       //this.conexoesSPCriadas = true;
+      this.diagram.commitTransaction();
     }
   }
 }
@@ -1340,6 +1509,9 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
     }
 
     console.log('🎨 Adicionando cabos ao diagrama com dados completos...');
+
+    console.log('===================> startTransaction do gojs aplicado')
+    this.diagram.startTransaction("Aplicar transformações iniciais");
     
     const model = this.diagram.model as go.GraphLinksModel;
     const cabosParaAdicionar: go.ObjectData[] = [];
@@ -1968,8 +2140,8 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
           //if (this.diagram) {console.log(this.diagram.model.nodeDataArray)}
 
           
-
-          this.diagram.startTransaction("Aplicar transformações iniciais");
+          //console.log('===================> startTransaction do gojs aplicado')
+          //this.diagram.startTransaction("Aplicar transformações iniciais");
           let node1 = this.diagram!.findNodeForKey("Boca1");
           
           if (node1) {
@@ -1994,10 +2166,17 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
                         if (this.VetorBocas[0].X1!=0 || this.VetorBocas[0].Y1 != 0) {node1.position=new go.Point(Math.round(this.VetorBocas[0].X1),Math.round(this.VetorBocas[0].Y1));}
                         else {node1.position=new go.Point(500,500);
                         }
-                        this.diagram?.commitTransaction()
+                        
 
-                        node1.data.labelText = this.VetorBocas[0].BOCA1 + "__(Boca:1)__\n" + this.VetorTipoCabos[0].Label_cabo;
-                          this.diagram.updateAllTargetBindings();  // força atualização do bindin}}
+                      
+                      //const destinoSigla = this.VetorDestinoSiglas[0];
+                      //const destinoInfo = destinoSigla && destinoSigla.tipo_objeto ?` (Destino: ${destinoSigla.tipo_objeto} - ${destinoSigla.sigla || 'S/ID'})` : ''; 
+                      
+                      //console.log ('--------------------------------------------------> conteudo de destinoinfo: ', destinoInfo);
+                      //node1.data.labelText = this.VetorBocas[0].BOCA1 + "__(Boca:1)__\n" + this.VetorTipoCabos[0].Label_cabo ;//+ " (Destino:" + this.VetorDestinoSiglas[0].tipo_objeto + "  " + this.VetorDestinoSiglas[0].sigla + ")" ;
+                      //node1.data.labelText = this.VetorBocas[0].BOCA1 + "__(Boca:1)__\n" + (this.VetorTipoCabos[0]?.Label_cabo || '') + this.VetorDestinoSiglas[0].sigla;    
+                      
+                      this.diagram.updateAllTargetBindings();  // força atualização do bindin}}
 
                           
 
@@ -2010,6 +2189,7 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
           if (node2) {
             console.log("Node cabo2 encontrado via findNodeForKey:", node2);
                         console.log("Aplicando transformação ao cabo2");
+                        //console.log("=============>sigla:",this.VetorDestinoSiglas[1].sigla)
                         node2.resizable=true;
                         node2.rotatable=true;
                         node2.movable=true;
@@ -2023,7 +2203,7 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
                         }
                         node2.scale=1;                        
                         
-                          node2.data.labelText = this.VetorBocas[0].BOCA2 + "__Boca:2__\n" + this.VetorTipoCabos[1].Label_cabo;
+                          //node2.data.labelText = this.VetorBocas[0].BOCA2 + "__Boca:2__\n" + this.VetorTipoCabos[1].Label_cabo ;//+ " (Destino:" + this.VetorDestinoSiglas[1].tipo_objeto + "  " + this.VetorDestinoSiglas[1].sigla + ")" ;
                           this.diagram?.updateAllTargetBindings();  // força atualização do bindin}}
 
                           
@@ -2052,7 +2232,7 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
                         if (this.VetorBocas[0].X3!=0 || this.VetorBocas[0].Y3 != 0) {node3.position=new go.Point(Math.round(this.VetorBocas[0].X3),Math.round(this.VetorBocas[0].Y3));}
                         else {node3.position=new go.Point(200,1000);
                         }
-                        node3.data.labelText = this.VetorBocas[0].BOCA3 + "__Boca:3__\n" + this.VetorTipoCabos[2].Label_cabo;
+                        //node3.data.labelText = this.VetorBocas[0].BOCA3 + "__Boca:3__\n" + this.VetorTipoCabos[2].Label_cabo ;//+ " (Destino:" + this.VetorDestinoSiglas[2].tipo_objeto + "  " + this.VetorDestinoSiglas[2].sigla + ")" ;
                           this.diagram?.updateAllTargetBindings();  // força atualização do bindin}})             
 
                             
@@ -2076,7 +2256,7 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
                         //node4.angle=this.VetorBocas[0].ROT4;
                         if (this.VetorBocas[0].X4!=0 || this.VetorBocas[0].Y4 != 0) {node4.position=new go.Point(Math.round(this.VetorBocas[0].X4),Math.round(this.VetorBocas[0].Y4));}  
                         else {node4.position=new go.Point(1000,1000);}
-                        node4.data.labelText = this.VetorBocas[0].BOCA4 + "__Boca:4__\n" + this.VetorTipoCabos[3].Label_cabo;
+                        //node4.data.labelText = this.VetorBocas[0].BOCA4 + "__Boca:4__\n" + this.VetorTipoCabos[3].Label_cabo;
                           this.diagram?.updateAllTargetBindings();  // força atualização do bindin}})             
           
             }
@@ -2097,7 +2277,7 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
                         node5.angle = rotationRadians;}
                         if (this.VetorBocas[0].X5!=0 || this.VetorBocas[0].Y5 != 0) {node5.position=new go.Point(Math.round(this.VetorBocas[0].X5),Math.round(this.VetorBocas[0].Y5));}    
                         else {node5.position=new go.Point(200,1500)};
-                        node5.data.labelText = this.VetorBocas[0].BOCA5 + "__Boca:5__\n" + this.VetorTipoCabos[4].Label_cabo;
+                        //node5.data.labelText = this.VetorBocas[0].BOCA5 + "__Boca:5__\n" + this.VetorTipoCabos[4].Label_cabo;
                           this.diagram?.updateAllTargetBindings();  // força atualização do bindin}})             
           
             }
@@ -2117,7 +2297,7 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
                         node6.angle = rotationRadians;}
                         if (this.VetorBocas[0].X6!=0 || this.VetorBocas[0].Y6 != 0) {node6.position=new go.Point(Math.round(this.VetorBocas[0].X6),Math.round(this.VetorBocas[0].Y6));}    
                         else {node6.position=new go.Point(1000,1500)};
-                        node6.data.labelText = this.VetorBocas[0].BOCA6 + "__Boca:6__\n" + this.VetorTipoCabos[5].Label_cabo;
+                        //node6.data.labelText = this.VetorBocas[0].BOCA6 + "__Boca:6__\n" + this.VetorTipoCabos[5].Label_cabo;
                           this.diagram?.updateAllTargetBindings();  // força atualização do bindin}})             
           
             }
@@ -2138,7 +2318,7 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
                         node7.angle = rotationRadians;}
                         if (this.VetorBocas[0].X7!=0 || this.VetorBocas[0].Y7 != 0) {node7.position=new go.Point(Math.round(this.VetorBocas[0].X7),Math.round(this.VetorBocas[0].Y7));}  
                         else {node7.position=new go.Point(0,1800)};
-                        node7.data.labelText = this.VetorBocas[0].BOCA7 + "__Boca:7__\n" + this.VetorTipoCabos[6].Label_cabo;
+                        //node7.data.labelText = this.VetorBocas[0].BOCA7 + "__Boca:7__\n" + this.VetorTipoCabos[6].Label_cabo;
                           this.diagram?.updateAllTargetBindings();  // força atualização do bindin}})             
           
             }
@@ -2159,7 +2339,7 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
                         node8.angle = rotationRadians;}
                         if (this.VetorBocas[0].X8!=0 || this.VetorBocas[0].Y8 != 0) {node8.position=new go.Point(Math.round(this.VetorBocas[0].X8),Math.round(this.VetorBocas[0].Y8));}    
                         else {node8.position=new go.Point(1200,1800);}
-                        node8.data.labelText = this.VetorBocas[0].BOCA8 + "__Boca:8__\n" + this.VetorTipoCabos[7].Label_cabo;
+                        //node8.data.labelText = this.VetorBocas[0].BOCA8 + "__Boca:8__\n" + this.VetorTipoCabos[7].Label_cabo;
                           this.diagram?.updateAllTargetBindings();  // força atualização do bindin}})             
           
             }
@@ -2180,7 +2360,7 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
                         node9.angle = rotationRadians;}
                         if (this.VetorBocas[0].X9!=0 || this.VetorBocas[0].Y9 != 0) {node9.position=new go.Point(Math.round(this.VetorBocas[0].X9),Math.round(this.VetorBocas[0].Y9));}  
                         else {node9.position=new go.Point(200,2000);}
-                        node9.data.labelText = this.VetorBocas[0].BOCA9 + "__Boca:9__\n" + this.VetorTipoCabos[8].Label_cabo;
+                        //node9.data.labelText = this.VetorBocas[0].BOCA9 + "__Boca:9__\n" + this.VetorTipoCabos[8].Label_cabo;
                           this.diagram?.updateAllTargetBindings();  // força atualização do bindin}})             
           
             }
@@ -2201,7 +2381,7 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
                         node10.angle = rotationRadians;}  
                         if (this.VetorBocas[0].X10!=0 || this.VetorBocas[0].Y10 != 0) {node10.position=new go.Point(Math.round(this.VetorBocas[0].X10),Math.round(this.VetorBocas[0].Y10));}  
                         else {node10.position=new go.Point(1000,2000);}
-                        node10.data.labelText = this.VetorBocas[0].BOCA10 + "__Boca:10__\n" + this.VetorTipoCabos[9].Label_cabo;
+                        //node10.data.labelText = this.VetorBocas[0].BOCA10 + "__Boca:10__\n" + this.VetorTipoCabos[9].Label_cabo;
                           this.diagram?.updateAllTargetBindings();  // força atualização do bindin}})             
           
             }
@@ -2222,7 +2402,7 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
                         node11.angle = rotationRadians;} 
                         if (this.VetorBocas[0].X11!=0 || this.VetorBocas[0].Y11 != 0) {node11.position=new go.Point(Math.round(this.VetorBocas[0].X11),Math.round(this.VetorBocas[0].Y11));}   
                         else {node11.position=new go.Point(200,2500);}
-                        node11.data.labelText = this.VetorBocas[0].BOCA11 + "__Boca:11__\n" + this.VetorTipoCabos[10].Label_cabo;
+                        //node11.data.labelText = this.VetorBocas[0].BOCA11 + "__Boca:11__\n" + this.VetorTipoCabos[10].Label_cabo;
                           this.diagram?.updateAllTargetBindings();  // força atualização do bindin}})             
           
             }
@@ -2242,7 +2422,7 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
                         node12.angle = rotationRadians;}
                         if (this.VetorBocas[0].X12!=0 || this.VetorBocas[0].Y12 != 0) {node12.position=new go.Point(Math.round(this.VetorBocas[0].X12),Math.round(this.VetorBocas[0].Y12));}  
                         else{node12.position=new go.Point(1000,2500);}
-                        node12.data.labelText = this.VetorBocas[0].BOCA12 + "__Boca:12__\n" + this.VetorTipoCabos[11].Label_cabo;
+                        //node12.data.labelText = this.VetorBocas[0].BOCA12 + "__Boca:12__\n" + this.VetorTipoCabos[11].Label_cabo;
                           this.diagram?.updateAllTargetBindings();  // força atualização do bindin}})             
           
             }
@@ -2263,7 +2443,7 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
                         node13.angle = rotationRadians;}
                         if (this.VetorBocas[0].X13!=0 || this.VetorBocas[0].Y13 != 0) {node13.position=new go.Point(Math.round(this.VetorBocas[0].X13),Math.round(this.VetorBocas[0].Y13));}  
                         else{node13.position=new go.Point(200,3000);}
-                        node13.data.labelText = this.VetorBocas[0].BOCA13 + "__Boca:13__\n" + this.VetorTipoCabos[12].Label_cabo;
+                        //node13.data.labelText = this.VetorBocas[0].BOCA13 + "__Boca:13__\n" + this.VetorTipoCabos[12].Label_cabo;
                           this.diagram?.updateAllTargetBindings();  // força atualização do bindin}})             
           
             }
@@ -2284,7 +2464,7 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
                         node14.angle = rotationRadians;}
                         if (this.VetorBocas[0].X14!=0 || this.VetorBocas[0].Y14 != 0) {node14.position=new go.Point(Math.round(this.VetorBocas[0].X14),Math.round(this.VetorBocas[0].Y14));}  
                         else {node14.position=new go.Point(1000,3000);}
-                        node14.data.labelText = this.VetorBocas[0].BOCA14 + "__Boca:14__\n" + this.VetorTipoCabos[13].Label_cabo;
+                        //node14.data.labelText = this.VetorBocas[0].BOCA14 + "__Boca:14__\n" + this.VetorTipoCabos[13].Label_cabo;
                           this.diagram?.updateAllTargetBindings();  // força atualização do bindin}})             
           
             }
@@ -2305,7 +2485,7 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
                         node15.angle = rotationRadians;} 
                         if (this.VetorBocas[0].X15!=0 || this.VetorBocas[0].Y15 != 0) {node15.position=new go.Point(Math.round(this.VetorBocas[0].X15),Math.round(this.VetorBocas[0].Y15));} 
                         else {node15.position=new go.Point(200,3500);}
-                        node15.data.labelText = this.VetorBocas[0].BOCA15 + "__Boca:15__\n";
+                        //node15.data.labelText = this.VetorBocas[0].BOCA15 + "__Boca:15__\n";
                           this.diagram?.updateAllTargetBindings();  // força atualização do bindin}})             
           
             }
@@ -2326,7 +2506,7 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
                         node16.angle = rotationRadians;}
                         if (this.VetorBocas[0].X16!=0 || this.VetorBocas[0].Y16 != 0) {node16.position=new go.Point(Math.round(this.VetorBocas[0].X16),Math.round(this.VetorBocas[0].Y16));}  
                         else{node16.position=new go.Point(1000,3500);}
-                        node16.data.labelText = this.VetorBocas[0].BOCA16 + "__Boca:16__\n";
+                        //node16.data.labelText = this.VetorBocas[0].BOCA16 + "__Boca:16__\n";
                           this.diagram?.updateAllTargetBindings();  // força atualização do bindin}})             
           
             }
@@ -2348,7 +2528,7 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
                         node17.angle = rotationRadians;} 
                         if (this.VetorBocas[0].X17!=0 || this.VetorBocas[0].Y17 != 0) {node17.position=new go.Point(Math.round(this.VetorBocas[0].X17),Math.round(this.VetorBocas[0].Y17));} 
                         else {node17.position=new go.Point(200,4000);}
-                        node17.data.labelText = this.VetorBocas[0].BOCA17 + "__Boca:17__\n";
+                        //node17.data.labelText = this.VetorBocas[0].BOCA17 + "__Boca:17__\n";
                           this.diagram?.updateAllTargetBindings();  // força atualização do bindin}})             
           
             }
@@ -2369,8 +2549,8 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
                         node18.angle = rotationRadians;}
                         if (this.VetorBocas[0].X18!=0 || this.VetorBocas[0].Y18 != 0) {node18.position=new go.Point(Math.round(this.VetorBocas[0].X18),Math.round(this.VetorBocas[0].Y18));}  
                         else {node18.position=new go.Point(1000,4000);}
-                        node18.data.labelText = this.VetorBocas[0].BOCA18 + "__Boca:18__\n";
-                          this.diagram?.updateAllTargetBindings();  // força atualização do bindin}})             
+                        //node18.data.labelText = this.VetorBocas[0].BOCA18 + "__Boca:18__\n";
+                        this.diagram?.updateAllTargetBindings();  // força atualização do bindin}})             
           
             }
           
@@ -2381,6 +2561,38 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
 
           }
           // Finaliza a transação única
+          console.log('===================> commit do gojs aplicado')
+          this.diagram?.commitTransaction();
+
+           //🆕 NOVO - Aplicar labels após propriedades físicas estarem prontas
+        setTimeout(async () => {
+        console.log('🏷️ Aplicando labels com siglas após propriedades físicas...');
+        await this.aplicarLabelsComSiglas();
+
+
+        setTimeout(() => {this.carregarConexoesBocas()},1); // conexoes de bocas para bocas (cabos com cabos)
+
+
+        //setTimeout(() => {this.carregarConexoesSplitters()},2000); //agora esta em adicionarSplittersAoDiagrama()
+        //setTimeout(() => {this.carregarConexoesBocas9798()},1000); //agora adicionarSplittersAoDiagrama()
+
+        
+
+
+         setTimeout(() => {
+            this.aplicarCoresEmTodasAsConexoes();
+          }, 3000);
+    
+
+
+
+
+
+
+
+
+      }, 1); 
+
           
         }, 1);
 
@@ -2399,7 +2611,93 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
     
     return newPosition;
   }
+//========================================Aplicando labels nos cabos apos os campos de destino e destino sigla ter carregado nos vetores==========================================================================
 
+// 🆕 NOVA FUNÇÃO - Aplicar labels com siglas após carregamento completo
+
+
+  private async aplicarLabelsComSiglas(): Promise<void> {
+
+    
+    if (!this.diagram) {
+      console.error('❌ Diagrama não está disponível para aplicar labels');
+      return;
+    }
+
+    console.log('🏷️ Iniciando aplicação de labels com siglas...');
+    console.log('📊 VetorDestinoSiglas atual:', this.VetorDestinoSiglas);
+    console.log('📊 VetorBocas atual:', this.VetorBocas);
+    console.log('📊 VetorTipoCabos atual:', this.VetorTipoCabos);
+
+    // Verificações de segurança
+    if (!this.VetorDestinoSiglas || this.VetorDestinoSiglas.length === 0) {
+      console.warn('⚠️ VetorDestinoSiglas vazio, criando array com elementos vazios');
+      this.VetorDestinoSiglas = new Array(18).fill(null).map(() => ({
+        tipo_objeto: '',
+        id_meta: '',
+        sigla: ''
+      }));
+    }
+
+    if (!this.VetorBocas || this.VetorBocas.length === 0) {
+      console.warn('⚠️ VetorBocas vazio, não é possível aplicar labels');
+      return;
+    }
+
+    try {
+      this.diagram.startTransaction("Aplicar labels com siglas");
+
+      // Aplicar labels para cada boca (1-18)
+      for (let i = 1; i <= 18; i++) {
+        const node = this.diagram.findNodeForKey(`Boca${i}`);
+        if (node) {
+          const arrayIndex = i - 1; // Converter para índice do array (0-17)
+          const bocaKey = `BOCA${i}` as keyof typeof this.VetorBocas[0];
+          const bocaValue = this.VetorBocas[0][bocaKey];
+
+          // Verificar se a boca tem valor válido
+          if (!bocaValue || bocaValue === ' ' || bocaValue === '0' || bocaValue.trim() === '') {
+            console.log(`   Boca ${i}: sem cabo válido, pulando label`);
+            continue;
+          }
+
+          // Obter dados do destino e sigla
+          const destinoSigla = this.VetorDestinoSiglas[arrayIndex];
+          const tipoCabo = this.VetorTipoCabos[arrayIndex];
+
+          // Construir informação do destino
+          let destinoInfo = '';
+          if (destinoSigla && destinoSigla.tipo_objeto && destinoSigla.tipo_objeto.trim() !== '') {
+            const siglaTexto = destinoSigla.sigla && destinoSigla.sigla.trim() !== '' ? destinoSigla.sigla : 'aberto';
+            destinoInfo = ` (Destino: ${destinoSigla.tipo_objeto} - ${siglaTexto})`;
+          }
+
+          // Construir label completo
+          const tipoCaboLabel = tipoCabo?.Label_cabo || '';
+          const labelCompleto = `${bocaValue}__Boca:${i}__\n${tipoCaboLabel}${destinoInfo} \n`;
+
+          // Aplicar o label
+          node.data.labelText = labelCompleto;
+          
+          console.log(`✅ Label aplicado para Boca ${i}: ${labelCompleto}`);
+        } else {
+          console.log(`⚠️ Node Boca${i} não encontrado`);
+        }
+      }
+
+      // Atualizar todas as bindings do diagrama
+      this.diagram.updateAllTargetBindings();
+      this.diagram.commitTransaction();
+
+      console.log('✅ Labels com siglas aplicados com sucesso!');
+
+    } catch (error) {
+      console.error('❌ Erro ao aplicar labels com siglas:', error);
+      if (this.diagram) {
+        this.diagram.rollbackTransaction();
+      }
+    }
+  }
 
 //DIAGRAMA=============================================================================================================
 //==============================================================================================================
@@ -2832,17 +3130,7 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
           }
         }  );
 
-         //===================================================================================================
-        // Listener para aplicar cores quando layout é finalizado (conexões do banco)
-        //this.diagram.addDiagramListener("InitialLayoutCompleted", () => {
-        //  setTimeout(() => {
-        //    this.aplicarCoresEmTodasAsConexoes();
-        //  }, 2000);
-        //  });
-
-        //=================================//=================================//=================================
-         
-       
+        
 
 
         
@@ -2908,18 +3196,22 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
     }
 
 
+    // mudei as conexoes de lugar 13082025
+    //setTimeout(() => {this.carregarConexoesBocas()},3000); 
+    //setTimeout(() => {this.carregarConexoesSplitters()},3000);
+    //setTimeout(() => {this.carregarConexoesBocas9798()},2000);
+    
 
-    setTimeout(() => {this.carregarConexoesBocas()},1); 
-    setTimeout(() => {this.carregarConexoesSplitters()},1000);
-    setTimeout(() => {this.carregarConexoesBocas9798()},1);
+    
+
     //setTimeout(() => {this.adicionarDropsAoDiagrama()},1);
     
     //setTimeout(() => {this.selecionar_cabo99()},1); 
 
 
-    setTimeout(() => {
-            this.aplicarCoresEmTodasAsConexoes();
-          }, 5000);
+    //setTimeout(() => {
+    //        this.aplicarCoresEmTodasAsConexoes();
+    //      }, 1000);
 
 
 
@@ -3184,6 +3476,8 @@ private restaurarCursor(): void {
     this.VetorDrops_Sp = [];
     this.VetorPopsCli = [];
     this.VetorDadosPops = [];
+    this.VetorDestinoSiglas=[];
+    this.VetorDestinoCabos=[];
 
     // Limpar e reinicializar o diagrama
       this.limparDiagrama();

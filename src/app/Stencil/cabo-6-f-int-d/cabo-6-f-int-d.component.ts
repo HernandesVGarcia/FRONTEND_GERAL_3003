@@ -45,11 +45,11 @@ export class Cabo6FIntDComponent implements OnInit {
       )
       .add(new go.TextBlock("", {  // texto inicial vazio
         name: "LABEL",  // nome para referência
-        font: "12px sans-serif",
+        font: "bold 15px arial",
         angle: 90,
                 position: new go.Point(0, 0),
                 alignment: go.Spot.Right,
-                stroke: "black",
+                stroke: "#424242",
                 alignmentFocus: go.Spot.Left,
                 textAlign: "center",  // Esta propriedade alinha texto no centro
       })

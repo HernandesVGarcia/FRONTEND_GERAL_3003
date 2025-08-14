@@ -52,7 +52,8 @@ export class Cabo1FIntComponent implements OnInit {
 
         .add(new go.TextBlock("", {  // texto inicial vazio
         name: "LABEL",  // nome para referência
-        font: "12px sans-serif",
+        font: "bold 12px sans-serif",
+        
         angle: -90,
         position: new go.Point(100, 0),
         alignment: go.Spot.Left,

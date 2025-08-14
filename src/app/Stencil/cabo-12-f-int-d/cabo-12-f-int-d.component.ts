@@ -45,12 +45,12 @@ export class Cabo12FIntDComponent implements OnInit {
       )
       .add(new go.TextBlock("", {  // texto inicial vazio
         name: "LABEL",  // nome para referência
-        font: "15px sans-serif",
-        angle: -90,
+        font: "bold 15px arial",
+        angle: 90,
         position: new go.Point(100, 0),
         alignment: go.Spot.Right,
         alignmentFocus: go.Spot.Left,
-        stroke: "black",
+        stroke: "#424242",
         textAlign: "center",  // Esta propriedade alinha texto no centro
       })
       .bind("text", "labelText")  // bind com a propriedade labelText do node data

@@ -52,12 +52,12 @@ export class Cabo4FNacComponent implements OnInit {
 
         .add(new go.TextBlock("", {  // texto inicial vazio
         name: "LABEL",  // nome para referência
-        font: "12px sans-serif",
+        font: "bold 13px arial",
         angle: -90,
         position: new go.Point(100, 0),
         alignment: go.Spot.Left,
         alignmentFocus: go.Spot.Right,
-        stroke:"black",
+        stroke:"#424242",
         wrap: go.Wrap.Fit,
         width: 300,
         textAlign: "center",  // Esta propriedade alinha texto no centro

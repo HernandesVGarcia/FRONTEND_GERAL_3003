@@ -86,11 +86,11 @@ export class Cabo36FNacComponent implements OnInit {
       )
       .add(new go.TextBlock("", {  // texto inicial vazio
         name: "LABEL_36F",  // nome único para referência
-        font: "15px sans-serif",
+        font: "bold 15px arial",
         angle: -90,
                 position: new go.Point(0, 0),
                 alignment: go.Spot.Left,
-                stroke: "black",
+                stroke: "#424242",
                 alignmentFocus: go.Spot.Right,
       })
       .bind("text", "labelText")  // bind com a propriedade labelText do node data
