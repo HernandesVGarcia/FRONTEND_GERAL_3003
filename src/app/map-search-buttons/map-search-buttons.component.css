@@ -1,0 +1,163 @@
+.search-buttons-container {
+  position: fixed;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  z-index: 1000;
+}
+
+/* Cada grupo precisa de posição relativa para o tooltip */
+.group {
+  position: relative;
+}
+
+/* Estilos para os botões de pesquisa */
+.map-search-button {
+  position: relative;
+  background-color: #2563eb;
+  color: white;
+  padding: 12px;
+  border-radius: 50%;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  transition: all 0.2s ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  border: none;
+  cursor: pointer;
+}
+
+.map-search-button:hover {
+  background-color: #1d4ed8;
+  transform: scale(1.05);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.map-search-button:active {
+  transform: scale(0.95);
+}
+
+/* Botão de viabilidade com cor diferente */
+.map-search-button.viabilidade {
+  background-color: #059669;
+}
+
+.map-search-button.viabilidade:hover {
+  background-color: #047857;
+}
+
+/* Tooltip styles */
+/* 🔍 MUDANÇA: Estilos base para todos os tooltips específicos 
+ */
+.tooltip-caixa,
+.tooltip-cliente,
+.tooltip-estacao,
+.tooltip-logradouro,
+.tooltip-viabilidade {
+  position: absolute;
+  left: calc(100% + 12px); 
+  top: 50%;
+  transform: translateY(-50%); 
+  background-color: #1f2937;
+  color: white;
+  font-size: 14px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease-in-out;
+  pointer-events: none;
+  z-index: 50;
+}
+
+/* 🔍 MUDANÇA: Mostrar cada tooltip no hover do seu grupo específico */
+.group:hover .tooltip-caixa,
+.group:hover .tooltip-cliente,
+.group:hover .tooltip-estacao,
+.group:hover .tooltip-logradouro,
+.group:hover .tooltip-viabilidade {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* 🔍 MUDANÇA: Setas para todos os tooltips */
+.tooltip-caixa::after, 
+.tooltip-cliente::after,
+.tooltip-estacao::after,
+.tooltip-logradouro::after,
+.tooltip-viabilidade::after {
+  content: '';
+  position: absolute;
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 4px solid transparent;
+  border-left-color: #1f2937;
+}
+
+.group:hover .tooltip {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Tooltip arrow */
+.tooltip::after {
+  content: '';
+  position: absolute;
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 4px solid transparent;
+  border-right-color: #1f2937;
+}
+
+/* Responsividade para mobile */
+@media (max-width: 768px) {
+  .search-buttons-container {
+    left: 10px;
+    gap: 8px;
+  }
+
+  .map-search-button {
+    padding: 10px;
+    min-width: 40px;
+    min-height: 40px;
+  }
+  
+  .map-search-button mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+  
+  .tooltip {
+    font-size: 12px;
+    padding: 6px 8px;
+  }
+}
+
+/* Mobile muito pequeno */
+@media (max-width: 480px) {
+  .search-buttons-container {
+    left: 5px;
+    gap: 6px;
+  }
+
+  .map-search-button {
+    padding: 8px;
+    min-width: 36px;
+    min-height: 36px;
+  }
+  
+  .map-search-button mat-icon {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+  }
+}

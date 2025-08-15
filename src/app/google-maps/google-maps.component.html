@@ -133,7 +133,15 @@
   </app-caixa-interna>-->
 
   <!-- Tooltip para cabos -->
-  
+<!-- Botões de pesquisa -->
+ 
+  <app-map-search-buttons
+    (pesquisarCaixa)="pesquisarCaixa()"
+    (pesquisarCliente)="pesquisarCliente()"
+    (pesquisarEstacao)="pesquisarEstacao()"
+    (pesquisarLogradouro)="pesquisarLogradouro()"
+    (verificarViabilidade)="verificarViabilidade()">
+  </app-map-search-buttons>  
 
 
 <app-gojs-demo

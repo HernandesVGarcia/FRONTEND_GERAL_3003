@@ -23,6 +23,8 @@ import { ChangeDetectorRef } from '@angular/core'; /// ============novo
 import { GoJSDemoComponent } from '../gojs-demo/gojs-demo.component';
 import { AuthService } from '../servico/auth.service';
 import { animate, animation } from '@angular/animations';
+
+import { MapSearchButtonsComponent } from '../map-search-buttons/map-search-buttons.component';
 //import { Cto_SP } from '../modelo/Cto_SP';
 //import { GoogleInfoWindowComponent } from '../google-infowindow/google-infowindow.component';
 
@@ -31,7 +33,7 @@ import { animate, animation } from '@angular/animations';
   templateUrl: './google-maps.component.html',
   styleUrls: ['./google-maps.component.css'],
   standalone: true,
-  imports: [CommonModule, GoogleMapsModule,GoJSDemoComponent],
+  imports: [CommonModule, GoogleMapsModule,GoJSDemoComponent,MapSearchButtonsComponent],
 })
 export class GoogleMapsComponent implements OnInit, OnChanges {
   @Input() destinoCondominios: Condominios[]=[];
@@ -1980,7 +1982,9 @@ closeGoJSModal() {
               <h4 style="margin: 0 0 8px 0; color: #333;">Cabo ${tipoFibra.toUpperCase()}</h4>
               <p style="margin: 4px 0;"><strong>ID:</strong> ${cabo.id_meta || 'N/A'}</p>
               <p style="margin: 4px 0;"><strong>Fibras:</strong> ${tipoFibra.replace('f', '')}</p>
+              <p style="margin: 4px 0;"><strong>Label:</strong> ${cabo.Label_cabo}</p>
               <p style="margin: 4px 0; font-size: 12px; color: #666;">Duplo-clique para abrir diagrama</p>
+              
             </div>
           `
         });
@@ -2040,7 +2044,44 @@ closeGoJSModal() {
     console.log(`Polylines de cabos ${tipoFibra} criadas:`, polylinesArray.length);
     console.log(`InfoWindows de cabos ${tipoFibra} criados:`, infoWindowsArray.length);
   }
+
+
+// Novos métodos para os botões de pesquisa
+  pesquisarCaixa(): void {
+    console.log('Pesquisar Caixa clicado');
+    // Implementar lógica de pesquisa de caixa
+    alert('Funcionalidade de Pesquisa Caixa será implementada');
+  }
+
+  pesquisarCliente(): void {
+    console.log('Pesquisar Cliente clicado');
+    // Implementar lógica de pesquisa de cliente
+    alert('Funcionalidade de Pesquisa Cliente será implementada');
+  }
+
+  pesquisarEstacao(): void {
+    console.log('Pesquisar Estação clicado');
+    // Implementar lógica de pesquisa de estação
+    alert('Funcionalidade de Pesquisa Estação será implementada');
+  }
+
+  pesquisarLogradouro(): void {
+    console.log('Pesquisar Logradouro clicado');
+    // Implementar lógica de pesquisa de logradouro
+    alert('Funcionalidade de Pesquisa Logradouro será implementada');
+  }
+
+  verificarViabilidade(): void {
+    console.log('Verificar Viabilidade clicado');
+    // Implementar lógica de verificação de viabilidade
+    alert('Funcionalidade de Viabilidade será implementada');
+  }
 }
+
+
+
+
+
 
 
 
