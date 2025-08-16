@@ -25,6 +25,7 @@ import { AuthService } from '../servico/auth.service';
 import { animate, animation } from '@angular/animations';
 
 import { MapSearchButtonsComponent } from '../map-search-buttons/map-search-buttons.component';
+
 //import { Cto_SP } from '../modelo/Cto_SP';
 //import { GoogleInfoWindowComponent } from '../google-infowindow/google-infowindow.component';
 

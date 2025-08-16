@@ -1,0 +1,54 @@
+ O volume na unidade C ‚ OS
+ O N£mero de S‚rie do Volume ‚ 0A22-0B3A
+
+ Pasta de C:\DROPBOX\NODE_Fiberworks_WEB API_3001\angular-google-maps\src\app
+
+15/08/2025  20:33    <DIR>          .
+15/08/2025  20:33    <DIR>          ..
+28/07/2025  18:26    <DIR>          angular-google-maps
+30/01/2025  10:30                 0 app.component.css
+07/04/2025  11:19               705 app.component.html
+16/07/2025  18:42             1.140 app.component.ts
+22/03/2025  16:51               510 app.config.ts
+10/07/2025  16:10               958 app.routes.ts
+28/07/2025  18:26    <DIR>          caixa-interna-sync
+28/07/2025  18:26    <DIR>          city-select-modal
+28/07/2025  18:26    <DIR>          environments
+28/07/2025  18:26    <DIR>          fiber-map
+28/07/2025  18:26    <DIR>          gojs-demo
+28/07/2025  18:26    <DIR>          gojs-drop
+28/07/2025  18:26    <DIR>          google-gps
+28/07/2025  18:26    <DIR>          google-infowindow
+28/07/2025  18:26    <DIR>          google-maps
+15/08/2025  19:36    <DIR>          graphviz
+28/07/2025  18:26    <DIR>          lib
+28/07/2025  18:26    <DIR>          lista-cabos12f
+28/07/2025  18:26    <DIR>          lista-cabos144f
+28/07/2025  18:26    <DIR>          lista-cabos1f
+28/07/2025  18:26    <DIR>          lista-cabos24f
+28/07/2025  18:26    <DIR>          lista-cabos2f
+28/07/2025  18:26    <DIR>          lista-cabos36f
+28/07/2025  18:26    <DIR>          lista-cabos48f
+28/07/2025  18:26    <DIR>          lista-cabos4f
+28/07/2025  18:26    <DIR>          lista-cabos6f
+28/07/2025  18:26    <DIR>          lista-cabos72f
+28/07/2025  18:26    <DIR>          lista-cabos8f
+28/07/2025  18:26    <DIR>          lista-caixas
+28/07/2025  18:26    <DIR>          lista-condominios
+28/07/2025  18:26    <DIR>          lista-ctos
+04/08/2025  16:41    <DIR>          lista-ctos-sp
+28/07/2025  18:26    <DIR>          lista-pops-est
+28/07/2025  18:26    <DIR>          login
+28/07/2025  18:26    <DIR>          map-page
+15/08/2025  11:06    <DIR>          map-search-buttons
+28/07/2025  18:26    <DIR>          menus
+11/08/2025  16:07    <DIR>          modelo
+15/08/2025  20:33               193 pastas.txt
+28/07/2025  18:26    <DIR>          rotas
+15/08/2025  11:05    <DIR>          servico
+28/07/2025  18:26    <DIR>          Stencil
+28/07/2025  18:26    <DIR>          toolbars
+28/07/2025  18:26    <DIR>          utils
+28/07/2025  18:26    <DIR>          workspace
+               6 arquivo(s)          3.506 bytes
+              41 pasta(s)   250.730.663.936 bytes dispon¡veis
