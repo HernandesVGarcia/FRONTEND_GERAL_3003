@@ -16,6 +16,9 @@ import { ListaCabos48fComponent} from '../lista-cabos48f/lista-cabos48f.componen
 import { ListaCabos72fComponent} from '../lista-cabos72f/lista-cabos72f.component';
 import { ListaCabos144fComponent} from '../lista-cabos144f/lista-cabos144f.component';
 import { ListaPopsESTComponent} from '../lista-pops-est/lista-pops-est.component';
+import { ListaPopsCLIComponent} from '../lista-clientes/lista-clientes.component';
+import { ListaPopsCLIDesComponent} from '../lista-clientes-disable/lista-clientes-disable.component';
+import { ListaPopsCLIAtvComponent} from '../lista-clientes-ativo/lista-clientes-ativo.component';
 import { ListaCondominiosComponent} from '../lista-condominios/lista-condominios.component';
 import { Cabos1f } from '../modelo/Cabos1f';
 import { Cabos2f } from '../modelo/Cabos2f';
@@ -33,6 +36,7 @@ import { Cto} from '../modelo/Cto';
 import { PopsEst} from '../modelo/popsEst'
 import { Condominios} from '../modelo/Condominios'
 import { Cto_SP } from '../modelo/Cto_SP';
+import { PopsCli } from '../modelo/PopsCli';
 
 
 
@@ -59,6 +63,9 @@ import { Cto_SP } from '../modelo/Cto_SP';
     ListaCabos2fComponent,
     ListaCabos1fComponent,
     ListaPopsESTComponent,
+    ListaPopsCLIComponent,
+    ListaPopsCLIDesComponent,
+    ListaPopsCLIAtvComponent,
     ListaCondominiosComponent
 
     ]
@@ -68,6 +75,9 @@ export class FiberMapComponent {
   caixasCTO: any[] = [];
   caixasCTOSP: any[] = [];
   popEST: any[]=[];
+  popCLI: any[]=[];
+  popCLIDes: any[]=[];
+  popCLIAtv: any[]=[];
   Condominios: any[]=[];
 
   cabos1f: Cabos1f []=[];
@@ -85,6 +95,18 @@ export class FiberMapComponent {
 
   onCondominiosSelecionada(condominios: Condominios[]) { 
     this.Condominios = condominios;  
+  }
+
+  onPopsCliSelecionada(popscli: PopsCli[]) { 
+    this.popCLI = popscli;  
+  }
+
+  onPopsCliDesSelecionada(popscliDes: PopsCli[]) { 
+    this.popCLIDes = popscliDes;  
+  }
+
+  onPopsCliAtvSelecionada(popscliAtv: PopsCli[]) { 
+    this.popCLIAtv = popscliAtv;  
   }
 
   onPopsEstSelecionada(pops: PopsEst[]) { 

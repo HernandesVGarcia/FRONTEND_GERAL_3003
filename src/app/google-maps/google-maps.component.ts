@@ -15,6 +15,7 @@ import { Cabos144f } from '../modelo/Cabos144f';
 import { Caixa } from '../modelo/Caixa';
 import { Cto } from '../modelo/Cto';
 import { Cto_SP } from '../modelo/Cto_SP';
+import { PopsCli } from '../modelo/PopsCli';
 import { PopsEst } from '../modelo/popsEst';
 import { Condominios } from '../modelo/Condominios';
 
@@ -38,6 +39,9 @@ import { MapSearchButtonsComponent } from '../map-search-buttons/map-search-butt
 })
 export class GoogleMapsComponent implements OnInit, OnChanges {
   @Input() destinoCondominios: Condominios[]=[];
+  @Input() destinoPopsCli: PopsCli[] = [];
+  @Input() destinoPopsCliDes: PopsCli[] = [];
+  @Input() destinoPopsCliAtv: PopsCli[] = [];
   @Input() destinoPopsEst: PopsEst[] = [];
   @Input() destino: Caixa[] = [];
   @Input() destinoCTO: Cto[] = [];
@@ -98,6 +102,9 @@ export class GoogleMapsComponent implements OnInit, OnChanges {
     
   };
   markerCondominios: google.maps.Marker[] = [];
+  markerPopsCli: google.maps.Marker[] = [];
+  markerPopsCliAtv: google.maps.Marker[] = [];
+  markerPopsCliDes: google.maps.Marker[] = [];
   markerPopsEst: google.maps.Marker[] = [];
   markerCaixas: google.maps.Marker[] = [];
   markerCtos:google.maps.Marker[]=[];
@@ -154,8 +161,11 @@ export class GoogleMapsComponent implements OnInit, OnChanges {
 private ZOOM_LEVEL_CAIXAS = 15; // Caixas CEO visíveis em zoom >= 14
 private ZOOM_LEVEL_CTOS = 16;   // CTOs visíveis em zoom >= 16
 private ZOOM_LEVEL_CTOSSP = 16;   // CTOs visíveis em zoom >= 16
-private ZOOM_LEVEL_POPS = 14;   // CTOs visíveis em zoom >= 13
-private ZOOM_LEVEL_CONDOMINIOS = 16;   // CTOs visíveis em zoom >= 16
+private ZOOM_LEVEL_POPS = 14;   // pops visíveis em zoom >= 13
+private ZOOM_LEVEL_CLIENTES = 18;   // pops visíveis em zoom >= 18
+private ZOOM_LEVEL_CLIENTES_DISABLES = 19;   // pops visíveis em zoom >= 18
+private ZOOM_LEVEL_CLIENTES_ATIVOS = 17;   // pops visíveis em zoom >= 18
+private ZOOM_LEVEL_CONDOMINIOS = 17;   // CTOs visíveis em zoom >= 16
 
 
 private map?: (google.maps.Map);
@@ -176,6 +186,9 @@ private map?: (google.maps.Map);
  private MAX_VISIBLE_MARKERS_CEO = 200; // Ajuste este valor conforme necessário
  private MAX_VISIBLE_MARKERS_CTO = 150; // Ajuste este valor conforme necessário
  private MAX_VISIBLE_MARKERS_CTOSP = 150; // Ajuste este valor conforme necessário
+ private MAX_VISIBLE_MARKERS_CLIENTES = 100; // Ajuste este valor conforme necessário
+ private MAX_VISIBLE_MARKERS_CLIENTES_DISABLES = 100; // Ajuste este valor conforme necessário
+ private MAX_VISIBLE_MARKERS_CLIENTES_ATIVOS = 100; // Ajuste este valor conforme necessário
  private MAX_VISIBLE_MARKERS_POPs = 30; // Ajuste este valor conforme necessário
  private MAX_VISIBLE_MARKERS_CONDOMINIOS = 100; // Ajuste este valor conforme necessário
  
@@ -434,6 +447,21 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
       this.updateMarkersCondominios();
     }
 
+    if (changes['destinoPopsCli'] && changes['destinoPopsCli'].currentValue) {
+      console.log('Atualizando marcadores de Clientes ',this.destinoPopsCli);
+      this.updateMarkersPopsCli();
+    }
+
+    if (changes['destinoPopsCliDes'] && changes['destinoPopsCliDes'].currentValue) {
+      console.log('Atualizando marcadores de Clientes Desativados',this.destinoPopsCliDes);
+      this.updateMarkersPopsCliDes();
+    }
+
+    if (changes['destinoPopsCliAtv'] && changes['destinoPopsCliAtv'].currentValue) {
+      console.log('Atualizando marcadores de Clientes Ativados',this.destinoPopsCliAtv);
+      this.updateMarkersPopsCliAtv();
+    }
+
     if (changes['destinoPopsEst'] && changes['destinoPopsEst'].currentValue) {
       console.log('Atualizando marcadores de Estações ',this.destinoPopsEst);
       this.updateMarkersPopsEst();
@@ -591,6 +619,27 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
     return [];
   }  
 
+  getVisibleMarkerPOPCLI(): google.maps.Marker[] {
+    if (this.currentZoom >= this.ZOOM_LEVEL_CLIENTES) {
+      return this.markerPopsCli;
+    }
+    return [];
+  }  
+
+  getVisibleMarkerPOPCLIAtv(): google.maps.Marker[] {
+    if (this.currentZoom >= this.ZOOM_LEVEL_CLIENTES_ATIVOS) {
+      return this.markerPopsCliAtv;
+    }
+    return [];
+  }  
+
+  getVisibleMarkerPOPCLIDes(): google.maps.Marker[] {
+    if (this.currentZoom >= this.ZOOM_LEVEL_CLIENTES_DISABLES) {
+      return this.markerPopsCliDes;
+    }
+    return [];
+  }  
+
 
 
 
@@ -629,7 +678,7 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
           
         },
 
-        visible: this.currentZoom >= this.ZOOM_LEVEL_POPS
+        visible: this.currentZoom >= this.ZOOM_LEVEL_CONDOMINIOS
         ///visible: false
 
       };
@@ -652,6 +701,210 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
     });
       
       console.log('Condominios atualizadas:', this.markerCondominios);
+    }
+  }
+
+//=====================================função para carregar as POPs na Tela================================
+  private updateMarkersPopsCli() {
+    
+
+      if (this.destinoPopsCli && this.destinoPopsCli.length > 0 && this.map) {
+        this.markerPopsCli.forEach(marker => marker.setMap(null));
+        this.markerPopsCli = [];
+        
+        this.destinoPopsCli.forEach(location => {
+          const position = {
+            lat: Number(location.LAT),
+            lng: Number(location.LNG)
+          };
+
+    
+
+      const markerOptions: google.maps.MarkerOptions = {
+        position: position,
+        title: location.sigla || 'Sem nome',
+        draggable: true,
+        opacity:20,
+        label: {
+          text: location.sigla || 'S/N',
+          color: 'gray',
+          fontSize: '10px'
+        } as google.maps.MarkerLabel,
+        icon: {
+          //url: '/assets/TORRE4.png',
+          path: google.maps.SymbolPath.CIRCLE,
+          fillColor: 'red', // Cor de preenchimento vermelha
+          fillOpacity: 0.7, // Opacidade do preenchimento
+          strokeColor: 'darkred', // Cor da borda
+          strokeWeight: 2, // Espessura da borda
+          scale: 4, // Tamanho do círculo
+          labelOrigin: new google.maps.Point(0, -2),
+          //scaledSize: new google.maps.Size(10, 10),
+          
+          
+          
+        },
+
+        visible: this.currentZoom >= this.ZOOM_LEVEL_CLIENTES
+        ///visible: false
+
+      };
+      
+      const marker = new google.maps.Marker(markerOptions);
+      if (this.map) {
+        marker.setMap(this.map);
+      }
+      
+      marker.addListener('dragend', (event: google.maps.MapMouseEvent) => {
+        const index = this.markerPopsCli.indexOf(marker);
+        if (index !== -1) {
+          this.onMarkerDragEnd(event, index, true);
+        }
+      });
+
+      this.addMarkerEventListeners(marker, true);
+      
+      this.markerPopsCli.push(marker);
+    });
+      
+      console.log('Clientes atualizados:', this.markerPopsCli);
+    }
+  }
+
+
+//=====================================função para carregar as POPs na Tela================================
+  private updateMarkersPopsCliDes() {
+    
+
+      if (this.destinoPopsCliDes && this.destinoPopsCliDes.length > 0 && this.map) {
+        this.markerPopsCliDes.forEach(marker => marker.setMap(null));
+        this.markerPopsCliDes = [];
+        
+        this.destinoPopsCliDes.forEach(location => {
+          const position = {
+            lat: Number(location.LAT),
+            lng: Number(location.LNG)
+          };
+
+    
+
+      const markerOptions: google.maps.MarkerOptions = {
+        position: position,
+        title: location.sigla || 'Sem nome',
+        draggable: true,
+        opacity:20,
+        label: {
+          text: location.sigla || 'S/N',
+          color: 'gray',
+          fontSize: '10px'
+        } as google.maps.MarkerLabel,
+        icon: {
+          
+          path: google.maps.SymbolPath.CIRCLE,
+          fillColor: 'gray', // Cor de preenchimento vermelha
+          fillOpacity: 0.7, // Opacidade do preenchimento
+          strokeColor: 'black', // Cor da borda
+          strokeWeight: 2, // Espessura da borda
+          scale: 4, // Tamanho do círculo
+          labelOrigin: new google.maps.Point(0, -2),
+          
+          
+          
+          
+        },
+
+        visible: this.currentZoom >= this.ZOOM_LEVEL_CLIENTES_DISABLES
+        ///visible: false
+
+      };
+      
+      const marker = new google.maps.Marker(markerOptions);
+      if (this.map) {
+        marker.setMap(this.map);
+      }
+      
+      marker.addListener('dragend', (event: google.maps.MapMouseEvent) => {
+        const index = this.markerPopsCliDes.indexOf(marker);
+        if (index !== -1) {
+          this.onMarkerDragEnd(event, index, true);
+        }
+      });
+
+      this.addMarkerEventListeners(marker, true);
+      
+      this.markerPopsCliDes.push(marker);
+    });
+      
+      console.log('Clientes Desativados atualizados:', this.markerPopsCliDes);
+    }
+  }
+
+
+
+//=====================================função para carregar Clientes Ativos na Tela================================
+  private updateMarkersPopsCliAtv() {
+    
+
+      if (this.destinoPopsCliAtv && this.destinoPopsCliAtv.length > 0 && this.map) {
+        this.markerPopsCliAtv.forEach(marker => marker.setMap(null));
+        this.markerPopsCliAtv = [];
+        
+        this.destinoPopsCliAtv.forEach(location => {
+          const position = {
+            lat: Number(location.LAT),
+            lng: Number(location.LNG)
+          };
+
+    
+
+      const markerOptions: google.maps.MarkerOptions = {
+        position: position,
+        title: location.sigla || 'Sem nome',
+        draggable: true,
+        opacity:20,
+        label: {
+          text: location.sigla || 'S/N',
+          color: 'blue',
+          fontSize: '10px'
+        } as google.maps.MarkerLabel,
+        icon: {
+          
+          path: google.maps.SymbolPath.CIRCLE,
+          fillColor: 'cyan', // Cor de preenchimento vermelha
+          fillOpacity: 0.7, // Opacidade do preenchimento
+          strokeColor: 'blue', // Cor da borda
+          strokeWeight: 2, // Espessura da borda
+          scale: 4, // Tamanho do círculo
+          labelOrigin: new google.maps.Point(0, -2),
+          
+          
+          
+          
+        },
+
+        visible: this.currentZoom >= this.ZOOM_LEVEL_CLIENTES_ATIVOS
+        ///visible: false
+
+      };
+      
+      const marker = new google.maps.Marker(markerOptions);
+      if (this.map) {
+        marker.setMap(this.map);
+      }
+      
+      marker.addListener('dragend', (event: google.maps.MapMouseEvent) => {
+        const index = this.markerPopsCliAtv.indexOf(marker);
+        if (index !== -1) {
+          this.onMarkerDragEnd(event, index, true);
+        }
+      });
+
+      this.addMarkerEventListeners(marker, true);
+      
+      this.markerPopsCliAtv.push(marker);
+    });
+      
+      console.log('Clientes Ativados atualizados:', this.markerPopsCliAtv);
     }
   }
 
@@ -1699,10 +1952,83 @@ private updateVisibleMarkers() {
   console.log(` Estações visíveis: ${visiblePOPsCount}`);
    
 
+// Atualizar visibilidade de Clientes  //----------------- Visibilidade de Clientes ----------------------------
+  let visiblePOPsCLICount = 0;
+  console.log ('atualiza Clientes visibles')
+  this.markerPopsCli.forEach(marker => {
+    if (marker) {
+      const position = marker.getPosition();
+      if (position && 
+          bounds.contains(position) && 
+          this.currentZoom >= this.ZOOM_LEVEL_CLIENTES &&
+          visiblePOPsCLICount < this.MAX_VISIBLE_MARKERS_CLIENTES) {
+        
+        if (this.map) {marker.setMap(this.map)};//xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+        marker.setVisible(true);
+        visiblePOPsCLICount++;
+      } else {
+        marker.setVisible(false);
+        marker.setMap(null);
+      }
+
+      
+    }
+  });
+
+  console.log(` Clientes visíveis: ${visiblePOPsCLICount}`);
+
+  // Atualizar visibilidade de Clientes DESATIVADOS   //----------------- Visibilidade de Clientes DESATIVADOS ----------------------------
+  let visiblePOPsCLIDesCount = 0;
+  console.log ('atualiza Clientes Desabilitados visibles')
+  this.markerPopsCliDes.forEach(marker => {
+    if (marker) {
+      const position = marker.getPosition();
+      if (position && 
+          bounds.contains(position) && 
+          this.currentZoom >= this.ZOOM_LEVEL_CLIENTES_DISABLES &&
+          visiblePOPsCLIDesCount < this.MAX_VISIBLE_MARKERS_CLIENTES_DISABLES) {
+        
+        if (this.map) {marker.setMap(this.map)};//xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+        marker.setVisible(true);
+        visiblePOPsCLIDesCount++;
+      } else {
+        marker.setVisible(false);
+        marker.setMap(null);
+      }
+
+      
+    }
+  });
+
+  console.log(` Clientes Desativados visíveis: ${visiblePOPsCLIDesCount}`);
 
 
+// Atualizar visibilidade de Clientes DESATIVADOS   //----------------- Visibilidade de Clientes DESATIVADOS ----------------------------
+  let visiblePOPsCLIAtvCount = 0;
+  console.log ('atualiza Clientes Ativos visibles')
+  this.markerPopsCliAtv.forEach(marker => {
+    if (marker) {
+      const position = marker.getPosition();
+      if (position && 
+          bounds.contains(position) && 
+          this.currentZoom >= this.ZOOM_LEVEL_CLIENTES_ATIVOS &&
+          visiblePOPsCLIAtvCount < this.MAX_VISIBLE_MARKERS_CLIENTES_ATIVOS) {
+        
+        if (this.map) {marker.setMap(this.map)};//xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+        marker.setVisible(true);
+        visiblePOPsCLIAtvCount++;
+      } else {
+        marker.setVisible(false);
+        marker.setMap(null);
+      }
 
-// Atualizar visibilidade de Estações  //----------------- Visibilidade de Condominios ----------------------------
+      
+    }
+  });
+
+  console.log(` Clientes Desativados visíveis: ${visiblePOPsCLIDesCount}`);
+
+// Atualizar visibilidade de Condominios  //----------------- Visibilidade de Condominios ----------------------------
   let visibleCondominiosCount = 0;
   console.log ('atualiza Condominios visibles')
   this.markerCondominios.forEach(marker => {

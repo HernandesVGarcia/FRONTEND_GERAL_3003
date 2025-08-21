@@ -7,10 +7,19 @@
 <div class="container">
 
 
-    <!-- Lista de Caixas CEO -->
+    <!-- Lista de Condominios -->
     <app-lista-condominios (CondominiosSelecionada)="onCondominiosSelecionada($event)"></app-lista-condominios>
 
-    <!-- Lista de Caixas CEO -->
+    <!-- Lista de Clientes -->
+    <app-lista-clientes (popsCliSelecionada)="onPopsCliSelecionada($event)"></app-lista-clientes>
+
+    <!-- Lista de Clientes Desativados -->
+    <app-lista-clientes-disable (popsCliDesSelecionada)="onPopsCliDesSelecionada($event)"></app-lista-clientes-disable>
+
+    <!-- Lista de Clientes Ativados -->
+    <app-lista-clientes-ativo (popsCliAtvSelecionada)="onPopsCliAtvSelecionada($event)"></app-lista-clientes-ativo>
+
+    <!-- Lista de Estações -->
     <app-lista-pops-est (popsEstSelecionada)="onPopsEstSelecionada($event)"></app-lista-pops-est>
 
     <!-- Lista de Caixas CEO -->
@@ -59,6 +68,9 @@
   
   <app-google-maps
   [destinoCondominios]="Condominios" 
+  [destinoPopsCli]="popCLI"
+  [destinoPopsCliDes]="popCLIDes"
+  [destinoPopsCliAtv]="popCLIAtv"
   [destinoPopsEst]="popEST"
   [destino]="caixasCEO" 
   [destinoCTO]="caixasCTO"
