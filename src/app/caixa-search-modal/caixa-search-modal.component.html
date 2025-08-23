@@ -1,0 +1,79 @@
+
+
+<div class="modal-container" #draggableContainer>
+  <!-- Header -->
+  <div class="modal-header draggable-header" #draggableHeader>
+    <h2 mat-dialog-title class="modal-title">Pesquisar Caixa</h2>
+    <button mat-icon-button class="close-button" (click)="onCancel()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <!-- Filters Section -->
+  <div class="filters-section">
+    <div class="filter-row">
+      <mat-form-field class="filter-field">
+        <mat-label>Número</mat-label>
+        <input matInput [(ngModel)]="numeroFilter" placeholder="Digite o número da caixa">
+      </mat-form-field>
+
+      <mat-form-field class="filter-field">
+        <mat-label>Localização</mat-label>
+        <input matInput [(ngModel)]="localizacaoFilter" placeholder="Digite a localização">
+      </mat-form-field>
+    </div>
+
+    <div class="search-button-row">
+      <button mat-raised-button color="primary" (click)="onBuscaCompleta()" [disabled]="isLoading">
+        <mat-icon>search</mat-icon>
+        {{ isLoading ? 'Buscando...' : 'Buscar' }}
+      </button>
+    </div>
+
+    <!-- Error Message -->
+    <div *ngIf="errorMessage" class="error-message">
+      <mat-icon color="warn">error</mat-icon>
+      <span>{{ errorMessage }}</span>
+    </div>
+  </div>
+
+  <!-- Grid Section -->
+  <div class="grid-section">
+    <div class="grid-container" *ngIf="!isLoading">
+      <!-- Header Row -->
+      <div class="grid-header">
+        <div class="grid-cell header-cell">NUMERO</div>
+        <div class="grid-cell header-cell">LOCALIZAÇÃO</div>
+        <div class="grid-cell header-cell">ID</div>
+      </div>
+
+      <!-- Data Rows -->
+      <div class="grid-body">
+        <div 
+          *ngFor="let caixa of filteredData" 
+          class="grid-row data-row"
+          (click)="onSelectCaixa(caixa)">
+          <div class="grid-cell data-cell">{{ caixa.NUMERO }}</div>
+          <div class="grid-cell data-cell">{{ caixa.LOCALIZACAO }}</div>
+          <div class="grid-cell data-cell">{{ caixa.ID_META }}</div>
+        </div>
+      </div>
+
+      <!-- No Results Message -->
+      <div *ngIf="filteredData.length === 0 && !errorMessage" class="no-results">
+        <p>Use os filtros acima para buscar caixas</p>
+      </div>
+    </div>
+
+    <!-- Loading Indicator -->
+    <div *ngIf="isLoading" class="loading-container">
+      <mat-icon class="loading-icon">hourglass_empty</mat-icon>
+      <p>Carregando resultados...</p>
+    </div>
+  </div>
+
+  <!-- Actions -->
+  <div class="actions-section" mat-dialog-actions>
+    <button mat-button (click)="onCancel()">Cancelar</button>
+  </div>
+</div>

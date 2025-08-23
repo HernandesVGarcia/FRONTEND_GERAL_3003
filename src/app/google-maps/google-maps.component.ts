@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
+import { Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { GoogleMapsModule } from '@angular/google-maps';
 import { Cabos1f } from '../modelo/Cabos1f';
@@ -26,6 +26,8 @@ import { AuthService } from '../servico/auth.service';
 import { animate, animation } from '@angular/animations';
 
 import { MapSearchButtonsComponent } from '../map-search-buttons/map-search-buttons.component';
+import { CompartilhamentoService, CaixaData } from '../servico/compartilhamento.service';
+import { Subject, takeUntil } from 'rxjs';
 
 //import { Cto_SP } from '../modelo/Cto_SP';
 //import { GoogleInfoWindowComponent } from '../google-infowindow/google-infowindow.component';
@@ -62,7 +64,10 @@ export class GoogleMapsComponent implements OnInit, OnChanges {
  // private isMapFullyInitialized = false;
  // private isInfoWindowsSetup = false;
 
-  constructor(private cdr: ChangeDetectorRef, private authService : AuthService) {
+  constructor(
+     private cdr: ChangeDetectorRef,
+     private authService : AuthService,
+     private compartilhamentoService: CompartilhamentoService) {
   
     
   };
@@ -166,6 +171,8 @@ private ZOOM_LEVEL_CLIENTES = 18;   // pops visíveis em zoom >= 18
 private ZOOM_LEVEL_CLIENTES_DISABLES = 19;   // pops visíveis em zoom >= 18
 private ZOOM_LEVEL_CLIENTES_ATIVOS = 17;   // pops visíveis em zoom >= 18
 private ZOOM_LEVEL_CONDOMINIOS = 17;   // CTOs visíveis em zoom >= 16
+
+private destroy$ = new Subject<void>();
 
 
 private map?: (google.maps.Map);
@@ -401,6 +408,15 @@ polylineOptions144f: google.maps.PolylineOptions = {
     //const lng= this.authService.getLng
     //center:google.maps.LatLngLiteral = { lat: lat, lng: lng};
 
+
+    // Subscription para escutar dados de caixa selecionada
+    this.compartilhamentoService.caixa$.pipe(takeUntil(this.destroy$)).subscribe((caixaData: CaixaData | null) => {
+      if (caixaData) {
+        console.log('Dados da caixa recebidos no GoogleMaps:', caixaData);
+        this.centralizarNaCaixa(caixaData);
+      }
+    });
+
   }
 
   //MÉTODOS========================================================
@@ -431,6 +447,9 @@ polylineOptions144f: google.maps.PolylineOptions = {
 
 console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
 }
+
+
+
 
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -639,6 +658,10 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
     }
     return [];
   }  
+
+
+
+
 
 
 
@@ -2374,10 +2397,29 @@ closeGoJSModal() {
 
 
 // Novos métodos para os botões de pesquisa
-  pesquisarCaixa(): void {
-    console.log('Pesquisar Caixa clicado');
-    // Implementar lógica de pesquisa de caixa
-    alert('Funcionalidade de Pesquisa Caixa será implementada');
+  pesquisarCaixa(dadosCaixa?: any): void {
+    console.log('Pesquisar Caixa executado no GoogleMapsComponent');
+    console.log('Dados recebidos - dadosCaixa:', dadosCaixa);
+    console.log('Tipo de dadosCaixa:', typeof dadosCaixa);
+    console.log('dadosCaixa é undefined?', dadosCaixa === undefined);
+    
+    if (dadosCaixa && dadosCaixa.LAT && dadosCaixa.LONGI) {
+    
+      
+      // Centralizar mapa na localização da caixa com zoom máximo
+
+      //this.centerMapOnLocation(dadosCaixa.LAT,dadosCaixa.LONGI)
+      this.center = { 
+        lat: parseFloat(dadosCaixa.LAT), 
+        lng: parseFloat(dadosCaixa.LONGI) 
+      };
+      this.zoom = 20;
+      
+      console.log(`Mapa centralizado na caixa ${dadosCaixa.NUMERO}: ${dadosCaixa.LAT}, ${dadosCaixa.LONGI}`);
+    } else {
+      console.log('Dados de caixa incompletos ou não fornecidos');
+      console.log('Funcionalidade de Pesquisa Caixa será implementada');
+    }
   }
 
   pesquisarCliente(): void {
@@ -2403,14 +2445,27 @@ closeGoJSModal() {
     // Implementar lógica de verificação de viabilidade
     alert('Funcionalidade de Viabilidade será implementada');
   }
+
+
+
+    
+   // Método para centralizar o mapa na caixa selecionada
+  centralizarNaCaixa(caixaData: CaixaData): void {
+    if (caixaData.LAT && caixaData.LONGI && this.map) {
+      const center = new google.maps.LatLng(caixaData.LAT, caixaData.LONGI);
+      this.map.setCenter(center);
+      this.map.setZoom(18); // Zoom próximo para visualizar a caixa
+      console.log(`Mapa centralizado na caixa ${caixaData.NUMERO} - Coordenadas: ${caixaData.LAT}, ${caixaData.LONGI}`);
+    } 
+    
+  }
+
+
+
+
+
+
+
+
+
 }
-
-
-
-
-
-
-
-
-
-
