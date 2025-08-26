@@ -26,7 +26,7 @@ import { AuthService } from '../servico/auth.service';
 import { animate, animation } from '@angular/animations';
 
 import { MapSearchButtonsComponent } from '../map-search-buttons/map-search-buttons.component';
-import { CompartilhamentoService, CaixaData } from '../servico/compartilhamento.service';
+import { CompartilhamentoService, CaixaData, ClienteData } from '../servico/compartilhamento.service';
 import { Subject, takeUntil } from 'rxjs';
 
 //import { Cto_SP } from '../modelo/Cto_SP';
@@ -414,6 +414,14 @@ polylineOptions144f: google.maps.PolylineOptions = {
       if (caixaData) {
         console.log('Dados da caixa recebidos no GoogleMaps:', caixaData);
         this.centralizarNaCaixa(caixaData);
+      }
+    });
+
+    // Subscription para escutar dados de caixa selecionada
+    this.compartilhamentoService.cliente$.pipe(takeUntil(this.destroy$)).subscribe((clienteData: ClienteData | null) => {
+      if (clienteData) {
+        console.log('Dados da caixa recebidos no GoogleMaps:', clienteData);
+        this.centralizarNoCliente(clienteData);
       }
     });
 
@@ -2395,7 +2403,7 @@ closeGoJSModal() {
     console.log(`InfoWindows de cabos ${tipoFibra} criados:`, infoWindowsArray.length);
   }
 
-
+// BOTOES DE PESQUISA NO MAPA==================================================================================================
 // Novos métodos para os botões de pesquisa
   pesquisarCaixa(dadosCaixa?: any): void {
     console.log('Pesquisar Caixa executado no GoogleMapsComponent');
@@ -2422,10 +2430,29 @@ closeGoJSModal() {
     }
   }
 
-  pesquisarCliente(): void {
-    console.log('Pesquisar Cliente clicado');
-    // Implementar lógica de pesquisa de cliente
-    alert('Funcionalidade de Pesquisa Cliente será implementada');
+  pesquisarCliente(dadosCliente?: any): void {
+    console.log('Pesquisar Cliente executado no GoogleMapsComponent');
+    console.log('Dados recebidos - dadosCliente:', dadosCliente);
+    console.log('Tipo de dadosCliente:', typeof dadosCliente);
+    console.log('dadosCliente é undefined?', dadosCliente === undefined);
+    
+    if (dadosCliente && dadosCliente.LAT && dadosCliente.LONGI) {
+    
+      
+      // Centralizar mapa na localização da caixa com zoom máximo
+
+      //this.centerMapOnLocation(dadosCaixa.LAT,dadosCaixa.LONGI)
+      this.center = { 
+        lat: parseFloat(dadosCliente.LAT), 
+        lng: parseFloat(dadosCliente.LNG) 
+      };
+      this.zoom = 20;
+      
+      console.log(`Mapa centralizado no Cliente ${dadosCliente.SIGLA}: ${dadosCliente.LAT}, ${dadosCliente.LNG}`);
+    } else {
+      console.log('Dados do Cliente incompletos ou não fornecidos');
+      console.log('Funcionalidade de Pesquisa Cliente será implementada');
+    }
   }
 
   pesquisarEstacao(): void {
@@ -2460,7 +2487,16 @@ closeGoJSModal() {
     
   }
 
-
+   // Método para centralizar o mapa no cliente selecionado
+  centralizarNoCliente(clienteData: ClienteData): void {
+    if (clienteData.LAT && clienteData.LNG && this.map) {
+      const center = new google.maps.LatLng(clienteData.LAT, clienteData.LNG);
+      this.map.setCenter(center);
+      this.map.setZoom(20); // Zoom próximo para visualizar a caixa
+      console.log(`Mapa centralizado na caixa ${clienteData.SIGLA} - Coordenadas: ${clienteData.LAT}, ${clienteData.LNG}`);
+    } 
+    
+  }
 
 
 

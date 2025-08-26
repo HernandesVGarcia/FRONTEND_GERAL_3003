@@ -10,6 +10,14 @@ export interface CaixaData {
   [key: string]: any;
 }
 
+export interface ClienteData {
+  LAT: number;
+  LNG: number;
+  SIGLA: string;
+  ENDERECO: string;
+  [key: string]: any;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -19,11 +27,14 @@ export class CompartilhamentoService {
   private caixaSubject = new BehaviorSubject<CaixaData | null>(null);
   public caixa$: Observable<CaixaData | null> = this.caixaSubject.asObservable();
 
+  private clienteSubject = new BehaviorSubject<ClienteData | null>(null);
+  public cliente$: Observable<ClienteData | null> = this.clienteSubject.asObservable();
+
   constructor() {
     console.log('CompartilhamentoService inicializado');
   }
 
-  // Métodos para Caixa
+  // Métodos para Caixa ==============================================================================================
   compartilharCaixa(caixa: CaixaData): void {
     console.log('Compartilhando dados da caixa:', caixa);
     this.caixaSubject.next(caixa);
@@ -42,6 +53,29 @@ export class CompartilhamentoService {
   mostrarEstadoAtual(): void {
     console.log('=== Estado Atual do CompartilhamentoService ===');
     console.log('Caixa atual:', this.obterCaixaAtual());
-    console.log('===============================================');
+    console.log('===============================================');}
+
+
+    //metodo para compartilhar cliente==========================================================================================
+    compartilharCliente(cliente: ClienteData): void {
+      console.log('Compartilhando dados da cliente:', cliente);
+      this.clienteSubject.next(cliente);
+    }
+  
+    obterClienteAtual(): ClienteData | null {
+      return this.clienteSubject.value;
+    }
+  
+    limparCliente(): void {
+      console.log('Limpando dados da caixa');
+      this.clienteSubject.next(null);
+    }
+  
+    // Método para debug - mostrar estado atual
+    mostrarEstadoAtualCliente(): void {
+      console.log('=== Estado Atual do CompartilhamentoService ===');
+      console.log('Caixa atual:', this.obterClienteAtual());
+      console.log('===============================================');
+
   }
 }

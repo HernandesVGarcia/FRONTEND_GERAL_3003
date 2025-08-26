@@ -1,23 +1,5 @@
 
-<!--
-<div class="map-container">
-  <table border="1" style="width: 100%; margin-bottom: 20px;">
-    <thead>
-      <tr>
-        <th>Caixa Número</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let v of destino">
-        <td>{{v.numero}}</td>
-      </tr>
-      <tr *ngFor="let v of destinoCTO">
-        <td>{{v.numero}} (CTO)</td>
-      </tr>
-    </tbody>
-  </table>
 
--->
 
   <google-map
     
@@ -39,108 +21,15 @@
     
     </map-marker>
 
-  
-    
-    
+        
 
-    <!--
-    map-marker
-      *ngFor="let position of markerCaixas; let i = index"
-      [position]="position"
-      [options]="markerOptions[i]"
-      (mapClick)="onMarkerClick($event, i)"
-      (mapDragend)="onMarkerDragEnd($event,i)">
-    </map-marker>
-    map-marker
-      *ngFor="let position of markerCtos; let i = index"
-      [position]="position"
-      [options]="markerOptionsCTO[i]"
-      (mapDragend)="onMarkerDragEnd($event,i,true)">
-    </map-marker>-->
-
-
-    
-    <!--<map-polyline
-    <map-polyline 
-    *ngFor="let pathj of polylinePaths1f"
-    [path]="pathj"
-    [options]="polylineOptions1f"
-    ></map-polyline>
-
-    <map-polyline 
-    *ngFor="let pathj of polylinePaths2f"
-    [path]="pathj"
-    [options]="polylineOptions2f"
-    ></map-polyline>
-
-    <map-polyline 
-    *ngFor="let pathj of polylinePaths4f"
-    [path]="pathj"
-    [options]="polylineOptions4f"
-    ></map-polyline>
-
-     
-    *ngFor="let pathj of polylinePaths6f"
-    [path]="pathj"
-    [options]="polylineOptions6f"
-    
-    ></map-polyline> 
-
-    <map-polyline 
-    *ngFor="let pathj of polylinePaths8f"
-    [path]="pathj"
-    [options]="polylineOptions8f"
-    ></map-polyline>
-
-    <map-polyline 
-    *ngFor="let path of polylinePaths12f"
-    [path]="path"
-    [options]="polylineOptions12f"
-    ></map-polyline>
-    
-    <map-polyline
-    *ngFor="let pathi of polylinePaths24f"
-    [path]="pathi"
-    [options]="polylineOptions24f">
-    </map-polyline>
-
-    <map-polyline
-    *ngFor="let pathi of polylinePaths36f"
-    [path]="pathi"
-    [options]="polylineOptions36f">
-    </map-polyline>
-
-    <map-polyline
-    *ngFor="let pathi of polylinePaths48f"
-    [path]="pathi"
-    [options]="polylineOptions48f">
-    </map-polyline>
-
-    <map-polyline
-    *ngFor="let pathi of polylinePaths72f"
-    [path]="pathi"
-    [options]="polylineOptions72f">
-    </map-polyline>  -->
+   
 
   </google-map>
 
-  <!-- Debug *ngIf="caixaSelecionada" avalia para: {{!!caixaSelecionada}}  [numeroCaixa]="caixaSelecionada"
-  <app-caixa-interna
-    *ngIf="caixaSelecionada"
-    [numeroCaixa]="caixaSelecionada"
-    (onClose)="onCaixaInternaClose()"
-    >
-  </app-caixa-interna>-->
-
-  <!-- Tooltip para cabos -->
-<!-- Botões de pesquisa -->
+  
  
-  <app-map-search-buttons
-    (pesquisarCaixa)="pesquisarCaixa()"
-    (pesquisarCliente)="pesquisarCliente()"
-    (pesquisarEstacao)="pesquisarEstacao()"
-    (pesquisarLogradouro)="pesquisarLogradouro()"
-    (verificarViabilidade)="verificarViabilidade()">
+  <app-map-search-buttons>
   </app-map-search-buttons>  
 
 
@@ -150,43 +39,3 @@
     (closeModal)="closeGoJSModal()">
   </app-gojs-demo>
   
-<!--
-  <app-gojs-demo
-  
-  [isOpen]="isGoJSModalOpen"
-  (closeModal)="closeGoJSModal()">
-</app-gojs-demo>-->
-
-
-
-  <!--
-  (click)="onCaixaInternaClose()"
-  <div class="debug-info" style="margin-top: 20px;">
-    <h3>Debug Info - Locations:</h3>
-    <table border="1" style="width: 100%;">
-      <thead>
-        <tr>
-          <th>Número</th>
-          <th>Latitude</th>
-          <th>Longitude</th>
-          <th>Tipo</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let loc of destino">
-          <td>{{loc.numero}}</td>
-          <td>{{loc.LAT}}</td>
-          <td>{{loc.LONGI}}</td>
-          <td>CEO</td>
-        </tr>
-        <tr *ngFor="let loc of destinoCTO">
-          <td>{{loc.numero}}</td>
-          <td>{{loc.LAT}}</td>
-          <td>{{loc.LONGI}}</td>
-          <td>CTO</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</div>
--->

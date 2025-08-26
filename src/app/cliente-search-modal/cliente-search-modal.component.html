@@ -1,0 +1,78 @@
+<div class="modal-container" #draggableContainer>
+    <!-- Header -->
+    <div class="modal-header draggable-header" #draggableHeader>
+      <h2 mat-dialog-title class="modal-title">Pesquisar Cliente</h2>
+      <button mat-icon-button class="close-button" (click)="onCancel()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  
+    <!-- Filters Section -->
+    <div class="filters-section">
+      <div class="filter-row">
+        <mat-form-field class="filter-field">
+          <mat-label>Nome</mat-label>
+          <input matInput [(ngModel)]="siglaFilter" placeholder="Digite o nome do cliente">
+        </mat-form-field>
+  
+        <mat-form-field class="filter-field">
+          <mat-label>Endereço</mat-label>
+          <input matInput [(ngModel)]="enderecoFilter" placeholder="Digite o Endereço">
+        </mat-form-field>
+      </div>
+  
+      <div class="search-button-row">
+        <button mat-raised-button color="primary" (click)="onBuscaCompleta()" [disabled]="isLoading">
+          <mat-icon>search</mat-icon>
+          {{ isLoading ? 'Buscando...' : 'Buscar' }}
+        </button>
+      </div>
+  
+      <!-- Error Message -->
+      <div *ngIf="errorMessage" class="error-message">
+        <mat-icon color="warn">error</mat-icon>
+        <span>{{ errorMessage }}</span>
+      </div>
+    </div>
+  
+    <!-- Grid Section -->
+    <div class="grid-section">
+      <div class="grid-container" *ngIf="!isLoading">
+        <!-- Header Row -->
+        <div class="grid-header">
+          <div class="grid-cell header-cell">SIGLA</div>
+          <div class="grid-cell header-cell">ENDEREÇO</div>
+          <div class="grid-cell header-cell">ID</div>
+        </div>
+  
+        <!-- Data Rows -->
+        <div class="grid-body">
+          <div 
+            *ngFor="let cliente of filteredData" 
+            class="grid-row data-row"
+            (click)="onSelectCliente(cliente)">
+            <div class="grid-cell data-cell">{{ cliente.SIGLA }}</div>
+            <div class="grid-cell data-cell">{{ cliente.ENDERECO }}</div>
+            <div class="grid-cell data-cell">{{ cliente.ID_META }}</div>
+          </div>
+        </div>
+  
+        <!-- No Results Message -->
+        <div *ngIf="filteredData.length === 0 && !errorMessage" class="no-results">
+          <p>Use os filtros acima para buscar clientes</p>
+        </div>
+      </div>
+  
+      <!-- Loading Indicator -->
+      <div *ngIf="isLoading" class="loading-container">
+        <mat-icon class="loading-icon">hourglass_empty</mat-icon>
+        <p>Carregando resultados...</p>
+      </div>
+    </div>
+  
+    <!-- Actions -->
+    <div class="actions-section" mat-dialog-actions>
+      <button mat-button (click)="onCancel()">Cancelar</button>
+    </div>
+  </div>
+  
