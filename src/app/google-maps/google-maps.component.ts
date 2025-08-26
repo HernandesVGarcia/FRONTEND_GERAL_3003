@@ -29,6 +29,9 @@ import { MapSearchButtonsComponent } from '../map-search-buttons/map-search-butt
 import { CompartilhamentoService, CaixaData, ClienteData } from '../servico/compartilhamento.service';
 import { Subject, takeUntil } from 'rxjs';
 
+import { MatDialog } from '@angular/material/dialog';
+import { PopInfoModalComponent } from '../pop-info-modal/pop-info-modal.component';
+
 //import { Cto_SP } from '../modelo/Cto_SP';
 //import { GoogleInfoWindowComponent } from '../google-infowindow/google-infowindow.component';
 
@@ -67,7 +70,8 @@ export class GoogleMapsComponent implements OnInit, OnChanges {
   constructor(
      private cdr: ChangeDetectorRef,
      private authService : AuthService,
-     private compartilhamentoService: CompartilhamentoService) {
+     private compartilhamentoService: CompartilhamentoService,
+     private dialog: MatDialog) {
   
     
   };
@@ -793,7 +797,9 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
         }
       });
 
-      this.addMarkerEventListeners(marker, true);
+      //this.addMarkerEventListeners(marker, true);//260825
+
+      this.addMarkerEventListeners(marker, false,false,true);
       
       this.markerPopsCli.push(marker);
     });
@@ -1071,7 +1077,7 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
           //});
           // substituido pela funçõa addmarkereventlistener ************************************************
 
-          this.addMarkerEventListeners(marker, false,false);
+          this.addMarkerEventListeners(marker, false, false, false);
           
           this.markerCaixas.push(marker);
         });
@@ -1143,7 +1149,7 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
         }
       });
 
-      this.addMarkerEventListeners(marker, true, false);
+      this.addMarkerEventListeners(marker, true, false,false);
       
       this.markerCtos.push(marker);
     });
@@ -1229,7 +1235,7 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
         }
       });
 
-      this.addMarkerEventListeners(marker, false,true);
+      this.addMarkerEventListeners(marker, false, true, false);
       
       this.markerCtosSP.push(marker);
     });
@@ -1873,7 +1879,7 @@ private updateVisibleMarkers() {
           marker.setVisible(true);
 
           // Readicionar os event listeners para garantir que funcionem
-          this.addMarkerEventListeners(marker, false,false);
+          this.addMarkerEventListeners(marker, false,false, false);
           //console.log("ADICIONANDO LISTERNER MARKER DLBCLICK")
 
           visibleCaixasCount++;
@@ -1887,12 +1893,7 @@ private updateVisibleMarkers() {
       }
     });
 
-
-    
-
-
-
-
+   
 
 }
   
@@ -2100,7 +2101,7 @@ private updateVisibleMarkers() {
 
 
 // Novo método para adicionar event listeners a um marcador
-private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = false, isCTOSP:boolean = false) {
+private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = false, isCTOSP:boolean = false, isCLI:boolean = false) {
   // Remover listeners existentes primeiro (caso já existam)
   google.maps.event.clearInstanceListeners(marker);
   
@@ -2113,19 +2114,25 @@ private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = fal
       if (isCTO) {
       const index = this.markerCtos.indexOf(marker);
       if (index !== -1) {
-        this.onMarkerClick(event, index,true,false);        
+        this.onMarkerClick(event, index,true,false,false);        
       }}
 
       else if (isCTOSP) {      
       const index = this.markerCtosSP.indexOf(marker);
       if (index !== -1) {
-        this.onMarkerClick(event, index,false,true);
-      }}  
+        this.onMarkerClick(event, index,false,true,false);
+      }}
+      
+      else if (isCLI) {      
+        const index = this.markerPopsCli.indexOf(marker);
+        if (index !== -1) {
+          this.onMarkerClick(event, index,false,false,true);
+        }}  
 
       else {
       const index = this.markerCaixas.indexOf(marker);
       if (index !== -1) {
-        this.onMarkerClick(event, index,false,false);} }
+        this.onMarkerClick(event, index,false,false,false);} }
 
         
     });
@@ -2183,7 +2190,7 @@ private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = fal
     }
   }
 
-  onMarkerClick(event: google.maps.MapMouseEvent, index: number, isCTO: boolean = false, isCTOSP: boolean=false) {
+  onMarkerClick(event: google.maps.MapMouseEvent, index: number, isCTO: boolean = false, isCTOSP: boolean=false, isCLI: boolean=false) {
     if (isCTO) {
       if (this.destinoCTO[index]) {
         console.log('CTO clicada', this.destinoCTO[index].numero);
@@ -2199,6 +2206,17 @@ private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = fal
         this.cdr.detectChanges();
       }
 
+    }else if (isCLI) {
+      if (this.destinoPopsCli[index]) {
+    console.log('Cliente clicado', this.destinoPopsCli[index].sigla);
+    this.openPopInfoModal(this.destinoPopsCli[index].id_meta)
+    this.cdr.detectChanges();
+    
+    //this.authService.setIDmetaCliente(this.destinoPopsCli[index].id_meta)//<---escrevo idmeta da cto no storage
+    //this.isGoJSModalOpen = true;
+    //this.cdr.detectChanges();
+  }
+
     } else {
       if (this.destino[index]) {
         console.log('caixa clicada', this.destino[index].numero);
@@ -2209,6 +2227,16 @@ private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = fal
   }
 }
   
+
+
+
+openPopInfoModal(id_meta: number|undefined) {
+  const dialogRef = this.dialog.open(PopInfoModalComponent, {
+    width: '600px',
+    data: { id_meta }
+  });
+
+}
   
 
   onCaixaInternaClose() {
