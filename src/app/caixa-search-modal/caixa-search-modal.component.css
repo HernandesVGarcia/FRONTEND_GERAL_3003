@@ -17,7 +17,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 6px 24px;
+  padding: 3px 14px;
   border-bottom: 1px solid #e0e0e0;
 }
 
@@ -35,7 +35,7 @@
 
 .modal-title {
   margin: 0;
-  font-size: 1.25rem;
+  font-size: 1.15rem;
   font-weight: 400;
   color: rgb(5, 1, 27);
 }
@@ -52,8 +52,8 @@
 
 .filter-row {
   display: flex;
-  gap: 16px;
-  margin-bottom: 16px;
+  gap: 10px;
+  margin-bottom: 5px;
 }
 
 .filter-field {
@@ -92,9 +92,10 @@
 .grid-header {
   display: grid;
   grid-template-columns: 2fr 4fr 1fr 30px;
-  background-color: #1976d2;
-  color: white;
-  font-weight: 500;
+  background-color: #bbc7dd;
+  color: rgb(7, 0, 0);
+  font-weight: 1500;
+  
 }
 
 .grid-row {
@@ -125,7 +126,8 @@
 
 .header-cell {
   font-weight: 300;
-  background-color: #0c65be;
+  background-color: #bbc7dd;
+  
 }
 
 .data-cell {

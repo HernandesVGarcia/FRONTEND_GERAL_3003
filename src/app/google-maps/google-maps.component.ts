@@ -730,7 +730,7 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
         }
       });
 
-      this.addMarkerEventListeners(marker, true);
+      //this.addMarkerEventListeners(marker, true);
       
       this.markerCondominios.push(marker);
     });
@@ -799,7 +799,7 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
 
       //this.addMarkerEventListeners(marker, true);//260825
 
-      this.addMarkerEventListeners(marker, false,false,true);
+      this.addMarkerEventListeners(marker, false,false,true,false,false);
       
       this.markerPopsCli.push(marker);
     });
@@ -867,7 +867,7 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
         }
       });
 
-      this.addMarkerEventListeners(marker, true);
+      this.addMarkerEventListeners(marker, false,false,false,false,true);
       
       this.markerPopsCliDes.push(marker);
     });
@@ -936,7 +936,7 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
         }
       });
 
-      this.addMarkerEventListeners(marker, true);
+      this.addMarkerEventListeners(marker, false,false,false,true,false);
       
       this.markerPopsCliAtv.push(marker);
     });
@@ -1002,7 +1002,7 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
         }
       });
 
-      this.addMarkerEventListeners(marker, true);
+      //this.addMarkerEventListeners(marker, true);
       
       this.markerPopsEst.push(marker);
     });
@@ -1077,7 +1077,7 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
           //});
           // substituido pela funçõa addmarkereventlistener ************************************************
 
-          this.addMarkerEventListeners(marker, false, false, false);
+          this.addMarkerEventListeners(marker, false, false, false, false, false);
           
           this.markerCaixas.push(marker);
         });
@@ -1149,7 +1149,7 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
         }
       });
 
-      this.addMarkerEventListeners(marker, true, false,false);
+      this.addMarkerEventListeners(marker, true, false,false,false,false);
       
       this.markerCtos.push(marker);
     });
@@ -1235,7 +1235,7 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
         }
       });
 
-      this.addMarkerEventListeners(marker, false, true, false);
+      this.addMarkerEventListeners(marker, false, true, false, false, false);
       
       this.markerCtosSP.push(marker);
     });
@@ -1879,7 +1879,7 @@ private updateVisibleMarkers() {
           marker.setVisible(true);
 
           // Readicionar os event listeners para garantir que funcionem
-          this.addMarkerEventListeners(marker, false,false, false);
+          this.addMarkerEventListeners(marker, false,false, false,false);
           //console.log("ADICIONANDO LISTERNER MARKER DLBCLICK")
 
           visibleCaixasCount++;
@@ -2101,7 +2101,7 @@ private updateVisibleMarkers() {
 
 
 // Novo método para adicionar event listeners a um marcador
-private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = false, isCTOSP:boolean = false, isCLI:boolean = false) {
+private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = false, isCTOSP:boolean = false, isCLI:boolean = false, isCLIAT:boolean = false, isCLIDES:boolean = false) {
   // Remover listeners existentes primeiro (caso já existam)
   google.maps.event.clearInstanceListeners(marker);
   
@@ -2114,25 +2114,37 @@ private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = fal
       if (isCTO) {
       const index = this.markerCtos.indexOf(marker);
       if (index !== -1) {
-        this.onMarkerClick(event, index,true,false,false);        
+        this.onMarkerClick(event, index,true,false,false,false,false);        
       }}
 
       else if (isCTOSP) {      
       const index = this.markerCtosSP.indexOf(marker);
       if (index !== -1) {
-        this.onMarkerClick(event, index,false,true,false);
+        this.onMarkerClick(event, index,false,true,false,false,false);
       }}
       
       else if (isCLI) {      
         const index = this.markerPopsCli.indexOf(marker);
         if (index !== -1) {
-          this.onMarkerClick(event, index,false,false,true);
-        }}  
+          this.onMarkerClick(event, index,false,false,true,false,false);
+        }} 
+        
+      else if (isCLIAT) {      
+          const index = this.markerPopsCliAtv.indexOf(marker);
+          if (index !== -1) {
+            this.onMarkerClick(event, index,false,false,false,true,false);
+          }}
+          
+      else if (isCLIDES) {      
+            const index = this.markerPopsCliDes.indexOf(marker);
+            if (index !== -1) {
+              this.onMarkerClick(event, index,false,false,false,false,true);
+            }}        
 
       else {
       const index = this.markerCaixas.indexOf(marker);
       if (index !== -1) {
-        this.onMarkerClick(event, index,false,false,false);} }
+        this.onMarkerClick(event, index,false,false,false,false,false);} }
 
         
     });
@@ -2190,7 +2202,7 @@ private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = fal
     }
   }
 
-  onMarkerClick(event: google.maps.MapMouseEvent, index: number, isCTO: boolean = false, isCTOSP: boolean=false, isCLI: boolean=false) {
+  onMarkerClick(event: google.maps.MapMouseEvent, index: number, isCTO: boolean = false, isCTOSP: boolean=false, isCLI: boolean=false, isCLIAT: boolean=false, isCLIDES: boolean=false) {
     if (isCTO) {
       if (this.destinoCTO[index]) {
         console.log('CTO clicada', this.destinoCTO[index].numero);
@@ -2204,26 +2216,43 @@ private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = fal
         this.authService.setIDmetaCaixa(this.destinoCTOSP[index].id_meta)//<---escrevo idmeta da cto no storage
         this.isGoJSModalOpen = true;
         this.cdr.detectChanges();
-      }
+    }
 
     }else if (isCLI) {
       if (this.destinoPopsCli[index]) {
     console.log('Cliente clicado', this.destinoPopsCli[index].sigla);
     this.openPopInfoModal(this.destinoPopsCli[index].id_meta)
     this.cdr.detectChanges();
-    
+
+  }
+
+  }else if (isCLIAT) {
+    if (this.destinoPopsCliAtv[index]) {
+  console.log('Cliente Ativo clicado', this.destinoPopsCliAtv[index].sigla);
+  this.openPopInfoModal(this.destinoPopsCliAtv[index].id_meta)
+  this.cdr.detectChanges();
+
+  }
+
+
+  }else if (isCLIDES) {
+   if (this.destinoPopsCliDes[index]) {
+  console.log('Cliente Desativado clicado', this.destinoPopsCliDes[index].sigla);
+  this.openPopInfoModal(this.destinoPopsCliDes[index].id_meta)
+  this.cdr.detectChanges();
+  }  
     //this.authService.setIDmetaCliente(this.destinoPopsCli[index].id_meta)//<---escrevo idmeta da cto no storage
     //this.isGoJSModalOpen = true;
     //this.cdr.detectChanges();
-  }
+  
 
-    } else {
+  } else {
       if (this.destino[index]) {
         console.log('caixa clicada', this.destino[index].numero);
         this.authService.setIDmetaCaixa(this.destino[index].id_meta)//<---escrevo idmeta da caixa no storage
         this.isGoJSModalOpen = true;
         this.cdr.detectChanges();
-      }
+  }
   }
 }
   
