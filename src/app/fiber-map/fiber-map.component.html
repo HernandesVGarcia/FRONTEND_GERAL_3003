@@ -7,6 +7,9 @@
 <div class="container">
 
 
+    <!-- Lista de Dios -->
+    <app-lista-dios (DiosSelecionada)="onDiosSelecionada($event)"></app-lista-dios>
+
     <!-- Lista de Condominios -->
     <app-lista-condominios (CondominiosSelecionada)="onCondominiosSelecionada($event)"></app-lista-condominios>
 
@@ -68,6 +71,7 @@
   
   <app-google-maps
   [destinoCondominios]="Condominios" 
+  [destinoDios]="Dios"
   [destinoPopsCli]="popCLI"
   [destinoPopsCliDes]="popCLIDes"
   [destinoPopsCliAtv]="popCLIAtv"

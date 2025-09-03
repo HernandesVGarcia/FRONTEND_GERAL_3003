@@ -100,6 +100,7 @@ import { Bocas} from '../modelo/Bocas'
 import { Splitter} from '../modelo/Splitter'
 import { Cabo_tipo} from '../modelo/Cabo_tipo'
 import { ConexBocasService } from '../servico/conex-bocas.service';
+import { ConexBocasTotalService } from '../servico/conex-bocas-total.service';
 import { ConexSpSpService } from '../servico/conex-sp-sp.service';
 import { ConexSplitterService } from '../servico/conex-splitter.service';
 import { ConexaoBoca } from '../modelo/ConexaoBoca';
@@ -276,6 +277,7 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
      private servicoSplitter: SplitterService,
      private servicoTipoCabos : Cabo_TipoService ,
      private servicoDestinoCabos : CaboDestinoCxService,
+     private conexBocasTotalService: ConexBocasTotalService,
      private conexBocasService: ConexBocasService,
      private conexSplitterService: ConexSplitterService,
      private conexSpSpService:ConexSpSpService,
@@ -879,10 +881,22 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
       
       for (const bocaNumero of bocasParaCarregar) {
         if (!this.bocasCarregadas.has(bocaNumero)) {
+
+          if (this.VetorBocas[0] && this.VetorBocas[0][`BOCA${bocaNumero}`] !== ' ') {
+
+
           console.log(`Carregando conexões da Boca ${bocaNumero}...`);
+
+          //const bocaKey = `BOCA${bocaNumero}`;
+
           
-          const todasConexoes = await this.conexBocasService.selecionarAsync(bocaNumero);
-          console.log(`Todas conexões da Boca ${bocaNumero} recebidas:`, todasConexoes);
+
+          console.log("valor do vetorBocas:",this.VetorBocas[0][`BOCA${bocaNumero}`])
+        
+          
+          const todasConexoes = await this.conexBocasTotalService.selecionarAsync(bocaNumero,this.VetorTipoCabos[bocaNumero-1].capacidade);
+          console.log(`capacidade:`,this.VetorTipoCabos[bocaNumero-1].capacidade)
+          console.log(`=============================>Todas conexões da Boca ${bocaNumero} recebidas:`, todasConexoes);//,'CAPACIDADE BOCA:',this.VetorTipoCabos[(bocaNumero-1)].capacidade);
           
           // Armazenar as conexões desta boca
           const conexoesFiltradas = todasConexoes.filter(conexao => this.filtrarConexao(conexao));
@@ -899,6 +913,7 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
           
           this.bocasProcessadas.add(bocaNumero)
         }
+      }
       }
       
       // Depois que todas as bocas forem carregadas, criar as conexões
@@ -1202,10 +1217,10 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
     const bocasNecessarias = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18];
     const todasBocasCarregadas = bocasNecessarias.every(boca => this.bocasCarregadas.has(boca));
     
-    if (this.conexoesCriadas || !this.conexoesCarregadas.length || !todasBocasCarregadas) {
-      console.log("Conexões já foram criadas anteriormente, pulando...");
-      return;
-    }
+   // 250829if (this.conexoesCriadas || !this.conexoesCarregadas.length || !todasBocasCarregadas) {
+   // 250829  console.log("Conexões já foram criadas anteriormente, pulando...");
+   // 250829  return;
+   //250829 }  não estava deixando desenhar as conexoes apesa de receber da API --> depois de nova rota mais rapida /conex_bc
     
     
 
@@ -2581,7 +2596,7 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
 
          setTimeout(() => {
             this.aplicarCoresEmTodasAsConexoes();
-          }, 3000);
+          }, 2000);
     
 
 

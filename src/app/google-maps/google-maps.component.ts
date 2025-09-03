@@ -18,6 +18,7 @@ import { Cto_SP } from '../modelo/Cto_SP';
 import { PopsCli } from '../modelo/PopsCli';
 import { PopsEst } from '../modelo/popsEst';
 import { Condominios } from '../modelo/Condominios';
+import { Dios } from '../modelo/dios';
 
 //import { CaixaInternaComponent } from '../caixa-interna/caixa-interna.component';
 import { ChangeDetectorRef } from '@angular/core'; /// ============novo
@@ -31,6 +32,7 @@ import { Subject, takeUntil } from 'rxjs';
 
 import { MatDialog } from '@angular/material/dialog';
 import { PopInfoModalComponent } from '../pop-info-modal/pop-info-modal.component';
+import { VisualizaDioComponent } from '../visualiza-dio/visualiza-dio.component';
 
 //import { Cto_SP } from '../modelo/Cto_SP';
 //import { GoogleInfoWindowComponent } from '../google-infowindow/google-infowindow.component';
@@ -44,6 +46,7 @@ import { PopInfoModalComponent } from '../pop-info-modal/pop-info-modal.componen
 })
 export class GoogleMapsComponent implements OnInit, OnChanges {
   @Input() destinoCondominios: Condominios[]=[];
+  @Input() destinoDios: Dios[] = [];
   @Input() destinoPopsCli: PopsCli[] = [];
   @Input() destinoPopsCliDes: PopsCli[] = [];
   @Input() destinoPopsCliAtv: PopsCli[] = [];
@@ -110,6 +113,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges {
     
     
   };
+  markerDios: google.maps.Marker[] = [];
   markerCondominios: google.maps.Marker[] = [];
   markerPopsCli: google.maps.Marker[] = [];
   markerPopsCliAtv: google.maps.Marker[] = [];
@@ -172,9 +176,10 @@ private ZOOM_LEVEL_CTOS = 16;   // CTOs visíveis em zoom >= 16
 private ZOOM_LEVEL_CTOSSP = 16;   // CTOs visíveis em zoom >= 16
 private ZOOM_LEVEL_POPS = 14;   // pops visíveis em zoom >= 13
 private ZOOM_LEVEL_CLIENTES = 18;   // pops visíveis em zoom >= 18
-private ZOOM_LEVEL_CLIENTES_DISABLES = 19;   // pops visíveis em zoom >= 18
-private ZOOM_LEVEL_CLIENTES_ATIVOS = 17;   // pops visíveis em zoom >= 18
-private ZOOM_LEVEL_CONDOMINIOS = 17;   // CTOs visíveis em zoom >= 16
+private ZOOM_LEVEL_CLIENTES_DISABLES = 19;   // pops visíveis em zoom >= 19
+private ZOOM_LEVEL_CLIENTES_ATIVOS = 17;   // pops visíveis em zoom >= 17
+private ZOOM_LEVEL_CONDOMINIOS = 17;   // CTOs visíveis em zoom >= 17
+private ZOOM_LEVEL_DIOS = 18;   // DIOS visíveis em zoom >= 117
 
 private destroy$ = new Subject<void>();
 
@@ -202,6 +207,7 @@ private map?: (google.maps.Map);
  private MAX_VISIBLE_MARKERS_CLIENTES_ATIVOS = 100; // Ajuste este valor conforme necessário
  private MAX_VISIBLE_MARKERS_POPs = 30; // Ajuste este valor conforme necessário
  private MAX_VISIBLE_MARKERS_CONDOMINIOS = 100; // Ajuste este valor conforme necessário
+ private MAX_VISIBLE_MARKERS_DIOS = 100; // Ajuste este valor conforme necessário
  
 // **********************************************************************************************inserido
 
@@ -473,6 +479,11 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
   }
      
 
+    if (changes['destinoDios'] && changes['destinoDios'].currentValue) {
+      console.log('Atualizando marcadores de Dios ',this.destinoDios);
+      this.updateMarkersDios();
+    }
+
     if (changes['destinoCondominios'] && changes['destinoCondominios'].currentValue) {
       console.log('Atualizando marcadores de Condominios ',this.destinoCondominios);
       this.updateMarkersCondominios();
@@ -668,17 +679,74 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
     if (this.currentZoom >= this.ZOOM_LEVEL_CLIENTES_DISABLES) {
       return this.markerPopsCliDes;
     }
+    
     return [];
   }  
 
+  getVisibleMarkerDios(): google.maps.Marker[] {
+    if (this.currentZoom >= this.ZOOM_LEVEL_DIOS) {
+      return this.markerDios;
+    }
+    return [];
+  }   
 
 
 
 
+  private updateMarkersDios() {
+    if (this.destinoDios && this.destinoDios.length > 0 && this.map) {
+      this.markerDios.forEach(marker => marker.setMap(null));
+      this.markerDios = [];
+    }
+    
+    this.destinoDios.forEach(location => {
+      const position = {
+        lat: Number(location.LAT),
+        lng: Number(location.LNG)
+      };
+      
+      const markerOptions: google.maps.MarkerOptions = {
+        position: position,
+        title: location.sigla || 'Sem nome',
+        draggable: false,
+        opacity:10,
+        label: {
+          text: 'DIO: ' + location.sigla || 'S/N',
+          color: 'blue',
+          fontSize: '12px'
+        } as google.maps.MarkerLabel,
+      icon: {
+        url: '/assets/dioV2.png',
+        labelOrigin: new google.maps.Point(50, 30),
+        scaledSize: new google.maps.Size(120, 21.6),
+      },
+      visible: this.currentZoom >= this.ZOOM_LEVEL_DIOS
+      ///visible: false
+      };
+
+      const marker = new google.maps.Marker(markerOptions);
+      if (this.map) {
+        marker.setMap(this.map);
+      }
+      
+      // Adicionar listener de duplo clique para abrir o modal Visualiza DIO
+      marker.addListener('dblclick', () => {
+        console.log('DIO clicado duas vezes:', location);
+        if (location.id_meta) {
+          this.openVisualizaDioModal(location.id_meta, location.CAPACIDADE);
+        }
+      });
+      
+      this.markerDios.push(marker);
+      });
+
+    console.log('Dios atualizados:', this.markerDios);    
+  }
 
 
 
-//=====================================função para carregar as POPs na Tela================================
+
+  //=====================================função para carregar as POPs na Tela================================
   private updateMarkersCondominios() {
     
 
@@ -2086,6 +2154,32 @@ private updateVisibleMarkers() {
   console.log(` Condominios visíveis: ${visibleCondominiosCount}`);
    
 
+
+  // Atualizar visibilidade de Condominios  //----------------- Visibilidade de Condominios ----------------------------
+  let visibleDiosCount = 0;
+  console.log ('atualiza Dios visibles')
+  this.markerDios.forEach(marker => {
+    if (marker) {
+      const position = marker.getPosition();
+      if (position && 
+          bounds.contains(position) && 
+          this.currentZoom >= this.ZOOM_LEVEL_DIOS &&
+          visibleDiosCount < this.MAX_VISIBLE_MARKERS_DIOS) {
+        
+        if (this.map) {marker.setMap(this.map)};//xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+        marker.setVisible(true);
+        visibleDiosCount++;
+      } else {
+        marker.setVisible(false);
+        marker.setMap(null);
+      }
+
+      //console.log ('caixas visiveis', visibleCTOsCount)
+    }
+  });
+
+  console.log(` Dios visíveis: ${visibleDiosCount}`);
+
 } 
 
 
@@ -2265,6 +2359,23 @@ openPopInfoModal(id_meta: number|undefined) {
     data: { id_meta }
   });
 
+}
+
+openVisualizaDioModal(id_meta: number, capacity?: number) {
+  const dialogRef = this.dialog.open(VisualizaDioComponent, {
+    width: '80vw', // muda o tamanho do modal
+    maxWidth: '1000px',
+    height: '65vh', // muda o tamanho do modal
+    data: { 
+      id_meta,
+      capacity,
+      config: {
+        title: 'Visualiza DIO',
+        isEditable: true,
+        showAllFields: false
+      }
+    }
+  });
 }
   
 

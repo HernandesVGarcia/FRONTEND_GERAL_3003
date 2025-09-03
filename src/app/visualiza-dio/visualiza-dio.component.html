@@ -1,0 +1,183 @@
+<div class="visualiza-dio-container">
+  <!-- Header -->
+  <div class="modal-header">
+    <h2 class="modal-title">{{ config.title }}</h2>
+    <div class="header-actions">
+      <button mat-icon-button (click)="close()" class="close-button">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="isLoading" class="loading-container">
+    <mat-spinner diameter="40"></mat-spinner>
+    <p>Carregando dados...</p>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="errorMessage" class="error-container">
+    <mat-icon class="error-icon">error</mat-icon>
+    <p class="error-message">{{ errorMessage }}</p>
+  </div>
+
+  <!-- Content -->
+  <div *ngIf="!isLoading && !errorMessage" class="modal-content">
+    <div class="vb-layout">
+      
+      <!-- Lado Esquerdo: Option Buttons para grupos de fibras -->
+      <div class="left-panel">
+        <h3>Grupos de Fibras</h3>
+        <div class="option-buttons">
+          <div 
+            *ngFor="let group of fiberGroups" 
+            class="option-button"
+            [class.selected]="selectedGroup === group.id"
+            (click)="selectGroup(group.id)">
+            <input 
+              type="radio" 
+              [id]="'group' + group.id"
+              [value]="group.id"
+              [(ngModel)]="selectedGroup"
+              name="fiberGroup">
+            <label [for]="'group' + group.id">{{ group.label }}</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Centro: Botões dos Conectores -->
+      <div class="center-panel">
+        <h3>Conectores ({{ getCurrentGroup()?.label }})</h3>
+        <div class="connector-buttons">
+          <button 
+            *ngFor="let connector of getConnectorNumbers()" 
+            mat-raised-button
+            class="connector-button"
+            (click)="onConnectorClick(connector)">
+            {{ connector }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Lado Direito: FlexGrid + Campos + Botões -->
+      <div class="right-panel">
+        <h3>Dados das Fibras</h3>
+        <div class="main-content">
+          <!-- FlexGrid -->
+          <div class="flex-grid">
+            <div class="grid-header">
+              <div class="grid-cell header">Jumper</div>
+              <div class="grid-cell header">Destino</div>
+              <div class="grid-cell header">Status</div>
+              <div class="grid-cell header">Obs</div>
+            </div>
+            <div 
+              *ngFor="let row of flexGridData; let rowIndex = index" 
+              class="grid-row">
+              <div 
+                *ngFor="let cell of row; let colIndex = index" 
+                class="grid-cell"
+                [class.editable]="cell.editable">
+                <input 
+                  *ngIf="cell.editable && isEditing"
+                  type="text"
+                  [value]="cell.value"
+                  (input)="onFlexGridCellChange(rowIndex, colIndex, $any($event.target).value)"
+                  class="grid-input">
+                <span *ngIf="!isEditing || !cell.editable" class="grid-text">
+                  {{ cell.value || '---' }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Campos de Texto -->
+          <div class="text-fields">
+            <div class="text-fields-header">
+              <div class="text-field-header">Equipamento</div>
+              <div class="text-field-header">dBm</div>
+            </div>
+            <div 
+              *ngFor="let row of flexGridData; let rowIndex = index" 
+              class="text-fields-row">
+              <div class="text-field-container">
+                <input 
+                  type="text" 
+                  maxlength="25"
+                  class="text-field field-1"
+                  placeholder="Equipamento">
+              </div>
+              <div class="text-field-container">
+                <input 
+                  type="text" 
+                  maxlength="5"
+                  class="text-field field-2"
+                  placeholder="dBm">
+              </div>
+            </div>
+          </div>
+
+          <!-- Botões de Tracer -->
+          <div class="tracer-buttons">
+            <div class="tracer-buttons-header">
+              <div class="tracer-header">Tracer</div>
+            </div>
+            <div 
+              *ngFor="let row of flexGridData; let rowIndex = index" 
+              class="tracer-buttons-row">
+              <button 
+                class="tracer-button"
+                (click)="onTracerClick(getCurrentFiberNumber(rowIndex))">
+                {{ getCurrentFiberNumber(rowIndex) }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="modal-footer">
+    <div class="footer-left">
+      <button 
+        mat-button 
+        (click)="close()" 
+        class="cancel-button">
+        Fechar
+      </button>
+    </div>
+    
+    <div class="footer-right" *ngIf="config.isEditable">
+      <button 
+        *ngIf="!isEditing" 
+        mat-raised-button 
+        color="primary" 
+        (click)="toggleEdit()"
+        class="edit-button">
+        <mat-icon>edit</mat-icon>
+        Editar
+      </button>
+      
+      <div *ngIf="isEditing" class="edit-actions">
+        <button 
+          mat-button 
+          (click)="cancelEdit()"
+          class="cancel-edit-button">
+          Cancelar
+        </button>
+        <button 
+          mat-raised-button 
+          color="primary" 
+          (click)="saveChanges()"
+          [disabled]="isLoading"
+          class="save-button">
+          <mat-icon *ngIf="isLoading">hourglass_empty</mat-icon>
+          <mat-icon *ngIf="!isLoading">save</mat-icon>
+          {{ isLoading ? 'Salvando...' : 'Salvar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
