@@ -11,6 +11,10 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { VisualizaDioData, VisualizaDioConfig } from '../modelo/VisualizaDioData';
 import { VisualizaDioService } from '../servico/visualiza-dio.service';
+import { DioEquipamentoService } from '../servico/dio-equipamento.service';
+import { FiberTraceService, FiberTraceResult, FiberTraceStep } from '../servico/fiber-trace.service';
+import { FiberApiService } from '../servico/fiber-api.service';
+import { DioEquip } from '../modelo/dioEquipamento';
 
 export interface VisualizaDioDialogData {
   id_meta: number;
@@ -56,12 +60,28 @@ export class VisualizaDioComponent implements OnInit, OnDestroy {
   // Dados do FlexGrid (4 colunas x 12 linhas)
   flexGridData: any[][] = [];
   
+  // Dados dos equipamentos DIO
+  dioEquipData: DioEquip | null = null;
+  
+  // Dados de rastreamento das fibras
+  fiberTraceResults: Map<number, FiberTraceResult> = new Map();
+  fiberDestinations: Map<number, string> = new Map();
+  fiberBdio: Map<number, string> = new Map();
+  fiberFibre: Map<number, string> = new Map();
+  
+  // Controle de rastreamento
+  isTracing = false;
+  traceCancelled = false;
+  
   private destroy$ = new Subject<void>();
 
   constructor(
     public dialogRef: MatDialogRef<VisualizaDioComponent>,
     @Inject(MAT_DIALOG_DATA) public data: VisualizaDioDialogData,
     private visualizaDioService: VisualizaDioService,
+    private dioEquipamentoService: DioEquipamentoService,
+    private fiberTraceService: FiberTraceService,
+    private fiberApiService: FiberApiService,
     private fb: FormBuilder
   ) {
     // Configuração padrão
@@ -110,160 +130,38 @@ export class VisualizaDioComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     this.errorMessage = '';
 
-    // Simular dados de um DIO com 144 fibras para teste
-    setTimeout(() => {
-      const mockData: VisualizaDioData = {
-        id_meta: this.data.id_meta,
-        F1: 'Cliente 1 - João Silva',
-        F2: 'Cliente 2 - Maria Santos',
-        F3: 'Cliente 3 - Pedro Costa',
-        F4: 'Cliente 4 - Ana Oliveira',
-        F5: 'Cliente 5 - Carlos Lima',
-        F6: 'Cliente 6 - Fernanda Rocha',
-        F7: 'Cliente 7 - Roberto Alves',
-        F8: 'Cliente 8 - Juliana Ferreira',
-        F9: 'Cliente 9 - Marcos Souza',
-        F10: 'Cliente 10 - Patricia Mendes',
-        F11: 'Cliente 11 - Rafael Gomes',
-        F12: 'Cliente 12 - Camila Dias',
-        F13: 'Cliente 13 - Diego Martins',
-        F14: 'Cliente 14 - Larissa Nunes',
-        F15: 'Cliente 15 - Thiago Barbosa',
-        F16: 'Cliente 16 - Beatriz Castro',
-        F17: 'Cliente 17 - Gabriel Silva',
-        F18: 'Cliente 18 - Marina Costa',
-        F19: 'Cliente 19 - Lucas Pereira',
-        F20: 'Cliente 20 - Isabella Santos',
-        F21: 'Cliente 21 - Bruno Oliveira',
-        F22: 'Cliente 22 - Gabriela Lima',
-        F23: 'Cliente 23 - Felipe Rocha',
-        F24: 'Cliente 24 - Amanda Alves',
-        F25: 'Cliente 25 - Vinicius Ferreira',
-        F26: 'Cliente 26 - Carolina Souza',
-        F27: 'Cliente 27 - André Mendes',
-        F28: 'Cliente 28 - Renata Gomes',
-        F29: 'Cliente 29 - Daniel Dias',
-        F30: 'Cliente 30 - Natália Martins',
-        F31: 'Cliente 31 - Gustavo Nunes',
-        F32: 'Cliente 32 - Priscila Barbosa',
-        F33: 'Cliente 33 - Henrique Castro',
-        F34: 'Cliente 34 - Débora Silva',
-        F35: 'Cliente 35 - Leandro Costa',
-        F36: 'Cliente 36 - Tatiana Pereira',
-        F37: 'Cliente 37 - Rodrigo Santos',
-        F38: 'Cliente 38 - Vanessa Oliveira',
-        F39: 'Cliente 39 - Marcelo Lima',
-        F40: 'Cliente 40 - Simone Rocha',
-        F41: 'Cliente 41 - Alexandre Alves',
-        F42: 'Cliente 42 - Cristiane Ferreira',
-        F43: 'Cliente 43 - Fabio Souza',
-        F44: 'Cliente 44 - Adriana Mendes',
-        F45: 'Cliente 45 - Ricardo Gomes',
-        F46: 'Cliente 46 - Mônica Dias',
-        F47: 'Cliente 47 - Sérgio Martins',
-        F48: 'Cliente 48 - Elaine Nunes',
-        F49: 'Cliente 49 - César Barbosa',
-        F50: 'Cliente 50 - Rosana Castro',
-        F51: 'Cliente 51 - Antonio Silva',
-        F52: 'Cliente 52 - Sandra Costa',
-        F53: 'Cliente 53 - José Pereira',
-        F54: 'Cliente 54 - Lucia Santos',
-        F55: 'Cliente 55 - Francisco Oliveira',
-        F56: 'Cliente 56 - Rita Lima',
-        F57: 'Cliente 57 - João Rocha',
-        F58: 'Cliente 58 - Maria Alves',
-        F59: 'Cliente 59 - Pedro Ferreira',
-        F60: 'Cliente 60 - Ana Souza',
-        F61: 'Cliente 61 - Carlos Mendes',
-        F62: 'Cliente 62 - Fernanda Gomes',
-        F63: 'Cliente 63 - Roberto Dias',
-        F64: 'Cliente 64 - Juliana Martins',
-        F65: 'Cliente 65 - Marcos Nunes',
-        F66: 'Cliente 66 - Patricia Barbosa',
-        F67: 'Cliente 67 - Rafael Castro',
-        F68: 'Cliente 68 - Camila Silva',
-        F69: 'Cliente 69 - Diego Costa',
-        F70: 'Cliente 70 - Larissa Pereira',
-        F71: 'Cliente 71 - Thiago Santos',
-        F72: 'Cliente 72 - Beatriz Oliveira',
-        F73: 'Cliente 73 - Gabriel Lima',
-        F74: 'Cliente 74 - Marina Rocha',
-        F75: 'Cliente 75 - Lucas Alves',
-        F76: 'Cliente 76 - Isabella Ferreira',
-        F77: 'Cliente 77 - Bruno Souza',
-        F78: 'Cliente 78 - Gabriela Mendes',
-        F79: 'Cliente 79 - Felipe Gomes',
-        F80: 'Cliente 80 - Amanda Dias',
-        F81: 'Cliente 81 - Vinicius Martins',
-        F82: 'Cliente 82 - Carolina Nunes',
-        F83: 'Cliente 83 - André Barbosa',
-        F84: 'Cliente 84 - Renata Castro',
-        F85: 'Cliente 85 - Daniel Silva',
-        F86: 'Cliente 86 - Natália Costa',
-        F87: 'Cliente 87 - Gustavo Pereira',
-        F88: 'Cliente 88 - Priscila Santos',
-        F89: 'Cliente 89 - Henrique Oliveira',
-        F90: 'Cliente 90 - Débora Lima',
-        F91: 'Cliente 91 - Leandro Rocha',
-        F92: 'Cliente 92 - Tatiana Alves',
-        F93: 'Cliente 93 - Rodrigo Ferreira',
-        F94: 'Cliente 94 - Vanessa Souza',
-        F95: 'Cliente 95 - Marcelo Mendes',
-        F96: 'Cliente 96 - Simone Gomes',
-        F97: 'Cliente 97 - Alexandre Dias',
-        F98: 'Cliente 98 - Cristiane Martins',
-        F99: 'Cliente 99 - Fabio Nunes',
-        F100: 'Cliente 100 - Adriana Barbosa',
-        F101: 'Cliente 101 - Ricardo Castro',
-        F102: 'Cliente 102 - Mônica Silva',
-        F103: 'Cliente 103 - Sérgio Costa',
-        F104: 'Cliente 104 - Elaine Pereira',
-        F105: 'Cliente 105 - César Santos',
-        F106: 'Cliente 106 - Rosana Oliveira',
-        F107: 'Cliente 107 - Antonio Lima',
-        F108: 'Cliente 108 - Sandra Rocha',
-        F109: 'Cliente 109 - José Alves',
-        F110: 'Cliente 110 - Lucia Ferreira',
-        F111: 'Cliente 111 - Francisco Souza',
-        F112: 'Cliente 112 - Rita Mendes',
-        F113: 'Cliente 113 - João Gomes',
-        F114: 'Cliente 114 - Maria Dias',
-        F115: 'Cliente 115 - Pedro Martins',
-        F116: 'Cliente 116 - Ana Nunes',
-        F117: 'Cliente 117 - Carlos Barbosa',
-        F118: 'Cliente 118 - Fernanda Castro',
-        F119: 'Cliente 119 - Roberto Silva',
-        F120: 'Cliente 120 - Juliana Costa',
-        F121: 'Cliente 121 - Marcos Pereira',
-        F122: 'Cliente 122 - Patricia Santos',
-        F123: 'Cliente 123 - Rafael Oliveira',
-        F124: 'Cliente 124 - Camila Lima',
-        F125: 'Cliente 125 - Diego Rocha',
-        F126: 'Cliente 126 - Larissa Alves',
-        F127: 'Cliente 127 - Thiago Ferreira',
-        F128: 'Cliente 128 - Beatriz Souza',
-        F129: 'Cliente 129 - Gabriel Mendes',
-        F130: 'Cliente 130 - Marina Gomes',
-        F131: 'Cliente 131 - Lucas Dias',
-        F132: 'Cliente 132 - Isabella Martins',
-        F133: 'Cliente 133 - Bruno Nunes',
-        F134: 'Cliente 134 - Gabriela Barbosa',
-        F135: 'Cliente 135 - Felipe Castro',
-        F136: 'Cliente 136 - Amanda Silva',
-        F137: 'Cliente 137 - Vinicius Costa',
-        F138: 'Cliente 138 - Carolina Pereira',
-        F139: 'Cliente 139 - André Santos',
-        F140: 'Cliente 140 - Renata Oliveira',
-        F141: 'Cliente 141 - Daniel Lima',
-        F142: 'Cliente 142 - Natália Rocha',
-        F143: 'Cliente 143 - Gustavo Alves',
-        F144: 'Cliente 144 - Priscila Ferreira'
-      };
+    // Debug: verificar valores sendo enviados
+    console.log('Carregando dados do DIO:');
+    console.log('IDMETA:', this.data.id_meta, 'Tipo:', typeof this.data.id_meta);
+    console.log('CAPACIDADE:', this.capacity, 'Tipo:', typeof this.capacity);
 
-      this.visualizaDioData = mockData;
-      this.populateForm(mockData);
-      this.isLoading = false;
-    }, 1000); // Simular delay de carregamento
+    // Carregar dados dos equipamentos DIO da API
+    this.dioEquipamentoService.selecionar(this.data.id_meta, this.capacity)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          console.log('Resposta completa da API:', response);
+          
+          if (response && response.response && response.response.length > 0) {
+            this.dioEquipData = response.response[0]; // Pegar o primeiro (e único) objeto do array response
+            console.log('Dados do equipamento carregados:', this.dioEquipData);
+            this.updateFlexGridData(); // Atualizar os campos baseado no grupo selecionado
+            
+            // Disparar rastreamento automático do primeiro grupo de fibras
+            this.traceFirstGroup();
+            
+            this.isLoading = false;
+          } else {
+            this.errorMessage = 'Nenhum dado encontrado para este DIO';
+            this.isLoading = false;
+          }
+        },
+        error: (error) => {
+          console.error('Erro ao carregar dados do DIO:', error);
+          this.errorMessage = 'Erro ao carregar dados: ' + error;
+          this.isLoading = false;
+        }
+      });
   }
 
   private populateForm(data: VisualizaDioData): void {
@@ -362,6 +260,9 @@ export class VisualizaDioComponent implements OnInit, OnDestroy {
     this.selectedGroup = groupId;
     this.updateFlexGridData();
     console.log('Grupo selecionado:', this.selectedGroup);
+    
+    // Iniciar rastreamento das fibras do grupo selecionado
+    this.traceAllFibersInGroup();
   }
 
   getCurrentGroup() {
@@ -386,6 +287,9 @@ export class VisualizaDioComponent implements OnInit, OnDestroy {
     
     // Selecionar o primeiro grupo por padrão
     this.selectedGroup = 1;
+    
+    console.log('Grupos gerados:', this.fiberGroups);
+    console.log('Capacidade do DIO:', this.capacity);
   }
 
   getConnectorNumbers(): number[] {
@@ -410,14 +314,61 @@ export class VisualizaDioComponent implements OnInit, OnDestroy {
     
     this.flexGridData = [];
     for (let row = 0; row < rowsNeeded; row++) {
+      const fiberNumber = group.start + row;
       this.flexGridData[row] = [];
-      for (let col = 0; col < 4; col++) {
-        this.flexGridData[row][col] = {
-          value: '',
-          editable: true
-        };
-      }
+      
+      // Coluna 0: Jumper (número da fibra)
+      this.flexGridData[row][0] = {
+        value: fiberNumber.toString(),
+        editable: false
+      };
+      
+      // Coluna 1: Destino (resultado do rastreamento)
+      this.flexGridData[row][1] = {
+        value: this.getFiberDestination(fiberNumber),
+        editable: false
+      };
+      
+      // Coluna 2: Bdio (nome do DIO ou ---)
+      this.flexGridData[row][2] = {
+        value: this.fiberBdio.get(fiberNumber) || '---',
+        editable: false
+      };
+      
+      // Coluna 3: Fibre (fibra ou ---)
+      this.flexGridData[row][3] = {
+        value: this.fiberFibre.get(fiberNumber) || '---',
+        editable: false
+      };
     }
+  }
+
+  // Método para obter dados dos equipamentos baseado no grupo selecionado
+  getEquipamentoData(fiberIndex: number): { equipamento: string, dbm: string } {
+    if (!this.dioEquipData) {
+      return { equipamento: '', dbm: '' };
+    }
+
+    const group = this.getCurrentGroup();
+    if (!group) {
+      return { equipamento: '', dbm: '' };
+    }
+
+    // Calcular o índice real da fibra (baseado no grupo)
+    const realFiberIndex = group.start + fiberIndex - 1;
+    
+    // Mapear para os campos obs e N
+    const obsField = `obs${realFiberIndex}` as keyof DioEquip;
+    const nField = `N${realFiberIndex}` as keyof DioEquip;
+    
+    const equipamento = this.dioEquipData[obsField] || '';
+    const dbm = this.dioEquipData[nField] || '';
+    
+    // Tratar campos vazios conforme especificado
+    return {
+      equipamento: equipamento ? equipamento.toString() : '',
+      dbm: dbm && dbm !== 'OFF' ? dbm.toString() : ''
+    };
   }
 
   onConnectorClick(connectorNumber: number): void {
@@ -445,5 +396,363 @@ export class VisualizaDioComponent implements OnInit, OnDestroy {
     // Aqui você pode implementar a lógica para acionar o tracer da rota
     // e gerar diagramas unifilares
     alert(`Tracer acionado para fibra ${fiberNumber}`);
+  }
+
+  /**
+   * Rastreia todas as fibras do grupo atual e obtém os destinos (sequencialmente)
+   */
+  private async traceAllFibersInGroup(): Promise<void> {
+    const group = this.getCurrentGroup();
+    if (!group) return;
+
+    console.log('Iniciando rastreamento das fibras do grupo:', group.label);
+    this.isTracing = true;
+    this.traceCancelled = false;
+
+    // Rastrear cada fibra do grupo sequencialmente
+    for (let fiberNumber = group.start; fiberNumber <= group.end; fiberNumber++) {
+      // Verificar se foi cancelado
+      if (this.traceCancelled) {
+        console.log(`🛑 [CANCEL] Rastreamento cancelado na fibra ${fiberNumber}`);
+        break;
+      }
+      
+      console.log(`🔄 [SEQUENCIAL] Processando fibra ${fiberNumber} de ${group.end}`);
+      await this.traceSingleFiber(fiberNumber);
+    }
+    
+    this.isTracing = false;
+    if (!this.traceCancelled) {
+      console.log('✅ [SEQUENCIAL] Rastreamento de todas as fibras concluído');
+    }
+  }
+
+  /**
+   * Rastreia uma única fibra
+   */
+  private async traceSingleFiber(fiberNumber: number): Promise<void> {
+    // Determinar a tabela e registro baseado no número da fibra (seguindo VB6)
+    const tubo = this.fiberTraceService.calculateTubo(fiberNumber);
+    const tabela = `dio_t${tubo}`;
+    
+    // Para tabelas dio_tX, o registro deve ser F{numero_da_fibra}
+    // Fibra 13 no tubo 2 = F13, Fibra 1 no tubo 1 = F1, etc.
+    const registro = `F${fiberNumber}`;
+
+    console.log(`Rastreando fibra ${fiberNumber}:`, { tabela, registro, tubo });
+
+    try {
+      // Rastrear diretamente usando o ID do DIO (como no VB6)
+      // O VB6 faz a consulta DENTRO do ANALISA_TABELA_INI
+      const result = await this.fiberTraceService.ANALISA_TABELA_INI(this.data.id_meta, fiberNumber, tabela, registro)
+        .pipe(takeUntil(this.destroy$)).toPromise();
+
+      if (!result) {
+        console.error(`Resultado do rastreamento da fibra ${fiberNumber} é undefined`);
+        this.fiberDestinations.set(fiberNumber, 'ERRO - RESULTADO UNDEFINED');
+        this.fiberBdio.set(fiberNumber, '---');
+        this.fiberFibre.set(fiberNumber, '---');
+        this.updateFlexGridData();
+        return;
+      }
+
+      console.log(`Resultado do rastreamento da fibra ${fiberNumber}:`, result);
+      
+      // Armazenar resultado do rastreamento
+      this.fiberTraceResults.set(fiberNumber, result);
+      
+      // Obter destino final (agora assíncrono)
+      const destination = await this.getFinalDestination(result);
+      this.fiberDestinations.set(fiberNumber, destination);
+      
+      // Obter informações completas do objeto
+      // Usar o IDMETA do último passo do trace (que é o destino final)
+      const lastStep = result.trace[result.trace.length - 1];
+      const objectInfo = await this.getObjectInfo(lastStep.idmeta, lastStep.tipo);
+      this.fiberBdio.set(fiberNumber, objectInfo.bdio);
+      this.fiberFibre.set(fiberNumber, objectInfo.fibre);
+      
+      // Atualizar flexgrid
+      this.updateFlexGridData();
+      
+    } catch (error) {
+      console.error(`Erro no rastreamento da fibra ${fiberNumber}:`, error);
+      this.fiberDestinations.set(fiberNumber, 'ERRO');
+      this.fiberBdio.set(fiberNumber, '---');
+      this.fiberFibre.set(fiberNumber, '---');
+      this.updateFlexGridData();
+    }
+  }
+
+  /**======================================================================
+   * pega o destino final da fibra vindo do serviço fiber-trace.service.ts
+   *    * Obtém o destino final de um resultado de rastreamento
+   ================================*/
+  private async getFinalDestination(traceResult: FiberTraceResult): Promise<string> {
+    if (!traceResult.success || traceResult.trace.length === 0) {
+      return 'ERRO';
+    }
+
+    const lastStep = traceResult.trace[traceResult.trace.length - 1];
+    
+    // Se parou em cabo aberto
+    if (lastStep.tipo === 'cabo_aberto') {
+      return 'CABO ABERTO';
+    }
+
+    // Se atingiu o limite de passos
+    if (lastStep.tipo === 'limite_atingido') {
+      return 'LIMITE ATINGIDO (150 passos)';
+    }
+
+    // Se chegou ao destino final, obter informações do objeto
+    if (lastStep.status === 'fim') {
+      try {
+        const objectInfo = await this.getObjectInfo(lastStep.idmeta, lastStep.tipo);
+        return objectInfo.destname;
+      } catch (error) {
+        console.error('Erro ao obter informações do objeto:', error);
+        return 'ERRO';
+      }
+    }
+
+    return 'EM PROCESSO';
+  }
+
+  /**
+   * Obtém informações do objeto final usando a tabela ids
+   * Baseado na função VB6 visualiza_campo_aplicacao()
+   */
+  private getObjectInfo(idmeta: number, tipo: string): Promise<{destname: string, bdio: string, fibre: string}> {
+    return new Promise((resolve, reject) => {
+      // Sempre consultar a tabela ids para obter o tipo do objeto (seguindo VB6)
+      console.log(`Consultando tipo do objeto para IDMETA: ${idmeta}`);
+      this.fiberApiService.executeDynamicQuery(
+        'SELECT TIPO_OBJETO FROM tstmeta.ids WHERE id_meta = {idmeta}',
+        { idmeta: idmeta }
+      ).subscribe({
+        next: (response) => {
+          if (!response.success || !response.data || response.data.length === 0) {
+            console.log(`Tipo do objeto não encontrado para IDMETA: ${idmeta}`);
+            resolve({ destname: '-------SEM CONEXÃO------', bdio: '---', fibre: '---' });
+            return;
+          }
+
+        const tipoObjeto = response.data[0].TIPO_OBJETO;
+        console.log(`Tipo do objeto encontrado: ${tipoObjeto} para IDMETA: ${idmeta}`);
+        console.log(`📊 [IDS] Dados completos:`, response.data[0]);
+          
+          this.getObjectNameByType(idmeta, tipoObjeto).then(result => {
+            resolve(result);
+          }).catch(error => {
+            console.error('Erro ao obter nome do objeto:', error);
+            resolve({ destname: 'ERRO', bdio: '---', fibre: '---' });
+          });
+        },
+        error: (error) => {
+          console.error('Erro ao consultar tabela ids:', error);
+          resolve({ destname: '-------SEM CONEXÃO------', bdio: '---', fibre: '---' });
+        }
+      });
+    });
+  }
+
+  /**
+   * Obtém o nome do objeto baseado no tipo
+   * Implementa a lógica do VB6 para cada tipo de objeto
+   */
+  private async getObjectNameByType(idmeta: number, tipoObjeto: string): Promise<{destname: string, bdio: string, fibre: string}> {
+    try {
+      switch (tipoObjeto) {
+        case 'CAIXA':
+          const caixaResponse = await this.fiberApiService.executeDynamicQuery(
+            'SELECT NUMEROCX AS NOME FROM tstmeta.caixa WHERE ID_META = {idmeta}',
+            { idmeta: idmeta }
+          ).toPromise();
+          if (caixaResponse?.success && caixaResponse.data && caixaResponse.data.length > 0) {
+            return {
+              destname: `CAIXA ${caixaResponse.data[0].NOME}`,
+              bdio: '---',
+              fibre: '---'
+            };
+          }
+          break;
+
+        case 'POP':
+          const popResponse = await this.fiberApiService.executeDynamicQuery(
+            'SELECT SIGLA AS NOME FROM tst.estações WHERE ID_META = {idmeta}',
+            { idmeta: idmeta }
+          ).toPromise();
+          if (popResponse?.success && popResponse.data && popResponse.data.length > 0) {
+            return {
+              destname: popResponse.data[0].NOME,
+              bdio: '---',
+              fibre: '---'
+            };
+          }
+          break;
+
+        case 'Rabicho':
+          const rabichoResponse = await this.fiberApiService.executeDynamicQuery(
+            'SELECT LABEL_RABICHO AS NOME FROM tstmeta.rabicho WHERE ID_META = {idmeta}',
+            { idmeta: idmeta }
+          ).toPromise();
+          if (rabichoResponse?.success && rabichoResponse.data && rabichoResponse.data.length > 0) {
+            return {
+              destname: rabichoResponse.data[0].NOME,
+              bdio: '---',
+              fibre: '---'
+            };
+          }
+          break;
+
+        case 'DIO':
+          console.log(`🔍 [DIO] Consultando DIO para IDMETA: ${idmeta}`);
+          const dioResponse = await this.fiberApiService.executeDynamicQuery(
+            'SELECT SIGLA AS NOME, ID_ESTACAO FROM tstmeta.dio WHERE id_meta = {idmeta}',
+            { idmeta: idmeta }
+          ).toPromise();
+          console.log(`📊 [DIO] Resposta da consulta:`, dioResponse);
+          if (dioResponse?.success && dioResponse.data && dioResponse.data.length > 0) {
+            const bdio = dioResponse.data[0].NOME;
+            const idEstacao = dioResponse.data[0].ID_ESTACAO;
+            
+            // Buscar sigla da estação
+            const estacaoResponse = await this.fiberApiService.executeDynamicQuery(
+              'SELECT SIGLA FROM tst.estações WHERE ID_META = {idmeta}',
+              { idmeta: idEstacao }
+            ).toPromise();
+            
+            if (estacaoResponse?.success && estacaoResponse.data && estacaoResponse.data.length > 0) {
+              return {
+                destname: estacaoResponse.data[0].SIGLA,
+                bdio: bdio,
+                fibre: '---'
+              };
+            }
+          } else {
+            console.log(`❌ [DIO] DIO não encontrado para IDMETA: ${idmeta}`);
+          }
+          break;
+
+        case 'caixa':
+          console.log(`🔍 [CAIXA] Consultando caixa para IDMETA: ${idmeta}`);
+          const caixaResponse2 = await this.fiberApiService.executeDynamicQuery(
+            'SELECT NUMERO AS NOME FROM tst.caixa WHERE ID_META = {idmeta}',
+            { idmeta: idmeta }
+          ).toPromise();
+          console.log(`📊 [CAIXA] Resposta da consulta:`, caixaResponse2);
+          if (caixaResponse2?.success && caixaResponse2.data && caixaResponse2.data.length > 0) {
+            return {
+              destname: `CAIXA ${caixaResponse2.data[0].NOME}`,
+              bdio: '---',
+              fibre: '---'
+            };
+          } else {
+            console.log(`❌ [CAIXA] Caixa não encontrada para IDMETA: ${idmeta}`);
+          }
+          break;
+
+        case 'cabo':
+          return {
+            destname: '- - - - - - - - - -',
+            bdio: '---',
+            fibre: '---'
+          };
+
+        case 'splitter':
+          const splitterResponse = await this.fiberApiService.executeDynamicQuery(
+            'SELECT numero_cx FROM tstmeta.splitter_e WHERE idmeta = {idmeta}',
+            { idmeta: idmeta }
+          ).toPromise();
+          if (splitterResponse?.success && splitterResponse.data && splitterResponse.data.length > 0) {
+            return {
+              destname: `CX_${splitterResponse.data[0].numero_cx}:SPLITTER_${idmeta}`,
+              bdio: '---',
+              fibre: 'E'
+            };
+          }
+          break;
+
+        case 'splitter_entrada':
+          console.log(`🔀 [SPLITTER-ENTRADA] Consultando entrada do splitter para IDMETA: ${idmeta}`);
+          const splitterEntradaResponse = await this.fiberApiService.executeDynamicQuery(
+            'SELECT numero_cx FROM tstmeta.splitter_e WHERE idmeta = {idmeta}',
+            { idmeta: idmeta }
+          ).toPromise();
+          console.log(`📊 [SPLITTER-ENTRADA] Resposta da consulta:`, splitterEntradaResponse);
+          if (splitterEntradaResponse?.success && splitterEntradaResponse.data && splitterEntradaResponse.data.length > 0) {
+            return {
+              destname: `SPLITTER ${splitterEntradaResponse.data[0].numero_cx}`,
+              bdio: '---',
+              fibre: '---'
+            };
+          } else {
+            console.log(`❌ [SPLITTER-ENTRADA] Splitter não encontrado para IDMETA: ${idmeta}`);
+          }
+          break;
+
+        default:
+          return {
+            destname: '-------SEM CONEXÃO------',
+            bdio: '---',
+            fibre: '---'
+          };
+      }
+    } catch (error) {
+      console.error('Erro ao obter nome do objeto:', error);
+    }
+
+    return {
+      destname: '-------SEM CONEXÃO------',
+      bdio: '---',
+      fibre: '---'
+    };
+  }
+
+  /**
+   * Obtém o destino de uma fibra específica
+   */
+  getFiberDestination(fiberNumber: number): string {
+    return this.fiberDestinations.get(fiberNumber) || '---';
+  }
+
+  /**
+   * Dispara rastreamento automático do primeiro grupo de fibras
+   */
+  private traceFirstGroup(): void {
+    console.log('🚀 [AUTO-TRACE] Iniciando rastreamento automático do primeiro grupo');
+    
+    // Verificar se há grupos disponíveis
+    if (this.fiberGroups.length === 0) {
+      console.log('❌ [AUTO-TRACE] Nenhum grupo de fibras disponível');
+      return;
+    }
+
+    // Selecionar o primeiro grupo
+    const firstGroup = this.fiberGroups[0];
+    this.selectedGroup = firstGroup;
+    console.log(`📊 [AUTO-TRACE] Grupo selecionado: ${firstGroup.label} (fibras ${firstGroup.start}-${firstGroup.end})`);
+
+    // Disparar rastreamento
+    this.traceAllFibersInGroup();
+  }
+
+  /**
+   * Cancela o rastreamento em andamento
+   */
+  cancelTracing(): void {
+    console.log('🛑 [CANCEL] Cancelando rastreamento...');
+    this.traceCancelled = true;
+    this.isTracing = false;
+    
+    // Limpar dados parciais
+    this.fiberTraceResults.clear();
+    this.fiberDestinations.clear();
+    this.fiberBdio.clear();
+    this.fiberFibre.clear();
+    this.updateFlexGridData();
+    
+    console.log('✅ [CANCEL] Rastreamento cancelado');
   }
 }

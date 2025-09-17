@@ -11,10 +11,7 @@ import { provideAnimations } from '@angular/platform-browser/animations';
 import { enableProdMode } from '@angular/core';
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 import { environment } from './app/environments/enviroments.prod';
-import { registerLicense } from '@syncfusion/ej2-base';
 
-//registerLicense('Ngo9BigBOggjHTQxAR8/V1NNaF5cXmBCekx3Rnxbf1x1ZFRHal5STnRfUiweQnxTdEBjXX9YcXVXRWJcU0ZwXUlfag==');
-registerLicense('ORg4AjUWIQA/Gnt2XFhhQlJHfV5AQmBIYVp/TGpJfl96cVxMZVVBJAtUQF1hTH5XdkxiW3pYdXxXQ2dcWkZ/');
 
 if (environment.production) {
   enableProdMode();

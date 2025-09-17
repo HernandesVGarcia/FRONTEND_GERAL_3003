@@ -1,0 +1,454 @@
+Module LE_CONEX
+
+    ' MODIFICADO 23-12-2015 PARA CONTEMPLAR CAIXA DE 18 BOCAS
+    ' IMPRESSÃO  13-11-2013
+    '
+    ' utilizado para visualização de campos de destino do DIO
+
+    Dim rs As Recordset
+    Dim tabel As String
+    Dim IDmet As Long   '19012012 Integer
+    Dim NOMECABO As String
+    Public RETORNOobjID As String
+
+    '***********************************************************
+    ' Modificado em 13112013 para aceitar analise de splitter no campo destino DIO
+    '**********************************************************
+
+    Public Sub ANALISA_TABELA_INI(regist As String, TABELA As String, idmeta As String, FIBER As String)
+
+    '**************************************************************
+    'ENTRA: regist ==> campo da tabela (Fibra_n.Label ou Fibra_n)
+    'ENTRA: tabela ==> tabela cabo     (caboa_tn ou cabob_tn)
+    'ENTRA: IDMETA ==> ID do cabo que foi Clicado
+    '**************************************************************
+
+    Dim tubo As Integer
+    Dim POSIÇÃO As Integer
+    Dim DESTINO_TAB As String ' contera a tabela
+    Dim POS_1 As Integer
+    Dim POS_2 As Integer
+    Dim POS As Integer
+    Dim fibra As String
+    Dim reg As String ' contera o registro da tabela
+    Dim STATUS As String
+    Dim idpop As String
+
+    Dim TABELACABO As String
+    Dim DIGITOS As Integer
+    Dim I As Integer
+    Dim TAM As Integer
+    Dim CABO As String
+
+    FIBER = 0
+
+    Do While STATUS <> "fim"
+
+    Set rs = frmLogin.connMETA.Execute("SELECT " & regist & " as registro from " & TABELA & " where idmeta = " & idmeta & ";")
+
+    'cabo aberto -> devolve idmeta do cabo
+    If rs!registro <> "" Then tabel = rs!registro Else STATUS = "fim": IDmet = idmeta: GoTo FIM ' se for = "" siginifica cabo aberto senão leio o custom do objeto **********************************
+    'caixa parado -> devolve idmeta da caixa
+    If tabel = "=id()" Then STATUS = "fim": GoTo FIM ' se for ="id()" esta  parando na caixa
+
+
+    '  exemplo de tabel   "=cabo3B!PropFibra_1.Label"
+    If InStr(1, tabel, "cabo") Or InStr(1, UCase(tabel), "cabo") Then DESTINO_TAB = "cabo"
+    If (InStr(1, tabel, "ROW_5") * InStr(1, tabel, "TST")) Then DESTINO_TAB = "POP"
+    If (InStr(1, tabel, "ROW_5") * InStr(1, tabel, "DIO")) Then DESTINO_TAB = "DIO"
+    If (InStr(1, tabel, "ROW_5") * InStr(1, tabel, "RBX")) Then DESTINO_TAB = "RABICHO"
+    If InStr(1, tabel, "splitter") Then DESTINO_TAB = "SPLITTER"       '*********131113
+    'If InStr(1, tabel, "splitter_E") Then DESTINO_TAB = "SPLITTER_ENTRADA"   '*********131113
+
+    TESTA_CAIXA:
+    If InStr(1, tabel, "BOCA1") Or InStr(1, UCase(tabel), "BOCA1") Then DESTINO_TAB = "cxboca1"
+    If InStr(1, tabel, "BOCA2") Or InStr(1, UCase(tabel), "BOCA2") Then DESTINO_TAB = "cxboca2"
+    If InStr(1, tabel, "BOCA3") Or InStr(1, UCase(tabel), "BOCA3") Then DESTINO_TAB = "cxboca3"
+    If InStr(1, tabel, "BOCA4") Or InStr(1, UCase(tabel), "BOCA4") Then DESTINO_TAB = "cxboca4"
+    If InStr(1, tabel, "BOCA5") Or InStr(1, UCase(tabel), "BOCA5") Then DESTINO_TAB = "cxboca5"
+    If InStr(1, tabel, "BOCA6") Or InStr(1, UCase(tabel), "BOCA6") Then DESTINO_TAB = "cxboca6"
+    If InStr(1, tabel, "BOCA7") Or InStr(1, UCase(tabel), "BOCA7") Then DESTINO_TAB = "cxboca7"
+    If InStr(1, tabel, "BOCA8") Or InStr(1, UCase(tabel), "BOCA8") Then DESTINO_TAB = "cxboca8"
+    If InStr(1, tabel, "BOCA9") Or InStr(1, UCase(tabel), "BOCA9") Then DESTINO_TAB = "cxboca9"
+    If InStr(1, tabel, "BOCA10") Or InStr(1, UCase(tabel), "BOCA10") Then DESTINO_TAB = "cxboca10"
+    If InStr(1, tabel, "BOCA11") Or InStr(1, UCase(tabel), "BOCA11") Then DESTINO_TAB = "cxboca11"
+    If InStr(1, tabel, "BOCA12") Or InStr(1, UCase(tabel), "BOCA12") Then DESTINO_TAB = "cxboca12"
+
+    If InStr(1, tabel, "BOCA13") Or InStr(1, UCase(tabel), "BOCA13") Then DESTINO_TAB = "cxboca13"
+    If InStr(1, tabel, "BOCA14") Or InStr(1, UCase(tabel), "BOCA14") Then DESTINO_TAB = "cxboca14"
+    If InStr(1, tabel, "BOCA15") Or InStr(1, UCase(tabel), "BOCA15") Then DESTINO_TAB = "cxboca15"
+    If InStr(1, tabel, "BOCA16") Or InStr(1, UCase(tabel), "BOCA16") Then DESTINO_TAB = "cxboca16"
+    If InStr(1, tabel, "BOCA17") Or InStr(1, UCase(tabel), "BOCA17") Then DESTINO_TAB = "cxboca17"
+    If InStr(1, tabel, "BOCA18") Or InStr(1, UCase(tabel), "BOCA18") Then DESTINO_TAB = "cxboca18"
+
+
+
+
+
+
+    If (InStr(1, tabel, "dioc")) Then DESTINO_TAB = "DIOcabo" ' situação em que analise inicia no view dio
+
+
+
+
+    '******************************************************************
+    Cabo:
+    '******************************************************************
+    POS_2 = 0
+
+    If DESTINO_TAB <> "cabo" Then GoTo CAIXA '****** extrai tabela e campo para caso cabo
+
+    If InStr(1, tabel, "B!") Then DESTINO_TAB = DESTINO_TAB & "b": TABELACABO = "cabopb" 'TABELACABO PARA PESQUISA POSTERIOR DO ID DO CABO
+    If InStr(1, tabel, "A!") Then DESTINO_TAB = DESTINO_TAB & "a": TABELACABO = "cabopa"
+
+
+    'EXEMPLO =>>> caboa_---EXTRAI FIBRA---------------------------------------------------------
+      POS_1 = InStr(1, tabel, "_") '+++++++++++++++++ para extrair numero da fibra
+      If InStr(1, tabel, ".L") Then POS_2 = InStr(1, tabel, ".L")
+      If InStr(1, tabel, ".V") Then POS_2 = InStr(1, tabel, ".V")
+      If POS_2 = 0 Then POS_2 = Len(tabel): POS_2 = POS_2 + 1
+  
+  
+      DIGITOS = POS_2 - POS_1
+      fibra = Mid(tabel, POS_1 + 1, DIGITOS - 1) ' pego o numero da fibra
+  
+    If fibra < 13 Then tubo = 1
+    If fibra > 12 Then tubo = 2
+    If fibra > 24 Then tubo = 3
+    If fibra > 36 Then tubo = 4
+    If fibra > 48 Then tubo = 5
+    If fibra > 60 Then tubo = 6
+    If fibra > 72 Then tubo = 7
+    If fibra > 84 Then tubo = 8
+    If fibra > 96 Then tubo = 9
+    If fibra > 108 Then tubo = 10
+    If fibra > 120 Then tubo = 11
+    If fibra > 132 Then tubo = 12
+   
+   
+   
+  
+      DESTINO_TAB = DESTINO_TAB & "_t" & tubo 'fibra  ' destino_tab = nome da tabela
+    'EXEMPLO =>>> caboa_t1
+
+
+    reg = "FIBRA_" & fibra '---------------------------------------- reg = registro da tabela
+    'EXEMPLO =>>> fibra_1label
+
+      If InStr(1, tabel, "Label") Then reg = reg & "Label" '20/07/2010
+      If InStr(1, tabel, "Value") Or InStr(1, tabel, "VALUE") Then reg = reg & ""
+
+
+    'CAMPO.AddItem (reg)                      ' VISUALIZO REGISTRO
+    '-----------------------------------------------------------------------------------------
+
+
+    'PESQUISAR IDMETA DO CABO ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    If InStr(1, tabel, "=") Then I = 2 Else I = 1 'then alguns campos que começam com =cabo3a!...
+
+      POS_1 = InStr(I, tabel, "!")
+      NOMECABO = Mid(tabel, I, POS_1 - I)
+      'EXEMPLO =>>> =cabo3B!Prop.Fibra_1.Label
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  
+  
+  
+    Set rs = frmLogin.connMETA.Execute("SELECT ID_META from " & TABELACABO & " where id_VISIO = '" & NOMECABO & "';")
+
+    IDmet = rs!id_meta ': IDMETA.Text = IDmet
+
+    FIBER = 0 ' se fibra parada no cabo retorna fibra 0
+
+    GoTo FIM:
+
+    '************************************************
+    CAIXA:
+    '************************************************
+
+
+    If InStr(1, DESTINO_TAB, "cxboca") = 0 Then GoTo pop
+
+    'EXEMPLO =>>> caboa_---EXTRAI FIBRA---------------------------------------------------------
+      POS_1 = InStr(1, tabel, "_") '+++++++++++++++++ para extrair numero da fibra
+      If InStr(1, tabel, ".V") Then POS_2 = InStr(1, tabel, ".V")
+      If InStr(1, tabel, ".l") Then POS_2 = InStr(1, tabel, ".l")
+      If POS_2 = 0 Then POS_2 = Len(tabel): POS_2 = POS_2 + 1
+      DIGITOS = POS_2 - POS_1
+      fibra = Mid(tabel, POS_1 + 1, DIGITOS - 1) ' pego o numero da fibra
+  
+    If fibra < 13 Then tubo = 1
+    If fibra > 12 Then tubo = 2
+    If fibra > 24 Then tubo = 3
+    If fibra > 36 Then tubo = 4
+    If fibra > 48 Then tubo = 5
+    If fibra > 60 Then tubo = 6
+    If fibra > 72 Then tubo = 7
+    If fibra > 84 Then tubo = 8
+    If fibra > 96 Then tubo = 9
+    If fibra > 108 Then tubo = 10
+    If fibra > 120 Then tubo = 11
+    If fibra > 132 Then tubo = 12
+
+
+
+    DESTINO_TAB = DESTINO_TAB & "_t" & tubo 'fibra
+
+
+    reg = "F" & fibra  '-------------------------------------- reg = registro da tabela
+    'EXEMPLO =>>> F1.L
+
+      If InStr(1, tabel, "Label") Or InStr(1, tabel, "label") Then reg = reg & "L"
+      If InStr(1, tabel, "Value") Then reg = reg & ""
+
+
+    'CAMPO.AddItem (reg)                      ' VISUALIZO REGISTRO
+    '---------------------------------------------------------------------------------------
+
+    'PESQUISAR IDMETA DO CABO ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    If InStr(1, tabel, "=") Then I = 5 Else I = 4 'then alguns campos que começam com =cabo3a!...
+
+      If InStr(I, tabel, "!") Then POS_1 = InStr(I, tabel, "!"): NOMECABO = Mid(tabel, I, POS_1 - I) ': IDmet = NOMECABO  ': IDMETA.Text = NOMECABO' quando não esxite "!" e porque esta navegando dentro da caixa boca para boca imeta é o mesmo
+  
+      'EXEMPLO =>>> =cabo3B!Prop.Fibra_1.Label
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  
+
+    'Set rs = frmLogin.connMETA.Execute("SELECT IDMETA from " & DESTINO_TAB & " where id_VISIO = '" & NOMECABO & "';")
+
+    IDmet = NOMECABO ': IDMETA.Text = NOMECABO
+
+    FIBER = 0 ' se fibra parada na caixa retorna fibra 0
+
+    GoTo FIM
+
+    '***************************************
+    pop:
+    '***************************************
+
+    If InStr(1, DESTINO_TAB, "POP") = 0 Then GoTo RABICHO
+
+
+    'PESQUISAR IDMETA DO POP ++++++++++++++extraio o id meta do POP++++++++++++++++++++++++++++++++++++++++++++
+
+    If InStr(1, tabel, "=") Then I = 5 Else I = 4 'then alguns campos que começam com =cabo3a!...
+
+      If InStr(I, tabel, "!") Then POS_1 = InStr(I, tabel, "!"): IDmet = Mid(tabel, I, POS_1 - I) ' quando não esxite "!" e porque esta navegando dentro da caixa boca para boca imeta é o mesmo
+  
+      'EXEMPLO =>>> =cabo3B!Prop.Fibra_1.Label
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  
+    'EXEMPLO =>>>---EXTRAI FIBRA do regist---------------------------------------------------------
+      POS_1 = InStr(1, regist, "_") '+++++++++++++++++ para extrair numero da fibra
+      If InStr(1, regist, "Label") Then POS_2 = InStr(1, regist, "Label")
+      If InStr(1, regist, "LABEL") Then POS_2 = InStr(1, regist, "LABEL")
+      DIGITOS = POS_2 - POS_1
+      FIBER = Mid(regist, POS_1 + 1, DIGITOS - 1) ' pego o numero da fibra
+  
+
+    'MsgBox "CHEGOU NO POP"
+    STATUS = "fim"
+
+    GoTo FIM
+
+
+    '***************************************
+    RABICHO:
+    '***************************************
+
+    If InStr(1, DESTINO_TAB, "RABICHO") = 0 Then GoTo splitter
+
+
+    'PESQUISAR IDMETA DO POP ++++++++++++++extraio o id meta do POP++++++++++++++++++++++++++++++++++++++++++++
+
+    If InStr(1, tabel, "=") Then I = 5 Else I = 4 'then alguns campos que começam com =cabo3a!...
+
+      If InStr(I, tabel, "!") Then POS_1 = InStr(I, tabel, "!"): IDmet = Mid(tabel, I, POS_1 - I) ' quando não esxite "!" e porque esta navegando dentro da caixa boca para boca imeta é o mesmo
+  
+      'EXEMPLO =>>> =cabo3B!Prop.Fibra_1.Label
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  
+    'EXEMPLO =>>>---EXTRAI FIBRA do regist---------------------------------------------------------
+      POS_1 = InStr(1, regist, "_") '+++++++++++++++++ para extrair numero da fibra
+      If InStr(1, regist, "Label") Then POS_2 = InStr(1, regist, "Label")
+      DIGITOS = POS_2 - POS_1
+      FIBER = Mid(regist, POS_1 + 1, DIGITOS - 1) ' pego o numero da fibra
+  
+
+    'MsgBox "CHEGOU NO POP"
+    STATUS = "fim"
+
+    GoTo FIM
+
+
+    '***************************************
+    splitter:    ' ENCONTRA ENTRADA SPLITTER ZARPA FORA DA ANALISE
+    '***************************************
+
+    If InStr(1, DESTINO_TAB, "SPLITTER") = 0 Then GoTo DIO
+
+    If InStr(1, tabel, "splitter_e") = 0 And InStr(1, tabel, "splitter_E") = 0 Then GoTo SPLITTER_SAIDA 'acrescentei em 03092016 caso saida do splitter voltando pra estação
+
+
+    POS_1 = InStr(1, tabel, "_") '+++++++++++++++++ para extrair numero da fibra
+    POS_2 = InStr(1, tabel, ".l")
+      DIGITOS = POS_2 - POS_1
+      IDmet = Mid(tabel, POS_1 + 2, DIGITOS - 1)
+  
+      STATUS = "fim"
+  
+    GoTo FIM
+
+    '***************************************
+    SPLITTER_SAIDA:    ' ENCONTRA saida SPLITTER ZARPA FORA DA ANALISE
+    '***************************************
+
+    POS_1 = InStr(1, tabel, "ter") '+++++++++++++++++ para extrair numero da fibra
+    POS_2 = InStr(1, tabel, "_")
+      DIGITOS = POS_2 - POS_1
+      IDmet = Mid(tabel, POS_1 + 3, DIGITOS - 3)
+  
+      STATUS = "fim"
+  
+    GoTo FIM
+
+
+
+
+    '***************************************
+    DIO:
+    '***************************************
+
+    If InStr(1, DESTINO_TAB, "DIOc") = 1 Then STATUS = "": GoTo DIOc
+
+    'PESQUISAR IDMETA DO POP ++++++++++++++extraio o id meta do POP++++++++++++++++++++++++++++++++++++++++++++
+
+    If InStr(1, tabel, "=") Then I = 5 Else I = 4 'then alguns campos que começam com =cabo3a!...
+
+      If InStr(I, tabel, "!") Then POS_1 = InStr(I, tabel, "!"): IDmet = Mid(tabel, I, POS_1 - I) ' quando não esxite "!" e porque esta navegando dentro da caixa boca para boca imeta é o mesmo
+  
+      'EXEMPLO =>>> =cabo3B!Prop.Fibra_1.Label
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  
+    'EXEMPLO =>>>---EXTRAI FIBRA do regist---------------------------------------------------------
+      POS_1 = InStr(1, regist, "_") '+++++++++++++++++ para extrair numero da fibra
+      If InStr(1, regist, "Label") Then POS_2 = InStr(1, regist, "Label")
+      If InStr(1, regist, "LABEL") Then POS_2 = InStr(1, regist, "LABEL") 'INCLUIDO EM 25112020
+      DIGITOS = POS_2 - POS_1
+      FIBER = Mid(regist, POS_1 + 1, DIGITOS - 1) ' pego o numero da fibra
+
+    regist = "FN_" & FIBER & "LABEL" 'OBTENHO REGISTRO DO CABO QUE TEM O NUMERO DA FIBRA NO CONECTOR DO DIO
+
+    Set rs = frmLogin.connMETA.Execute("SELECT " & regist & " as registro from " & TABELA & " where idmeta = " & idmeta & ";")
+    FIBER = rs!registro
+
+    'MsgBox "CHEGOU NO DIO"
+    STATUS = "fim"
+
+    GoTo FIM
+
+    '*************************************** extrair proxima tabela a partir do dio
+    DIOc:
+    '***************************************
+
+
+
+    'PESQUISAR IDMETA DO POP ++++++++++++++extraio o id meta do POP++++++++++++++++++++++++++++++++++++++++++++
+
+    ' obtendo numero do conector
+    TAM = Len(regist)
+    FIBER = Mid(regist, 2, TAM - 1)
+
+    ' obtendo cabo conectado a bandeja
+    If InStr(1, tabel, "c1") Then Set rs = frmLogin.connMETA.Execute("select c1 as cabo from dio where id_meta = " & idmeta & ";")
+    If InStr(1, tabel, "c2") Then Set rs = frmLogin.connMETA.Execute("select c2 as cabo from dio where id_meta = " & idmeta & ";")
+    If InStr(1, tabel, "c3") Then Set rs = frmLogin.connMETA.Execute("select c3 as cabo from dio where id_meta = " & idmeta & ";")
+    If InStr(1, tabel, "c4") Then Set rs = frmLogin.connMETA.Execute("select c4 as cabo from dio where id_meta = " & idmeta & ";")
+    If InStr(1, tabel, "c5") Then Set rs = frmLogin.connMETA.Execute("select c5 as cabo from dio where id_meta = " & idmeta & ";")
+    If InStr(1, tabel, "c6") Then Set rs = frmLogin.connMETA.Execute("select c6 as cabo from dio where id_meta = " & idmeta & ";")
+
+    If rs!Cabo = "ZERO" Then IDmet = idmeta: STATUS = "fim": GoTo FIM '04102010 NO LUGA DE ZERO = ""
+    CABO = rs!Cabo
+
+    'obtendo numero da fibra do cabo fundida no conector
+    Set rs = frmLogin.connMETA.Execute("select FN" & FIBER & " as fiber from " & TABELA & " where idmeta =" & idmeta & ";")
+
+    fibra = rs!FIBER
+
+
+    If fibra <= 12 Then tubo = 1
+    If fibra > 12 Then tubo = 2
+    If fibra > 24 Then tubo = 3
+    If fibra > 36 Then tubo = 4
+    If fibra > 48 Then tubo = 5
+    If fibra > 60 Then tubo = 6
+    If fibra > 72 Then tubo = 7
+    If fibra > 84 Then tubo = 8
+    If fibra > 96 Then tubo = 9
+    If fibra > 108 Then tubo = 10
+    If fibra > 120 Then tubo = 11
+    If fibra > 132 Then tubo = 12
+
+    If InStr(1, CABO, "A") Then tabel = "caboa_t" & tubo: POS = InStr(1, CABO, "A")
+
+    If InStr(1, CABO, "B") Then tabel = "cabob_t" & tubo: POS = InStr(1, CABO, "B")
+
+    reg = "Fibra_" & fibra
+
+    IDmet = Mid(CABO, 5, POS - 5)
+
+    DESTINO_TAB = tabel
+
+    '  If InStr(I, tabel, "!") Then POS_1 = InStr(I, tabel, "!"): IDmet = Mid(tabel, I, POS_1 - I) ' quando não esxite "!" e porque esta navegando dentro da caixa boca para boca imeta é o mesmo
+  
+      'EXEMPLO =>>> =cabo3B!Prop.Fibra_1.Label
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  
+    'EXEMPLO =>>>---EXTRAI FIBRA do regist---------------------------------------------------------
+      'zPOS_1 = InStr(1, regist, "_") '+++++++++++++++++ para extrair numero da fibra
+      'zIf InStr(1, regist, "Label") Then POS_2 = InStr(1, regist, "Label")
+     ' zDIGITOS = POS_2 - POS_1
+     'z FIBER = Mid(regist, POS_1 + 1, DIGITOS - 1) ' pego o numero da fibra
+
+    'zregist = "FN_" & FIBER & "LABEL" 'OBTENHO REGISTRO DO CABO QUE TEM O NUMERO DA FIBRA NO CONECTOR DO DIO
+
+    'zSet rs = frmLogin.connMETA.Execute("SELECT " & regist & " as registro from " & TABELA & " where idmeta = " & IDMETA & ";")
+    'zFIBER = rs!REGISTRO
+
+    'MsgBox "CHEGOU NO DIO"
+    'STATUS = "fim"
+
+
+
+    FIM:
+
+
+    TABELA = DESTINO_TAB
+    idmeta = IDmet
+    regist = reg
+
+    'TABELA_DESTINO.AddItem (DESTINO_TAB)
+    'TABELA.Text = DESTINO_TAB
+    'REGISTRO.Text = reg
+
+
+
+
+    Loop
+
+    STATUS = ""
+
+
+    End Sub
+
+
+
+
+
+
+
+
+    
+
+End Module

@@ -138,6 +138,9 @@ export class GoogleMapsComponent implements OnInit, OnChanges {
   polylinePaths72f: google.maps.LatLngLiteral[][] = [];
   polylinePaths144f: google.maps.LatLngLiteral[][] = [];
 
+  
+  
+
   // 🔥 INFOWINDOW: Array para armazenar as polylines 6f com InfoWindow
   // Arrays para armazenar as polylines criadas programaticamente
   polylines1f: google.maps.Polyline[] = [];
@@ -1735,6 +1738,11 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
             this.polylinePaths72f.push(coords);
             //console.log(`Cabo 72f ${cabo.id_meta} processado com sucesso:`, coords);
           }
+
+
+
+
+
         } catch (e) {
           console.error(`Erro ao processar cabo ${cabo.id_meta}:`, e);
         }
@@ -1763,6 +1771,7 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
     try {
       this.polylinePaths144f = [];
       
+      
       this.destinoCabos144f.forEach(cabo => {
         try {
           if (!cabo.GOOGLE_LATLNG) return;
@@ -1774,6 +1783,11 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
             this.polylinePaths144f.push(coords);
             //console.log(`Cabo 72f ${cabo.id_meta} processado com sucesso:`, coords);
           }
+
+          
+
+
+
         } catch (e) {
           console.error(`Erro ao processar cabo ${cabo.id_meta}:`, e);
         }
@@ -2399,42 +2413,42 @@ closeGoJSModal() {
 
 // Método para criar polylines 1f programaticamente
   private createCabo1fPolylines(): void {
-    this.createCaboPolylines('1f', this.destinoCabos1f, this.polylinePaths1f, this.polylines1f, this.infoWindows1f, this.polylineOptions1f);
+    this.createCaboPolylines('1f', this.destinoCabos1f, this.polylinePaths1f,  this.polylines1f, this.infoWindows1f, this.polylineOptions1f);
   }
 
    //Método para criar polylines 2f programaticamente
  private createCabo2fPolylines(): void {
-    this.createCaboPolylines('2f', this.destinoCabos2f, this.polylinePaths2f, this.polylines2f, this.infoWindows2f, this.polylineOptions2f);
+    this.createCaboPolylines('2f', this.destinoCabos2f, this.polylinePaths2f,  this.polylines2f, this.infoWindows2f, this.polylineOptions2f);
   }
 
   // Método para criar polylines 4f programaticamente
   private createCabo4fPolylines(): void {
-    this.createCaboPolylines('4f', this.destinoCabos4f, this.polylinePaths4f, this.polylines4f, this.infoWindows4f, this.polylineOptions4f);
+    this.createCaboPolylines('4f', this.destinoCabos4f, this.polylinePaths4f,  this.polylines4f, this.infoWindows4f, this.polylineOptions4f);
   }
 
   // Método para criar polylines 6f programaticamente com clique simples e duplo clique
   private createCabo6fPolylines(): void {
-    this.createCaboPolylines('6f', this.destinoCabos6f, this.polylinePaths6f, this.polylines6f, this.infoWindows6f, this.polylineOptions6f);
+    this.createCaboPolylines('6f', this.destinoCabos6f, this.polylinePaths6f,  this.polylines6f, this.infoWindows6f, this.polylineOptions6f);
   }
 
   // Método para criar polylines 8f programaticamente
   private createCabo8fPolylines(): void {
-    this.createCaboPolylines('8f', this.destinoCabos8f, this.polylinePaths8f, this.polylines8f, this.infoWindows8f, this.polylineOptions8f);
+    this.createCaboPolylines('8f', this.destinoCabos8f, this.polylinePaths8f,  this.polylines8f, this.infoWindows8f, this.polylineOptions8f);
   }
 
    //Método para criar polylines 12f programaticamente
   private createCabo12fPolylines(): void {
-    this.createCaboPolylines('12f', this.destinoCabos12f, this.polylinePaths12f, this.polylines12f, this.infoWindows12f, this.polylineOptions12f);
+    this.createCaboPolylines('12f', this.destinoCabos12f, this.polylinePaths12f,  this.polylines12f, this.infoWindows12f, this.polylineOptions12f);
   }
 
   // Método para criar polylines 24f programaticamente
   private createCabo24fPolylines(): void {
-    this.createCaboPolylines('24f', this.destinoCabos24f, this.polylinePaths24f, this.polylines24f, this.infoWindows24f, this.polylineOptions24f);
+    this.createCaboPolylines('24f', this.destinoCabos24f, this.polylinePaths24f,  this.polylines24f, this.infoWindows24f, this.polylineOptions24f);
   }
 
   // Método para criar polylines 36f programaticamente
   private createCabo36fPolylines(): void {
-    this.createCaboPolylines('36f', this.destinoCabos36f, this.polylinePaths36f, this.polylines36f, this.infoWindows36f, this.polylineOptions36f);
+    this.createCaboPolylines('36f', this.destinoCabos36f, this.polylinePaths36f,  this.polylines36f, this.infoWindows36f, this.polylineOptions36f);
   }
 
   // Método para criar polylines 48f programaticamente
@@ -2444,7 +2458,7 @@ closeGoJSModal() {
 
   // Método para criar polylines 72f programaticamente
   private createCabo72fPolylines(): void {
-    this.createCaboPolylines('72f', this.destinoCabos72f, this.polylinePaths72f, this.polylines72f, this.infoWindows72f, this.polylineOptions72f);
+    this.createCaboPolylines('72f', this.destinoCabos72f, this.polylinePaths72f,   this.polylines72f, this.infoWindows72f, this.polylineOptions72f);
   } 
 
   // Método para criar polylines 72f programaticamente

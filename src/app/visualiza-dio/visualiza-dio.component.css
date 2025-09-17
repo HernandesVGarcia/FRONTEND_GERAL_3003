@@ -34,6 +34,30 @@
   gap: 16px;
 }
 
+.cancel-button {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.9rem;
+  padding: 8px 16px;
+  border-radius: 4px;
+  background-color: #e9c527;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.cancel-button:hover {
+  background-color: #499dd4;
+}
+
+.cancel-button mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
 .progress-info {
   font-size: 0.9rem;
   color: #666;
@@ -75,6 +99,30 @@
 .loading-container p {
   margin-top: 16px;
   font-size: 1rem;
+}
+
+.tracing-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  background-color: #fff3e0;
+  border: 1px solid #ffb74d;
+  margin: 5px 10px;
+  border-radius: 4px;
+  color: #e65100;
+}
+
+.tracing-container p {
+  margin-top: 12px;
+  font-size: 0.9rem;
+}
+
+.tracing-hint {
+  font-size: 0.8rem;
+  color: #bf360c;
+  font-style: italic;
 }
 
 /* Error */
@@ -294,7 +342,7 @@
 /* Estilos para campos de texto */
 .text-fields-header {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1.5fr 1fr; /* Equipamento 3x maior que dBm */
   background: #e0e0e0;
   border-bottom: 1px solid #ddd;
 }
@@ -315,7 +363,7 @@
 
 .text-fields-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1.5fr 1fr; /* Equipamento 3x maior que dBm */
   gap: 4px;
   border-bottom: 1px solid #eee;
   padding: 2px;
@@ -349,10 +397,13 @@
 
 .field-1 {
   width: 100%;
+  min-width: 140px; /* Aproximadamente 30 caracteres campo equipamento*/
 }
 
 .field-2 {
   width: 100%;
+  min-width: 30px; /* Aproximadamente 5 caracteres campo dBm*/
+  max-width: 40px;
 }
 
 /* Estilos para botões de tracer */
@@ -444,6 +495,42 @@
   color: #666;
 }
 
+/* Destacar coluna de destino */
+.destination-cell {
+  background: #e8f5e8 !important;
+  font-weight: 600;
+  color: #2e7d32;
+}
+
+.destination-cell .grid-text {
+  color: #2e7d32;
+  font-weight: 600;
+}
+
+/* Destacar coluna Dio */
+.dio-cell {
+  background: #e8f5e8 !important;
+  font-weight: 600;
+  color: #2e7d32;
+}
+
+.dio-cell .grid-text {
+  color: #2e7d32;
+  font-weight: 600;
+}
+
+/* Destacar coluna Fibra */
+.fibre-cell {
+  background: #e8f5e8 !important;
+  font-weight: 600;
+  color: #2e7d32;
+}
+
+.fibre-cell .grid-text {
+  color: #2e7d32;
+  font-weight: 600;
+}
+
 
 
 /* Footer */
@@ -472,6 +559,15 @@
 }
 
 .edit-button:hover {
+  background: #1976d2;
+}
+
+.close-button {
+  background: #2196f3;
+  color: white;
+}
+
+.close-button:hover {
   background: #1976d2;
 }
 

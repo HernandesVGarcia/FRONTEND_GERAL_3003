@@ -19,7 +19,7 @@ import { Router } from '@angular/router';
 import { CitySelectModalComponent } from '../city-select-modal/city-select-modal.component';
 //import { CaixaInternasyncComponent } from '../caixa-internasync/caixa-internasync.component';
 //import { AppComponent } from '../app.component';
-import {CaixaInternaSyncComponent} from '../caixa-interna-sync/caixa-interna-sync.component'
+//import {CaixaInternaSyncComponent} from '../caixa-interna-sync/caixa-interna-sync.component'
 import { GoogleGpsComponent } from '../google-gps/google-gps.component';
 
 @Component({
@@ -35,7 +35,7 @@ import { GoogleGpsComponent } from '../google-gps/google-gps.component';
     ReactiveFormsModule,
     CitySelectModalComponent,
     MatSelectModule,
-    CaixaInternaSyncComponent,
+    //CaixaInternaSyncComponent,
     GoogleGpsComponent,
     MatTooltipModule],
   templateUrl: './toolbars.component.html',

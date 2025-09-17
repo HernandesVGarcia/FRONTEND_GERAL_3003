@@ -1,0 +1,271 @@
+[0mOPTIONS /heartbeat [32m200[0m 0.221 ms - 2[0m
+usuario: 27 online
+[0mPOST /heartbeat [32m200[0m 5.285 ms - 74[0m
+[0mOPTIONS /query-conex/registro-idmeta [32m200[0m 0.194 ms - 2[0m
+[0mPOST /query-conex/registro-idmeta [32m200[0m 2.792 ms - 48[0m
+[0mPOST /query-conex/registro-idmeta [32m200[0m 2.768 ms - 48[0m
+[0mOPTIONS /query-conex [32m200[0m 0.196 ms - 2[0m
+[0mOPTIONS /query-conex [32m200[0m 0.186 ms - 2[0m
+Antes da regex FROM: SELECT c1 as cabo FROM tstmeta.dio WHERE id_meta = 298816
+Regex FROM capturou: FROM tstmeta.dio tableName: tstmeta.dio
+Depois da regex FROM: SELECT c1 as cabo FROM tstmeta.dio WHERE id_meta = 298816
+Query original: SELECT c1 as cabo FROM tstmeta.dio WHERE id_meta = {idmeta}
+Query processada: SELECT c1 as cabo FROM tstmeta.dio WHERE id_meta = 298816
+Parâmetros: []
+Antes da regex FROM: SELECT c1 as cabo FROM tstmeta.dio WHERE id_meta = 298816
+Regex FROM capturou: FROM tstmeta.dio tableName: tstmeta.dio
+Depois da regex FROM: SELECT c1 as cabo FROM tstmeta.dio WHERE id_meta = 298816
+Query original: SELECT c1 as cabo FROM tstmeta.dio WHERE id_meta = {idmeta}
+Query processada: SELECT c1 as cabo FROM tstmeta.dio WHERE id_meta = 298816
+Parâmetros: []
+[0mPOST /query-conex [32m200[0m 5.674 ms - 128[0m
+[0mPOST /query-conex [32m200[0m 3.524 ms - 128[0m
+Antes da regex FROM: SELECT FN1 as fiber FROM tstmeta.dio_t1 WHERE idmeta = 298816
+Regex FROM capturou: FROM tstmeta.dio_t1 tableName: tstmeta.dio_t1
+Depois da regex FROM: SELECT FN1 as fiber FROM tstmeta.dio_t1 WHERE idmeta = 298816
+Query original: SELECT FN1 as fiber FROM tstmeta.dio_t1 WHERE idmeta = {idmeta}
+Query processada: SELECT FN1 as fiber FROM tstmeta.dio_t1 WHERE idmeta = 298816
+Parâmetros: []
+[0mPOST /query-conex [32m200[0m 3.178 ms - 123[0m
+Antes da regex FROM: SELECT FN1 as fiber FROM tstmeta.dio_t1 WHERE idmeta = 298816
+Regex FROM capturou: FROM tstmeta.dio_t1 tableName: tstmeta.dio_t1
+Depois da regex FROM: SELECT FN1 as fiber FROM tstmeta.dio_t1 WHERE idmeta = 298816
+Query original: SELECT FN1 as fiber FROM tstmeta.dio_t1 WHERE idmeta = {idmeta}
+Query processada: SELECT FN1 as fiber FROM tstmeta.dio_t1 WHERE idmeta = 298816
+Parâmetros: []
+[0mPOST /query-conex [32m200[0m 2.878 ms - 123[0m
+[0mPOST /query-conex/registro-idmeta [32m200[0m 3.066 ms - 71[0m
+[0mPOST /query-conex/registro-idmeta [32m200[0m 3.387 ms - 71[0m
+[0mOPTIONS /query-conex/idmeta-visual [32m200[0m 0.188 ms - 2[0m
+[0mOPTIONS /query-conex/idmeta-visual [32m200[0m 0.259 ms - 2[0m
+[0mPOST /query-conex/idmeta-visual [32m200[0m 5.469 ms - 44[0m
+[0mPOST /query-conex/idmeta-visual [32m200[0m 3.439 ms - 44[0m
+Antes da regex FROM: SELECT TIPO_OBJETO FROM tstmeta.ids WHERE ID_META = ?
+Regex FROM capturou: FROM tstmeta.ids tableName: tstmeta.ids
+Depois da regex FROM: SELECT TIPO_OBJETO FROM tstmeta.ids WHERE ID_META = ?
+Query original: SELECT TIPO_OBJETO FROM tstmeta.ids WHERE ID_META = ?
+Query processada: SELECT TIPO_OBJETO FROM tstmeta.ids WHERE ID_META = ?
+Parâmetros: []
+Antes da regex FROM: SELECT TIPO_OBJETO FROM tstmeta.ids WHERE ID_META = ?
+Regex FROM capturou: FROM tstmeta.ids tableName: tstmeta.ids
+Depois da regex FROM: SELECT TIPO_OBJETO FROM tstmeta.ids WHERE ID_META = ?
+Query original: SELECT TIPO_OBJETO FROM tstmeta.ids WHERE ID_META = ?
+Query processada: SELECT TIPO_OBJETO FROM tstmeta.ids WHERE ID_META = ?
+Parâmetros: []
+Erro na execução da query: Error: ER_PARSE_ERROR: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '?' at line 1
+    at Sequence._packetToError (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\sequences\Sequence.js:47:14)
+    at Query.ErrorPacket (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\sequences\Query.js:79:18)
+    at Protocol._parsePacket (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\Protocol.js:291:23)
+    at Parser._parsePacket (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\Parser.js:433:10)
+    at Parser.write (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\Parser.js:43:10)
+    at Protocol.write (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\Protocol.js:38:16)
+    at Socket.<anonymous> (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\Connection.js:88:28)
+    at Socket.<anonymous> (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\Connection.js:526:10)
+    at Socket.emit (node:events:519:28)
+    at addChunk (node:internal/streams/readable:559:12)
+    --------------------
+    at Protocol._enqueue (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\Protocol.js:144:48)
+    at PoolConnection.query (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\Connection.js:198:25)
+    at C:\optic-map-api\NODE API 2025\routes\query_conex.js:97:14
+    at Ping.onOperationComplete (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\Pool.js:110:5)
+    at Ping.<anonymous> (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\Connection.js:526:10)
+    at Ping._callback (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\Connection.js:488:16)
+    at Sequence.end (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\sequences\Sequence.js:83:24)
+    at Sequence.OkPacket (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\sequences\Sequence.js:92:8)
+    at Protocol._parsePacket (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\Protocol.js:291:23)
+    at Parser._parsePacket (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\Parser.js:433:10) {
+  code: 'ER_PARSE_ERROR',
+  errno: 1064,
+  sqlMessage: "You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '?' at line 1",
+  sqlState: '42000',
+  index: 0,
+  sql: 'SELECT TIPO_OBJETO FROM tstmeta.ids WHERE ID_META = ?'
+}
+[0mPOST /query-conex [31m500[0m 7.705 ms - 238[0m
+Erro na execução da query: Error: ER_PARSE_ERROR: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '?' at line 1
+    at Sequence._packetToError (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\sequences\Sequence.js:47:14)
+    at Query.ErrorPacket (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\sequences\Query.js:79:18)
+    at Protocol._parsePacket (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\Protocol.js:291:23)
+    at Parser._parsePacket (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\Parser.js:433:10)
+    at Parser.write (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\Parser.js:43:10)
+    at Protocol.write (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\Protocol.js:38:16)
+    at Socket.<anonymous> (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\Connection.js:88:28)
+    at Socket.<anonymous> (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\Connection.js:526:10)
+    at Socket.emit (node:events:519:28)
+    at addChunk (node:internal/streams/readable:559:12)
+    --------------------
+    at Protocol._enqueue (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\Protocol.js:144:48)
+    at PoolConnection.query (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\Connection.js:198:25)
+    at C:\optic-map-api\NODE API 2025\routes\query_conex.js:97:14
+    at Ping.onOperationComplete (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\Pool.js:110:5)
+    at Ping.<anonymous> (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\Connection.js:526:10)
+    at Ping._callback (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\Connection.js:488:16)
+    at Sequence.end (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\sequences\Sequence.js:83:24)
+    at Sequence.OkPacket (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\sequences\Sequence.js:92:8)
+    at Protocol._parsePacket (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\Protocol.js:291:23)
+    at Parser._parsePacket (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\Parser.js:433:10) {
+  code: 'ER_PARSE_ERROR',
+  errno: 1064,
+  sqlMessage: "You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '?' at line 1",
+  sqlState: '42000',
+  index: 0,
+  sql: 'SELECT TIPO_OBJETO FROM tstmeta.ids WHERE ID_META = ?'
+}
+[0mPOST /query-conex [31m500[0m 4.790 ms - 238[0m
+Antes da regex FROM: SELECT TIPO_OBJETO FROM tstmeta.ids WHERE ID_META = ?
+Regex FROM capturou: FROM tstmeta.ids tableName: tstmeta.ids
+Depois da regex FROM: SELECT TIPO_OBJETO FROM tstmeta.ids WHERE ID_META = ?
+Query original: SELECT TIPO_OBJETO FROM tstmeta.ids WHERE ID_META = ?
+Query processada: SELECT TIPO_OBJETO FROM tstmeta.ids WHERE ID_META = ?
+Parâmetros: []
+Antes da regex FROM: SELECT TIPO_OBJETO FROM tstmeta.ids WHERE ID_META = ?
+Regex FROM capturou: FROM tstmeta.ids tableName: tstmeta.ids
+Depois da regex FROM: SELECT TIPO_OBJETO FROM tstmeta.ids WHERE ID_META = ?
+Query original: SELECT TIPO_OBJETO FROM tstmeta.ids WHERE ID_META = ?
+Query processada: SELECT TIPO_OBJETO FROM tstmeta.ids WHERE ID_META = ?
+Parâmetros: []
+Erro na execução da query: Error: ER_PARSE_ERROR: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '?' at line 1
+    at Sequence._packetToError (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\sequences\Sequence.js:47:14)
+    at Query.ErrorPacket (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\sequences\Query.js:79:18)
+    at Protocol._parsePacket (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\Protocol.js:291:23)
+    at Parser._parsePacket (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\Parser.js:433:10)
+    at Parser.write (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\Parser.js:43:10)
+    at Protocol.write (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\Protocol.js:38:16)
+    at Socket.<anonymous> (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\Connection.js:88:28)
+    at Socket.<anonymous> (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\Connection.js:526:10)
+    at Socket.emit (node:events:519:28)
+    at addChunk (node:internal/streams/readable:559:12)
+    --------------------
+    at Protocol._enqueue (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\Protocol.js:144:48)
+    at PoolConnection.query (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\Connection.js:198:25)
+    at C:\optic-map-api\NODE API 2025\routes\query_conex.js:97:14
+    at Ping.onOperationComplete (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\Pool.js:110:5)
+    at Ping.<anonymous> (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\Connection.js:526:10)
+    at Ping._callback (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\Connection.js:488:16)
+    at Sequence.end (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\sequences\Sequence.js:83:24)
+    at Sequence.OkPacket (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\sequences\Sequence.js:92:8)
+    at Protocol._parsePacket (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\Protocol.js:291:23)
+    at Parser._parsePacket (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\Parser.js:433:10) {
+  code: 'ER_PARSE_ERROR',
+  errno: 1064,
+  sqlMessage: "You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '?' at line 1",
+  sqlState: '42000',
+  index: 0,
+  sql: 'SELECT TIPO_OBJETO FROM tstmeta.ids WHERE ID_META = ?'
+}
+[0mPOST /query-conex [31m500[0m 6.765 ms - 238[0m
+Erro na execução da query: Error: ER_PARSE_ERROR: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '?' at line 1
+    at Sequence._packetToError (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\sequences\Sequence.js:47:14)
+    at Query.ErrorPacket (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\sequences\Query.js:79:18)
+    at Protocol._parsePacket (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\Protocol.js:291:23)
+    at Parser._parsePacket (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\Parser.js:433:10)
+    at Parser.write (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\Parser.js:43:10)
+    at Protocol.write (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\Protocol.js:38:16)
+    at Socket.<anonymous> (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\Connection.js:88:28)
+    at Socket.<anonymous> (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\Connection.js:526:10)
+    at Socket.emit (node:events:519:28)
+    at addChunk (node:internal/streams/readable:559:12)
+    --------------------
+    at Protocol._enqueue (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\Protocol.js:144:48)
+    at PoolConnection.query (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\Connection.js:198:25)
+    at C:\optic-map-api\NODE API 2025\routes\query_conex.js:97:14
+    at Ping.onOperationComplete (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\Pool.js:110:5)
+    at Ping.<anonymous> (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\Connection.js:526:10)
+    at Ping._callback (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\Connection.js:488:16)
+    at Sequence.end (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\sequences\Sequence.js:83:24)
+    at Sequence.OkPacket (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\sequences\Sequence.js:92:8)
+    at Protocol._parsePacket (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\Protocol.js:291:23)
+    at Parser._parsePacket (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\Parser.js:433:10) {
+  code: 'ER_PARSE_ERROR',
+  errno: 1064,
+  sqlMessage: "You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '?' at line 1",
+  sqlState: '42000',
+  index: 0,
+  sql: 'SELECT TIPO_OBJETO FROM tstmeta.ids WHERE ID_META = ?'
+}
+[0mPOST /query-conex [31m500[0m 4.664 ms - 238[0m
+Antes da regex FROM: SELECT TIPO_OBJETO FROM tstmeta.ids WHERE ID_META = ?
+Regex FROM capturou: FROM tstmeta.ids tableName: tstmeta.ids
+Depois da regex FROM: SELECT TIPO_OBJETO FROM tstmeta.ids WHERE ID_META = ?
+Query original: SELECT TIPO_OBJETO FROM tstmeta.ids WHERE ID_META = ?
+Query processada: SELECT TIPO_OBJETO FROM tstmeta.ids WHERE ID_META = ?
+Parâmetros: []
+Antes da regex FROM: SELECT TIPO_OBJETO FROM tstmeta.ids WHERE ID_META = ?
+Regex FROM capturou: FROM tstmeta.ids tableName: tstmeta.ids
+Depois da regex FROM: SELECT TIPO_OBJETO FROM tstmeta.ids WHERE ID_META = ?
+Query original: SELECT TIPO_OBJETO FROM tstmeta.ids WHERE ID_META = ?
+Query processada: SELECT TIPO_OBJETO FROM tstmeta.ids WHERE ID_META = ?
+Parâmetros: []
+Erro na execução da query: Error: ER_PARSE_ERROR: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '?' at line 1
+    at Sequence._packetToError (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\sequences\Sequence.js:47:14)
+    at Query.ErrorPacket (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\sequences\Query.js:79:18)
+    at Protocol._parsePacket (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\Protocol.js:291:23)
+    at Parser._parsePacket (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\Parser.js:433:10)
+    at Parser.write (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\Parser.js:43:10)
+    at Protocol.write (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\Protocol.js:38:16)
+    at Socket.<anonymous> (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\Connection.js:88:28)
+    at Socket.<anonymous> (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\Connection.js:526:10)
+    at Socket.emit (node:events:519:28)
+    at addChunk (node:internal/streams/readable:559:12)
+    --------------------
+    at Protocol._enqueue (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\Protocol.js:144:48)
+    at PoolConnection.query (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\Connection.js:198:25)
+    at C:\optic-map-api\NODE API 2025\routes\query_conex.js:97:14
+    at Ping.onOperationComplete (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\Pool.js:110:5)
+    at Ping.<anonymous> (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\Connection.js:526:10)
+    at Ping._callback (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\Connection.js:488:16)
+    at Sequence.end (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\sequences\Sequence.js:83:24)
+    at Sequence.OkPacket (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\sequences\Sequence.js:92:8)
+    at Protocol._parsePacket (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\Protocol.js:291:23)
+    at Parser._parsePacket (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\Parser.js:433:10) {
+  code: 'ER_PARSE_ERROR',
+  errno: 1064,
+  sqlMessage: "You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '?' at line 1",
+  sqlState: '42000',
+  index: 0,
+  sql: 'SELECT TIPO_OBJETO FROM tstmeta.ids WHERE ID_META = ?'
+}
+[0mPOST /query-conex [31m500[0m 7.113 ms - 238[0m
+Erro na execução da query: Error: ER_PARSE_ERROR: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '?' at line 1
+    at Sequence._packetToError (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\sequences\Sequence.js:47:14)
+    at Query.ErrorPacket (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\sequences\Query.js:79:18)
+    at Protocol._parsePacket (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\Protocol.js:291:23)
+    at Parser._parsePacket (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\Parser.js:433:10)
+    at Parser.write (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\Parser.js:43:10)
+    at Protocol.write (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\Protocol.js:38:16)
+    at Socket.<anonymous> (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\Connection.js:88:28)
+    at Socket.<anonymous> (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\Connection.js:526:10)
+    at Socket.emit (node:events:519:28)
+    at addChunk (node:internal/streams/readable:559:12)
+    --------------------
+    at Protocol._enqueue (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\Protocol.js:144:48)
+    at PoolConnection.query (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\Connection.js:198:25)
+    at C:\optic-map-api\NODE API 2025\routes\query_conex.js:97:14
+    at Ping.onOperationComplete (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\Pool.js:110:5)
+    at Ping.<anonymous> (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\Connection.js:526:10)
+    at Ping._callback (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\Connection.js:488:16)
+    at Sequence.end (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\sequences\Sequence.js:83:24)
+    at Sequence.OkPacket (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\sequences\Sequence.js:92:8)
+    at Protocol._parsePacket (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\Protocol.js:291:23)
+    at Parser._parsePacket (C:\optic-map-api\NODE API 2025\node_modules\mysql\lib\protocol\Parser.js:433:10) {
+  code: 'ER_PARSE_ERROR',
+  errno: 1064,
+  sqlMessage: "You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '?' at line 1",
+  sqlState: '42000',
+  index: 0,
+  sql: 'SELECT TIPO_OBJETO FROM tstmeta.ids WHERE ID_META = ?'
+}
+[0mPOST /query-conex [31m500[0m 5.330 ms - 238[0m
+Antes da regex FROM: SELECT TIPO_OBJETO FROM tstmeta.ids WHERE ID_META = ?
+Regex FROM capturou: FROM tstmeta.ids tableName: tstmeta.ids
+Depois da regex FROM: SELECT TIPO_OBJETO FROM tstmeta.ids WHERE ID_META = ?
+Query original: SELECT TIPO_OBJETO FROM tstmeta.ids WHERE ID_META = ?
+Query processada: SELECT TIPO_OBJETO FROM tstmeta.ids WHERE ID_META = ?
+Parâmetros: []
+Antes da regex FROM: SELECT TIPO_OBJETO FROM tstmeta.ids WHERE ID_META = ?
+Regex FROM capturou: FROM tstmeta.ids tableName: tstmeta.ids
+Depois da regex FROM: SELECT TIPO_OBJETO FROM tstmeta.ids WHERE ID_META = ?
+Query original: SELECT TIPO_OBJETO FROM tstmeta.ids WHERE ID_META = ?
+Query processada: SELECT TIPO_OBJETO FROM tstmeta.ids WHERE ID_META = ?
+Parâmetros: []
+Erro na execução da query: Error: ER_PARSE_ERROR: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '?' at line 1
