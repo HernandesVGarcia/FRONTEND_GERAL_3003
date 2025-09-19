@@ -19,6 +19,13 @@
   background: #abebb6;
   border-bottom: 1px solid #e0e0e0;
   height: 4%;
+  cursor: move;
+  user-select: none;
+}
+
+.modal-header.dragging {
+  cursor: grabbing;
+  opacity: 0.9;
 }
 
 .modal-title {
@@ -665,3 +672,4 @@
     font-size: 0.8rem;
   }
 }
+

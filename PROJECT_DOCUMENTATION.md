@@ -429,7 +429,66 @@ if (matchTST) {
 }
 ```
 
-#### **4. Particularidade Importante - DIO com Bandeja**
+#### **4. Regra Especial - Conexões Diretas de Cabo (Sem Sufixo)**
+
+**⚠️ ATENÇÃO**: Existem conexões diretas entre cabos através do segmento "sobra" onde o sufixo `.VALUE` pode não aparecer:
+
+**Padrões de Conexão Direta:**
+- **Maiúsculo**: `=cabo596806B!PROP.FIBRA_12` (sem `.VALUE`)
+- **Minúsculo**: `=cabo{ID}{A/B}!Prop.Fibra_{N}` (sem sufixo)
+
+**Problema Identificado:**
+- ❌ **Antes**: Sistema parava como tipo "unknown" 
+- ❌ **Resultado**: Fibras não chegavam ao destino final
+- ❌ **Causa**: Regex não reconhecia padrões sem sufixo
+
+**Solução Implementada:**
+```typescript
+// 1. Detecção de tipos (identificarTipoPeloConteudo)
+// Padrão original (mantém)
+=cabo{ID}{A/B}!Prop.Fibra_{N}.{Label|VALUE}
+
+// 🆕 NOVO: Conexão direta (maiúsculo)
+=cabo{ID}{A/B}!PROP.FIBRA_{N}
+
+// 🆕 NOVO: Conexão direta (minúsculo)  
+=cabo{ID}{A/B}!Prop.Fibra_{N}
+
+// 2. Regex flexível (processarCabo)
+let match = conteudo.match(/=cabo(\d+)([AB])!Prop\.Fibra_(\d+)\.(Label|VALUE)/);
+
+// Se não encontrou, tentar conexão direta (maiúsculo)
+if (!match) {
+  match = conteudo.match(/=cabo(\d+)([AB])!PROP\.FIBRA_(\d+)$/);
+}
+
+// Se ainda não encontrou, tentar conexão direta (minúsculo)
+if (!match) {
+  match = conteudo.match(/=cabo(\d+)([AB])!Prop\.Fibra_(\d+)$/);
+}
+
+// 3. Processamento como VALUE (padrão)
+const tipo = match[4] || 'VALUE'; // Se não tiver sufixo, assume VALUE
+```
+
+**Resultado:**
+- ✅ **Agora reconhece** conexões diretas como "cabo"
+- ✅ **Processa como VALUE** automaticamente
+- ✅ **Continua rastreamento** até destino final
+- ✅ **Mantém compatibilidade** com padrões existentes
+
+**Exemplo de Fluxo Corrigido:**
+```
+1. =cabo596806B!PROP.FIBRA_12 (conexão direta)
+   └── Reconhece como "cabo" (não mais "unknown")
+   └── Processa como VALUE → cabob_t1 + FIBRA_12
+   └── Continua rastreamento normalmente
+
+2. =cabo601380B!Prop.Fibra_2.VALUE (padrão normal)
+   └── Continua funcionando como antes
+```
+
+#### **5. Particularidade Importante - DIO com Bandeja**
 
 **⚠️ ATENÇÃO**: Quando o conteúdo é `diocX_tY` (ex: `dioc1_t2`):
 
@@ -459,7 +518,7 @@ const caboResponse = await this.fiberApiService.executeDynamicQuery(
 ).toPromise();
 ```
 
-#### **4. Exemplo Prático de Rastreamento**
+#### **6. Exemplo Prático de Rastreamento**
 
 ```
 FIBRA 1 do DIO 298816 (Tubo 1)
@@ -483,7 +542,7 @@ FIBRA 1 do DIO 298816 (Tubo 1)
     └── **DESTINO FINAL**: Caixa TST350817, boca 2, fibra 1
 ```
 
-#### **4. Exemplo Real de Dados do Banco (Cabo 674187)**
+#### **7. Exemplo Real de Dados do Banco (Cabo 674187)**
 
 **Dados reais extraídos do banco `tstmeta` para debug do algoritmo:**
 
@@ -512,7 +571,7 @@ FIBRA 1 do DIO 298816 (Tubo 1)
 - ❌ **Errado**: Consulta `FIBRA_11LABEL` na ponta B → retorna `=cabo674187B!Prop.Fibra_11.VALUE`
 - ✅ **Correto**: Deveria consultar `FIBRA_11` na ponta B → retorna `=cabo674187A!Prop.Fibra_11.Label`
 
-#### **5. Regras de Nomenclatura das Colunas**
+#### **8. Regras de Nomenclatura das Colunas**
 
 | **Tabela** | **Colunas de Fibra** | **Colunas de Label** | **Colunas FN** |
 |---|---|---|---|
@@ -521,20 +580,20 @@ FIBRA 1 do DIO 298816 (Tubo 1)
 | `cabob_tX` | `FIBRA_1-FIBRA_144` | `FIBRA_1_LABEL-FIBRA_144_LABEL` | - |
 | `cxbocaX_tX` | `F1-F12` | `F1L-F12L` | `FN1-FN12`, `FN1L-FN12L` |
 
-#### **6. Cálculo de Tubos**
+#### **9. Cálculo de Tubos**
 - **Fibras 1-12**: Tubo 1
 - **Fibras 13-24**: Tubo 2
 - **Fibras 25-36**: Tubo 3
 - **E assim por diante...**
 
-#### **7. Condições de Parada**
+#### **10. Condições de Parada**
 1. **DIO Final**: `=DIO{ID}!PROP.ROW_5.LABEL`
 2. **Splitter Entrada**: `splitter_e` ou `splitter_E`
 3. **Caixa Atual**: `=id()`
 4. **Campo Vazio**: Conteúdo vazio ou nulo
 5. **Erro de Conexão**: Falha na consulta ou dados inválidos
 
-#### **8. Logs de Debug**
+#### **11. Logs de Debug**
 O sistema gera logs detalhados para cada etapa:
 - `🔍 [RASTREIO]` - Início do rastreamento
 - `📋 [CONSULTA]` - Consulta na tabela
@@ -602,9 +661,76 @@ FIBRA INICIAL → CONSULTA REGISTRO → ANALISA CONTEÚDO → IDENTIFICA TIPO �
 - **Ação**: **PARAR** - Destino final
 
 #### **5. SPLITTERS**
-- **Splitter Simples**: `prop.splitter_e{ID}.label`
-- **Splitter Complexo**: `=SPLITTER{ID}!PROP.F1.VALUE`
+
+##### **🔀 Particularidades dos Splitters:**
+
+**Splitter Entrada:**
+- **Padrão**: `prop.splitter_e{ID}.label`
+- **Exemplo**: `prop.splitter_e299315.label`
+- **Retorno**: `fiber: "E"`
+- **Lógica**: Splitters têm apenas **uma entrada**, identificada pelo sufixo `_e`
 - **Ação**: **PARAR** - Destino final
+
+**Splitter Saída:**
+- **Padrão**: `prop.splitter{ID}_{N}.label`
+- **Exemplo**: `prop.splitter750062_1.label`, `prop.splitter750062_2.label`
+- **Retorno**: `fiber: "S{N}"` (onde N é o número da saída)
+- **Exemplos de retorno**: `"S1"`, `"S2"`, `"S3"`, etc.
+- **Lógica**: Splitters podem ter **múltiplas saídas**, identificadas pelo sufixo `_{N}`
+- **Ação**: **PARAR** - Destino final
+
+**Splitter Complexo:**
+- **Padrão**: `=SPLITTER{ID}!PROP.F1.VALUE`
+- **Retorno**: `fiber: "E"` (tratado como entrada)
+- **Ação**: **PARAR** - Destino final
+
+##### **🔧 Implementação no Fiber-Trace:**
+
+```typescript
+// Identificação do tipo
+if (conteudo.includes('prop.') && conteudo.includes('splitter_e') && conteudo.includes('label')) {
+  return 'splitter'; // Entrada
+}
+if (conteudo.includes('prop.') && conteudo.includes('splitter') && conteudo.includes('_') && conteudo.includes('label')) {
+  return 'splitter_saida'; // Saída
+}
+
+// Processamento - Entrada
+private async processarSplitter(conteudo: string, ...): Promise<...> {
+  // Extrair IDMETA: prop.splitter_e299315.label
+  const match = conteudo.match(/splitter_e(\d+)/);
+  const splitterIdmeta = parseInt(match[1]);
+  
+  return {
+    idmeta: splitterIdmeta,
+    fiber: "E" as any, // "E" para entrada
+    status: 'fim'
+  };
+}
+
+// Processamento - Saída
+private async processarSplitterSaida(conteudo: string, ...): Promise<...> {
+  // Extrair IDMETA e número da saída: prop.splitter750062_1.label
+  const match = conteudo.match(/splitter(\d+)_(\d+)/);
+  const splitterIdmeta = parseInt(match[1]);
+  const saidaNumero = parseInt(match[2]);
+  
+  return {
+    idmeta: splitterIdmeta,
+    fiber: `S${saidaNumero}` as any, // "S1", "S2", etc.
+    status: 'fim'
+  };
+}
+```
+
+##### **📊 Exemplos Práticos:**
+
+| **Conteúdo** | **Tipo** | **IDMETA** | **Saída** | **Fiber** | **Significado** |
+|---|---|---|---|---|---|
+| `prop.splitter_e299315.label` | `splitter` | 299315 | - | `"E"` | Entrada do splitter 299315 |
+| `prop.splitter750062_1.label` | `splitter_saida` | 750062 | 1 | `"S1"` | Saída 1 do splitter 750062 |
+| `prop.splitter750062_2.label` | `splitter_saida` | 750062 | 2 | `"S2"` | Saída 2 do splitter 750062 |
+| `prop.splitter750062_3.label` | `splitter_saida` | 750062 | 3 | `"S3"` | Saída 3 do splitter 750062 |
 
 #### **6. RABICHOS**
 - **Padrão**: `=RABICHO{ID}!PROP.F1.VALUE`
@@ -679,13 +805,18 @@ private processarCaixaAtual(conteudo, registro, idmeta, tabela, fiber)
 ```typescript
 interface FiberTraceStep {
   idmeta: number;        // ID do equipamento
-  fiber: number;         // Número da fibra
+  fiber: number | string; // Número da fibra ou código especial
   tabela: string;        // Tabela consultada
   registro: string;      // Registro consultado
   tipo: string;          // Tipo do equipamento
   status: 'processando' | 'fim' | 'continua' | 'erro';
 }
 ```
+
+#### **Códigos Especiais no Campo `fiber`:**
+- **`"E"`**: Splitter Entrada (`prop.splitter_e{ID}.label`)
+- **`"S1"`, `"S2"`, etc.**: Splitter Saída (`prop.splitter{ID}_{N}.label`) - onde N é o número da saída
+- **Números**: Fibras normais (1, 2, 3, etc.)
 
 #### **FiberTraceResult:**
 ```typescript
@@ -753,6 +884,7 @@ FIBRA 1 do DIO 298816 (Tubo 1)
 | `prop.boca{X}_{Y}.label` | `prop\.boca.*label` | `caixa` | **5** |
 | `=DIO{ID}!PROP.ROW_5.LABEL` | `DIO.*!.*PROP\.` | `dio` | **6** |
 | `prop.splitter_e{ID}.label` | `prop\.splitter_e.*label` | `splitter` | **7** |
+| `prop.splitter{ID}_{N}.label` | `prop\.splitter.*_.*label` | `splitter_saida` | **8** |
 | `=POP{ID}!PROP.F1.VALUE` | `POP.*!.*PROP\.F` | `pop` | **8** |
 | `=SPLITTER{ID}!PROP.F1.VALUE` | `SPLITTER.*!.*PROP\.F` | `splitter` | **9** |
 | `=RABICHO{ID}!PROP.F1.VALUE` | `RABICHO.*!.*PROP\.F` | `rabicho` | **10** |

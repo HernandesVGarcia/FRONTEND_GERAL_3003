@@ -1,0 +1,10 @@
+[CAIXA] Próximo passo - Tabela: cxboca1_t1, Registro: F7 fiber-trace.service.ts:448:13
+➡️ [CONTINUA] Próximo passo - IDMETA: 749876, Fibra: 7, Tabela: cxboca1_t1, Registro: F7 fiber-trace.service.ts:145:17
+🔍 [RASTREIO] Passo 4/150 - IDMETA: 749876, Fibra: 7, Tabela: cxboca1_t1, Registro: F7 fiber-trace.service.ts:73:15
+✅ [CONEXÃO] Encontrada conexão: prop.splitter750062_1.label fiber-trace.service.ts:100:15
+🔍 [ANALISAR] Conteúdo: prop.splitter750062_1.label fiber-trace.service.ts:168:13
+❓ [DESCONHECIDO] Tipo não reconhecido no conteúdo: prop.splitter750062_1.label fiber-trace.service.ts:235:13
+🎯 [TIPO] Tipo identificado pelo conteúdo: unknown fiber-trace.service.ts:115:15
+🔄 [PROCESSAR] Tipo: unknown, Conteúdo: prop.splitter750062_1.label fiber-trace.service.ts:257:13
+❓ [DESCONHECIDO] Tipo de equipamento não reconhecido: unknown fiber-trace.service.ts:285:17
+🏁 [FIM] Rastreamento finalizado - Status: erro

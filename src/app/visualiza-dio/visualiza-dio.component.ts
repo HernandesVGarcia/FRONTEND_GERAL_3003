@@ -73,6 +73,16 @@ export class VisualizaDioComponent implements OnInit, OnDestroy {
   isTracing = false;
   traceCancelled = false;
   
+  // Propriedades para arrastar o modal (mesmo padrão do gojs-demo)
+  isDragging = false;
+  private currentX = 0;
+  private currentY = 0;
+  private initialX = 0;
+  private initialY = 0;
+  private modalElement: HTMLElement | null = null;
+  private modalContentElement: HTMLElement | null = null;
+  private modalHeaderElement: HTMLElement | null = null;
+  
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -108,6 +118,7 @@ export class VisualizaDioComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.loadVisualizaDioData();
     this.updateFlexGridData();
+    this.setupDragFunctionality();
   }
 
   ngOnDestroy(): void {
@@ -319,7 +330,7 @@ export class VisualizaDioComponent implements OnInit, OnDestroy {
       
       // Coluna 0: Jumper (número da fibra)
       this.flexGridData[row][0] = {
-        value: fiberNumber.toString(),
+        //value: fiberNumber.toString(),
         editable: false
       };
       
@@ -462,15 +473,11 @@ export class VisualizaDioComponent implements OnInit, OnDestroy {
       this.fiberTraceResults.set(fiberNumber, result);
       
       // Obter destino final (agora assíncrono)
-      const destination = await this.getFinalDestination(result);
+      const destination = await this.getFinalDestination(result, fiberNumber);
       this.fiberDestinations.set(fiberNumber, destination);
       
-      // Obter informações completas do objeto
-      // Usar o IDMETA do último passo do trace (que é o destino final)
-      const lastStep = result.trace[result.trace.length - 1];
-      const objectInfo = await this.getObjectInfo(lastStep.idmeta, lastStep.tipo);
-      this.fiberBdio.set(fiberNumber, objectInfo.bdio);
-      this.fiberFibre.set(fiberNumber, objectInfo.fibre);
+      // As informações do objeto já são obtidas no getFinalDestination
+      // Não precisamos chamar getObjectInfo novamente aqui
       
       // Atualizar flexgrid
       this.updateFlexGridData();
@@ -488,7 +495,7 @@ export class VisualizaDioComponent implements OnInit, OnDestroy {
    * pega o destino final da fibra vindo do serviço fiber-trace.service.ts
    *    * Obtém o destino final de um resultado de rastreamento
    ================================*/
-  private async getFinalDestination(traceResult: FiberTraceResult): Promise<string> {
+  private async getFinalDestination(traceResult: FiberTraceResult, fiberNumber: number): Promise<string> {
     if (!traceResult.success || traceResult.trace.length === 0) {
       return 'ERRO';
     }
@@ -508,7 +515,22 @@ export class VisualizaDioComponent implements OnInit, OnDestroy {
     // Se chegou ao destino final, obter informações do objeto
     if (lastStep.status === 'fim') {
       try {
-        const objectInfo = await this.getObjectInfo(lastStep.idmeta, lastStep.tipo);
+        // 🆕 NOVO: Capturar a fibra final do último step (campo fiber)
+        let fibraFinal: string | undefined = undefined;
+        if (typeof lastStep.fiber === 'number') {
+          fibraFinal = lastStep.fiber.toString();
+          console.log(`🔌 [FIBRA] Fibra final encontrada: ${fibraFinal}`);
+        } else if (typeof lastStep.fiber === 'string') {
+          fibraFinal = lastStep.fiber; // "E" para splitter entrada, "S" para splitter saída
+          console.log(`🔌 [FIBRA] Fibra final encontrada: ${fibraFinal}`);
+        }
+        
+        const objectInfo = await this.getObjectInfo(lastStep.idmeta, lastStep.tipo, fibraFinal);
+        
+        // 🆕 NOVO: Definir valores do bdio e fibre para o FlexGrid
+        this.fiberBdio.set(fiberNumber, objectInfo.bdio);
+        this.fiberFibre.set(fiberNumber, objectInfo.fibre);
+        
         return objectInfo.destname;
       } catch (error) {
         console.error('Erro ao obter informações do objeto:', error);
@@ -523,7 +545,7 @@ export class VisualizaDioComponent implements OnInit, OnDestroy {
    * Obtém informações do objeto final usando a tabela ids
    * Baseado na função VB6 visualiza_campo_aplicacao()
    */
-  private getObjectInfo(idmeta: number, tipo: string): Promise<{destname: string, bdio: string, fibre: string}> {
+  private getObjectInfo(idmeta: number, tipo: string, fibraFinal?: string): Promise<{destname: string, bdio: string, fibre: string}> {
     return new Promise((resolve, reject) => {
       // Sempre consultar a tabela ids para obter o tipo do objeto (seguindo VB6)
       console.log(`Consultando tipo do objeto para IDMETA: ${idmeta}`);
@@ -541,15 +563,21 @@ export class VisualizaDioComponent implements OnInit, OnDestroy {
         const tipoObjeto = response.data[0].TIPO_OBJETO;
         console.log(`Tipo do objeto encontrado: ${tipoObjeto} para IDMETA: ${idmeta}`);
         console.log(`📊 [IDS] Dados completos:`, response.data[0]);
-          
-          this.getObjectNameByType(idmeta, tipoObjeto).then(result => {
-            resolve(result);
-          }).catch(error => {
-            console.error('Erro ao obter nome do objeto:', error);
-            resolve({ destname: 'ERRO', bdio: '---', fibre: '---' });
-          });
-        },
-        error: (error) => {
+        
+        // 🆕 NOVO: Usar fibraFinal diretamente se disponível
+        this.getObjectNameByType(idmeta, tipoObjeto, fibraFinal).then(result => {
+          // Se fibraFinal está disponível, usar diretamente
+          if (fibraFinal) {
+            result.fibre = fibraFinal;
+            console.log(`🔌 [FIBRA] Usando fibraFinal diretamente: ${fibraFinal}`);
+          }
+          resolve(result);
+        }).catch((error: any) => {
+          console.error('Erro ao obter nome do objeto:', error);
+          resolve({ destname: 'ERRO', bdio: '---', fibre: '---' });
+        });
+      },
+      error: (error: any) => {
           console.error('Erro ao consultar tabela ids:', error);
           resolve({ destname: '-------SEM CONEXÃO------', bdio: '---', fibre: '---' });
         }
@@ -561,7 +589,7 @@ export class VisualizaDioComponent implements OnInit, OnDestroy {
    * Obtém o nome do objeto baseado no tipo
    * Implementa a lógica do VB6 para cada tipo de objeto
    */
-  private async getObjectNameByType(idmeta: number, tipoObjeto: string): Promise<{destname: string, bdio: string, fibre: string}> {
+  private async getObjectNameByType(idmeta: number, tipoObjeto: string, fibraFinal?: string): Promise<{destname: string, bdio: string, fibre: string}> {
     try {
       switch (tipoObjeto) {
         case 'CAIXA':
@@ -608,6 +636,7 @@ export class VisualizaDioComponent implements OnInit, OnDestroy {
 
         case 'DIO':
           console.log(`🔍 [DIO] Consultando DIO para IDMETA: ${idmeta}`);
+          console.log(`🔌 [DIO] Fibra final recebida: ${fibraFinal}`);
           const dioResponse = await this.fiberApiService.executeDynamicQuery(
             'SELECT SIGLA AS NOME, ID_ESTACAO FROM tstmeta.dio WHERE id_meta = {idmeta}',
             { idmeta: idmeta }
@@ -616,6 +645,7 @@ export class VisualizaDioComponent implements OnInit, OnDestroy {
           if (dioResponse?.success && dioResponse.data && dioResponse.data.length > 0) {
             const bdio = dioResponse.data[0].NOME;
             const idEstacao = dioResponse.data[0].ID_ESTACAO;
+            console.log(`🏠 [DIO] DIO encontrado: ${bdio}, Estação: ${idEstacao}`);
             
             // Buscar sigla da estação
             const estacaoResponse = await this.fiberApiService.executeDynamicQuery(
@@ -624,11 +654,13 @@ export class VisualizaDioComponent implements OnInit, OnDestroy {
             ).toPromise();
             
             if (estacaoResponse?.success && estacaoResponse.data && estacaoResponse.data.length > 0) {
-              return {
+              const result = {
                 destname: estacaoResponse.data[0].SIGLA,
                 bdio: bdio,
-                fibre: '---'
+                fibre: fibraFinal || '---' // 🆕 NOVO: Usar fibra final se disponível
               };
+              console.log(`✅ [DIO] Resultado final:`, result);
+              return result;
             }
           } else {
             console.log(`❌ [DIO] DIO não encontrado para IDMETA: ${idmeta}`);
@@ -669,7 +701,7 @@ export class VisualizaDioComponent implements OnInit, OnDestroy {
             return {
               destname: `CX_${splitterResponse.data[0].numero_cx}:SPLITTER_${idmeta}`,
               bdio: '---',
-              fibre: 'E'
+              fibre: fibraFinal || 'E' // Usar fibraFinal se disponível, senão "E"
             };
           }
           break;
@@ -685,7 +717,7 @@ export class VisualizaDioComponent implements OnInit, OnDestroy {
             return {
               destname: `SPLITTER ${splitterEntradaResponse.data[0].numero_cx}`,
               bdio: '---',
-              fibre: '---'
+              fibre: fibraFinal || 'E' // Usar fibraFinal se disponível, senão "E"
             };
           } else {
             console.log(`❌ [SPLITTER-ENTRADA] Splitter não encontrado para IDMETA: ${idmeta}`);
@@ -754,5 +786,76 @@ export class VisualizaDioComponent implements OnInit, OnDestroy {
     this.updateFlexGridData();
     
     console.log('✅ [CANCEL] Rastreamento cancelado');
+  }
+
+  // ================================ Arrastar  Modal Drag Methods (mesmo padrão do gojs-demo) ================================
+  
+  private setupDragFunctionality(): void {
+    setTimeout(() => {
+      console.log('Configurando funcionalidade de arrastar modal');
+      this.modalElement = document.querySelector('.cdk-dialog-container') as HTMLElement;
+      this.modalContentElement = this.modalElement; // Mover o modal completo, não o conteúdo interno
+      this.modalHeaderElement = document.querySelector('.modal-header') as HTMLElement;
+      
+      if (this.modalHeaderElement && this.modalContentElement) {
+        console.log('Modal header encontrado para arrastar');
+        // Adicionar listener apenas no cabeçalho, não no modal inteiro
+        this.modalHeaderElement.addEventListener('mousedown', (e: MouseEvent) => this.dragStart(e));
+        document.addEventListener('mousemove', (e: MouseEvent) => this.dragMove(e));
+        document.addEventListener('mouseup', (e: MouseEvent) => this.dragEnd(e));
+      } else {
+        console.warn('Modal header não encontrado para configurar o arrastar');
+      }
+    }, 500);
+  }
+
+  private dragStart(event: MouseEvent): void {
+    // Prevenir arrastar se clicou em um botão
+    if ((event.target as HTMLElement).closest('button')) {
+      return;
+    }
+
+    console.log('Iniciando arrasto do modal');
+    if (this.modalHeaderElement && 
+        (event.target === this.modalHeaderElement || 
+         this.modalHeaderElement.contains(event.target as Node))) {
+      
+      this.initialX = event.clientX - this.currentX;
+      this.initialY = event.clientY - this.currentY;
+      this.isDragging = true;
+      
+      if (this.modalContentElement) {
+        this.modalContentElement.classList.add('dragging');
+      }
+    }
+  }
+
+  private dragMove(event: MouseEvent): void {
+    if (this.isDragging && this.modalContentElement) {
+      event.preventDefault();
+      
+      this.currentX = event.clientX - this.initialX;
+      this.currentY = event.clientY - this.initialY;
+
+      this.setTranslate(this.currentX, this.currentY, this.modalContentElement);
+    }
+  }
+
+  private dragEnd(event: MouseEvent): void {
+    if (this.isDragging) {
+      this.initialX = this.currentX;
+      this.initialY = this.currentY;
+      
+      this.isDragging = false;
+      if (this.modalContentElement) {
+        this.modalContentElement.classList.remove('dragging');
+      }
+    }
+  }
+
+  private setTranslate(xPos: number, yPos: number, el: HTMLElement): void {
+    if (el) {
+      el.style.transform = `translate3d(${xPos}px, ${yPos}px, 0)`;
+    }
   }
 }

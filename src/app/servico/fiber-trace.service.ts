@@ -5,7 +5,7 @@ import { FiberApiService } from './fiber-api.service';
 // Interfaces para o rastreamento de fibras
 export interface FiberTraceStep {
   idmeta: number;
-  fiber: number;
+  fiber: number | string; // 🆕 NOVO: Permitir string para conector
   tabela: string;
   registro: string;
   tipo: string;
@@ -143,7 +143,7 @@ export class FiberTraceService {
       } else if (result.tabela && result.registro) {
         // Continuar rastreamento recursivo
         console.log(`➡️ [CONTINUA] Próximo passo - IDMETA: ${result.idmeta}, Fibra: ${result.fiber}, Tabela: ${result.tabela}, Registro: ${result.registro}`);
-        await this.performTrace(result.idmeta, result.fiber, result.tabela, result.registro, tracePath, observer, stepCount + 1);
+        await this.performTrace(result.idmeta, typeof result.fiber === 'string' ? 0 : result.fiber, result.tabela, result.registro, tracePath, observer, stepCount + 1);
         } else {
         // Rastreamento interrompido
           console.log(`❌ [FIM] Rastreamento interrompido - Tabela ou registro vazios`);
@@ -182,6 +182,16 @@ export class FiberTraceService {
       return 'cabo';
     }
 
+    // 🆕 NOVO: Verificar se é cabo com conexão direta (sem sufixo): =cabo596806B!PROP.FIBRA_2
+    if (conteudo.includes('cabo') && conteudo.includes('!') && conteudo.includes('PROP.FIBRA_')) {
+      return 'cabo';
+    }
+
+    // 🆕 NOVO: Verificar se é cabo com conexão direta (minúsculo): =cabo{ID}{A/B}!Prop.Fibra_{N}
+    if (conteudo.includes('cabo') && conteudo.includes('!') && conteudo.includes('Prop.Fibra_') && !conteudo.includes('.')) {
+      return 'cabo';
+    }
+
     // Verificar se é caixa TST: =TST350814!PROP.BOCA2_1.VALUE
     if (conteudo.includes('TST') && conteudo.includes('BOCA')) {
       return 'caixa';
@@ -217,6 +227,11 @@ export class FiberTraceService {
       return 'splitter';
     }
 
+    // 🆕 NOVO: Verificar se é Saída de Splitter: prop.splitter750062_1.label
+    if (conteudo.includes('prop.') && conteudo.includes('splitter') && conteudo.includes('_') && conteudo.includes('label')) {
+      return 'splitter_saida';
+    }
+
     // Verificar se é Rabicho: =RABICHO350818!PROP.F1.VALUE
     if (conteudo.includes('RABICHO') && conteudo.includes('!') && conteudo.includes('PROP.F')) {
       return 'rabicho';
@@ -239,7 +254,7 @@ export class FiberTraceService {
     fiber: number
   ): Promise<{
     idmeta: number,
-    fiber: number,
+    fiber: number | string, // 🆕 NOVO: Permitir string para conector
     tabela: string,
     registro: string,
     status: 'processando' | 'fim' | 'continua' | 'erro'
@@ -264,6 +279,9 @@ export class FiberTraceService {
       
       case 'splitter':
         return await this.processarSplitter(conteudo, registro, idmeta, tabela, fiber);
+      
+      case 'splitter_saida':
+        return await this.processarSplitterSaida(conteudo, registro, idmeta, tabela, fiber);
       
       case 'pop':
         return await this.processarPOP(conteudo, registro, idmeta, tabela, fiber);
@@ -303,7 +321,20 @@ export class FiberTraceService {
     console.log(`🔌 [CABO] Processando cabo: ${conteudo}`);
 
     // Extrair informações do conteúdo do cabo
-    const match = conteudo.match(/=cabo(\d+)([AB])!Prop\.Fibra_(\d+)\.(Label|VALUE)/);
+    // 🆕 NOVO: Regex flexível para diferentes padrões de cabo
+    let match = conteudo.match(/=cabo(\d+)([AB])!Prop\.Fibra_(\d+)\.(Label|VALUE)/);
+    
+    // casos abaixo que existe conexao direta entre cabos atraves do segmento sobra e o VALUE pode nao aparecer -->=cabo596806B!PROP.FIBRA_12
+    // Se não encontrou, tentar padrão de conexão direta (maiúsculo)
+    if (!match) {
+      match = conteudo.match(/=cabo(\d+)([AB])!PROP\.FIBRA_(\d+)$/);
+    }
+    
+    // Se ainda não encontrou, tentar padrão de conexão direta (minúsculo)
+    if (!match) {
+      match = conteudo.match(/=cabo(\d+)([AB])!Prop\.Fibra_(\d+)$/);
+    }
+    
     if (!match) {
       console.log(`❌ [CABO] Formato de conteúdo inválido: ${conteudo}`);
       return { idmeta, fiber, tabela: '', registro: '', status: 'erro' };
@@ -312,14 +343,43 @@ export class FiberTraceService {
     const caboId = parseInt(match[1]);
     const ponta = match[2]; // A ou B
     const fibra = parseInt(match[3]);
-    const tipo = match[4]; // Label ou VALUE
+    const tipo = match[4] || 'VALUE'; // Label, VALUE ou VALUE (padrão para conexão direta)
 
     // Calcular tubo baseado na fibra
     const tubo = this.calculateTubo(fibra);
 
-    // Determinar próxima tabela e registro
-    const proximaTabela = ponta === 'B' ? `cabob_t${tubo}` : `caboa_t${tubo}`;
-    const proximoRegistro = tipo === 'Label' ? `FIBRA_${fibra}LABEL` : `FIBRA_${fibra}`;
+    // 🆕 NOVO: Detecção de variáveis seguindo exatamente a documentação
+    const isPontaB = ponta === 'B';
+    const isPontaA = ponta === 'A';
+    const isLabel = tipo === 'Label';
+    const isValue = tipo === 'VALUE';
+
+    // 🆕 NOVO: Lógica de combinação com && (AND) - exatamente como na documentação
+    let proximaTabela: string;
+    let proximoRegistro: string;
+
+    if (isPontaB && isLabel) {
+      // Ponta B + Label → cabob_tX + FIBRA_XLABEL
+      proximaTabela = `cabob_t${tubo}`;
+      proximoRegistro = `FIBRA_${fibra}LABEL`;
+    } else if (isPontaA && isLabel) {
+      // Ponta A + Label → caboa_tX + FIBRA_XLABEL
+      proximaTabela = `caboa_t${tubo}`;
+      proximoRegistro = `FIBRA_${fibra}LABEL`;
+    } else if (isPontaB && isValue) {
+      // Ponta B + Value → cabob_tX + FIBRA_X
+      proximaTabela = `cabob_t${tubo}`;
+      proximoRegistro = `FIBRA_${fibra}`;
+    } else if (isPontaA && isValue) {
+      // Ponta A + Value → caboa_tX + FIBRA_X
+      proximaTabela = `caboa_t${tubo}`;
+      proximoRegistro = `FIBRA_${fibra}`;
+    } else {
+      // Fallback para casos não cobertos
+      console.log(`⚠️ [CABO] Combinação não esperada: Ponta=${ponta}, Tipo=${tipo}`);
+      proximaTabela = ponta === 'B' ? `cabob_t${tubo}` : `caboa_t${tubo}`;
+      proximoRegistro = tipo === 'Label' ? `FIBRA_${fibra}LABEL` : `FIBRA_${fibra}`;
+    }
 
     console.log(`✅ [CABO] Próximo passo - Tabela: ${proximaTabela}, Registro: ${proximoRegistro}`);
     
@@ -417,7 +477,7 @@ export class FiberTraceService {
     fiber: number
   ): Promise<{
     idmeta: number,
-    fiber: number,
+    fiber: number | string, // 🆕 NOVO: Permitir string para conector
     tabela: string,
     registro: string,
     status: 'processando' | 'fim' | 'continua' | 'erro'
@@ -429,8 +489,35 @@ export class FiberTraceService {
       return await this.processarDIOCabo(conteudo, registro, idmeta, tabela, fiber);
     }
 
-    // DIO simples - destino final
-    // Extrair IDMETA do DIO do conteúdo: =DIO350833!PROP.ROW_5.LABEL
+    // 🆕 NOVO: DIO simples - consultar conector no cabo anterior ANTES de extrair ID do DIO
+    console.log(`🔍 [DIO] Consultando conector no cabo anterior - Tabela: ${tabela}, IDMETA: ${idmeta}, Fibra: ${fiber}`);
+    
+    // Construir campo FN_XLABEL baseado na fibra (ex: FN_12LABEL)
+    const campoFibra = `FN_${fiber}LABEL`;
+    console.log(`🔍 [DIO] Campo a consultar: ${campoFibra}`);
+    
+    // Consultar fibra final no cabo anterior (tabela e idmeta ainda são do cabo)
+    const fibraResponse = await this.fiberApiService.executeDynamicQuery(
+      `SELECT ${campoFibra} as fibra FROM tstmeta.${tabela} WHERE IDMETA = {idmeta}`,
+      { idmeta: idmeta }
+    ).toPromise();
+    
+    let fibraFinal = 0;
+    if (fibraResponse?.success && fibraResponse.data && fibraResponse.data.length > 0) {
+      const fibraNumero = fibraResponse.data[0].fibra;
+      if (fibraNumero && fibraNumero !== 'ZERO') {
+        // FN_XLABEL retorna o número da fibra final no DIO
+        fibraFinal = parseInt(fibraNumero);
+        console.log(`✅ [DIO] Fibra final encontrada: ${fibraFinal}`);
+      } else {
+        fibraFinal = 0;
+        console.log(`❌ [DIO] Fibra ZERO ou vazia`);
+      }
+    } else {
+      console.log(`❌ [DIO] Fibra não encontrada ou erro na consulta`);
+    }
+
+    // 🆕 NOVO: Agora extrair IDMETA do DIO do conteúdo: =DIO350833!PROP.ROW_5.LABEL
     let dioIdmeta = idmeta;
     const match = conteudo.match(/=DIO(\d+)!/);
     if (match) {
@@ -438,12 +525,12 @@ export class FiberTraceService {
       console.log(`🔌 [DIO] IDMETA do DIO extraído: ${dioIdmeta}`);
     }
     
-    console.log(`🏁 [DIO] Fibra chegou no DIO - DESTINO FINAL`);
+    console.log(`🏁 [DIO] Fibra chegou no DIO - DESTINO FINAL - Fibra final: ${fibraFinal}`);
     return {
       idmeta: dioIdmeta,
-      fiber: fiber,
+      fiber: fibraFinal, // 🆕 NOVO: Fibra final no campo fiber (número)
       tabela: '',
-      registro: '',
+      registro: '', // 🆕 NOVO: Limpar registro
       status: 'fim'
     };
   }
@@ -490,7 +577,7 @@ export class FiberTraceService {
 
     // Buscar fibra conectada na tabela original
     const fiberResponse = await this.fiberApiService.executeDynamicQuery(
-      `SELECT FN${fibra} as fiber FROM tstmeta.${tabela} WHERE idmeta = {idmeta}`,
+      `SELECT FN${fibra} as fiber FROM tstmeta.${tabela} WHERE IDMETA = {idmeta}`,
       { idmeta: idmeta }
     ).toPromise();
     
@@ -549,7 +636,7 @@ export class FiberTraceService {
         console.log(`🔀 [SPLITTER] IDMETA do splitter extraído: ${splitterIdmeta}`);
         return {
           idmeta: splitterIdmeta, // Usar o IDMETA do splitter, não o atual
-          fiber: fiber,
+          fiber: "E" as any, // "E" para Splitter Entrada
           tabela: '',
           registro: '',
           status: 'fim'
@@ -561,7 +648,53 @@ export class FiberTraceService {
     console.log(`🏁 [SPLITTER] Fibra chegou no Splitter - DESTINO FINAL`);
         return {
       idmeta: idmeta,
-      fiber: fiber,
+      fiber: "E" as any, // "E" para Splitter Entrada
+      tabela: '',
+      registro: '',
+      status: 'fim'
+    };
+  }
+
+  /**
+   * Processa equipamento tipo Splitter Saída
+   * Lógica específica para saídas de splitter - baseada no VB6
+   */
+  private async processarSplitterSaida(
+    conteudo: string,
+    registro: string,
+    idmeta: number,
+    tabela: string,
+    fiber: number
+  ): Promise<{
+    idmeta: number,
+    fiber: number,
+    tabela: string,
+    registro: string,
+    status: 'processando' | 'fim' | 'continua' | 'erro'
+  }> {
+    console.log(`🔀 [SPLITTER-SAIDA] Processando saída de splitter: ${conteudo}`);
+
+    // Extrair IDMETA do splitter do conteúdo: prop.splitter750062_1.label
+    const match = conteudo.match(/splitter(\d+)_(\d+)/);
+    if (match) {
+      const splitterIdmeta = parseInt(match[1]);
+      const saidaNumero = parseInt(match[2]);
+      console.log(`🔀 [SPLITTER-SAIDA] IDMETA do splitter: ${splitterIdmeta}, Saída: ${saidaNumero}`);
+      
+      return {
+        idmeta: splitterIdmeta, // Usar o IDMETA do splitter, não o atual
+        fiber: `S${saidaNumero}` as any, // "S1", "S2", etc. para Splitter Saída
+        tabela: '',
+        registro: '',
+        status: 'fim' // Finaliza o rastreamento como destino final
+      };
+    }
+
+    // Se não conseguiu extrair o IDMETA, usar o atual
+    console.log(`🔀 [SPLITTER-SAIDA] Não foi possível extrair IDMETA, usando atual: ${idmeta}`);
+    return {
+      idmeta: idmeta,
+      fiber: "S" as any, // Fallback para "S" se não conseguir extrair o número
       tabela: '',
       registro: '',
       status: 'fim'
@@ -606,7 +739,7 @@ export class FiberTraceService {
 
     // POP - destino final
     console.log(`🏁 [POP] Fibra chegou no POP - DESTINO FINAL`);
-    return {
+        return {
       idmeta: popIdmeta,
       fiber: fiber,
       tabela: '',
@@ -666,7 +799,7 @@ export class FiberTraceService {
 
     // Caixa atual - destino final
     console.log(`🏁 [CAIXA-ATUAL] Fibra parou na caixa atual - DESTINO FINAL`);
-        return {
+    return {
       idmeta: idmeta,
       fiber: 1,
       tabela: '',
