@@ -54,7 +54,7 @@ export class FiberTraceService {
   ): Promise<void> {
     try {
       // Verificar limite de passos
-      if (stepCount >= 150) {
+      if (stepCount >= 1000) {
         console.log(`🛑 [LIMITE] Rastreamento interrompido - Limite de 150 passos atingido`);
         const limitStep: FiberTraceStep = {
           idmeta: idmeta,

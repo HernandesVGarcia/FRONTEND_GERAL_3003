@@ -25,11 +25,17 @@ src/app/
 │   ├── visualiza-dio.component.ts    # Componente principal
 │   ├── visualiza-dio.component.html  # Template do modal
 │   └── visualiza-dio.component.css   # Estilos
+├── visualiza-cabo/
+│   ├── visualiza-cabo.component.ts   # Modal para visualização de cabos
+│   ├── visualiza-cabo.component.html # Template do flexgrid
+│   ├── visualiza-cabo.component.css  # Estilos responsivos
+│   └── visualiza-cabo.service.ts     # Serviço para dados de cabos
 ├── servico/
 │   ├── dio-equipamento.service.ts    # Serviço para equipamentos DIO
-│   └── fiber-trace.service.ts        # (Planejado) Rastreamento
+│   └── fiber-trace.service.ts        # Rastreamento de fibras
 ├── modelo/
-│   └── dioEquipamento.ts             # Interface DioEquip
+│   ├── dioEquipamento.ts             # Interface DioEquip
+│   └── VisualizaCaboData.ts          # Interface para dados de cabos
 └── assets/
     └── le_conex                       # Módulo VB6 original
 ```
@@ -48,10 +54,83 @@ src/app/
 - **Tratamento de erros** e loading states
 - **Logs de debug** para monitoramento
 
-### ✅ **3. Estrutura de Dados**
+### ✅ **3. Modal Visualiza-cabo**
+- **Modal dedicado** para visualização de fibras internas de cabos
+- **FlexGrid com 7 colunas** (índices 0-6) e 12 linhas (F1-F12)
+- **Títulos das pontas** "PONTA A" e "PONTA B" centralizados
+- **Coluna central colorida** (índice 3) com fibras F1-F12
+- **Layout responsivo** com altura de 40vh
+- **Integração com Google Maps** via double-click em cabos
+
+## 🎨 **Modal Visualiza-cabo - Detalhes Técnicos**
+
+### **Estrutura do FlexGrid**
+```
+Coluna 0 (1fr)    | Coluna 1 (0.25fr) | Coluna 2 (1.5fr) | Coluna 3 (60px) | Coluna 4 (1.5fr) | Coluna 5 (0.25fr) | Coluna 6 (1fr)
+                  |                   |                  | F1-F12 COLORIDA |                  |                   |
+PONTA A           |                   |                  |                 |                  |                   | PONTA B
+```
+
+### **Configurações de Layout**
+- **Altura do modal**: 40vh (40% da viewport)
+- **Largura**: 90vw com máximo de 1200px
+- **Grid template**: `1fr 0.25fr 1.5fr 60px 1.5fr 0.25fr 1fr`
+- **Altura das linhas**: 13px (+30% do original)
+- **Cores das fibras**: Verde, Amarelo, Branco, Azul, Vermelho, Lilás (repetindo a cada 6 linhas)
+
+### **Integração com Google Maps**
+- **Trigger**: Double-click em polylines (cabos) no mapa
+- **Dados passados**: `id_meta` do cabo e `tipoFibra`
+- **Configuração**: Modal configurado via `MAT_DIALOG_DATA`
+
+### **Responsividade**
+- **1600px**: Altura mantida em 40vh
+- **1366px**: Altura mantida em 40vh
+- **1024px**: Altura mantida em 40vh
+- **Grid adaptativo**: Larguras proporcionais mantidas em todas as resoluções
+
+### ✅ **4. Estrutura de Dados**
 - **Interface `DioEquip`** com campos `obs1-obs144` e `N1-N144`
+- **Interface `VisualizaCaboData`** para dados de cabos
+- **Interface `FiberRow`** para linhas do flexgrid
 - **Mapeamento dinâmico** baseado no grupo selecionado
 - **Tratamento de campos vazios** e valores "OFF"
+
+## 📊 **Interfaces de Dados**
+
+### **VisualizaCaboData**
+```typescript
+interface VisualizaCaboData {
+  id_meta: number;
+  nome_cabo: string;
+  tipo_cabo: string;
+  fibras: {
+    numero: number;
+    status: string;
+    destino: string;
+    observacoes: string;
+    cor: string;
+    tubo: number;
+  }[];
+}
+```
+
+### **FiberRow**
+```typescript
+interface FiberRow {
+  value: string;
+  editable: boolean;
+}
+```
+
+### **VisualizaCaboConfig**
+```typescript
+interface VisualizaCaboConfig {
+  title: string;
+  isEditable: boolean;
+  showAllFields: boolean;
+}
+```
 
 ## 🚀 **Funcionalidades Planejadas**
 

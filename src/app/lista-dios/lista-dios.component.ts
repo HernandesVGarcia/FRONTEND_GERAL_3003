@@ -31,7 +31,7 @@ export class ListaDiosComponent implements OnInit {
     console.log('Iniciando seleção de Dios...');
     this.servicoDios.selecionar().subscribe({
       next: (retorno) => {
-        console.log('Dados recebidos:', retorno);
+        console.log('Dados do Dios recebidos:', retorno);
         if ('response' in retorno) {
           this.vetorDios = (retorno as any).response;
         } else {

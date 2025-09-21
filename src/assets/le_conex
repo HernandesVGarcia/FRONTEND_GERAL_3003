@@ -354,9 +354,9 @@ Module LE_CONEX
 
 
 
-    'PESQUISAR IDMETA DO POP ++++++++++++++extraio o id meta do POP++++++++++++++++++++++++++++++++++++++++++++
+    
 
-    ' obtendo numero do conector
+    ' obtendo numero do cabo na  bandeja do dio
     TAM = Len(regist)
     FIBER = Mid(regist, 2, TAM - 1)
 

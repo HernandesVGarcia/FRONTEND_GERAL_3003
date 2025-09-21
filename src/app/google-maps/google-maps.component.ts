@@ -33,6 +33,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { PopInfoModalComponent } from '../pop-info-modal/pop-info-modal.component';
 import { VisualizaDioComponent } from '../visualiza-dio/visualiza-dio.component';
+import { VisualizaCaboComponent } from '../visualiza-cabo/visualiza-cabo.component';
 
 //import { Cto_SP } from '../modelo/Cto_SP';
 //import { GoogleInfoWindowComponent } from '../google-infowindow/google-infowindow.component';
@@ -2377,9 +2378,10 @@ openPopInfoModal(id_meta: number|undefined) {
 
 openVisualizaDioModal(id_meta: number, capacity?: number) {
   const dialogRef = this.dialog.open(VisualizaDioComponent, {
-    width: '80vw', // muda o tamanho do modal
+    width: '80vw',
     maxWidth: '1000px',
-    height: '65vh', // muda o tamanho do modal
+    height: 'auto', // Deixa o CSS controlar a altura
+    maxHeight: '95vh', // Altura máxima para não sair da tela
     data: { 
       id_meta,
       capacity,
@@ -2387,6 +2389,23 @@ openVisualizaDioModal(id_meta: number, capacity?: number) {
         title: 'Visualiza DIO',
         isEditable: true,
         showAllFields: false
+      }
+    }
+  });
+}
+
+openVisualizaCaboModal(id_meta: number, tipoFibra?: string) {
+  const dialogRef = this.dialog.open(VisualizaCaboComponent, {
+    width: '90vw',
+    maxWidth: '1200px',
+    height: '40vh', // Alterado para 50vh
+    maxHeight: '40vh',
+    data: { 
+      id_meta,
+      config: {
+        title: `Visualiza Cabo ${id_meta} - ${tipoFibra || 'Cabo Óptico'}`,
+        isEditable: true,
+        showAllFields: true
       }
     }
   });
@@ -2553,7 +2572,7 @@ closeGoJSModal() {
 
         // Adicionar evento de duplo clique
         polyline.addListener('dblclick', (event: google.maps.MapMouseEvent) => {
-          console.log(`Double-click detectado no cabo ${tipoFibra}:`, cabo.id_meta);
+          console.log(`🔴 CABO DOUBLE-CLICK - Abrindo VisualizaCabo para cabo ${tipoFibra}:`, cabo.id_meta);
           
           // Cancelar clique simples se estiver pendente
           if (clickTimeout) {
@@ -2564,11 +2583,9 @@ closeGoJSModal() {
           // Fechar InfoWindow se estiver aberto
           infoWindow.close();
           
-          // Abrir modal GoJS
-          const idMetaString = cabo.id_meta?.toString() || '';
-          this.authService.setIDmetaCaixa(idMetaString);
-          this.isGoJSModalOpen = true;
-          this.cdr.detectChanges();
+          // Abrir modal VisualizaCabo
+          console.log(`🚀 Abrindo modal VisualizaCabo para ID: ${cabo.id_meta}`);
+          this.openVisualizaCaboModal(cabo.id_meta, tipoFibra);
         });
 
         // Adicionar evento para fechar InfoWindow quando clicar fora

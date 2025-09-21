@@ -1,0 +1,132 @@
+<div class="visualiza-cabo-container">
+  <!-- Header -->
+  <div class="modal-header">
+    <h2 class="modal-title">{{ config.title }}</h2>
+    <div class="header-actions">
+             <button mat-icon-button (click)="dialogRef.close()" class="close-button">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  </div>
+
+
+  <!-- Loading -->
+  <div *ngIf="isLoading" class="loading-container">
+    <mat-spinner diameter="40"></mat-spinner>
+    <p>Carregando dados do cabo...</p>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="errorMessage" class="error-container">
+    <mat-icon class="error-icon">error</mat-icon>
+    <p class="error-message">{{ errorMessage }}</p>
+  </div>
+
+  <!-- Content -->
+  <div *ngIf="!isLoading && !errorMessage" class="modal-content">
+    <!-- Títulos das pontas -->
+    <div class="pontas-header">
+      <div class="ponta-a">PONTA A</div>
+      <div class="ponta-b">PONTA B</div>
+    </div>
+    
+    <!-- Container principal com botões e grid -->
+    <div class="main-container">
+      <!-- Colunas de botões à esquerda -->
+      <div class="buttons-container">
+        <!-- Primeira coluna - FIBRA_ESM -->
+        <div class="button-column">
+          <button 
+            *ngFor="let button of fibraEsmButtons; let i = index" 
+            class="fiber-button fibra-esm-button"
+            (click)="onFibraEsmClick(i + 1)"
+            [title]="'FIBRA_ESM' + (i + 1)">
+          </button>
+        </div>
+        
+        <!-- Segunda coluna - FIBRA_ES -->
+        <div class="button-column">
+          <button 
+            *ngFor="let button of fibraEsButtons; let i = index" 
+            class="fiber-button fibra-es-button"
+            (click)="onFibraEsClick(i + 1)"
+            [title]="'FIBRA_ES' + (i + 1)">
+          </button>
+        </div>
+      </div>
+      
+      <!-- FlexGrid do Cabo - 7 colunas, 12 linhas -->
+      <div class="cabo-flex-grid">
+        <div 
+          *ngFor="let row of flexGridData; let rowIndex = index" 
+          class="grid-row"
+          [class.row-verde]="rowIndex % 6 === 0"
+          [class.row-amarelo]="rowIndex % 6 === 1"
+          [class.row-branco]="rowIndex % 6 === 2"
+          [class.row-azul]="rowIndex % 6 === 3"
+          [class.row-vermelho]="rowIndex % 6 === 4"
+          [class.row-lilaz]="rowIndex % 6 === 5">
+          <div 
+            *ngFor="let cell of row; let colIndex = index" 
+            class="grid-cell"
+            [class.col-0]="colIndex === 0"
+            [class.col-1]="colIndex === 1"
+            [class.col-2]="colIndex === 2"
+            [class.col-3]="colIndex === 3"
+            [class.col-4]="colIndex === 4"
+            [class.col-5]="colIndex === 5"
+            [class.col-6]="colIndex === 6">
+            <span class="grid-text">
+              {{ cell.value || '---' }}
+            </span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Colunas de botões à direita -->
+      <div class="buttons-container">
+        <!-- Terceira coluna - FIBRA_DS -->
+        <div class="button-column">
+          <button 
+            *ngFor="let button of fibraDsButtons; let i = index" 
+            class="fiber-button fibra-ds-button"
+            (click)="onFibraDsClick(i + 1)"
+            [title]="'FIBRA_DS' + (i + 1)">
+          </button>
+        </div>
+        
+        <!-- Quarta coluna - FIBRA_DSM -->
+        <div class="button-column">
+          <button 
+            *ngFor="let button of fibraDsmButtons; let i = index" 
+            class="fiber-button fibra-dsm-button"
+            (click)="onFibraDsmClick(i + 1)"
+            [title]="'FIBRA_DSM' + (i + 1)">
+          </button>
+        </div>
+      </div>
+      
+      <!-- Painel de opções do lado direito -->
+      <div class="options-panel-right">
+        <div class="options-container">
+          <div class="options-buttons">
+            <label 
+              *ngFor="let option of fiberOptions; let i = index" 
+              class="option-button">
+              <input 
+                type="radio" 
+                name="fiberGroup" 
+                [value]="option.value"
+                [checked]="i === 0"
+                (change)="onFiberGroupChange(option.value)">
+              <span class="option-label">{{ option.label }}</span>
+            </label>
+          </div>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+
+        <!-- Footer removido -->
+</div>

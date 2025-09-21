@@ -150,7 +150,7 @@ export class CaixaSearchModalComponent implements AfterViewInit {
     });
   }
 
-  onSelectCaixa(caixa: CaixaSearchResult): void {
+  onSelectCaixa(caixa: CaixaSearchResult): void { // o valor de CaixaSerachResult vem de caixaSearchService.buscarCaixas
     console.log('Caixa selecionada:', caixa);
     this.selectedCaixa = caixa;
     

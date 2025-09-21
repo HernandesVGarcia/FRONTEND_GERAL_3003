@@ -246,7 +246,12 @@ export class FiberTraceService {
     }
   }
 
-  /**
+
+
+
+
+
+  /**=============================================analisa conteudo=============================================
    * Processa o conteúdo dinamicamente - seguindo exatamente o VB6
    * Extrai próxima tabela, registro e IDMETA baseado no conteúdo
    */
