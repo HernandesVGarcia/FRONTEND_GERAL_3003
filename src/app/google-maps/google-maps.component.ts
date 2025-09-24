@@ -169,6 +169,9 @@ export class GoogleMapsComponent implements OnInit, OnChanges {
   infoWindows72f: google.maps.InfoWindow[] = [];
   infoWindows144f: google.maps.InfoWindow[] = [];
 
+  // InfoWindows para marcadores (caixas e CTOs)
+  currentMarkerInfoWindow: google.maps.InfoWindow | null = null;
+
   
   // Propriedades que estavam faltando
   isMapFullyInitialized: boolean = false;
@@ -416,6 +419,7 @@ polylineOptions144f: google.maps.PolylineOptions = {
     console.log('GoogleMapsComponent initialized');
     this.checkGoogleMapsAPI();
     this.checkForGPSLocation();
+    this.setupMapClickListener();
     
     
     //const lat= this.authService.getLat
@@ -2209,16 +2213,161 @@ private updateVisibleMarkers() {
 
 
 
+// Método para gerar conteúdo HTML dos InfoWindows de marcadores
+private generateMarkerInfoWindowContent(tipo: string, dados: any): string {
+  const lat = dados.LAT || dados.lat;
+  const lng = dados.LONGI || dados.lng;
+  const id = dados.id_meta || dados.ID_META;
+  const numero = dados.numero || dados.NUMERO || 'S/N';
+  
+  let titulo = '';
+  let cor = '';
+  let icone = '';
+  
+  switch (tipo) {
+    case 'caixa':
+      titulo = `📦 CEO ${numero}`;
+      cor = '#3498db';
+      icone = '📦';
+      break;
+    case 'cto':
+      titulo = `🏗️ CTO ${numero}`;
+      cor = '#27ae60';
+      icone = '🏗️';
+      break;
+    case 'ctosp':
+      titulo = `🔧 CTO SP ${numero}`;
+      cor = '#e67e22';
+      icone = '🔧';
+      break;
+    default:
+      titulo = `📍 ${numero}`;
+      cor = '#95a5a6';
+      icone = '📍';
+  }
+
+  return `
+    <div style="padding: 12px; min-width: 220px; font-family: Arial, sans-serif; max-width: 300px;">
+      <h4 style="margin: 0 0 10px 0; color: #2c3e50; border-bottom: 2px solid ${cor}; padding-bottom: 5px;">
+        ${titulo}
+      </h4>
+      <p style="margin: 6px 0; color: #34495e;"><strong>ID:</strong> ${id}</p>
+      <div style="margin: 10px 0; padding: 8px; background: #ecf0f1; border-radius: 5px;">
+        <p style="margin: 0 0 5px 0; font-weight: bold; color: #2c3e50;">Coordenadas:</p>
+        <p style="margin: 0; font-family: 'Courier New', monospace; font-size: 13px; color: #2c3e50;">
+          Lat: ${lat}<br>
+          Lng: ${lng}
+        </p>
+      </div>
+      <button onclick="navigator.clipboard.writeText('${lat}, ${lng}')" 
+              style="width: 100%; margin-top: 8px; padding: 8px; background: ${cor}; color: white; 
+                     border: none; border-radius: 5px; cursor: pointer; font-weight: bold;"
+              onmouseover="this.style.background='${this.darkenColor(cor)}'" 
+              onmouseout="this.style.background='${cor}'">
+        📋 Copiar Coordenadas
+      </button>
+      <p style="margin: 8px 0 0 0; font-size: 11px; color: #7f8c8d; text-align: center;">
+        Duplo-clique para abrir diagrama
+      </p>
+    </div>
+  `;
+}
+
+// Método auxiliar para escurecer cores
+private darkenColor(color: string): string {
+  const colorMap: { [key: string]: string } = {
+    '#3498db': '#2980b9', // Azul
+    '#27ae60': '#229954', // Verde
+    '#e67e22': '#d35400', // Laranja
+    '#95a5a6': '#7f8c8d'  // Cinza
+  };
+  return colorMap[color] || color;
+}
+
+// Método para mostrar InfoWindow de marcador
+private showMarkerInfoWindow(marker: google.maps.Marker, event: google.maps.MapMouseEvent, tipo: string, dados: any) {
+  // Fechar InfoWindow anterior se existir
+  if (this.currentMarkerInfoWindow) {
+    this.currentMarkerInfoWindow.close();
+  }
+
+  // Criar novo InfoWindow
+  this.currentMarkerInfoWindow = new google.maps.InfoWindow({
+    content: this.generateMarkerInfoWindowContent(tipo, dados),
+    position: event.latLng
+  });
+
+  // Abrir InfoWindow
+  this.currentMarkerInfoWindow.open(this.map, marker);
+}
+
+// Configurar listener para fechar InfoWindow ao clicar no mapa
+private setupMapClickListener() {
+  if (this.map) {
+    this.map.addListener('click', () => {
+      if (this.currentMarkerInfoWindow) {
+        this.currentMarkerInfoWindow.close();
+        this.currentMarkerInfoWindow = null;
+      }
+    });
+  }
+}
+
 // Novo método para adicionar event listeners a um marcador
 private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = false, isCTOSP:boolean = false, isCLI:boolean = false, isCLIAT:boolean = false, isCLIDES:boolean = false) {
   // Remover listeners existentes primeiro (caso já existam)
   google.maps.event.clearInstanceListeners(marker);
   
-  
-  
-    // Eventos para marcadores de Caixas
+  // Clique simples - mostrar InfoWindow
+  marker.addListener('click', (event: google.maps.MapMouseEvent) => {
+    let tipo = '';
+    let dados: any = {};
     
-    marker.addListener('dblclick', (event: google.maps.MapMouseEvent) => {
+    if (isCTO) {
+      const index = this.markerCtos.indexOf(marker);
+      if (index !== -1) {
+        tipo = 'cto';
+        dados = this.destinoCTO[index];
+      }
+    } else if (isCTOSP) {
+      const index = this.markerCtosSP.indexOf(marker);
+      if (index !== -1) {
+        tipo = 'ctosp';
+        dados = this.destinoCTOSP[index];
+      }
+    } else if (isCLI) {
+      const index = this.markerPopsCli.indexOf(marker);
+      if (index !== -1) {
+        tipo = 'cli';
+        dados = this.destinoPopsCli[index];
+      }
+    } else if (isCLIAT) {
+      const index = this.markerPopsCliAtv.indexOf(marker);
+      if (index !== -1) {
+        tipo = 'cliat';
+        dados = this.destinoPopsCliAtv[index];
+      }
+    } else if (isCLIDES) {
+      const index = this.markerPopsCliDes.indexOf(marker);
+      if (index !== -1) {
+        tipo = 'clides';
+        dados = this.destinoPopsCliDes[index];
+      }
+    } else {
+      const index = this.markerCaixas.indexOf(marker);
+      if (index !== -1) {
+        tipo = 'caixa';
+        dados = this.destino[index];
+      }
+    }
+    
+    if (tipo && dados) {
+      this.showMarkerInfoWindow(marker, event, tipo, dados);
+    }
+  });
+  
+  // Duplo clique - abrir modal/diagrama
+  marker.addListener('dblclick', (event: google.maps.MapMouseEvent) => {
       
       if (isCTO) {
       const index = this.markerCtos.indexOf(marker);
@@ -2523,8 +2672,19 @@ closeGoJSModal() {
 
     console.log('Criando', paths.length, `polylines de cabos ${tipoFibra} com clique simples e duplo`);
 
+    // Criar array de índices correspondentes entre paths e cabos
+    const indicesValidos: number[] = [];
+    cabos.forEach((cabo, index) => {
+      if (cabo.GOOGLE_LATLNG) {
+        const coords = this.convertStringToCoords(cabo.GOOGLE_LATLNG);
+        if (coords.length > 0) {
+          indicesValidos.push(index);
+        }
+      }
+    });
+
     // Criar novas polylines com eventos de clique simples e duplo clique
-    paths.forEach((path, index) => {
+    paths.forEach((path, pathIndex) => {
       if (path.length > 0) {
         const polyline = new google.maps.Polyline({
           path: path,
@@ -2532,7 +2692,9 @@ closeGoJSModal() {
           map: this.map
         });
 
-        const cabo = cabos[index];
+        // Usar o índice correto do array de cabos
+        const caboIndex = indicesValidos[pathIndex];
+        const cabo = cabos[caboIndex];
         
         // Criar InfoWindow para este cabo
         const infoWindow = new google.maps.InfoWindow({

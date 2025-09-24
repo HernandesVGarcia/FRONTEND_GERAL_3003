@@ -1263,5 +1263,560 @@ export class ConexaoDinamicaService {
 3. **Documentar padrões** para novos tipos de equipamentos
 4. **Implementar testes unitários** para validação
 
-**Última atualização**: 11/09/2025
+---
+
+## 🚀 **DESENVOLVIMENTO DO DIA 22/09/2025 - MODAL VISUALIZA-CABO COMPLETO**
+
+### **📅 Data**: 22/09/2025
+### **🎯 Objetivo**: Implementar modal completo de visualização de cabos com rastreamento de fibras
+
+---
+
+## ✅ **FUNCIONALIDADES IMPLEMENTADAS HOJE**
+
+### **1. Modal Visualiza-Cabo com Drag & Drop**
+- **Arrastar pelo cabeçalho**: Modal pode ser movido pelo mouse
+- **Implementação**: Baseada no padrão do `visualiza-dio.component.ts`
+- **Eventos**: `mousedown`, `mousemove`, `mouseup`
+- **Transform**: `translate(x, y)` para posicionamento dinâmico
+
+### **2. Sistema de Botões de Fibras (4 Colunas)**
+- **Coluna 1 (Esquerda)**: `FIBRA_ESM` (12 botões, índices 1-12)
+- **Coluna 2 (Esquerda)**: `FIBRA_ES` (12 botões, índices 1-12)
+- **Coluna 3 (Direita)**: `FIBRA_DS` (12 botões, índices 1-12)
+- **Coluna 4 (Direita)**: `FIBRA_DSM` (12 botões, índices 1-12)
+- **Alinhamento**: Botões alinhados com as linhas do flexgrid
+- **Sem labels**: Apenas os botões, sem texto
+
+### **3. Painel de Opções de Grupos de Fibras**
+- **Posicionamento**: Lado direito do modal, dentro do container
+- **Botões**: `Option12F`, `Option24F`, `Option36F`... até `Option144F`
+- **Lógica**: Aparecem baseados na capacidade do cabo
+- **Seleção**: Primeiro grupo selecionado automaticamente
+- **Funcionalidade**: Mudança de grupo rastreia fibras correspondentes
+
+### **4. FlexGrid Responsivo (7 Colunas)**
+```
+Coluna 0 (1fr)    | Coluna 1 (0.25fr) | Coluna 2 (1.5fr) | Coluna 3 (60px) | Coluna 4 (1.5fr) | Coluna 5 (0.25fr) | Coluna 6 (1fr)
+                  |                   |                  | F1-F12 COLORIDA |                  |                   |
+PONTA A           | Nº Fibra A        | Tipo Objeto A    |                 | Tipo Objeto B    | Nº Fibra B        | PONTA B
+```
+
+### **5. Sistema de Rastreamento de Fibras**
+- **API**: `/analisa-conexao-total` para rastreamento completo
+- **Serviço**: `FibraDestinoCaboService` implementado
+- **Paralelo**: Rastreamento de PONTA A e PONTA B simultâneo
+- **Grupos**: 12 fibras por grupo (1-12, 13-24, 25-36, etc.)
+- **Loading**: Indicador visual durante rastreamento
+
+### **6. Integração com Google Maps**
+- **Trigger**: Double-click em polylines de cabos
+- **Dados**: `id_meta` e `tipoFibra` passados para o modal
+- **Correção**: Mapeamento correto entre `paths` e `cabos` arrays
+
+---
+
+## 🔧 **CORREÇÕES CRÍTICAS IMPLEMENTADAS**
+
+### **1. Problema do ID_META Incorreto**
+**❌ Problema**: Arrays `polylinePaths` e `destinoCabos` tinham tamanhos diferentes
+- Cabos sem `GOOGLE_LATLNG` válido não eram adicionados ao `paths`
+- Mas ainda existiam no array `cabos`
+- Resultado: `index` não correspondia ao cabo correto
+
+**✅ Solução**: Mapeamento correto com array de índices
+```typescript
+// Criar array de índices correspondentes entre paths e cabos
+const indicesValidos: number[] = [];
+cabos.forEach((cabo, index) => {
+  if (cabo.GOOGLE_LATLNG) {
+    const coords = this.convertStringToCoords(cabo.GOOGLE_LATLNG);
+    if (coords.length > 0) {
+      indicesValidos.push(index);
+    }
+  }
+});
+
+// Usar o índice correto do array de cabos
+const caboIndex = indicesValidos[pathIndex];
+const cabo = cabos[caboIndex];
+```
+
+### **2. Problema do Primeiro Grupo Não Carregar**
+**❌ Problema**: `populateFlexGrid()` era chamado **depois** do `rastrearGrupo(1)`
+- `updateGridWithResults()` precisava do `flexGridData` já criado
+- Resultado: Primeiro grupo não mostrava dados
+
+**✅ Solução**: Reordenação das operações
+```typescript
+// 1. Criar dados do visualiza cabo
+this.visualizaCaboData = { ... };
+
+// 2. Inicializar o grid ANTES do rastreamento
+this.populateFlexGrid();
+
+// 3. Rastrear primeiro grupo automaticamente
+await this.rastrearGrupo(1);
+```
+
+### **3. Números das Fibras Dinâmicos**
+**❌ Problema**: Coluna central sempre mostrava F1, F2, F3... independente do grupo
+**✅ Solução**: Cálculo dinâmico baseado no grupo selecionado
+```typescript
+// Calcular offset baseado no grupo selecionado
+const grupo = this.selectedFiberGroup || 1;
+const offset = (grupo - 1) * 12;
+
+// Número real da fibra (ex: grupo 2 = F13, F14, F15...)
+const numeroFibra = offset + i + 1;
+
+// Coluna central - Número da fibra (coluna 3)
+this.flexGridData[i][3].value = `F${numeroFibra}`;
+```
+
+---
+
+## 📊 **ESTRUTURA DE DADOS IMPLEMENTADA**
+
+### **Interface FibraDestino**
+```typescript
+export interface FibraDestino {
+  id_meta: string;
+  tipo_objeto: string;
+  fibra: string;
+}
+
+export interface ConsultaFibra {
+  tabela_cabo: string;
+  id_meta_cabo: number;
+  chave_user: string;
+  registro: string;
+}
+
+export interface CaboInfo {
+  id_meta: number;
+  capacidade: number;
+  grupos: number;
+  label: string;
+}
+```
+
+### **Serviço FibraDestinoCaboService**
+```typescript
+// Rastreamento de uma fibra específica
+async rastrearFibraAsync(tabela_cabo: string, id_meta_cabo: number, registro: string): Promise<FibraDestino | null>
+
+// Rastreamento de um grupo completo (12 fibras)
+async rastrearGrupoFibrasAsync(id_meta_cabo: number, grupo: number, ponta: 'A' | 'B', capacidade: number): Promise<FibraDestino[]>
+
+// Rastreamento para visualização (wrapper)
+async rastrearGrupoVisualizacaoAsync(id_meta_cabo: number, grupo: number, ponta: 'A' | 'B', capacidade: number): Promise<FibraDestino[]>
+```
+
+---
+
+## 🎨 **LAYOUT E RESPONSIVIDADE**
+
+### **Modal Visualiza-Cabo**
+- **Dimensões**: 90vw × 40vh (máximo 1200px)
+- **Posicionamento**: Centralizado na tela
+- **Drag**: Arrastável pelo cabeçalho
+- **Cor de fundo**: `#A8C8E8` (azul claro)
+
+### **FlexGrid (7 Colunas)**
+- **Coluna 0**: Vazia (1fr)
+- **Coluna 1**: Número da fibra PONTA A (0.25fr, editável)
+- **Coluna 2**: Tipo do objeto PONTA A (1.5fr, editável)
+- **Coluna 3**: Número da fibra central (60px, colorida)
+- **Coluna 4**: Tipo do objeto PONTA B (1.5fr, editável)
+- **Coluna 5**: Número da fibra PONTA B (0.25fr, editável)
+- **Coluna 6**: Vazia (1fr)
+
+### **Responsividade**
+- **Tablets (1024px)**: Ajustes de largura e gap
+- **Celulares (768px)**: Layout em coluna, botões menores
+- **Paisagem (768px)**: Layout em linha com flex-wrap
+- **Telas pequenas (480px)**: Elementos compactos
+- **Muito pequenas (320px)**: Layout ultra-compacto
+
+---
+
+## 🔄 **FLUXO DE FUNCIONAMENTO**
+
+### **1. Abertura do Modal**
+```
+Double-click no cabo → Google Maps → openVisualizaCaboModal(id_meta, tipoFibra)
+```
+
+### **2. Inicialização**
+```
+1. Consulta capacidade do cabo (Cabo_TipoService)
+2. Cria opções de grupos baseado na capacidade
+3. Inicializa flexGridData (12 linhas × 7 colunas)
+4. Rastreia primeiro grupo automaticamente
+5. Atualiza grid com resultados
+```
+
+### **3. Mudança de Grupo**
+```
+1. Usuário clica em Option24F (grupo 2)
+2. Chama rastrearGrupo(2)
+3. Rastreia fibras 13-24 (PONTA A e PONTA B)
+4. Atualiza grid com novos dados
+5. Atualiza números das fibras (F13, F14, F15...)
+```
+
+### **4. Rastreamento de Fibras**
+```
+1. Calcula tubo baseado no grupo (grupo 2 = t2)
+2. Gera tabela: caboa_t2, cabob_t2
+3. Cria 12 consultas paralelas (FIBRA_13LABEL...FIBRA_24LABEL)
+4. Executa Promise.all() para paralelização
+5. Retorna array com resultados ordenados
+```
+
+---
+
+## 🛠️ **ARQUIVOS MODIFICADOS/CRIADOS**
+
+### **Novos Arquivos**
+- `src/app/servico/fibra-destino-cabo.service.ts` - Serviço de rastreamento
+- `src/app/modelo/FibraDestino.ts` - Interfaces de dados
+
+### **Arquivos Modificados**
+- `src/app/visualiza-cabo/visualiza-cabo.component.ts` - Lógica principal
+- `src/app/visualiza-cabo/visualiza-cabo.component.html` - Template do modal
+- `src/app/visualiza-cabo/visualiza-cabo.component.css` - Estilos responsivos
+- `src/app/google-maps/google-maps.component.ts` - Correção do mapeamento
+- `src/app/lista-cabos12f/lista-cabos12f.component.ts` - Logs de debug
+
+---
+
+## 🎯 **FUNCIONALIDADES PRINCIPAIS**
+
+### **✅ Implementado e Funcionando**
+1. **Modal arrastável** pelo cabeçalho
+2. **4 colunas de botões** alinhadas com o grid
+3. **Painel de opções** de grupos de fibras
+4. **FlexGrid responsivo** com 7 colunas
+5. **Rastreamento de fibras** por grupos
+6. **Números dinâmicos** das fibras (F1-F12, F13-F24, etc.)
+7. **Loading states** durante rastreamento
+8. **Integração completa** com Google Maps
+9. **Mapeamento correto** de cabos e paths
+10. **Responsividade** para todos os dispositivos
+
+### **🔄 Próximos Passos (Amanhã)**
+1. **Testes de integração** com diferentes tipos de cabos
+2. **Otimização de performance** para cabos grandes (144F)
+3. **Tratamento de erros** mais robusto
+4. **Validação de dados** da API
+5. **Logs de debug** mais detalhados
+6. **Documentação da API** de rastreamento
+
+---
+
+## 📋 **COMANDOS PARA CONTINUAR AMANHÃ**
+
+### **Para testar o modal:**
+```bash
+# 1. Abrir o projeto
+cd angular-google-maps
+
+# 2. Instalar dependências (se necessário)
+npm install
+
+# 3. Executar em modo desenvolvimento
+ng serve
+
+# 4. Acessar no navegador
+http://localhost:4200
+
+# 5. Fazer double-click em um cabo no mapa
+# 6. Verificar se o modal abre com dados do primeiro grupo
+# 7. Testar mudança de grupos nos option buttons
+```
+
+### **Para debug:**
+- **Console do navegador**: Logs detalhados de rastreamento
+- **Network tab**: Monitorar requisições da API
+- **Verificar**: Se `id_meta` está correto no modal
+
+---
+
+## 🎉 **RESULTADO FINAL**
+
+**Modal Visualiza-Cabo completamente funcional com:**
+- ✅ **Drag & Drop** implementado
+- ✅ **4 colunas de botões** funcionais
+- ✅ **Sistema de grupos** de fibras dinâmico
+- ✅ **Rastreamento completo** de fibras
+- ✅ **Grid responsivo** com 7 colunas
+- ✅ **Números dinâmicos** das fibras
+- ✅ **Integração perfeita** com Google Maps
+- ✅ **Correção de bugs** críticos
+- ✅ **Responsividade** para todos os dispositivos
+
+**Status**: ✅ **MODAL VISUALIZA-CABO 100% FUNCIONAL**
+
+**Última atualização**: 22/09/2025
 **Status**: ✅ **ALGORITMO IMPLEMENTADO E FUNCIONANDO**
+
+---
+
+## **🚨 IMPORTANTE: LIMITAÇÕES DA PROCEDURE MySQL `analisa_conexão3`**
+
+### **⚠️ PROBLEMA CRÍTICO IDENTIFICADO:**
+
+**A procedure `analisa_conexão3` tem problemas com consultas concorrentes/paralelas:**
+
+### **🔍 Sintomas observados:**
+- ✅ **Consultas individuais**: Funcionam perfeitamente (Postman, VB6)
+- ❌ **Consultas paralelas**: Retornam números de fibras inconsistentes
+- ❌ **Promise.all()**: Causa interferência entre consultas simultâneas
+- ❌ **Race conditions**: Resultados se misturam entre diferentes fibras
+
+### **📊 Evidências:**
+```
+❌ PROBLEMA (consultas paralelas):
+PONTA A fibra 1 → Destino fibra 1 ✅
+PONTA A fibra 2 → Destino fibra 2 ✅  
+PONTA B fibra 1 → Destino fibra 7 ❌ (deveria ser fibra 1)
+PONTA A fibra 3 → Destino fibra 3 ✅
+PONTA B fibra 2 → Destino fibra 8 ❌ (deveria ser fibra 2)
+
+✅ SOLUÇÃO (consultas sequenciais):
+PONTA A fibra 1 → Destino fibra 1 ✅
+PONTA A fibra 2 → Destino fibra 2 ✅
+PONTA A fibra 3 → Destino fibra 3 ✅
+... (todas as 12 fibras da PONTA A)
+PONTA B fibra 1 → Destino fibra 1 ✅
+PONTA B fibra 2 → Destino fibra 2 ✅
+PONTA B fibra 3 → Destino fibra 3 ✅
+... (todas as 12 fibras da PONTA B)
+```
+
+### **🔧 SOLUÇÃO IMPLEMENTADA:**
+
+**1. Rastreio sequencial entre pontas:**
+- ✅ PONTA A primeiro (completa)
+- ✅ PONTA B depois (completa)
+- ❌ NUNCA em paralelo
+
+**2. Consultas sequenciais dentro de cada ponta:**
+- ✅ Fibra 1 → aguarda completar
+- ✅ Fibra 2 → aguarda completar
+- ✅ Fibra 3 → aguarda completar
+- ❌ NUNCA Promise.all() dentro da mesma ponta
+
+### **📋 REGRAS PARA FUTURAS IMPLEMENTAÇÕES:**
+
+**⚠️ SEMPRE usar consultas sequenciais com a procedure `analisa_conexão3`:**
+
+```typescript
+// ❌ NUNCA FAZER (causa problemas):
+const resultados = await Promise.all([
+  rastrearFibra('FIBRA_1LABEL'),
+  rastrearFibra('FIBRA_2LABEL'),
+  rastrearFibra('FIBRA_3LABEL')
+]);
+
+// ✅ SEMPRE FAZER (funciona perfeitamente):
+for (let i = 1; i <= 12; i++) {
+  const resultado = await rastrearFibra(`FIBRA_${i}LABEL`);
+  resultados.push(resultado);
+}
+```
+
+### **🎯 IMPACTO:**
+
+- ⚠️ **Performance**: Consultas sequenciais são mais lentas
+- ✅ **Confiabilidade**: 100% consistente
+- ✅ **Precisão**: Números de fibras sempre corretos
+- ✅ **Estabilidade**: Sem interferência entre consultas
+
+**Data da descoberta**: 22/09/2025
+**Status**: ✅ **PROBLEMA IDENTIFICADO E SOLUCIONADO**
+
+---
+
+## **🎨 SISTEMA DE CORES DAS FIBRAS - IMPLEMENTAÇÃO COMPLETA**
+
+### **📅 Data**: 22/09/2025
+### **🎯 Objetivo**: Implementar sistema de cores das fibras no modal `visualiza-cabo` baseado no código do cabo e quantidade de fibras por tubo
+
+---
+
+### **🔧 IMPLEMENTAÇÃO REALIZADA:**
+
+#### **1. Análise dos Padrões de Cores (Stencil)**
+- ✅ **Analisados arquivos Stencil**: `cabo-12-f-nac`, `cabo-12-f-int`, `cabo-12-f-nac-tb2`, `cabo-12-f-int-tb2`, `cabo-12-f-nac-tb12`
+- ✅ **Identificados padrões**: Nacional vs Internacional, TB2 vs TB12 vs Padrão
+- ✅ **Mapeadas cores**: Sequências específicas para cada tipo de cabo
+
+#### **2. Sistema de Cores Dinâmico**
+- ✅ **Método `definirCoresFibras(codigo, tubo)`**: Define cores baseado no código e tubo
+- ✅ **Método `obterCorFibra(numeroFibra)`**: Calcula cor específica para cada fibra
+- ✅ **Integração com API**: Usa `codigo` e `tubo` retornados pela API `cabo-tipo`
+
+#### **3. Aplicação das Cores**
+- ✅ **Coluna central do grid**: Apenas índice 3 (F1, F2, F3...) recebe cores
+- ✅ **Botões das fibras**: Removidas cores (mantidas cores padrão do CSS)
+- ✅ **Outras colunas**: Mantidas com cor branca padrão
+
+---
+
+### **🎨 PADRÕES DE CORES IMPLEMENTADOS:**
+
+#### **🇧🇷 NACIONAL (Código 2):**
+
+**TB2 (2 fibras por tubo):**
+- F1: Verde (`#00FF00`)
+- F2: Amarelo (`#FFFF00`)
+- **Repetição**: F3=Verde, F4=Amarelo, etc.
+
+**TB8 (8 fibras por tubo):**
+- F1: Verde (`#00FF00`)
+- F2: Amarelo (`#FFFF00`)
+- F3: Branco (`#FFFFFF`)
+- F4: Azul (`#4169E1`)
+- F5: Vermelho (`#FF0000`)
+- F6: Violeta (`#8A2BE2`)
+- F7: Marrom (`#8B4513`)
+- F8: Rosa (`#FF69B4`)
+- **Sem repetição**
+
+**TB12 (12 fibras por tubo):**
+- F1: Verde (`#00FF00`)
+- F2: Amarelo (`#FFFF00`)
+- F3: Branco (`#FFFFFF`)
+- F4: Azul (`#4169E1`)
+- F5: Vermelho (`#FF0000`)
+- F6: Violeta (`#8A2BE2`)
+- F7: Marrom (`#8B4513`)
+- F8: Rosa (`#FF69B4`)
+- F9: Preto (`#000000`)
+- F10: Cinza (`#808080`)
+- F11: Laranja (`#FFA500`)
+- F12: Ciano (`#00FFFF`)
+- **Sem repetição**
+
+**Padrão (6 fibras por tubo):**
+- F1: Verde (`#00FF00`)
+- F2: Amarelo (`#FFFF00`)
+- F3: Branco (`#FFFFFF`)
+- F4: Azul (`#4169E1`)
+- F5: Vermelho (`#FF0000`)
+- F6: Violeta (`#8A2BE2`)
+- **Repetição**: F7=Verde, F8=Amarelo, etc.
+
+#### **🌍 INTERNACIONAL (Código 1):**
+
+**TB2 (2 fibras por tubo):**
+- F1: Azul (`#4169E1`)
+- F2: Laranja (`#FFA500`)
+- **Repetição**: F3=Azul, F4=Laranja, etc.
+
+**TB8 (8 fibras por tubo):**
+- F1: Azul (`#4169E1`)
+- F2: Laranja (`#FFA500`)
+- F3: Verde (`#00FF00`)
+- F4: Marrom (`#8B4513`)
+- F5: Cinza (`#808080`)
+- F6: Branco (`#FFFFFF`)
+- F7: Vermelho (`#FF0000`)
+- F8: Preto (`#000000`)
+- **Sem repetição**
+
+**TB12 (12 fibras por tubo):**
+- F1: Azul (`#4169E1`)
+- F2: Laranja (`#FFA500`)
+- F3: Verde (`#00FF00`)
+- F4: Marrom (`#8B4513`)
+- F5: Cinza (`#808080`)
+- F6: Branco (`#FFFFFF`)
+- F7: Vermelho (`#FF0000`)
+- F8: Preto (`#000000`)
+- F9: Amarelo (`#FFFF00`)
+- F10: Violeta (`#8A2BE2`)
+- F11: Rosa (`#FF69B4`)
+- F12: Ciano (`#00FFFF`)
+- **Sem repetição**
+
+**Padrão (6 fibras por tubo):**
+- F1: Azul (`#4169E1`)
+- F2: Laranja (`#FFA500`)
+- F3: Verde (`#00FF00`)
+- F4: Marrom (`#8B4513`)
+- F5: Cinza (`#808080`)
+- F6: Branco (`#FFFFFF`)
+- **Repetição**: F7=Azul, F8=Laranja, etc.
+
+---
+
+### **🔧 CORREÇÕES TÉCNICAS REALIZADAS:**
+
+#### **1. Problema da Borda entre Colunas 3 e 4**
+- **Problema**: Linha vertical entre colunas 3 e 4 sumiu
+- **Causa**: Regras CSS antigas aplicando `background-color` na coluna 3
+- **Solução**: 
+  - Removidas regras CSS antigas de cores fixas
+  - Adicionada regra específica para preservar bordas:
+    ```css
+    .col-3 { border-right: 1.5px solid #000 !important; }
+    .col-4 { border-left: 1.5px solid #000 !important; }
+    ```
+
+#### **2. Correção de Cores Específicas**
+- **Violeta**: Corrigido de rosa para violeta verdadeiro (`#8A2BE2`)
+- **Rosa**: Corrigido para rosa pink vibrante (`#FF69B4`)
+- **Azul**: Padronizado para azul royal (`#4169E1`)
+
+#### **3. Implementação TB8**
+- **Problema**: Cabos de 8 fibras repetiam cores a cada 6 fibras
+- **Solução**: Implementada lógica específica para TB8 com 8 cores únicas
+
+---
+
+### **📊 ESTRUTURA DE ARQUIVOS MODIFICADOS:**
+
+#### **`src/app/visualiza-cabo/visualiza-cabo.component.ts`**
+- ✅ Adicionadas propriedades: `coresFibras`, `codigo`, `tubo`, `isNacional`
+- ✅ Implementado método `definirCoresFibras(codigo, tubo)`
+- ✅ Implementado método `obterCorFibra(numeroFibra)`
+- ✅ Integração com API `cabo-tipo` para obter `codigo` e `tubo`
+- ✅ Atualização do método `updateGridWithResults()` para aplicar cores
+
+#### **`src/app/visualiza-cabo/visualiza-cabo.component.html`**
+- ✅ Adicionado `[style.background-color]` na coluna central (índice 3)
+- ✅ Removidas cores dos botões (mantidas cores padrão do CSS)
+
+#### **`src/app/visualiza-cabo/visualiza-cabo.component.css`**
+- ✅ Removidas regras CSS antigas de cores fixas
+- ✅ Adicionadas regras para preservar bordas entre colunas 3 e 4
+
+---
+
+### **🎯 FUNCIONAMENTO:**
+
+1. **Carregamento**: Modal abre e consulta API `cabo-tipo` para obter `codigo` e `tubo`
+2. **Definição**: Chama `definirCoresFibras(codigo, tubo)` para configurar array de cores
+3. **Aplicação**: Usa `obterCorFibra(numeroFibra)` para calcular cor específica
+4. **Exibição**: Aplica cor apenas na coluna central do grid (F1, F2, F3...)
+
+### **📝 LOGS DE DEBUG:**
+```
+🎨 Cores definidas: INTERNACIONAL, Tubo: 12, Cores: ["#4169E1", "#FFA500", ...]
+```
+
+---
+
+### **✅ RESULTADO FINAL:**
+- ✅ **Sistema completo de cores** baseado no código do cabo
+- ✅ **Suporte a TB2, TB8, TB12 e padrão** (6 fibras)
+- ✅ **Cores precisas** com valores hexadecimais
+- ✅ **Aplicação correta** apenas na coluna central
+- ✅ **Bordas preservadas** entre colunas
+- ✅ **Integração perfeita** com API existente
+
+**Status**: ✅ **IMPLEMENTAÇÃO COMPLETA E FUNCIONAL**

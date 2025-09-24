@@ -16,6 +16,12 @@
     <p>Carregando dados do cabo...</p>
   </div>
 
+  <!-- Rastreando Fibras -->
+  <div *ngIf="isRastreando" class="rastreando-container">
+    <mat-spinner diameter="30"></mat-spinner>
+    <p>Rastreando fibras do grupo {{ selectedFiberGroup }}...</p>
+  </div>
+
   <!-- Error Message -->
   <div *ngIf="errorMessage" class="error-container">
     <mat-icon class="error-icon">error</mat-icon>
@@ -75,7 +81,9 @@
             [class.col-3]="colIndex === 3"
             [class.col-4]="colIndex === 4"
             [class.col-5]="colIndex === 5"
-            [class.col-6]="colIndex === 6">
+            [class.col-6]="colIndex === 6"
+            [attr.data-full-text]="cell.value || '---'"
+            [style.background-color]="colIndex === 3 ? (cell.cor || '#FFFFFF') : '#FFFFFF'">
             <span class="grid-text">
               {{ cell.value || '---' }}
             </span>
