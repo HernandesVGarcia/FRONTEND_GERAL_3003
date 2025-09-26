@@ -110,7 +110,7 @@
 /* Content */
 .modal-content {
   flex: 1;
-  overflow-y: auto;
+  overflow: visible; /* Permitir tooltips saírem do modal */
   padding: 12px;
   display: flex;
   flex-direction: column;
@@ -338,7 +338,7 @@
   background: white;
   border: 1.5px solid #000;
   border-radius: 2px;
-  overflow: hidden;
+  overflow: visible; /* Permitir tooltips saírem do container */
   width: 100%;
   max-width: 800px; /* Reduzido para corresponder às pontas */
 }
@@ -348,7 +348,7 @@
   display: grid;
   height: 13px; /* Aumentado de 10px para 13px (+30%) */
   grid-template-columns: 
-    0.5fr 0.25fr 1.5fr 60px 1.5fr 0.25fr 0.5fr; /* Reduzido para corresponder às pontas */
+    0.5fr 0.25fr 1.6fr 60px 1.6fr 0.25fr 0.5fr; /* Reduzido para corresponder às pontas */
   border-bottom: 1.5px solid #000;
   line-height: 13px; /* Aumentado de 10px para 13px (+30%) */
 }
@@ -373,26 +373,42 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   position: relative;
-  cursor: help; /* Indica que há mais informação */
+  cursor:help; /* Indica que há mais informação */
 }
 
-/* Tooltip para texto completo */
+/* Tooltip para texto completo - Versão simplificada */
 .grid-cell:hover::after {
-  content: attr(data-full-text);
+  content: attr(data-full-text) !important;
+  position: absolute !important;
+  background: #000 !important;
+  color: #fff !important;
+  padding: 6px 10px !important;
+  border-radius: 3px !important;
+  font-size: 11px !important;
+  white-space: nowrap !important;
+  max-width: 250px !important;
+  z-index: 99999 !important;
+  top: -30px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.5) !important;
+  pointer-events: none !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Seta simples do tooltip */
+.grid-cell:hover::before {
+  content: '';
   position: absolute;
-  background: #333;
-  color: white;
-  padding: 8px 12px;
-  border-radius: 4px;
-  font-size: 0.7rem;
-  white-space: normal;
-  word-wrap: break-word;
-  max-width: 300px;
-  z-index: 1000;
-  top: 100%;
+  top: -5px;
   left: 50%;
   transform: translateX(-50%);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid #000;
+  z-index: 10000;
   pointer-events: none;
 }
 

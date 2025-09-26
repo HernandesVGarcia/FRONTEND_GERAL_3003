@@ -162,6 +162,39 @@ export class FibraDestinoCaboService {
   }
 
   /**
+   * Consulta OBS do DIO nas tabelas dio_tX baseado na fibra
+   * If fibra_publica <= 12 Then TABELA = "dio_t1"
+   * If fibra_publica > 12 Then TABELA = "dio_t2"
+   * Set RStst = frmLogin.connMETA.Execute("SELECT obs" & fibra_publica & " as obs FROM " & TABELA & " WHERE IDMETA ='" & idcabo & "';")
+   * If RStst!OBS <> "" Then obs_dio = RStst!OBS Else obs_dio = "-----"
+   */
+  private async consultarObsDio(id_meta: string, fibra: string): Promise<string> {
+    try {
+      const fibra_publica = parseInt(fibra);
+      const grupo = Math.ceil(fibra_publica / 12);
+      const tabela = `dio_t${grupo}`;
+      
+      console.log(`🔍 [DIO OBS] Consultando OBS - Fibra: ${fibra_publica}, Grupo: ${grupo}, Tabela: ${tabela}`);
+      
+      const obsQuery = `SELECT obs${fibra_publica} as obs FROM ${tabela} WHERE IDMETA = {idmeta}`;
+      const obsResponse = await this.fiberApiService.executeDynamicQuery(obsQuery, { idmeta: id_meta }).toPromise();
+      
+      if (obsResponse?.success && obsResponse.data && obsResponse.data.length > 0) {
+        const obs = obsResponse.data[0].obs;
+        const obs_dio = obs && obs.trim() !== '' ? obs : '-----';
+        console.log(`📊 [DIO OBS] OBS encontrada: ${obs_dio}`);
+        return obs_dio;
+      } else {
+        console.log(`❌ [DIO OBS] OBS não encontrada para fibra ${fibra_publica} na tabela ${tabela}`);
+        return '-----';
+      }
+    } catch (error) {
+      console.error(`❌ [DIO OBS] Erro ao consultar OBS:`, error);
+      return '-----';
+    }
+  }
+
+  /**
    * Processa o tipo de objeto DIO conforme lógica VB6
    * If RSmet!tipo_objeto = "DIO" Then 
    *   Set RStst = frmLogin.connMETA.Execute("SELECT SIGLA AS NOME,ID_ESTACAO FROM dio WHERE ID_META ='" & idcabo & "';")
@@ -171,7 +204,7 @@ export class FibraDestinoCaboService {
    *     Set RStst = frmLogin.conn.Execute("SELECT SIGLA FROM estações WHERE ID_META ='" & idEstacao & "';")
    *     DESTNAME = DESTNAME & ": " & RStst!sigla
    */
-  async processarTipoDio(id_meta: string): Promise<string> {
+  async processarTipoDio(id_meta: string, fibra: string = '1'): Promise<{destino: string, obs: string}> {
     try {
       console.log(`🔍 [DIO] Processando DIO para IDMETA: ${id_meta}`);
       
@@ -197,24 +230,31 @@ export class FibraDestinoCaboService {
 
           if (estacaoResponse?.success && estacaoResponse.data && estacaoResponse.data.length > 0) {
             const estacaoSigla = estacaoResponse.data[0].SIGLA;
-            const resultado = `${sigla}: ${estacaoSigla}`;
-            console.log(`📊 [DIO] Resultado final: ${resultado}`);
-            return resultado;
+            const destino = `${sigla}: ${estacaoSigla}`;
+            console.log(`📊 [DIO] Resultado final: ${destino}`);
+            
+            // Consultar OBS do DIO
+            const obs = await this.consultarObsDio(id_meta, fibra);
+            console.log(`🔍 [DIO] OBS: ${obs}`);
+            
+            return { destino, obs };
           } else {
             console.log(`❌ [DIO] Estação não encontrada para IDMETA: ${idEstacao}`);
-            return sigla; // Retorna apenas a sigla do DIO se não encontrar a estação
+            const obs = await this.consultarObsDio(id_meta, fibra);
+            return { destino: sigla, obs }; // Retorna apenas a sigla do DIO se não encontrar a estação
           }
         } else {
           console.log(`❌ [DIO] ID_ESTACAO não encontrado para DIO: ${id_meta}`);
-          return sigla; // Retorna apenas a sigla do DIO se não tiver estação
+          const obs = await this.consultarObsDio(id_meta, fibra);
+          return { destino: sigla, obs }; // Retorna apenas a sigla do DIO se não tiver estação
         }
       } else {
         console.log(`❌ [DIO] DIO não encontrado para IDMETA: ${id_meta}`);
-        return 'DIO NÃO ENCONTRADO';
+        return { destino: 'DIO NÃO ENCONTRADO', obs: '-----' };
       }
     } catch (error) {
       console.error(`❌ [DIO] Erro ao processar DIO:`, error);
-      return 'ERRO AO CONSULTAR DIO';
+      return { destino: 'ERRO AO CONSULTAR DIO', obs: '-----' };
     }
   }
 
@@ -307,8 +347,13 @@ export class FibraDestinoCaboService {
         
         // Processa tipo DIO conforme lógica VB6
         if (response.tipo_objeto === 'DIO') {
-          tipoObjetoProcessado = await this.processarTipoDio(response.id_meta);
+          const dioResult = await this.processarTipoDio(response.id_meta, response.fibra);
+          tipoObjetoProcessado = dioResult.destino;
           console.log(`🔍 [DIO] Tipo processado: ${response.tipo_objeto} -> ${tipoObjetoProcessado}`);
+          console.log(`🔍 [DIO] OBS: ${dioResult.obs}`);
+          
+          // Armazenar OBS para popular o grid posteriormente
+          response.obs_dio = dioResult.obs;
         }
         
         // Processa tipo SPLITTER conforme lógica VB6
@@ -344,7 +389,8 @@ export class FibraDestinoCaboService {
         const resultado: FibraDestino = {
           id_meta: response.id_meta,
           tipo_objeto: tipoObjetoProcessado,
-          fibra: response.fibra
+          fibra: response.fibra,
+          obs_dio: response.obs_dio // Incluir OBS do DIO se existir
         };
         
         console.log(`✅ Fibra rastreada: ${ponta} - Cabo fibra ${numeroFibraCabo} -> Destino fibra ${response.fibra} (${tipoObjetoProcessado})`);
@@ -435,9 +481,10 @@ export class FibraDestinoCaboService {
         if (resultado) {
           console.log(`🔍 [GRUPO ${grupo}] Resultado encontrado: fibra ${resultado.fibra} -> ${resultado.tipo_objeto}`);
           // Adicionar o número da fibra original se não estiver presente
-          if (!resultado.fibra || resultado.fibra === '0') {
+          if (!resultado.fibra) {
             resultado.fibra = (index + 1).toString();
           }
+          // Se resultado.fibra for '0', manter como '0' (fibra parada na caixa)
           fibrasRastreadas.push(resultado);
         } else {
           console.log(`🔍 [GRUPO ${grupo}] Resultado nulo para fibra ${fibraEsperada}`);

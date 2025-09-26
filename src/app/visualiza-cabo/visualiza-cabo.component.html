@@ -83,6 +83,8 @@
             [class.col-5]="colIndex === 5"
             [class.col-6]="colIndex === 6"
             [attr.data-full-text]="cell.value || '---'"
+            (mouseenter)="onCellHover(cell.value, colIndex, rowIndex)"
+            title="{{ cell.value || '---' }}"
             [style.background-color]="colIndex === 3 ? (cell.cor || '#FFFFFF') : '#FFFFFF'">
             <span class="grid-text">
               {{ cell.value || '---' }}

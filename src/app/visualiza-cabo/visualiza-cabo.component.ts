@@ -487,6 +487,12 @@ export class VisualizaCaboComponent implements OnInit, OnDestroy, AfterViewInit 
       });
     });
 
+    // Limpar especificamente as colunas de OBS (índices 0 e 6)
+    this.flexGridData.forEach(row => {
+      if (row[0]) row[0].value = ''; // Coluna 0 - OBS PONTA A
+      if (row[6]) row[6].value = ''; // Coluna 6 - OBS PONTA B
+    });
+
     // Determinar número de fibras a processar baseado na capacidade
     const capacidade = this.caboInfo?.capacidade || 12;
     const numeroFibras = Math.min(capacidade, 12);
@@ -498,6 +504,8 @@ export class VisualizaCaboComponent implements OnInit, OnDestroy, AfterViewInit 
       const fibraA = this.fibrasPontaA[i];
       const fibraB = this.fibrasPontaB[i];
       const numeroFibra = offset + i + 1; // Número real da fibra (ex: grupo 2 = F13, F14, F15...)
+      
+      console.log(`🔍 [GRID DEBUG] Fibra ${i + 1} (Número real: ${numeroFibra}): PONTA A = ${fibraA.tipo_objeto} (obs_dio: ${fibraA.obs_dio}), PONTA B = ${fibraB.tipo_objeto} (obs_dio: ${fibraB.obs_dio})`);
 
       // Obter cor da fibra apenas para a coluna central
       const corFibra = this.obterCorFibra(numeroFibra);
@@ -512,6 +520,13 @@ export class VisualizaCaboComponent implements OnInit, OnDestroy, AfterViewInit 
       if (this.flexGridData[i] && this.flexGridData[i][2]) {
         this.flexGridData[i][2].value = fibraA.tipo_objeto || 'SEM_CONEXAO';
         // Sem cor específica - mantém cor padrão
+      }
+
+      // PONTA A - OBS do DIO (coluna 0) - apenas se tiver OBS
+      console.log(`🔍 [GRID DEBUG] PONTA A - Verificando: tipo_objeto='${fibraA.tipo_objeto}', obs_dio='${fibraA.obs_dio}', coluna0=${!!this.flexGridData[i]?.[0]}`);
+      if (this.flexGridData[i] && this.flexGridData[i][0] && fibraA.obs_dio && fibraA.obs_dio !== '-----') {
+        console.log(`🔍 [GRID] PONTA A - DIO OBS encontrada: ${fibraA.obs_dio} para fibra ${i + 1}`);
+        this.flexGridData[i][0].value = fibraA.obs_dio;
       }
 
       // Coluna central - Número da fibra (coluna 3) - ÚNICA que segue o código de cores
@@ -531,9 +546,25 @@ export class VisualizaCaboComponent implements OnInit, OnDestroy, AfterViewInit 
         this.flexGridData[i][5].value = fibraB.fibra || numeroFibra.toString();
         // Sem cor específica - mantém cor padrão
       }
+
+      // PONTA B - OBS do DIO (coluna 6) - apenas se tiver OBS
+      console.log(`🔍 [GRID DEBUG] PONTA B - Verificando: tipo_objeto='${fibraB.tipo_objeto}', obs_dio='${fibraB.obs_dio}', coluna6=${!!this.flexGridData[i]?.[6]}`);
+      if (this.flexGridData[i] && this.flexGridData[i][6] && fibraB.obs_dio && fibraB.obs_dio !== '-----') {
+        console.log(`🔍 [GRID] PONTA B - DIO OBS encontrada: ${fibraB.obs_dio} para fibra ${i + 1}`);
+        this.flexGridData[i][6].value = fibraB.obs_dio;
+      }
+
+      
     }
 
     console.log('✅ Grid atualizado com resultados do rastreamento');
+  }
+
+  // ================================ Tooltip Debug ================================
+  
+  onCellHover(value: string, colIndex: number, rowIndex: number): void {
+    console.log(`🔍 [TOOLTIP DEBUG] Hover na célula [${rowIndex}][${colIndex}]: "${value}"`);
+    console.log(`🔍 [TOOLTIP DEBUG] Valor completo:`, value);
   }
 
   // ================================ Arrastar Modal Drag Methods (mesmo padrão do visualiza-dio) ================================

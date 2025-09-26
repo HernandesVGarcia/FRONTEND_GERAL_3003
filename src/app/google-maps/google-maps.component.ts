@@ -2216,9 +2216,9 @@ private updateVisibleMarkers() {
 // Método para gerar conteúdo HTML dos InfoWindows de marcadores
 private generateMarkerInfoWindowContent(tipo: string, dados: any): string {
   const lat = dados.LAT || dados.lat;
-  const lng = dados.LONGI || dados.lng;
+  const lng = dados.LONGI || dados.lng || dados.LNG;
   const id = dados.id_meta || dados.ID_META;
-  const numero = dados.numero || dados.NUMERO || 'S/N';
+  const numero = dados.numero || dados.NUMERO || dados.sigla || 'S/N';
   
   let titulo = '';
   let cor = '';

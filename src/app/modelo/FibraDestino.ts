@@ -2,6 +2,7 @@ export interface FibraDestino {
   id_meta: string;
   tipo_objeto: string;
   fibra: string;
+  obs_dio?: string; // OBS do DIO para popular grid
 }
 
 export interface ConsultaFibra {
