@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, Inject, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatDialogRef, MAT_DIALOG_DATA, MatDialog } from '@angular/material/dialog';
 import { MatIcon } from '@angular/material/icon';
 import { MatSpinner } from '@angular/material/progress-spinner';
 import { Subject } from 'rxjs';
@@ -9,6 +9,7 @@ import { FibraDestinoCaboService } from '../servico/fibra-destino-cabo.service';
 import { Cabo_TipoService } from '../servico/cabo-tipo.service';
 import { FibraDestino, CaboInfo } from '../modelo/FibraDestino';
 import { Cabo_tipo } from '../modelo/Cabo_tipo';
+import { GraphvizModalComponent } from '../graphviz-modal/graphviz-modal.component';
 
 export interface VisualizaCaboData {
   id_meta: number;
@@ -94,7 +95,8 @@ export class VisualizaCaboComponent implements OnInit, OnDestroy, AfterViewInit 
     public dialogRef: MatDialogRef<VisualizaCaboComponent>,
     @Inject(MAT_DIALOG_DATA) public data: VisualizaCaboDialogData,
     private fibraDestinoService: FibraDestinoCaboService,
-    private caboTipoService: Cabo_TipoService
+    private caboTipoService: Cabo_TipoService,
+    private dialog: MatDialog
   ) {
     this.config = data.config || {
       title: 'Visualiza Cabo',
@@ -200,8 +202,8 @@ export class VisualizaCaboComponent implements OnInit, OnDestroy, AfterViewInit 
       };
 
       // Definir cores das fibras baseado no código e tubo
-      const codigo = tipoCabo[0].codigo || 2;
-      const tubo = tipoCabo[0].tubo || 6;
+      const codigo = tipoCabo[0].codigo || 2; // se nao tiver sera nacional
+      const tubo = tipoCabo[0].tubo || 6;    // se nao tiver sera 6
       this.definirCoresFibras(codigo, tubo);
 
       console.log(`✅ Cabo encontrado: ${this.caboInfo.label} - ${capacidade}F`);
@@ -623,5 +625,21 @@ export class VisualizaCaboComponent implements OnInit, OnDestroy, AfterViewInit 
     if (this.modalHeaderElement) {
       this.modalHeaderElement.classList.remove('dragging');
     }
+  }
+
+  // Método para abrir o modal GraphViz
+  openGraphvizModal(): void {
+    const dialogRef = this.dialog.open(GraphvizModalComponent, {
+      width: '90vw',
+      height: '90vh',
+      maxWidth: '1200px',
+      maxHeight: '800px',
+      disableClose: false,
+      data: { title: 'Teste GraphViz - @hpcc-js/wasm' }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      console.log('Modal GraphViz fechado:', result);
+    });
   }
 }

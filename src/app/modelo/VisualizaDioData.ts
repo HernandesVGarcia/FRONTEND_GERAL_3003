@@ -1,5 +1,6 @@
 export interface VisualizaDioData {
   id_meta?: number;
+  tb?: number; // Tabela do DIO (ex: 1, 2, 3, etc.)
   // Campos F1-F144 (baseado na estrutura do JSON)
   F1?: string;
   F2?: string;

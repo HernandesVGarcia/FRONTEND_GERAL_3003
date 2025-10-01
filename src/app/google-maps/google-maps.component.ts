@@ -34,6 +34,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { PopInfoModalComponent } from '../pop-info-modal/pop-info-modal.component';
 import { VisualizaDioComponent } from '../visualiza-dio/visualiza-dio.component';
 import { VisualizaCaboComponent } from '../visualiza-cabo/visualiza-cabo.component';
+import { GraphvizModalComponent } from '../graphviz-modal/graphviz-modal.component';
 
 //import { Cto_SP } from '../modelo/Cto_SP';
 //import { GoogleInfoWindowComponent } from '../google-infowindow/google-infowindow.component';

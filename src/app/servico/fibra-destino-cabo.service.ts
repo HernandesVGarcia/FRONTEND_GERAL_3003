@@ -506,39 +506,7 @@ export class FibraDestinoCaboService {
     }
   }
 
-  /**
-   * Rastreia todas as fibras de um cabo (todos os grupos)
-   */
-  async rastrearTodasFibrasAsync(
-    id_meta_cabo: number,
-    capacidade: number,
-    ponta: 'A' | 'B'
-  ): Promise<FibraDestino[]> {
-    try {
-      const grupos = Math.ceil(capacidade / 12);
-      console.log(`🔍 Rastreando ${capacidade} fibras em ${grupos} grupos - ${ponta}`);
-      
-      const todasFibras: FibraDestino[] = [];
-      
-      // Processar cada grupo sequencialmente para evitar sobrecarga
-      for (let grupo = 1; grupo <= grupos; grupo++) {
-        const fibrasGrupo = await this.rastrearGrupoFibrasAsync(id_meta_cabo, grupo, ponta, capacidade);
-        todasFibras.push(...fibrasGrupo);
-        
-        // Pequena pausa entre grupos para não sobrecarregar a API
-        if (grupo < grupos) {
-          await new Promise(resolve => setTimeout(resolve, 100));
-        }
-      }
-      
-      console.log(`✅ Todas as fibras rastreadas: ${todasFibras.length} fibras processadas`);
-      return todasFibras;
-      
-    } catch (error) {
-      console.error('❌ Erro no rastreamento de todas as fibras:', error);
-      return [];
-    }
-  }
+  
 
   /**
    * Rastreia apenas as fibras de um grupo específico (para visualização)

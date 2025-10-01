@@ -1,0 +1,55 @@
+<div class="graphviz-modal-container">
+  <div class="modal-header">
+    <h2 mat-dialog-title>{{ data?.title || 'Teste GraphViz - &#64;hpcc-js/wasm' }}</h2>
+    <button mat-icon-button (click)="onClose()" class="close-button">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <div mat-dialog-content class="modal-content">
+    <div class="controls">
+      <button mat-raised-button color="primary" (click)="onRefresh()" [disabled]="isLoading">
+        <mat-icon>refresh</mat-icon>
+        Atualizar
+      </button>
+      
+      <div class="zoom-controls" *ngIf="!isLoading && !error">
+        <button mat-icon-button (click)="zoomIn()" title="Zoom In">
+          <mat-icon>zoom_in</mat-icon>
+        </button>
+        <button mat-icon-button (click)="zoomOut()" title="Zoom Out">
+          <mat-icon>zoom_out</mat-icon>
+        </button>
+        <button mat-icon-button (click)="resetZoom()" title="Reset Zoom">
+          <mat-icon>center_focus_strong</mat-icon>
+        </button>
+      </div>
+    </div>
+
+    <div class="graphviz-container">
+      <div *ngIf="isLoading" class="loading">
+        <mat-spinner diameter="50"></mat-spinner>
+        <p>Carregando diagrama GraphViz...</p>
+      </div>
+
+      <div *ngIf="error" class="error">
+        <mat-icon color="warn">error</mat-icon>
+        <p>{{ error }}</p>
+      </div>
+
+      <div id="graphviz-container" class="graphviz-svg-container" 
+           (wheel)="onWheel($event)"
+           (mousedown)="onMouseDown($event)"
+           (mousemove)="onMouseMove($event)"
+           (mouseup)="onMouseUp($event)"
+           (mouseleave)="onMouseUp($event)">
+        <!-- O SVG será inserido aqui dinamicamente -->
+      </div>
+    </div>
+  </div>
+
+  <div mat-dialog-actions class="modal-actions">
+    <button mat-button (click)="onClose()">Fechar</button>
+  </div>
+</div>
+

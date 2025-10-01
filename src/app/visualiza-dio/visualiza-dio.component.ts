@@ -14,7 +14,10 @@ import { VisualizaDioService } from '../servico/visualiza-dio.service';
 import { DioEquipamentoService } from '../servico/dio-equipamento.service';
 import { FiberTraceService, FiberTraceResult, FiberTraceStep } from '../servico/fiber-trace.service';
 import { FiberApiService } from '../servico/fiber-api.service';
+import { FiberTraceUnifilarService } from '../servico/fiber-trace-unifilar.service';
 import { DioEquip } from '../modelo/dioEquipamento';
+import { MatDialog } from '@angular/material/dialog';
+import { GraphvizModalComponent } from '../graphviz-modal/graphviz-modal.component';
 
 export interface VisualizaDioDialogData {
   id_meta: number;
@@ -92,6 +95,8 @@ export class VisualizaDioComponent implements OnInit, OnDestroy {
     private dioEquipamentoService: DioEquipamentoService,
     private fiberTraceService: FiberTraceService,
     private fiberApiService: FiberApiService,
+    private fiberTraceUnifilarService: FiberTraceUnifilarService,
+    private dialog: MatDialog,
     private fb: FormBuilder
   ) {
     // Configuração padrão
@@ -403,10 +408,87 @@ export class VisualizaDioComponent implements OnInit, OnDestroy {
   }
 
   onTracerClick(fiberNumber: number): void {
-    console.log('Tracer clicado para fibra:', fiberNumber);
-    // Aqui você pode implementar a lógica para acionar o tracer da rota
-    // e gerar diagramas unifilares
-    alert(`Tracer acionado para fibra ${fiberNumber}`);
+    console.log('🔍 [TRACER] Iniciando rastreamento unifilar para fibra:', fiberNumber);
+    
+    if (!this.dioEquipData) {
+      console.error('❌ [TRACER] Dados do DIO não carregados');
+      return;
+    }
+
+    // Mostrar loading
+    this.isLoading = true;
+    this.errorMessage = '';
+
+    // Preparar parâmetros para o serviço unifilar
+    const idmeta = this.data.id_meta || 0;
+    const fiber = fiberNumber;
+    
+    // 🆕 CORREÇÃO: Calcular tubo baseado na fibra (igual ao VB6)
+    const tubo = this.fiberTraceService.calculateTubo(fiberNumber);
+    const tabela = `dio_t${tubo}`;
+    const regist = `F${fiberNumber}`; // F1, F2, F3, etc.
+
+    console.log(`🔍 [TRACER] Parâmetros: IDMETA=${idmeta}, Fiber=${fiber}, Tabela=${tabela}, Registro=${regist}`);
+
+    // Chamar o serviço unifilar usando ANALISA_TABELAGRAFO
+    this.fiberTraceUnifilarService.ANALISA_TABELAGRAFO(idmeta, fiber, tabela, regist)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: async (result) => {
+          this.isLoading = false;
+          
+          if (result.success) {
+                 console.log('✅ [TRACER] Rastreamento concluído com sucesso:', result.trace.length, 'passos');
+                 console.log('📊 [TRACER] Status final:', result.status);
+                 console.log('🔍 [TRACER] Passos do rastreamento:', result.trace);
+                 
+                 // 🆕 NOVO: DOT string já vem do rastreamento (refatorado!)
+                 console.log('🎨 [TRACER] DOT String gerado durante o rastreamento:');
+                 console.log(result.dotString);
+            
+            // 🆕 CORREÇÃO: Só abrir modal quando o rastreamento estiver realmente completo
+            if (result.status === 'fim' && result.dotString && result.dotString.includes('size="10"}')) {
+              console.log('🎨 [TRACER] DOT String completo - Abrindo modal GraphViz');
+              this.openGraphvizModal(result.dotString, fiberNumber);
+            } else {
+              console.log('⏳ [TRACER] Rastreamento ainda em andamento ou DOT incompleto');
+            }
+            
+           // this.errorMessage = `Rastreamento concluído! ${result.trace.length} passos executados. Status: ${result.status}`;
+          } else {
+            console.error('❌ [TRACER] Erro no rastreamento:', result.error);
+            this.errorMessage = `Erro no rastreamento: ${result.error}`;
+          }
+        },
+        error: (error) => {
+          this.isLoading = false;
+          console.error('❌ [TRACER] Erro no rastreamento:', error);
+          this.errorMessage = `Erro no rastreamento: ${error.message}`;
+        }
+      });
+  }
+
+  /**
+   * Abre o modal do GraphViz com o diagrama DOT
+   */
+  private openGraphvizModal(dotString: string, fiberNumber: number): void {
+    const dialogRef = this.dialog.open(GraphvizModalComponent, {
+      width: '90vw',
+      height: '90vh',
+      maxWidth: '1200px',
+      maxHeight: '800px',
+      data: {
+        dotString: dotString,
+        title: `Diagrama Unifilar - Fibra ${fiberNumber}`,
+        fiberNumber: fiberNumber
+      },
+      disableClose: false,
+      panelClass: 'graphviz-modal-container'
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      console.log('🔍 [TRACER] Modal GraphViz fechado:', result);
+    });
   }
 
   /**

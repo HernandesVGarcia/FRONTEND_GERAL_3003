@@ -1,5 +1,5 @@
 export interface DioEquip {
-    
+    tb?: number; // Tabela do DIO (ex: 1, 2, 3, etc.)
     
     obs1: string|undefined;
     obs2: string|undefined;

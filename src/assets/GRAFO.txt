@@ -1,0 +1,779 @@
+[Description("")]
+[FormDesignerId("F67E8FDE-F6BD-4D13-975D-22D1FE5CC36B")]
+[PredeclaredId]
+Class [GRAFO]
+
+    Sub New()
+    End Sub
+    
+    '======= >  IMPRESSÃO ( GRAFO 05-08-2014 )
+
+    Dim rs As Recordset
+    Public zoom As String
+    Public sep As String
+
+    Dim inicio_digraph As String
+
+
+    Dim OBJETO_ANTERIOR As String' ***** utilizado no trace
+    Dim OBJETO_ATUAL As String ' ***** utilizado no trace
+    Dim CONTA_OBJETO  As Double' ***** utilizado no trace
+    Dim PRIMEIRO_OBJETO As String
+    Dim rs_dio As Recordset
+    Dim OBJETO_MASTER As String
+
+    Dim flag_caixa As Integer
+    Dim idcabo As String
+    Dim fibra As String
+    Dim FIBRA_SP As String
+    Dim fibra_dio As String
+    Dim FI As Integer
+    'Dim FI_TECLA As Integer
+    Dim cont As Integer
+    Dim COR As String
+    'Private Declare Function ShellExecute Lib "shell32.dll" Alias "ShellExecuteA" (ByVal hwnd As Long, ByVal lpOperation As String, ByVal lpFile As String, ByVal lpParameters As String, ByVal lpDirectory As String, ByVal nShowCmd As Long) As Long
+    Dim FLAG_SP As Integer
+
+    Dim RET As Boolean
+    Dim fso As New Scripting.FileSystemObject
+    Dim ts As Scripting.TextStream
+    Dim nomeDIO As String
+
+    Dim pathDOC As String
+
+
+    Private Const SW_SHOWNORMAL = 1
+    Private Declare Function ShellExecute Lib "shell32.dll" Alias "ShellExecuteA" (ByVal hwnd As Long, ByVal lpOperation As String, ByVal lpFile As String, ByVal lpParameters As String, ByVal lpDirectory As String, ByVal nShowCmd As Long) As Long
+    '==================================================================
+
+
+    Private Sub cmdExec_Click()
+
+   
+       Dim documento As Visio.Document
+   
+       Dim obj
+
+       Set obj = CreateObject("WINGRAPHVIZ.dot")
+
+   
+
+       If obj Is Nothing Then Exit Sub
+
+   
+
+       Dim img
+
+       Set img = obj.ToGIF(txtinput.Text)
+     
+       frmLogin.conn.Execute ("update grafo set sintaxe='" & txtinput & "';")
+
+  
+      If img Is Nothing Then Exit Sub
+
+ 
+
+   
+     Set ctlpicture.Picture = img.Picture
+
+    End Sub
+    '==================================================================
+
+    Private Sub Picture1_Click()
+
+    End Sub
+    '==================================================================
+
+
+
+    Private Sub COMAND_IMP_Click()
+
+    On Error Resume Next
+
+    Printer.ScaleMode = 2
+    Printer.Orientation = 2
+    Printer.ScaleHeight = 50
+    Printer.ScaleWidth = 50
+
+    Me.PrintForm
+
+
+
+
+    End Sub
+    '==================================================================
+
+
+
+    Private Sub Command_Fechar_Click()
+
+    Unload Me
+
+    End Sub
+
+    '==================================================================
+    Public Sub EXECUTA2_Click() '21122019 preparado para graphviz por nao rodar o wingeraphviz no server aws
+
+
+    Dim documento As Visio.Document
+    Dim MENSAGEM As String
+    Dim i As Integer
+    Dim h As Integer
+
+   
+       'Dim obj
+
+       'Set obj = CreateObject("WINGRAPHVIZ.dot")
+      ' Set obj = CreateObject("WINGRAPHVIZ.neato")
+   
+     'comentei em 031024  On Error GoTo ERRO ' descomentei 300716
+   
+   
+       nomeDIO = "_" & VIEW_DIO.LABNOMEDIO & "_" & VIEW_DIO.LABNOME
+   
+       nomeDIO = Replace(nomeDIO, "ã", "a")
+       nomeDIO = Replace(nomeDIO, "ç", "c")
+       nomeDIO = Replace(nomeDIO, "Ã", "A")
+       nomeDIO = Replace(nomeDIO, "Ç", "C")
+       nomeDIO = Replace(nomeDIO, " ", "_")
+
+    'GRAFO.txtgrafo.Text = inicio_digraph & GRAFO.txtgrafo.Text & ";" & GRAFO.zoom & "}"
+
+    GRAFO.txtgrafo.Text = inicio_digraph & GRAFO.txtgrafo.Text '& "}"
+
+       'If obj Is Nothing Then Exit Sub
+    grava_dot
+
+
+    'GoTo fim  apenas para testar
+   
+    '14012020 RET = Shell("C:\Graphviz2.38\bin\dot -Tgif C:\projetos_tst\tracer_dio" & nomeDIO & ".dot  -o C:\projetos_tst\tracer_dio" & nomeDIO & ".gif", vbMinimizedFocus)
+      RET = Shell("C:\Graphviz2.38\bin\dot -Tgif " & pathDOC & "tracer_dio" & nomeDIO & ".dot  -o " & pathDOC & "tracer_dio" & nomeDIO & ".gif", vbMinimizedFocus)
+   
+       'ShellExecute Me.hwnd, vbNullString, "C:\projetos_tst\imagem_cabo.jpg", vbNullString, "c:\", SW_SHOWNORMAL
+      'fso.DeleteFile ("C:\projetos_tst\tracer_cabo.dot")
+       'FoxitCtl1.Src = obj.ToGIF(txtgrafo.Text)
+   
+    espera:
+       If RET = False Then GoTo espera
+   
+   
+    volta:
+    '14012020 RET = fso.FileExists("C:\projetos_tst\tracer_dio" & nomeDIO & ".gif")
+    RET = fso.FileExists(pathDOC & "tracer_dio" & nomeDIO & ".gif")
+
+      If RET = False Then GoTo volta
+   
+
+      For i = 1 To 20000: For h = 1 To 20000: Next h: Next i
+   
+  
+  
+     '14012020 ctlpicture.Picture = LoadPicture("c:\projetos_tst\tracer_dio" & nomeDIO & ".gif")
+    
+     '14012020 fso.DeleteFile ("C:\projetos_tst\tracer_dio" & nomeDIO & ".gif")
+  
+     '14012020 RET = fso.FileExists("C:\projetos_tst\tracer_dio" & nomeDIO & ".gif")
+  
+     ctlpicture.Picture = LoadPicture(pathDOC & "tracer_dio" & nomeDIO & ".gif")
+    
+     fso.DeleteFile (pathDOC & "tracer_dio" & nomeDIO & ".gif")
+  
+     RET = fso.FileExists(pathDOC & "tracer_dio" & nomeDIO & ".gif")
+  
+
+
+
+
+
+
+       'Dim img
+
+       'Set img = obj.ToGIF(txtgrafo.Text)
+       'Set img = obj.ToJPEG(txtgrafo.Text)
+   
+     
+     
+     
+     
+    ' frmLogin.conn.Execute ("update grafo set sintaxe='" & txtgrafo & "';")
+
+  
+     ' If img Is Nothing Then Exit Sub
+
+ 
+
+   
+     'Set ctlpicture.Picture = img.Picture
+
+
+    'Set DrawingControlgrafo.Document. = img.Picture
+
+    GoTo FIM
+
+    ERRO:
+
+    MENSAGEM = "ERRO MODULO GRAFO"
+
+    MsgBox "UM ERRO NA ANALISE OCORREU NO MÓDULO TRACER DIO !!!  CONTACTE O ADMINISTRADOR DO SISTEMA :-( " & Err.Description
+
+    SALVA_LOGS 28, 0, MENSAGEM
+
+
+    FIM:
+
+
+
+
+    End Sub
+
+
+
+
+
+
+
+
+
+
+
+
+
+    '==================================================================
+    Public Sub EXECUTA2_Click_antigo()
+
+
+    Dim documento As Visio.Document
+    Dim MENSAGEM As String
+
+   
+       Dim obj
+
+       Set obj = CreateObject("WINGRAPHVIZ.dot")
+      ' Set obj = CreateObject("WINGRAPHVIZ.neato")
+   
+       On Error GoTo ERRO ' descomentei 300716
+
+       If obj Is Nothing Then Exit Sub
+
+   
+
+       Dim img
+
+       Set img = obj.ToGIF(txtgrafo.Text)
+       'Set img = obj.ToJPEG(txtgrafo.Text)
+   
+     
+     
+     
+     
+    ' frmLogin.conn.Execute ("update grafo set sintaxe='" & txtgrafo & "';")
+
+  
+      If img Is Nothing Then Exit Sub
+
+ 
+
+   
+     Set ctlpicture.Picture = img.Picture
+
+
+    'Set DrawingControlgrafo.Document. = img.Picture
+
+    GoTo FIM
+
+    ERRO:
+
+    MENSAGEM = "ERRO MODULO GRAFO"
+
+    MsgBox "UM ERRO NA ANALISE OCORREU NO MÓDULO TRACER DIO !!!  CONTACTE O ADMINISTRADOR DO SISTEMA :-( "
+
+    SALVA_LOGS 28, 0, MENSAGEM
+
+
+    FIM:
+
+
+
+
+    End Sub
+    '===================================================================
+    Private Sub Form_Load()
+
+    Dim idmeta As Double
+    
+    
+
+
+    zoom = "size = " & Chr$(34) & "10" & Chr$(34)
+
+    If frmLogin.Clone = "FIBER" Then Me.Caption = frmLogin.LOGO & " - Tracer "
+
+    Dim MENSAGEM As String
+
+    On Error GoTo TRATA_ERRO:
+    flag_caixa = 0
+
+    pathDOC = "C:\Users\" & Environ("USERNAME") & "\DOCUMENTS\"
+
+    'Slider1.Value = 6
+    'Slider2.Value = 4
+    'Set rs = frmLogin.conn.Execute("select sintaxe from grafo where id=1")
+    'txtinput = rs!sintaxe
+
+    SSTab1.Tab = 0
+    sep = "nodesep = 0.01"
+    GoTo FIM
+
+    TRATA_ERRO:
+
+    MENSAGEM = " ERRO NO MODULO GRAFO "
+
+    MsgBox "UM ERRO NA ANALISE OCORREU NO MÓDULO TRACER DIO !!!  CONTACTE O ADMINISTRADOR DO SISTEMA"
+
+
+    SALVA_LOGS 28, idmeta, MENSAGEM
+
+    FIM:
+
+    End Sub
+    '===================================================================
+
+
+    Private Sub Slider1_change()
+        
+        ' 270224 Dim zoom_velho As Integer
+        Dim zoom_velho As String
+
+
+    If Slider1.Value = 10 Then zoom_velho = zoom: zoom = "size = " & Chr$(34) & "105,9" & Chr$(34)
+    If Slider1.Value = 9 Then zoom_velho = zoom: zoom = "size = " & Chr$(34) & "85,9" & Chr$(34)
+    If Slider1.Value = 8 Then zoom_velho = zoom: zoom = "size = " & Chr$(34) & "75,9" & Chr$(34)
+    If Slider1.Value = 7 Then zoom_velho = zoom: zoom = "size = " & Chr$(34) & "65,9" & Chr$(34)
+    If Slider1.Value = 6 Then zoom_velho = zoom: zoom = "size = " & Chr$(34) & "50,9" & Chr$(34)
+    If Slider1.Value = 5 Then zoom_velho = zoom: zoom = "size = " & Chr$(34) & "40,8" & Chr$(34)
+    If Slider1.Value = 4 Then zoom_velho = zoom: zoom = "size = " & Chr$(34) & "32,7" & Chr$(34)
+    If Slider1.Value = 3 Then zoom_velho = zoom: zoom = "size = " & Chr$(34) & "24,7" & Chr$(34)
+    If Slider1.Value = 2 Then zoom_velho = zoom: zoom = "size = " & Chr$(34) & "16,6" & Chr$(34)
+    If Slider1.Value = 1 Then zoom_velho = zoom: zoom = "size = " & Chr$(34) & "8,6" & Chr$(34)
+    If Slider1.Value = 0 Then zoom_velho = zoom: zoom = "size = " & Chr$(34) & "4,3" & Chr$(34)
+
+
+    GRAFO.txtgrafo = Replace(txtgrafo, zoom_velho, zoom)
+
+
+    'txtgrafo.Text = "digraph Alf {rankdir=LR;size =" & Chr$(34) & "7,9" & Chr$(34) & " ;ranksep = 0.01;nodesep = 0.01 ;node [ shape = record,width=.3,height=.3 ];"
+
+    ''''07012017 If VIEW_DIO.TRACERTOTAL = 0 Then TRACER Else TRACER_TOTAL
+    GRAFO.EXECUTA2_Click
+
+    'VIEW_DIO.TRACER_TOTAL
+
+
+
+    End Sub
+
+    Private Sub Slider1_Click()
+
+    'If Slider1.Value = 10 Then zoom_velho = zoom: zoom = "size = " & Chr$(34) & "30,9" & Chr$(34)
+    'If Slider1.Value = 9 Then zoom_velho = zoom: zoom = "size = " & Chr$(34) & "20,9" & Chr$(34)
+    'If Slider1.Value = 8 Then zoom_velho = zoom: zoom = "size = " & Chr$(34) & "15,9" & Chr$(34)
+    'If Slider1.Value = 7 Then zoom_velho = zoom: zoom = "size = " & Chr$(34) & "13,9" & Chr$(34)
+    'If Slider1.Value = 6 Then zoom_velho = zoom: zoom = "size = " & Chr$(34) & "11,9" & Chr$(34)
+    'If Slider1.Value = 5 Then zoom_velho = zoom: zoom = "size = " & Chr$(34) & "9,8" & Chr$(34)
+    'If Slider1.Value = 4 Then zoom_velho = zoom: zoom = "size = " & Chr$(34) & "8,7" & Chr$(34)
+    'If Slider1.Value = 3 Then zoom_velho = zoom: zoom = "size = " & Chr$(34) & "7,7" & Chr$(34)
+    'If Slider1.Value = 2 Then zoom_velho = zoom: zoom = "size = " & Chr$(34) & "6,6" & Chr$(34)
+    'If Slider1.Value = 1 Then zoom_velho = zoom: zoom = "size = " & Chr$(34) & "5,5" & Chr$(34)
+    'If Slider1.Value = 0 Then zoom_velho = zoom: zoom = "size = " & Chr$(34) & "4,3" & Chr$(34)
+
+    '
+    'txtgrafo = Replace(txtgrafo, zoom_velho, zoom)
+
+
+    'txtgrafo.Text = "digraph Alf {rankdir=LR;size =" & Chr$(34) & "7,9" & Chr$(34) & " ;ranksep = 0.01;nodesep = 0.01 ;node [ shape = record,width=.3,height=.3 ];"
+
+    ''''07012017 If VIEW_DIO.TRACERTOTAL = 0 Then TRACER Else TRACER_TOTAL
+    'GRAFO.EXECUTA2_Click
+
+    'VIEW_DIO.TRACER_TOTAL
+
+    End Sub
+    '==================================================================
+    Private Sub Slider2_Click()
+        
+    '27/02/2024 Dim sep_velho As Integer
+    
+    Dim sep_velho As String
+    
+    
+
+
+    If Slider2.Value = 0 Then sep_velho = sep: sep = "nodesep = 0.01"
+    If Slider2.Value = 1 Then sep_velho = sep: sep = "nodesep = 0.10"
+    If Slider2.Value = 2 Then sep_velho = sep: sep = "nodesep = 0.20"
+    If Slider2.Value = 3 Then sep_velho = sep: sep = "nodesep = 0.30"
+    If Slider2.Value = 4 Then sep_velho = sep: sep = "nodesep = 0.40"
+    If Slider2.Value = 5 Then sep_velho = sep: sep = "nodesep = 0.50"
+    If Slider2.Value = 6 Then sep_velho = sep: sep = "nodesep = 0.60"
+    If Slider2.Value = 7 Then sep_velho = sep: sep = "nodesep = 0.70"
+    If Slider2.Value = 8 Then sep_velho = sep: sep = "nodesep = 0.80"
+    If Slider2.Value = 9 Then sep_velho = sep: sep = "nodesep = 0.90"
+    If Slider2.Value = 10 Then sep_velho = sep: sep = "nodesep = 0.98"
+
+
+    GRAFO.txtgrafo = Replace(txtgrafo, sep_velho, sep)
+
+
+    GRAFO.EXECUTA2_Click
+
+    ''''07012017 If VIEW_DIO.TRACERTOTAL = 0 Then TRACER Else TRACER_TOTAL
+
+
+    'VIEW_DIO.TRACER_TOTAL
+
+
+
+
+    End Sub
+    '==================================================================
+    Public Sub TRACER()
+
+
+    Dim i As Integer
+    Dim registr As String
+    Dim tabelacab As String
+    'Dim idcabo As String
+    Dim fibre As String
+    Dim bdio As String
+    Dim J As Integer
+    Dim CHEGOU As String
+    Dim RSID As Recordset
+
+
+    FI = VIEW_DIO.fi_tecla
+
+
+    GRAFO.txtgrafo.Text = ""
+    GRAFO.txtgrafo.Text = "digraph Alf {rankdir=LR;size =" & Chr$(34) & "7,9" & Chr$(34) & " ;ranksep = 0.01;" & GRAFO.sep & ";node [ shape = record,width=.3,height=.3 ];"
+
+    'inicio_digraph = "digraph Alf {rankdir=LR;size =" & Chr$(34) & "7,9" & Chr$(34) & " ;ranksep = 0.01;" & GRAFO.sep & ";node [ shape = record,width=.3,height=.3 ];"
+
+    'inicio_digraph = "digraph Alf {rankdir=LR;size =" & Chr$(34) & "7,9" & Chr$(34) & " ;ranksep = 0.01;" & GRAFO.sep & ";node [ shape = record,width=.3,height=.3 ];"
+
+
+    COR = "green"
+
+    'Do While cont < 13
+
+    'cont = cont + 1
+
+    idcabo = VIEW_DIO.id_DIO
+    registr = "F" & FI + 1 + VIEW_DIO.tubo
+    tabelacab = "dio_t" & VIEW_DIO.tb
+
+    GRAFO.Show
+    'GRAFO.txtgrafo.Text = GRAFO.txtgrafo & idcabo & "->"
+
+
+    Set rs = frmLogin.connMETA.Execute("select NOME from dio where id_meta=" & idcabo & ";")
+
+
+    OBJETO_ANTERIOR = rs!nome & "_" & registr
+    PRIMEIRO_OBJETO = OBJETO_ANTERIOR
+
+
+
+    Do While CHEGOU <> "FIM"
+
+    CONTA_OBJETO = CONTA_OBJETO + 1
+
+
+    'ANALISA_TABELA_grafo registr, tabelacab, idcabo, fibre
+    ANALISA_TABELAGRAFO registr, tabelacab, idcabo, fibre
+
+    'fibra = fibre
+
+    FI = FI + 1
+
+    Set RSID = frmLogin.connMETA.Execute("SELECT TIPO_OBJETO FROM ids WHERE ID_META=" & idcabo & ";")
+
+
+    If RSID!tipo_objeto <> "cabo" And RSID!tipo_objeto <> "POP" And flag_caixa = 0 And RSID!tipo_objeto <> "DIO" And RSID!tipo_objeto <> "Rabicho" And RSID!tipo_objeto <> "splitter" Then CAIXA
+
+    If CONTA_OBJETO > 30 And RSID!tipo_objeto <> "cabo" Then GRAFO.txtgrafo = GRAFO.txtgrafo & "{rank = same;" & PRIMEIRO_OBJETO & ";" & OBJETO_ATUAL & ";}": CONTA_OBJETO = 0
+
+
+    If RSID!tipo_objeto = "CAIXA" Then INVERTE_FLAG
+    If RSID!tipo_objeto = "Rabicho" Then RABICHO: CHEGOU = "FIM"
+    If RSID!tipo_objeto = "POP" Then pop: CHEGOU = "FIM"
+    If RSID!tipo_objeto = "DIO" Then fibra_dio = fibre: DIO: CHEGOU = "FIM"
+    If registr = "" Then CHEGOU = "FIM"
+    If RSID!tipo_objeto = "cabo" Then FIBRA_SP = fibre: fibra = fibre: Cabo: GoTo pula
+    If RSID!tipo_objeto = "splitter" Then Splitter_Funcao: GoTo pula
+
+
+    'GRAFO.txtgrafo.Text = GRAFO.txtgrafo.Text & OBJETO_ANTERIOR & "->" & OBJETO_ATUAL
+
+    OBJETO_ANTERIOR = OBJETO_ATUAL
+
+    pula:
+
+    Loop
+
+    CHEGOU = ""
+
+    'GRAFO.txtgrafo.Text = GRAFO.txtgrafo & ";}"
+    ' GRAFO.txtgrafo.Text = GRAFO.txtgrafo.Text & ";" & GRAFO.zoom & "}"
+    GRAFO.txtgrafo.Text = GRAFO.txtgrafo.Text & ";" & GRAFO.zoom & "}"
+
+
+    CONTA_OBJETO = 0
+
+    'cont = 0
+
+    GRAFO.EXECUTA2_Click
+
+    End Sub
+    '==================================================================
+    Function INVERTE_FLAG()
+
+    If flag_caixa = 0 Then flag_caixa = 1 Else flag_caixa = 0
+
+    End Function
+    '===================================================================
+    Function CAIXA()
+
+    Dim rs As Recordset
+    Dim RSDIST As Recordset
+    Dim ESTILO As String
+
+    Dim label_cx As String
+
+    Set rs = frmLogin.connMETA.Execute("select label_cx from caixa where id_meta=" & idcabo & ";")
+
+    If rs!label_cx <> "LABEL" Then label_cx = rs!label_cx
+
+    Set rs = frmLogin.conn.Execute("select numero from caixa where id_meta=" & idcabo & ";")
+    Set RSDIST = frmLogin.connMETA.Execute("SELECT DISTANCIA FROM distancias WHERE ID_DIO ='" & VIEW_DIO.id_DIO & "' AND ID_OBJETO ='" & idcabo & "';")
+
+    label_cx = rs!numero & "_CX" & label_cx
+
+    If RSDIST.EOF Then OBJETO_ATUAL = "CX_" & label_cx Else OBJETO_ATUAL = "CX_" & rs!numero & "__" & RSDIST!DISTANCIA & "M"
+
+    ''GRAFO.txtgrafo.Text = GRAFO.txtgrafo.Text & OBJETO_ANTERIOR & "->" & OBJETO_ATUAL & " " & "[label=" & fibra & ",color=" & COR & ",style =" & Chr$(34) & "setlinewidth(2)" & Chr$(34) & ",fontsize=18]"
+
+    ESTILO = "rounded,filled"
+
+    'GRAFO.txtgrafo.Text = GRAFO.txtgrafo.Text & OBJETO_ATUAL & "[label=" & Chr$(34) & OBJETO_ATUAL & Chr$(34) & ",shape=box,ranksep=0.001,fontsize=8,style=" & Chr$(34) & ESTILO & Chr$(34) & ",fillcolor=lemonchiffon];" & GRAFO.txtgrafo.Text & OBJETO_ANTERIOR & "->" & OBJETO_ATUAL & " " & "[label=" & fibra & ",color=" & COR & ",style =" & Chr$(34) & "setlinewidth(2)" & Chr$(34) & ",fontsize=18]"
+
+
+    'GRAFO.txtgrafo.Text = GRAFO.txtgrafo & "Cx_" & rs!numero & "->"
+
+
+    ESTILO = "rounded,filled"
+
+    '20012021 GRAFO_cabo.txtgrafo.Text = GRAFO_cabo.txtgrafo.Text & OBJETO_ATUAL & "[label=" & Chr$(34) & OBJETO_ATUAL & Chr$(34) & ",shape=box,ranksep=0.001,fontsize=8,style=" & Chr$(34) & ESTILO & Chr$(34) & ",fillcolor=lemonchiffon];" & OBJETO_ANTERIOR & "->" & OBJETO_ATUAL & " " & "[label=" & fibra & ",color=" & COR & ",style =" & Chr$(34) & "setlinewidth(2)" & Chr$(34) & ",fontsize=18]"
+
+
+    'GRAFO.txtgrafo.Text = GRAFO.txtgrafo.Text & OBJETO_ANTERIOR & "->" & OBJETO_ATUAL & " " & "[label=" & fibra & " fontname= " & Chr$(34) & "xxx" & Chr$(34) & ",color=" & COR & ",style =" & Chr$(34) & "setlinewidth(2)" & Chr$(34) & ",fontsize=18]"
+
+    GRAFO.txtgrafo.Text = GRAFO.txtgrafo.Text & OBJETO_ATUAL & "[label=" & Chr$(34) & OBJETO_ATUAL & Chr$(34) & ",shape=box,ranksep=0.001,fontsize=8,style=" & Chr$(34) & ESTILO & Chr$(34) & ",fillcolor=lemonchiffon];" & OBJETO_ANTERIOR & "->" & OBJETO_ATUAL & " " & "[label=" & fibra & ",fontcolor=" & COR & ",color=" & COR & ",style =" & Chr$(34) & "setlinewidth(1.5)" & Chr$(34) & ",fontsize=7.8,arrowsize=0.5]"
+
+
+
+    End Function
+    '==================================================================
+
+    Function pop()
+
+    Set rs = frmLogin.conn.Execute("select sigla from estações where id_meta=" & idcabo & ";")
+
+
+    OBJETO_ATUAL = rs!sigla
+
+    OBJETO_ATUAL = Chr$(34) & Left$(OBJETO_ATUAL, 22) & Chr$(34)
+
+    GRAFO.txtgrafo.Text = GRAFO.txtgrafo & OBJETO_ANTERIOR & "->" & OBJETO_ATUAL & "[label=" & fibra & ",color=" & COR & ",style =" & Chr$(34) & "setlinewidth(2)" & Chr$(34) & ",fontsize=18]"
+
+
+    End Function
+    '===================================================================
+    Function DIO()
+
+    Set rs = frmLogin.connMETA.Execute("select NOME,pop.id_estacao from dio,pop where dio.id_estacao=pop.id_meta and dio.id_meta=" & idcabo & ";")
+    Set rs_dio = frmLogin.conn.Execute("select sigla from estações where id_estacao =" & rs!ID_ESTACAO & ";")
+
+    OBJETO_ATUAL = rs!nome & "_F" & fibra_dio & "_" & rs_dio!sigla
+    OBJETO_ATUAL = Chr$(34) & Left$(OBJETO_ATUAL, 14) & Chr$(34)
+
+    'OBJETO_ATUAL = Chr$(34) & rs!nome & "_F" & fibra_dio & "_" & rs_dio!SIGLA & Chr$(34)
+
+    GRAFO.txtgrafo.Text = GRAFO.txtgrafo & OBJETO_ANTERIOR & "->" & OBJETO_ATUAL & "[label=" & fibra & ",color=" & COR & ",style =" & Chr$(34) & "setlinewidth(2)" & Chr$(34) & ",fontsize=18]"
+    'GRAFO.txtgrafo.Text = GRAFO.txtgrafo & OBJETO_ANTERIOR & "->" & idcabo
+
+    End Function
+    '===================================================================
+    Function RABICHO()
+
+
+
+    Set rs = frmLogin.connMETA.Execute("select label_rabicho from rabicho where id_meta=" & idcabo & ";")
+
+
+    OBJETO_ATUAL = rs!LABEL_RABICHO
+
+    OBJETO_ATUAL = Chr$(34) & Left$(OBJETO_ATUAL, 20) & Chr$(34)
+
+    GRAFO.txtgrafo.Text = GRAFO.txtgrafo & OBJETO_ANTERIOR & "->" & OBJETO_ATUAL & "[label=" & fibra & ",color=" & COR & "]"
+
+    End Function
+    '==================================================================
+    Function Cabo()
+
+    Dim label_cx As String
+
+    Set rs = frmLogin.connMETA.Execute("select label_cabo from cabopa where id_meta=" & idcabo & ";")
+    If rs!Label_CABO <> "" Then label_cx = rs!Label_CABO
+    Set rs = frmLogin.connMETA.Execute("select label_cabo from cabopa where id_meta=" & idcabo & ";")
+    If rs!Label_CABO <> "" Then label_cx = rs!Label_CABO
+
+    Set rs = frmLogin.connMETA.Execute("select capacidade from cabom where id_meta=" & idcabo & ";")
+
+    If label_cx <> "" Then fibra = Chr$(34) & "" & rs!CAPACIDADE & "F  (" & fibra & ") " & label_cx & Chr$(34) Else fibra = Chr$(34) & "(" & rs!CAPACIDADE & "F)  " & fibra & Chr$(34)
+
+
+    'GRAFO.txtgrafo.Text = GRAFO.txtgrafo & OBJETO_ANTERIOR & "->" & OBJETO_ATUAL & "[label=" & fibra & "]"
+
+    End Function
+    '===================================================================
+
+    Function Invert_Flag_SP()
+        
+    Dim FLAG_HOUVE_CONEXAO As Integer
+
+    FLAG_HOUVE_CONEXAO = 1
+
+    If FLAG_SP = 0 Then FLAG_SP = 1 Else FLAG_SP = 0
+
+
+    End Function
+    '===================================================================
+
+    Function Splitter_Funcao()
+
+    Dim rs As Recordset
+    Dim color_sp As String
+    Dim Label As String
+    Dim Chegou As String
+    Dim TEXTO_SP As String
+    Dim FORMA As String
+    Dim sides As Integer
+    Dim ESTILO As String
+    
+    Dim OBJETO_ATUAL_ID As Double
+    Dim IDCX As Double
+
+
+    Set rs = frmLogin.connMETA.Execute("SELECT CAPACIDADE,NUMERO_CX,TIPO_SPLITTER,LABEL,acoplamento FROM splitter_e,tst.tipo_splitter WHERE IDMETA=" & idcabo & " and tst.tipo_splitter.id=splitter_e.TIPO_SPLITTER ;")
+
+    '20012021OBJETO_ATUAL = "1:" & rs!CAPACIDADE & " /split_" & idcabo & ":cx_" & rs!numero_cx
+    '20012021 OBJETO_ATUAL = Chr$(34) & left$(OBJETO_ATUAL, 40) & Chr$(34)
+
+    '20012021GRAFO.txtgrafo.Text = GRAFO.txtgrafo & OBJETO_ANTERIOR & "->" & OBJETO_ATUAL & "[label=" & FIBRA_SP & ",color=" & COR & "]"
+
+
+
+    '===================================
+
+
+    If rs!TIPO_SPLITTER > 11 Then color_sp = "fillcolor=lightblue" Else color_sp = "fillcolor=palegreen"
+
+    If rs!Label = "XXXXXSXX" Then Label = IDCX Else Label = rs!Label
+
+    'OBJETO_ATUAL = "1:" & rs!CAPACIDADE & " /SPLIT_" & idcx & ":CX_" & rs!NUMERO_CX
+
+    'OBJETO_ATUAL = "1:" & rs!CAPACIDADE & " /SPLIT_" & LABEL & "\nCX_" & rs!numero_cx comentado em 18/12/2020
+    OBJETO_ATUAL = "SPLIT_" & Label & "_CX_" & rs!numero_cx
+
+    ' OBJETO_ATUAL = Chr$(34) & left$(OBJETO_ATUAL, 40) & Chr$(34)  'comentado em 18/12/2020
+
+    OBJETO_ATUAL_ID = IDCX
+
+    If rs!TIPO_SPLITTER > 11 Then TEXTO_SP = "1:" & rs!CAPACIDADE & "_SPLITTER:" & Label & "\n( CX_" & rs!numero_cx & " )": FORMA = "polygon": sides = 8
+    If rs!TIPO_SPLITTER < 12 Then TEXTO_SP = "_" & rs!ACOPLAMENTO & "_SPLITTER:" & Label & "\n( CX_" & rs!numero_cx & " )": FORMA = "polygon": sides = 4
+    TEXTO_SP = Chr$(34) & Left$(TEXTO_SP, 40) & Chr$(34)
+    ESTILO = "rounded,filled"
+
+    'Text_MAP.Text = Text_MAP & OBJETO_ANTERIOR & "[ranksep=0.001];" & OBJETO_ATUAL & "[label=" & OBJETO_ATUAL & ",shape=polygon,sides=6,ranksep=0.001];" & OBJETO_ANTERIOR & "->" & OBJETO_ATUAL & "[label=" & Chr$(34) & "Entrada" & Chr$(34) & ",color=" & COR & ",style =" & Chr$(34) & "dotted" & Chr$(34) & ",fontsize=7,weight=0.5]"
+
+    GRAFO.txtgrafo.Text = GRAFO.txtgrafo & OBJETO_ANTERIOR & "[ranksep=0.001];" & OBJETO_ATUAL & "[label=" & TEXTO_SP & ",shape=" & FORMA & ",sides=" & Chr$(34) & sides & Chr$(34) & ",style=" & Chr$(34) & ESTILO & Chr$(34) & ",ranksep=0.001,fontsize=6.5,GRADIENTANGLE=100," & color_sp & "];" & OBJETO_ANTERIOR & "->" & OBJETO_ATUAL & "[label=" & Chr$(34) & "Entrada" & Chr$(34) & ",color=" & COR & ",fontsize=9,weight=0.1]"
+
+
+
+
+
+
+    '====================================
+
+    Chegou = "FIM"
+
+    End Function
+
+    '===================================================================
+
+
+
+    
+    '===================================================================
+    Private Sub comand_viz_Click()
+
+
+    Dim fonte As String
+    Dim Y As Integer
+      Dim X As Long
+ 
+     '14012020 SavePicture ctlpicture.Picture, "c:\projetos_tst\imagem.gif"
+ 
+     '14012020  ShellExecute Me.hwnd, vbNullString, "C:\projetos_tst\imagem.gif", vbNullString, "c:\", SW_SHOWNORMAL
+ 
+     SavePicture ctlpicture.Picture, pathDOC & "imagem.gif"
+ 
+     ShellExecute Me.hWnd, vbNullString, pathDOC & "imagem.gif", vbNullString, "c:\", SW_SHOWNORMAL
+  
+    End Sub
+    '==================================================================
+    Private Sub SSTab1_Click(PreviousTab As Integer)
+
+    'SSTab1.Tab = 0
+
+    End Sub
+    '===================================================================
+    Private Sub SSTab1_DblClick()
+
+    SSTab1.Tab = 0
+
+    End Sub
+    Private Sub grava_dot()
+
+    Dim RET As Boolean
+
+
+
+    Set ts = fso.OpenTextFile(pathDOC & "tracer_dio" & nomeDIO & ".dot", ForWriting, True)  'abre um arquivo para escrita , se não existir cria
+
+    ts.Write txtgrafo.Text
+    ts.Close
+    Set ts = Nothing
+
+    temporiza:
+    RET = fso.FileExists(pathDOC & "tracer_dio" & nomeDIO & ".dot")
+    If RET = False Then GoTo temporiza
+
+
+
+
+    End Sub
+    
+
+End Class
