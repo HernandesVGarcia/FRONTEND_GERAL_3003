@@ -420,7 +420,7 @@ polylineOptions144f: google.maps.PolylineOptions = {
     console.log('GoogleMapsComponent initialized');
     this.checkGoogleMapsAPI();
     this.checkForGPSLocation();
-    this.setupMapClickListener();
+    // Removido setupMapClickListener() daqui - será chamado em onMapInitialized()
     
     
     //const lat= this.authService.getLat
@@ -1851,7 +1851,7 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
     let lngi:  string | null ;
     
     
-
+    
 
     lati=this.authService.getLat() ;
     lngi=this.authService.getLng() ;
@@ -1862,6 +1862,9 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
     if (lati && lngi ){
     this.map.setCenter({lat:Number(lati), lng:Number(lngi)})
     }
+    
+    // Configurar listener para fechar InfoWindow ao clicar no mapa (agora que o mapa está inicializado)
+    this.setupMapClickListener();
     this.map.addListener('zoom_changed', () => {
       if (!this.map) return;
       
@@ -2287,8 +2290,11 @@ private darkenColor(color: string): string {
 
 // Método para mostrar InfoWindow de marcador
 private showMarkerInfoWindow(marker: google.maps.Marker, event: google.maps.MapMouseEvent, tipo: string, dados: any) {
+  console.log(`🔧 [INFO] Mostrando infowindow para ${tipo}:`, dados.numero || dados.sigla || 'N/A');
+  
   // Fechar InfoWindow anterior se existir
   if (this.currentMarkerInfoWindow) {
+    console.log('🔧 [INFO] Fechando infowindow anterior');
     this.currentMarkerInfoWindow.close();
   }
 
@@ -2300,17 +2306,25 @@ private showMarkerInfoWindow(marker: google.maps.Marker, event: google.maps.MapM
 
   // Abrir InfoWindow
   this.currentMarkerInfoWindow.open(this.map, marker);
+  console.log('🔧 [INFO] Infowindow aberto com sucesso');
 }
 
 // Configurar listener para fechar InfoWindow ao clicar no mapa
 private setupMapClickListener() {
   if (this.map) {
+    console.log('🔧 [MAP] Adicionando listener de clique no mapa para fechar infowindow');
     this.map.addListener('click', () => {
+      console.log('🔧 [MAP] Clique no mapa detectado');
       if (this.currentMarkerInfoWindow) {
+        console.log('🔧 [MAP] Fechando infowindow das caixas');
         this.currentMarkerInfoWindow.close();
         this.currentMarkerInfoWindow = null;
+      } else {
+        console.log('🔧 [MAP] Nenhum infowindow de caixa para fechar');
       }
     });
+  } else {
+    console.log('🔧 [MAP] Mapa não disponível para adicionar listener');
   }
 }
 
@@ -2319,58 +2333,76 @@ private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = fal
   // Remover listeners existentes primeiro (caso já existam)
   google.maps.event.clearInstanceListeners(marker);
   
-  // Clique simples - mostrar InfoWindow
+  // Variáveis para controlar cliques (debounce)
+  let clickTimeout: any;
+  
+  // Clique simples - mostrar InfoWindow com debounce
   marker.addListener('click', (event: google.maps.MapMouseEvent) => {
-    let tipo = '';
-    let dados: any = {};
-    
-    if (isCTO) {
-      const index = this.markerCtos.indexOf(marker);
-      if (index !== -1) {
-        tipo = 'cto';
-        dados = this.destinoCTO[index];
-      }
-    } else if (isCTOSP) {
-      const index = this.markerCtosSP.indexOf(marker);
-      if (index !== -1) {
-        tipo = 'ctosp';
-        dados = this.destinoCTOSP[index];
-      }
-    } else if (isCLI) {
-      const index = this.markerPopsCli.indexOf(marker);
-      if (index !== -1) {
-        tipo = 'cli';
-        dados = this.destinoPopsCli[index];
-      }
-    } else if (isCLIAT) {
-      const index = this.markerPopsCliAtv.indexOf(marker);
-      if (index !== -1) {
-        tipo = 'cliat';
-        dados = this.destinoPopsCliAtv[index];
-      }
-    } else if (isCLIDES) {
-      const index = this.markerPopsCliDes.indexOf(marker);
-      if (index !== -1) {
-        tipo = 'clides';
-        dados = this.destinoPopsCliDes[index];
-      }
-    } else {
-      const index = this.markerCaixas.indexOf(marker);
-      if (index !== -1) {
-        tipo = 'caixa';
-        dados = this.destino[index];
-      }
+    // Limpar timeout anterior se existir
+    if (clickTimeout) {
+      clearTimeout(clickTimeout);
+      clickTimeout = null;
     }
-    
-    if (tipo && dados) {
-      this.showMarkerInfoWindow(marker, event, tipo, dados);
-    }
+
+    // Definir timeout para clique simples (debounce de 300ms)
+    clickTimeout = setTimeout(() => {
+      let tipo = '';
+      let dados: any = {};
+      
+      if (isCTO) {
+        const index = this.markerCtos.indexOf(marker);
+        if (index !== -1) {
+          tipo = 'cto';
+          dados = this.destinoCTO[index];
+        }
+      } else if (isCTOSP) {
+        const index = this.markerCtosSP.indexOf(marker);
+        if (index !== -1) {
+          tipo = 'ctosp';
+          dados = this.destinoCTOSP[index];
+        }
+      } else if (isCLI) {
+        const index = this.markerPopsCli.indexOf(marker);
+        if (index !== -1) {
+          tipo = 'cli';
+          dados = this.destinoPopsCli[index];
+        }
+      } else if (isCLIAT) {
+        const index = this.markerPopsCliAtv.indexOf(marker);
+        if (index !== -1) {
+          tipo = 'cliat';
+          dados = this.destinoPopsCliAtv[index];
+        }
+      } else if (isCLIDES) {
+        const index = this.markerPopsCliDes.indexOf(marker);
+        if (index !== -1) {
+          tipo = 'clides';
+          dados = this.destinoPopsCliDes[index];
+        }
+      } else {
+        const index = this.markerCaixas.indexOf(marker);
+        if (index !== -1) {
+          tipo = 'caixa';
+          dados = this.destino[index];
+        }
+      }
+      
+      if (tipo && dados) {
+        console.log(`Clique simples detectado em ${tipo}:`, dados.numero || dados.sigla || 'N/A');
+        this.showMarkerInfoWindow(marker, event, tipo, dados);
+      }
+    }, 300); // Delay de 300ms para distinguir de duplo clique
   });
   
   // Duplo clique - abrir modal/diagrama
   marker.addListener('dblclick', (event: google.maps.MapMouseEvent) => {
+    // Cancelar timeout do clique simples se existir
+    if (clickTimeout) {
+      clearTimeout(clickTimeout);
+      clickTimeout = null;
+    }
       
-      if (isCTO) {
+    if (isCTO) {
       const index = this.markerCtos.indexOf(marker);
       if (index !== -1) {
         this.onMarkerClick(event, index,true,false,false,false,false);        

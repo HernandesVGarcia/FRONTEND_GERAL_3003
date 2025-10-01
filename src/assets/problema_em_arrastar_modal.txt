@@ -1,0 +1,42 @@
+
+     Ah! Agora entendi o problema! O modal do graphviz está sendo aberto dentro do modal do visualiza-dio, então quando você arrasta o cabeçalho do graphviz, está na verdade movendo o modal do visualiza-dio que está por baixo!
+Isso acontece porque ambos os modais estão usando o mesmo seletor .cdk-dialog-container e o Angular Material está criando uma hierarquia de modais.
+Vou ajustar o código para mover especificamente o modal do graphviz, não o modal pai:
+Perfeito! Agora implementei a correção para o problema dos modais aninhados:
+✅ Correção para Modais Aninhados
+1. Seleção do Modal Correto
+✅ document.querySelectorAll('.cdk-dialog-container') - encontra TODOS os modais
+✅ allDialogs[allDialogs.length - 1] - pega o ÚLTIMO modal (mais recente)
+✅ Isso garante que estamos movendo o modal do graphviz, não o do visualiza-dio
+2. Seleção do Header Específico
+✅ this.modalElement?.querySelector('.modal-header') - busca o header dentro do modal específico
+✅ Isso garante que estamos pegando o header do modal correto
+3. Logs de Debug
+✅ Total de modais encontrados: X - mostra quantos modais existem
+✅ Modal element encontrado (último): true/false - confirma que pegou o último
+🎯 Próximos Passos
+Agora teste novamente o modal graphviz-modal no navegador. Abra o console (F12) e tente clicar no cabeçalho verde do modal do graphviz. Você deve ver:
+"Total de modais encontrados: 2" (ou mais, se houver outros modais)
+"Modal element encontrado (último): true"
+"🔧 [DRAG] Clicou no header - iniciando drag"
+"🔧 [DRAG] Drag iniciado com sucesso"
+E quando você mover o mouse, deve ver:
+"🔧 [DRAG] Movendo: X, Y"
+"🔧 [DRAG] Transform aplicado: translate3d(Xpx, Ypx, 0)"
+Agora o modal do graphviz deve se mover independentemente do modal do visualiza-dio! Teste agora e me diga se está funcionando! 🎯
+
+ Excelente! Funcionou!
+Agora o modal do graphviz está se movendo corretamente pelo cabeçalho, independentemente do modal do visualiza-dio que está por baixo.
+✅ Problema Resolvido
+O problema era que havia modais aninhados e o código estava movendo o modal errado. A solução foi:
+Identificar o modal correto - usando document.querySelectorAll('.cdk-dialog-container') para encontrar todos os modais e pegar o último (mais recente)
+Selecionar o header específico - usando this.modalElement?.querySelector('.modal-header') para buscar o header dentro do modal correto
+Verificação robusta - implementar múltiplas condições para garantir que o clique foi no header correto
+🎯 Funcionalidade Implementada
+Agora o modal graphviz-modal tem:
+✅ Cabeçalho arrastável com cor verde (#abebb6) igual ao visualiza-dio
+✅ Movimento independente do modal pai
+✅ Cursor de arrastar (cursor: move) no cabeçalho
+✅ Feedback visual com classe dragging durante o arrasto
+A implementação seguiu o padrão do visualiza-dio.component como solicitado, mas com as adaptações necessárias para funcionar corretamente com modais aninhados.
+Perfeito! O drag functionality está funcionando perfeitamente! 🚀

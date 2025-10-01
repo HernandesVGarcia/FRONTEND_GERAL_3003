@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, Inject } from '@angular/core';
+import { Component, OnInit, AfterViewInit, Inject, ViewChild, ElementRef, } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
@@ -27,6 +27,18 @@ export class GraphvizModalComponent implements OnInit, AfterViewInit {
   private translateX: number = 0;
   private translateY: number = 0;
 
+  // Propriedades para arrastar o modal (mesmo padrão do visualiza-dio)
+  isDragging = false;
+  private currentX = 0;
+  private currentY = 0;
+  private initialX = 0;
+  private initialY = 0;
+  private modalElement: HTMLElement | null = null;
+  private modalContentElement: HTMLElement | null = null;
+  private modalHeaderElement: HTMLElement | null = null;
+
+
+
   constructor(
     public dialogRef: MatDialogRef<GraphvizModalComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any,
@@ -45,6 +57,9 @@ export class GraphvizModalComponent implements OnInit, AfterViewInit {
   }
 
   async ngAfterViewInit() {
+    // Configurar funcionalidade de drag (padrão visualiza-dio)
+    this.setupDragFunctionality();
+
     // Aguardar um pouco para garantir que o DOM esteja pronto
     await new Promise(resolve => setTimeout(resolve, 200));
     
@@ -69,6 +84,158 @@ export class GraphvizModalComponent implements OnInit, AfterViewInit {
       await this.renderGraphviz();
     }
   }
+  // ================================ Arrastar Modal Drag Methods (padrão visualiza-dio) ================================
+  
+  private setupDragFunctionality(): void {
+    setTimeout(() => {
+      console.log('Configurando funcionalidade de arrastar modal');
+      
+      // Encontrar especificamente o modal do graphviz (o mais recente/último)
+      const allDialogs = document.querySelectorAll('.cdk-dialog-container');
+      this.modalElement = allDialogs[allDialogs.length - 1] as HTMLElement; // Pegar o último (mais recente)
+      this.modalContentElement = this.modalElement; // Mover o modal completo, não o conteúdo interno
+      
+      // Tentar múltiplos seletores para encontrar o header do graphviz especificamente
+      this.modalHeaderElement = this.modalElement?.querySelector('.modal-header') as HTMLElement ||
+                               document.querySelector('.graphviz-modal-container .modal-header') as HTMLElement ||
+                               document.querySelector('[mat-dialog-title]')?.closest('.modal-header') as HTMLElement;
+      
+      console.log('Total de modais encontrados:', allDialogs.length);
+      console.log('Modal element encontrado (último):', !!this.modalElement);
+      console.log('Modal content element encontrado:', !!this.modalContentElement);
+      console.log('Modal header element encontrado:', !!this.modalHeaderElement);
+      
+      if (this.modalHeaderElement && this.modalContentElement) {
+        console.log('Modal header encontrado para arrastar');
+        
+        // Adicionar listener global no documento para capturar todos os mousedown
+        document.addEventListener('mousedown', (e: MouseEvent) => {
+          console.log('🔧 [DRAG] Evento mousedown global capturado');
+          console.log('🔧 [DRAG] Target:', e.target);
+          console.log('🔧 [DRAG] Modal header element:', !!this.modalHeaderElement);
+          
+          // Verificar se clicou no header ou em qualquer elemento dentro dele
+          const target = e.target as HTMLElement;
+          const isInHeader = this.modalHeaderElement && (
+            target === this.modalHeaderElement ||
+            this.modalHeaderElement.contains(target) ||
+            target.closest('.modal-header') === this.modalHeaderElement ||
+            target.classList.contains('modal-header') ||
+            target.closest('.modal-header') !== null
+          );
+          
+          console.log('🔧 [DRAG] Target === ModalHeader:', target === this.modalHeaderElement);
+          console.log('🔧 [DRAG] ModalHeader.contains(Target):', this.modalHeaderElement?.contains(target));
+          console.log('🔧 [DRAG] Target.closest(.modal-header):', target.closest('.modal-header'));
+          console.log('🔧 [DRAG] Target.classList.contains(modal-header):', target.classList.contains('modal-header'));
+          console.log('🔧 [DRAG] isInHeader:', isInHeader);
+          
+          if (isInHeader) {
+            console.log('🔧 [DRAG] Clicou no header - iniciando drag');
+            this.dragStart(e);
+          } else {
+            console.log('🔧 [DRAG] Não clicou no header');
+          }
+        }, true);
+        
+        // Adicionar listeners para mousemove e mouseup
+        document.addEventListener('mousemove', (e: MouseEvent) => this.dragMove(e));
+        document.addEventListener('mouseup', (e: MouseEvent) => this.dragEnd(e));
+        
+      } else {
+        console.warn('Modal header não encontrado para configurar o arrastar');
+        console.log('Tentando novamente em 1 segundo...');
+        // Tentar novamente após mais tempo
+        setTimeout(() => {
+          const allDialogs = document.querySelectorAll('.cdk-dialog-container');
+          this.modalElement = allDialogs[allDialogs.length - 1] as HTMLElement;
+          this.modalContentElement = this.modalElement;
+          this.modalHeaderElement = this.modalElement?.querySelector('.modal-header') as HTMLElement ||
+                                   document.querySelector('.graphviz-modal-container .modal-header') as HTMLElement;
+          if (this.modalHeaderElement && this.modalContentElement) {
+            console.log('Modal header encontrado na segunda tentativa');
+            document.addEventListener('mousedown', (e: MouseEvent) => {
+              if (this.modalHeaderElement && this.modalHeaderElement.contains(e.target as Node)) {
+                this.dragStart(e);
+              }
+            }, true);
+            document.addEventListener('mousemove', (e: MouseEvent) => this.dragMove(e));
+            document.addEventListener('mouseup', (e: MouseEvent) => this.dragEnd(e));
+          }
+        }, 1000);
+      }
+    }, 500);
+  }
+
+  private dragStart(event: MouseEvent): void {
+    console.log('🔧 [DRAG] dragStart chamado');
+    console.log('🔧 [DRAG] Target:', event.target);
+    console.log('🔧 [DRAG] Modal header element:', !!this.modalHeaderElement);
+    
+    // Prevenir arrastar se clicou em um botão
+    if ((event.target as HTMLElement).closest('button')) {
+      console.log('🔧 [DRAG] Clicou em botão, cancelando drag');
+      return;
+    }
+
+    console.log('🔧 [DRAG] Iniciando arrasto do modal');
+    
+    // Simplificar - já sabemos que clicou no header, então iniciar o drag diretamente
+    if (this.modalHeaderElement && this.modalContentElement) {
+      console.log('🔧 [DRAG] Drag iniciado com sucesso');
+      this.initialX = event.clientX - this.currentX;
+      this.initialY = event.clientY - this.currentY;
+      this.isDragging = true;
+      
+      this.modalContentElement.classList.add('dragging');
+      console.log('🔧 [DRAG] Classe dragging adicionada');
+    } else {
+      console.log('🔧 [DRAG] Modal header ou content não existe');
+    }
+  }
+
+  private dragMove(event: MouseEvent): void {
+    if (this.isDragging && this.modalContentElement) {
+      event.preventDefault();
+      
+      this.currentX = event.clientX - this.initialX;
+      this.currentY = event.clientY - this.initialY;
+
+      console.log('🔧 [DRAG] Movendo:', this.currentX, this.currentY);
+      this.setTranslate(this.currentX, this.currentY, this.modalContentElement);
+    } else {
+      console.log('🔧 [DRAG] dragMove chamado mas não está arrastando. isDragging:', this.isDragging, 'modalContentElement:', !!this.modalContentElement);
+    }
+  }
+
+  private dragEnd(event: MouseEvent): void {
+    console.log('🔧 [DRAG] dragEnd chamado. isDragging:', this.isDragging);
+    if (this.isDragging) {
+      this.initialX = this.currentX;
+      this.initialY = this.currentY;
+      
+      this.isDragging = false;
+      if (this.modalContentElement) {
+        this.modalContentElement.classList.remove('dragging');
+        console.log('🔧 [DRAG] Classe dragging removida');
+      }
+    }
+  }
+
+  private setTranslate(xPos: number, yPos: number, el: HTMLElement): void {
+    if (el) {
+      el.style.transform = `translate3d(${xPos}px, ${yPos}px, 0)`;
+      console.log('🔧 [DRAG] Transform aplicado:', `translate3d(${xPos}px, ${yPos}px, 0)`);
+    } else {
+      console.log('🔧 [DRAG] Elemento não encontrado para aplicar transform');
+    }
+  }
+  
+
+
+
+
+//==================================================================================================
 
   // 🆕 NOVO: Configurar interatividade do GraphViz
   private setupInteractivity(): void {
@@ -91,6 +258,7 @@ export class GraphvizModalComponent implements OnInit, AfterViewInit {
     // - Mostrar informações adicionais
     // - etc.
   }
+
 
   // 🆕 NOVO: Verificar se o DOT string está completo
   private isDotStringComplete(dotString: string): boolean {
