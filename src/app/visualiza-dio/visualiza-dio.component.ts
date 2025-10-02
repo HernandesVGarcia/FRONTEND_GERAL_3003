@@ -407,6 +407,87 @@ export class VisualizaDioComponent implements OnInit, OnDestroy {
     return rowIndex + 1;
   }
 
+
+  //*************************************************************************************** 
+  // geração de diagram unifilar ao apertar botao tracer (html)
+
+  // utiliza o serviço fiber-trace-unifilar.service.ts (ANALISA_TABELAGRAFO)
+  // E abre modal graphviz com o diagrama DOT
+  // 
+  //************************************************************************************   */  
+
+  onTracerTotalClick(): void {
+    console.log('🔍 [TRACER-TOTAL] Iniciando rastreamento unifilar para todas as fibras');
+    
+    if (!this.dioEquipData) {
+      console.error('❌ [TRACER-TOTAL] Dados do DIO não carregados');
+      return;
+    }
+
+    // Mostrar loading
+    this.isLoading = true;
+    this.errorMessage = '';
+
+    // Preparar parâmetros para o serviço unifilar (todas as fibras)
+    const idmeta = this.data.id_meta || 0;
+    const fiber = 0; // 0 indica todas as fibras
+    const tabela = 'dio_t1'; // Começar com o primeiro tubo
+    const regist = 'F0'; // F0 indica todas as fibras
+
+    console.log(`🔍 [TRACER-TOTAL] Parâmetros: IDMETA=${idmeta}, Fiber=${fiber}, Tabela=${tabela}, Registro=${regist}`);
+
+    // Chamar o serviço unifilar usando ANALISA_TABELAGRAFO para todas as fibras
+    this.fiberTraceUnifilarService.ANALISA_TABELAGRAFO(idmeta, fiber, tabela, regist)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: async (result) => {
+          this.isLoading = false;
+          
+          if (result.success) {
+            console.log('✅ [TRACER-TOTAL] Rastreamento concluído com sucesso:', result.trace.length, 'passos');
+            console.log('📊 [TRACER-TOTAL] Status final:', result.status);
+            console.log('🔍 [TRACER-TOTAL] Passos do rastreamento:', result.trace);
+            
+            // 🆕 NOVO: DOT string já vem do rastreamento (refatorado!)
+            console.log('🎨 [TRACER-TOTAL] DOT String gerado durante o rastreamento:');
+            console.log(result.dotString);
+            
+            // 🆕 CORREÇÃO: Só abrir modal quando o rastreamento estiver realmente completo
+            if (result.status === 'fim' && result.dotString && result.dotString.includes('size="10"}')) {
+              console.log('🎨 [TRACER-TOTAL] Abrindo modal GraphViz com diagrama completo');
+              
+              // Abrir modal GraphViz com o diagrama DOT
+              const dialogRef = this.dialog.open(GraphvizModalComponent, {
+                width: '90vw',
+                height: '90vh',
+                data: {
+                  title: `Diagrama Unifilar - Todas as Fibras (DIO ${this.data.id_meta})`,
+                  dotString: result.dotString,
+                  trace: result.trace
+                },
+                disableClose: false
+              });
+
+              dialogRef.afterClosed().subscribe(() => {
+                console.log('🎨 [TRACER-TOTAL] Modal GraphViz fechado');
+              });
+            } else {
+              console.warn('⚠️ [TRACER-TOTAL] Rastreamento não completou corretamente ou DOT string inválido');
+              this.errorMessage = 'Erro ao gerar diagrama unifilar completo';
+            }
+          } else {
+            console.error('❌ [TRACER-TOTAL] Erro no rastreamento:', result.error);
+            this.errorMessage = result.error || 'Erro desconhecido no rastreamento';
+          }
+        },
+        error: (error) => {
+          console.error('❌ [TRACER-TOTAL] Erro na requisição:', error);
+          this.isLoading = false;
+          this.errorMessage = 'Erro na comunicação com o servidor';
+        }
+      });
+  }
+
   onTracerClick(fiberNumber: number): void {
     console.log('🔍 [TRACER] Iniciando rastreamento unifilar para fibra:', fiberNumber);
     
@@ -491,9 +572,14 @@ export class VisualizaDioComponent implements OnInit, OnDestroy {
     });
   }
 
-  /**
+  //*************************************************************************************** 
+  //************************************************************************************   */   
+
+
+
+  /***************************************************************************************** 
    * Rastreia todas as fibras do grupo atual e obtém os destinos (sequencialmente)
-   */
+   *****************************************************************************************   */
   private async traceAllFibersInGroup(): Promise<void> {
     const group = this.getCurrentGroup();
     if (!group) return;

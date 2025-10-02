@@ -316,11 +316,13 @@
 
   .tracer-buttons {
     width: 15%;
+    /*padding-left: 20px;*/
     background: white;
     border: 1px solid #ddd;
     border-radius: 2px;
     overflow: hidden;
-    gap: 8.5px;
+    gap: 16.5px;
+    
   }
 
   .grid-header {
@@ -410,6 +412,39 @@
   width: 100%;
   min-width: 30px; /* Aproximadamente 5 caracteres campo dBm*/
   max-width: 40px;
+}
+
+/* Estilos para botão Tracer Total */
+.tracer-total-container {
+  border-bottom: 1px solid #eee;
+  padding-right: 18.9px;
+  padding-top: 5px;
+  text-align: center;
+}
+
+.tracer-total-container:last-child {
+  border-bottom: none;
+}
+
+.tracer-total-button {
+  width: 90%;
+  height: 20px;
+  background: #0a69e6;
+  color: white;
+  border: none;
+  border-radius: 2px;
+  font-size: 0.6rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.tracer-total-button:hover {
+  background: #ec9d0b;
+}
+
+.tracer-total-button:active {
+  background: #ecb00b;
 }
 
 /* Estilos para botões de tracer */
