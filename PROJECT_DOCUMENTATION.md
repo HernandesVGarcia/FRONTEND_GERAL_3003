@@ -1820,3 +1820,289 @@ for (let i = 1; i <= 12; i++) {
 - ✅ **Integração perfeita** com API existente
 
 **Status**: ✅ **IMPLEMENTAÇÃO COMPLETA E FUNCIONAL**
+
+---
+
+## 🚀 **SISTEMA DE RASTREAMENTO UNIFILAR POR GRUPOS - IMPLEMENTAÇÃO COMPLETA**
+
+### **📅 Data**: 22/09/2025
+### **🎯 Objetivo**: Implementar sistema de rastreamento unifilar para grupos de fibras com diagramas DOT consolidados
+
+---
+
+## ✅ **FUNCIONALIDADES IMPLEMENTADAS**
+
+### **1. Botão "Tracer Total" no Visualiza-DIO**
+- **Posicionamento**: Abaixo da coluna de botões de tracer individuais
+- **Alinhamento**: Perfeitamente alinhado com os outros botões de tracer
+- **Cor**: Mesma cor dos botões de tracer individuais
+- **Funcionalidade**: Rastreia grupo completo de fibras selecionado
+
+### **2. Serviço FiberTraceUnifilarTotalService**
+- **Arquivo**: `src/app/servico/fiber-trace-unifilar-total.service.ts`
+- **Método principal**: `ANALISA_TABELAGRAFO_TOTAL(idmeta, startFiber, endFiber, capacity)`
+- **Funcionalidade**: Rastreia grupo de fibras e consolida DOT string
+
+### **3. Sistema de Rastreamento por Grupos**
+- **Grupos suportados**: 1-12, 13-24, 25-36, etc.
+- **Capacidade do DIO**: Respeitada automaticamente (ex: DIO 6F só processa até fibra 6)
+- **Nós individuais**: Cada fibra tem seu próprio nó (`B1C1_F1`, `B1C1_F2`, etc.)
+- **Conexões completas**: Todas as conexões são criadas corretamente
+
+### **4. Modal GraphViz Integrado**
+- **Abertura automática**: Quando rastreamento é concluído
+- **Título dinâmico**: "Diagrama Unifilar - Grupo X (DIO Y)"
+- **DOT string**: Completo com todas as conexões do grupo
+- **Arrastável**: Modal pode ser movido pelo cabeçalho
+
+---
+
+## 🔧 **IMPLEMENTAÇÃO TÉCNICA**
+
+### **Arquitetura do Sistema**
+
+#### **1. Fluxo Principal**
+```
+Botão "Tracer Total" → onTracerTotalClick() → 
+FiberTraceUnifilarTotalService.ANALISA_TABELAGRAFO_TOTAL() → 
+performGroupTrace() → performSingleFiberTrace() → 
+performTrace() → Modal GraphViz
+```
+
+#### **2. Métodos Principais**
+
+**`ANALISA_TABELAGRAFO_TOTAL()`**:
+- Inicializa DOT string global
+- Calcula fibras a processar baseado na capacidade
+- Chama `performGroupTrace()` para processar grupo
+
+**`performGroupTrace()`**:
+- Itera através de todas as fibras do grupo
+- Chama `performSingleFiberTrace()` para cada fibra
+- Consolida resultados de todas as fibras
+- Finaliza DOT string com `size="10"}`
+
+**`performSingleFiberTrace()`**:
+- Rastreia uma fibra individual
+- Usa `performTrace()` com `finalizeDot: false`
+- Retorna trace da fibra sem finalizar DOT
+
+**`performTrace()` (modificado)**:
+- Aceita parâmetro `finalizeDot: boolean`
+- Se `false`: não adiciona `size="10"}` no final
+- Permite acumulação de DOT entre fibras
+
+### **3. Correções Críticas Implementadas**
+
+#### **Problema 1: Flag_caixa Interferindo Entre Fibras**
+- **Problema**: `flag_caixa` global causava interferência entre fibras
+- **Sintoma**: Fibras F8, F10, F12 não apareciam no DOT
+- **Solução**: Reset de `flag_caixa` para cada fibra individual
+```typescript
+// Reset flag_caixa para cada fibra
+this.flag_caixa = false;
+// ... processamento da fibra ...
+// Restaurar flag original no complete()
+```
+
+#### **Problema 2: Nós de Grupo vs Nós Individuais**
+- **Problema**: Sistema criava nó `B1C1_GRUPO_1_12` em vez de nós individuais
+- **Solução**: Removida inicialização de grupo, cada fibra cria seu próprio nó
+```typescript
+// Cada fibra cria seu próprio nó DIO
+this.Objeto_Atual = `${sigla}_F${fiber}`;
+this.dotString += `${this.Objeto_Atual}[label="${this.Objeto_Atual}",color="${this.cor}"];`;
+```
+
+#### **Problema 3: Offset Incorreto de Fibras**
+- **Problema**: Fibras apareciam como F2-F13 em vez de F1-F12
+- **Solução**: Removido `+1` incorreto na criação dos nós
+```typescript
+// ANTES (incorreto):
+this.Objeto_Atual = `${sigla}_F${fiber + 1}`;
+
+// DEPOIS (correto):
+this.Objeto_Atual = `${sigla}_F${fiber}`;
+```
+
+---
+
+## 📊 **ESTRUTURA DE DADOS**
+
+### **Interfaces Utilizadas**
+```typescript
+interface FiberTraceStep {
+  idmeta: number;
+  fiber: number | string;
+  tabela: string;
+  registro: string;
+  tipo: string;
+  status: 'processando' | 'fim' | 'continua' | 'erro';
+}
+
+interface FiberTraceResult {
+  success: boolean;
+  trace: FiberTraceStep[];
+  status: string;
+  dotString?: string;
+  error?: string;
+}
+```
+
+### **Variáveis Globais do Serviço**
+```typescript
+private dotString: string = '';           // DOT string acumulado
+private Objeto_Anterior: string = '';     // Objeto anterior no DOT
+private Objeto_Atual: string = '';        // Objeto atual no DOT
+private cor: string = 'green';            // Cor dos nós
+private flag_caixa: boolean = false;      // Flag para caixas
+private fibraString: string = '';         // String da fibra
+```
+
+---
+
+## 🎨 **GERAÇÃO DE DIAGRAMAS DOT**
+
+### **Estrutura do DOT Gerado**
+```dot
+digraph Alf {
+  rankdir=LR;
+  size="7,9";
+  ranksep=0.01;
+  nodesep=0.01;
+  node[shape=record,width=.3,height=.3];
+  
+  B1C1_F1[label="B1C1_F1",color="green"];
+  B1C1_F2[label="B1C1_F2",color="green"];
+  B1C1_F3[label="B1C1_F3",color="green"];
+  // ... mais nós de fibras ...
+  
+  CX_MGA_001_CX[label="CX_MGA_001_CX",shape=box,ranksep=0.001,fontsize=8,style="rounded,filled",fillcolor=lemonchiffon];
+  CX_MGA_002_CX[label="CX_MGA_002_CX",shape=box,ranksep=0.001,fontsize=8,style="rounded,filled",fillcolor=lemonchiffon];
+  // ... mais caixas ...
+  
+  B1C1_F1->CX_MGA_001_CX [label="36F (1) CABO_CENTRO",fontcolor="green",color="green",style="setlinewidth(1.5)",fontsize=7.8,arrowsize=0.5];
+  B1C1_F2->CX_MGA_001_CX [label="36F (2) CABO_CENTRO",fontcolor="green",color="green",style="setlinewidth(1.5)",fontsize=7.8,arrowsize=0.5];
+  // ... mais conexões ...
+  
+  size="10"
+}
+```
+
+### **Elementos do Diagrama**
+- **Nós DIO**: `B1C1_F1`, `B1C1_F2`, etc. (verde)
+- **Caixas**: `CX_MGA_001_CX` (caixas amarelas)
+- **Splitters**: `SPLIT_AAS01_CX_MGA_002` (polígonos azuis)
+- **Conexões**: Setas verdes com labels descritivos
+
+---
+
+## 🔄 **FLUXO DE FUNCIONAMENTO**
+
+### **1. Seleção do Grupo**
+```
+Usuário seleciona grupo (ex: "Grupo 1: Fibras 1-12") → 
+getCurrentGroup() retorna { start: 1, end: 12, label: "Grupo 1: Fibras 1-12" }
+```
+
+### **2. Rastreamento do Grupo**
+```
+ANALISA_TABELAGRAFO_TOTAL(298816, 1, 12, 36) →
+performGroupTrace() →
+Para cada fibra de 1 a 12:
+  performSingleFiberTrace() →
+  performTrace() com finalizeDot: false →
+  Acumula DOT string global
+```
+
+### **3. Consolidação e Finalização**
+```
+Após todas as fibras processadas:
+dotString += 'size="10"}';
+Retorna FiberTraceResult com DOT completo
+```
+
+### **4. Exibição do Modal**
+```
+Modal GraphViz abre com:
+- Título: "Diagrama Unifilar - Grupo 1: Fibras 1-12 (DIO 298816)"
+- DOT string completo
+- Trace de todas as fibras
+```
+
+---
+
+## 🛠️ **ARQUIVOS MODIFICADOS/CRIADOS**
+
+### **Novos Arquivos**
+- `src/app/servico/fiber-trace-unifilar-total.service.ts` - Serviço principal
+
+### **Arquivos Modificados**
+- `src/app/visualiza-dio/visualiza-dio.component.ts` - Método `onTracerTotalClick()`
+- `src/app/visualiza-dio/visualiza-dio.component.html` - Botão "Tracer Total"
+- `src/app/visualiza-dio/visualiza-dio.component.css` - Estilos do botão
+
+---
+
+## 📋 **LOGS DE DEBUG**
+
+### **Logs Principais**
+```
+🔍 [TRACER-TOTAL] Iniciando rastreamento unifilar para grupo de fibras
+🔍 [TRACER-TOTAL] Grupo selecionado: Grupo 1: Fibras 1-12
+🔍 [TRACER-TOTAL] Parâmetros: IDMETA=298816, Start=1, End=12, Capacity=36
+🔍 [TOTAL] Iniciando rastreamento de grupo: fibras 1 a 12 (capacidade: 36)
+🔍 [GROUP-TRACE] Processando grupo: fibras 1 a 12
+🔍 [GROUP-TRACE] Processando fibra 1/12
+🔍 [SINGLE-FIBER] Rastreando fibra 1: dio_t1.F1
+✅ [SINGLE-FIBER] Fibra 1 rastreada: 5 passos
+🎨 [GROUP-TRACE] Diagrama final gerado: digraph Alf {rankdir=LR;...}
+✅ [TRACER-TOTAL] Rastreamento de grupo concluído: 12 passos
+🎨 [TRACER-TOTAL] Abrindo modal GraphViz com diagrama do grupo
+```
+
+---
+
+## 🎯 **VANTAGENS DA IMPLEMENTAÇÃO**
+
+### **1. Modularidade**
+- Serviço separado para rastreamento de grupos
+- Reutilização da lógica existente do `FiberTraceUnifilarService`
+- Fácil manutenção e extensão
+
+### **2. Eficiência**
+- Processamento sequencial evita problemas de concorrência
+- DOT string acumulado eficientemente
+- Respeita capacidade do DIO automaticamente
+
+### **3. Usabilidade**
+- Interface intuitiva com botão dedicado
+- Modal arrastável para melhor visualização
+- Logs detalhados para debug
+
+### **4. Robustez**
+- Tratamento de erros completo
+- Validação de parâmetros
+- Controle de limites de capacidade
+
+---
+
+## ✅ **RESULTADO FINAL**
+
+**Sistema de Rastreamento Unifilar por Grupos completamente funcional com:**
+
+- ✅ **Botão "Tracer Total"** perfeitamente alinhado
+- ✅ **Rastreamento de grupos** completo (1-12, 13-24, etc.)
+- ✅ **Nós individuais** para cada fibra (`B1C1_F1`, `B1C1_F2`, etc.)
+- ✅ **Conexões completas** entre todos os elementos
+- ✅ **DOT string consolidado** com todas as fibras do grupo
+- ✅ **Modal GraphViz** com diagrama completo
+- ✅ **Respeito à capacidade** do DIO
+- ✅ **Correção de bugs** críticos (flag_caixa, offset, nós)
+- ✅ **Logs detalhados** para monitoramento
+- ✅ **Integração perfeita** com sistema existente
+
+**Status**: ✅ **SISTEMA DE RASTREAMENTO POR GRUPOS 100% FUNCIONAL**
+
+**Última atualização**: 22/09/2025
+**Status**: ✅ **IMPLEMENTAÇÃO COMPLETA E FUNCIONAL**

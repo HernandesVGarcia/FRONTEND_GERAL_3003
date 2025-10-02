@@ -15,6 +15,7 @@ import { DioEquipamentoService } from '../servico/dio-equipamento.service';
 import { FiberTraceService, FiberTraceResult, FiberTraceStep } from '../servico/fiber-trace.service';
 import { FiberApiService } from '../servico/fiber-api.service';
 import { FiberTraceUnifilarService } from '../servico/fiber-trace-unifilar.service';
+import { FiberTraceUnifilarTotalService } from '../servico/fiber-trace-unifilar-total.service';
 import { DioEquip } from '../modelo/dioEquipamento';
 import { MatDialog } from '@angular/material/dialog';
 import { GraphvizModalComponent } from '../graphviz-modal/graphviz-modal.component';
@@ -96,6 +97,7 @@ export class VisualizaDioComponent implements OnInit, OnDestroy {
     private fiberTraceService: FiberTraceService,
     private fiberApiService: FiberApiService,
     private fiberTraceUnifilarService: FiberTraceUnifilarService,
+    private fiberTraceUnifilarTotalService: FiberTraceUnifilarTotalService,
     private dialog: MatDialog,
     private fb: FormBuilder
   ) {
@@ -417,10 +419,18 @@ export class VisualizaDioComponent implements OnInit, OnDestroy {
   //************************************************************************************   */  
 
   onTracerTotalClick(): void {
-    console.log('🔍 [TRACER-TOTAL] Iniciando rastreamento unifilar para todas as fibras');
+    console.log('🔍 [TRACER-TOTAL] Iniciando rastreamento unifilar para grupo de fibras');
     
     if (!this.dioEquipData) {
       console.error('❌ [TRACER-TOTAL] Dados do DIO não carregados');
+      return;
+    }
+
+    // 🆕 NOVO: Obter grupo atual selecionado
+    const currentGroup = this.getCurrentGroup();
+    if (!currentGroup) {
+      console.error('❌ [TRACER-TOTAL] Nenhum grupo selecionado');
+      this.errorMessage = 'Nenhum grupo de fibras selecionado';
       return;
     }
 
@@ -428,40 +438,43 @@ export class VisualizaDioComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     this.errorMessage = '';
 
-    // Preparar parâmetros para o serviço unifilar (todas as fibras)
+    // 🆕 NOVO: Preparar parâmetros para o serviço unifilar TOTAL (grupo selecionado)
     const idmeta = this.data.id_meta || 0;
-    const fiber = 0; // 0 indica todas as fibras
-    const tabela = 'dio_t1'; // Começar com o primeiro tubo
-    const regist = 'F0'; // F0 indica todas as fibras
+    const startFiber = currentGroup.start;
+    const endFiber = currentGroup.end;
+    const capacity = this.capacity;
 
-    console.log(`🔍 [TRACER-TOTAL] Parâmetros: IDMETA=${idmeta}, Fiber=${fiber}, Tabela=${tabela}, Registro=${regist}`);
+    console.log(`🔍 [TRACER-TOTAL] Grupo selecionado: ${currentGroup.label}`);
+    console.log(`🔍 [TRACER-TOTAL] Parâmetros: IDMETA=${idmeta}, Start=${startFiber}, End=${endFiber}, Capacity=${capacity}`);
 
-    // Chamar o serviço unifilar usando ANALISA_TABELAGRAFO para todas as fibras
-    this.fiberTraceUnifilarService.ANALISA_TABELAGRAFO(idmeta, fiber, tabela, regist)
+    // 🆕 NOVO: Chamar o serviço unifilar TOTAL usando ANALISA_TABELAGRAFO_TOTAL para o grupo
+    this.fiberTraceUnifilarTotalService.ANALISA_TABELAGRAFO_TOTAL(idmeta, startFiber, endFiber, capacity)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: async (result) => {
           this.isLoading = false;
           
           if (result.success) {
-            console.log('✅ [TRACER-TOTAL] Rastreamento concluído com sucesso:', result.trace.length, 'passos');
+            console.log('✅ [TRACER-TOTAL] Rastreamento de grupo concluído:', result.trace.length, 'passos');
             console.log('📊 [TRACER-TOTAL] Status final:', result.status);
             console.log('🔍 [TRACER-TOTAL] Passos do rastreamento:', result.trace);
             
-            // 🆕 NOVO: DOT string já vem do rastreamento (refatorado!)
-            console.log('🎨 [TRACER-TOTAL] DOT String gerado durante o rastreamento:');
+            // 🆕 NOVO: DOT string já vem do rastreamento de grupo
+            console.log('🎨 [TRACER-TOTAL] DOT String gerado durante o rastreamento de grupo:');
             console.log(result.dotString);
             
-            // 🆕 CORREÇÃO: Só abrir modal quando o rastreamento estiver realmente completo
-            if (result.status === 'fim' && result.dotString && result.dotString.includes('size="10"}')) {
-              console.log('🎨 [TRACER-TOTAL] Abrindo modal GraphViz com diagrama completo');
+            // 🆕 NOVO: Só abrir modal quando o rastreamento do grupo estiver completo
+            if ((result.status === 'fim' || result.status === 'parcial') && result.dotString && result.dotString.includes('size="10"}')) {
+              console.log('🎨 [TRACER-TOTAL] Abrindo modal GraphViz com diagrama do grupo');
               
-              // Abrir modal GraphViz com o diagrama DOT
+              // Abrir modal GraphViz com o diagrama DOT do grupo
               const dialogRef = this.dialog.open(GraphvizModalComponent, {
                 width: '90vw',
                 height: '90vh',
+                maxWidth: '1200px',
+                maxHeight: '800px',
                 data: {
-                  title: `Diagrama Unifilar - Todas as Fibras (DIO ${this.data.id_meta})`,
+                  title: `Diagrama Unifilar - ${currentGroup.label} (DIO ${this.data.id_meta})`,
                   dotString: result.dotString,
                   trace: result.trace
                 },
@@ -472,12 +485,12 @@ export class VisualizaDioComponent implements OnInit, OnDestroy {
                 console.log('🎨 [TRACER-TOTAL] Modal GraphViz fechado');
               });
             } else {
-              console.warn('⚠️ [TRACER-TOTAL] Rastreamento não completou corretamente ou DOT string inválido');
-              this.errorMessage = 'Erro ao gerar diagrama unifilar completo';
+              console.log('⏳ [TRACER-TOTAL] Rastreamento de grupo ainda em andamento ou DOT incompleto');
+              this.errorMessage = 'Rastreamento de grupo ainda em andamento ou diagrama incompleto';
             }
           } else {
-            console.error('❌ [TRACER-TOTAL] Erro no rastreamento:', result.error);
-            this.errorMessage = result.error || 'Erro desconhecido no rastreamento';
+            console.error('❌ [TRACER-TOTAL] Erro no rastreamento de grupo:', result.error);
+            this.errorMessage = `Erro no rastreamento de grupo: ${result.error}`;
           }
         },
         error: (error) => {
