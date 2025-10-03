@@ -35,10 +35,52 @@ export class FiberTraceUnifilarTotalService {
   private cor: string = 'green';
   private flag_caixa: boolean = false; // 🆕 NOVO: Flag para controlar composição DOT da caixa
   private fibraString: string = ''; // 🆕 NOVO: String fibra composta para labels das conexões
+  private fibraOriginal: number = 0; // 🎨 NOVO: Número da fibra original que iniciou o rastreamento
+
+  // 🎨 NOVO: Array de cores das fibras (padrão nacional TB12)
+  private readonly coresFibras: string[] = [
+    '#00FF00', // Verde - F1
+    '#FFFF00', // Amarelo - F2
+    '#B0B0B0', // Cinza claro dashed - F3 (era branca anteriormente)
+    '#4169E1', // Azul - F4
+    '#FF0000', // Vermelho - F5
+    '#8A2BE2', // Violeta - F6
+    '#8B4513', // Marrom - F7
+    '#FF69B4', // Rosa - F8
+    '#000000', // Preto - F9
+    '#808080', // Cinza escuro sólido - F10
+    '#FFA500', // Laranja - F11
+    '#00FFFF'  // Ciano - F12
+  ];
 
   constructor(
     private fiberApiService: FiberApiService
   ) {}
+
+  /**
+   * 🎨 NOVO: Obtém a cor específica da fibra baseado no padrão nacional TB12
+   * @param fiberNumber Número da fibra (1-144)
+   * @returns Cor hexadecimal da fibra
+   */
+  private getFiberColor(fiberNumber: number): string {
+    const index = (fiberNumber - 1) % 12;
+    return this.coresFibras[index];
+  }
+
+  /**
+   * 🎨 NOVO: Verifica se a cor deve usar estilo dashed (apenas para F3 - cinza claro tracejado)
+   * @param color Cor da fibra
+   * @param fiberNumber Número da fibra atual (opcional, será ignorado)
+   * @returns string com estilo dashed se aplicável
+   */
+  private getFiberStyle(color: string, fiberNumber?: number): string {
+    // 🎨 CORREÇÃO: Usar fibra original para determinar estilo dashed
+    // Apenas F3 (cinza claro) usa estilo dashed - verificar pelo número da fibra ORIGINAL
+    if (this.fibraOriginal && (this.fibraOriginal - 1) % 12 === 2) { // F3, F15, F27, etc.
+      return 'dashed';
+    }  
+    return 'solid';
+  }
 
   /**
    * MÉTODO PRINCIPAL: Rastreamento de Fibra
@@ -180,6 +222,10 @@ export class FiberTraceUnifilarTotalService {
     try {
       console.log(`🔍 [SINGLE-FIBER] Rastreando fibra ${fiber}: ${tabela}.${registro}`);
       
+      // 🎨 NOVO: Obter cor específica da fibra
+      const fibraColor = this.getFiberColor(fiber);
+      console.log(`🎨 [SINGLE-FIBER] Cor da fibra ${fiber}: ${fibraColor}`);
+      
       // 🆕 CORREÇÃO: Resetar flag_caixa para cada fibra individual
       const originalFlagCaixa = this.flag_caixa;
       this.flag_caixa = false; // Reset para cada fibra
@@ -204,7 +250,8 @@ export class FiberTraceUnifilarTotalService {
         };
         
         // 🆕 CORREÇÃO: Usar o método performTrace original sem finalizar DOT
-        this.performTrace(idmeta, fiber, tabela, registro, tracePath, observer, 0, false);
+        // 🎨 NOVO: Passar cor específica da fibra
+        this.performTrace(idmeta, fiber, tabela, registro, tracePath, observer, 0, false, fibraColor);
       });
       
     } catch (error: any) {
@@ -363,9 +410,21 @@ export class FiberTraceUnifilarTotalService {
     tracePath: FiberTraceStep[], 
     observer: any,
     stepCount: number = 0,
-    finalizeDot: boolean = true
+    finalizeDot: boolean = true,
+    fibraColor?: string // 🎨 NOVO: Cor específica da fibra (opcional)
   ): Promise<void> {
     try {
+      // 🎨 NOVO: Definir cor atual da fibra como propriedade global para uso nas conexões (DIO sempre verde)
+      if (fibraColor) {
+        (this as any).fibraColorAtual = fibraColor;
+        console.log(`🎨 [TRACE] Cor da fibra ${fiber} definida: ${fibraColor} (DIO sempre verde, conexões coloridas)`);
+      }
+      
+      // 🎨 NOVO: Definir fibra original apenas no primeiro passo (stepCount === 0)
+      if (stepCount === 0) {
+        this.fibraOriginal = fiber;
+        console.log(`🎨 [TRACE] Fibra original definida: ${this.fibraOriginal} (para estilo dashed)`);
+      }
       // 🆕 NOVO: Inicializar primeiro objeto (DIO de origem) apenas no primeiro passo
       if (stepCount === 0) {
         const siglaResponse = await this.fiberApiService.executeDynamicQuery(
@@ -377,10 +436,11 @@ export class FiberTraceUnifilarTotalService {
         this.Objeto_Atual = `${sigla}_F${fiber}`; // Fibra já vem correta (1, 2, 3, etc.)
         this.Objeto_Anterior = this.Objeto_Atual;
         
-        // 🆕 CORREÇÃO: Adicionar nó do primeiro objeto
-        this.dotString += `${this.Objeto_Atual}[label="${this.Objeto_Atual}",color="${this.cor}"];`;
+        // 🆕 CORREÇÃO: Adicionar nó do primeiro objeto (DIO sempre verde)
+        // 🎨 CORREÇÃO: DIO sempre verde, apenas conexões usam cor específica da fibra
+        this.dotString += `${this.Objeto_Atual}[label="${this.Objeto_Atual}",color="green"];`;
         
-        console.log(`🎯 [DOT] Primeiro objeto definido: ${this.Objeto_Atual}`);
+        console.log(`🎯 [DOT] Primeiro objeto definido: ${this.Objeto_Atual} (cor: verde - DIO)`);
       }
 
       // Verificar limite de passos
@@ -527,7 +587,7 @@ export class FiberTraceUnifilarTotalService {
       } else if (result.tabela && result.registro) {
         // Continuar rastreamento recursivo
         console.log(`➡️ [CONTINUA] Próximo passo - IDMETA: ${result.idmeta}, Fibra: ${result.fiber}, Tabela: ${result.tabela}, Registro: ${result.registro}`);
-        await this.performTrace(result.idmeta, typeof result.fiber === 'string' ? 0 : result.fiber, result.tabela, result.registro, tracePath, observer, stepCount + 1, finalizeDot);
+        await this.performTrace(result.idmeta, typeof result.fiber === 'string' ? 0 : result.fiber, result.tabela, result.registro, tracePath, observer, stepCount + 1, finalizeDot, fibraColor);
         } else {
         // Rastreamento interrompido
           console.log(`❌ [FIM] Rastreamento interrompido - Tabela ou registro vazios`);
@@ -907,9 +967,12 @@ export class FiberTraceUnifilarTotalService {
         // 🆕 CORREÇÃO: Conexão igual ao VB6 - OBJETO_ANTERIOR -> OBJETO_ATUAL com label da fibra
         if (this.Objeto_Anterior) {
           const labelFibra = this.fibraString || `"${fibra}"`;
-          const conexao = `${this.Objeto_Anterior}->${novoObjetoAtual} [label=${labelFibra},fontcolor="${this.cor}",color="${this.cor}",style="setlinewidth(1.5)",fontsize=7.8,arrowsize=0.5];`;
+          // 🎨 NOVO: Usar cor específica da fibra se disponível (passada via parâmetros globais)
+        const corAtual = (this as any).fibraColorAtual || this.cor;
+        const estiloLinha = this.getFiberStyle(corAtual, fiber);
+        const conexao = `${this.Objeto_Anterior}->${novoObjetoAtual} [label=${labelFibra},fontcolor="${corAtual}",color="${corAtual}",style="setlinewidth(1.5),${estiloLinha}",fontsize=7.8,arrowsize=0.5];`;
           this.dotString += conexao;
-          console.log(`🔗 [CAIXA-CONEXÃO] ${this.Objeto_Anterior} -> ${novoObjetoAtual} (Label: ${labelFibra})`);
+          console.log(`🔗 [CAIXA-CONEXÃO] ${this.Objeto_Anterior} -> ${novoObjetoAtual} (Label: ${labelFibra}, Cor: ${corAtual}, Estilo: ${estiloLinha})`);
         }
         
         // Atualizar objeto atual APÓS criar a conexão
@@ -1030,13 +1093,16 @@ export class FiberTraceUnifilarTotalService {
        //   this.dotString += `${this.Objeto_Anterior}->${novoObjetoAtual};`;
        // }
 
-       // 🆕 CORREÇÃO: Adicionar conexão entre objetos com label da fibra (igual ao VB6 linha 612)
-       if (this.Objeto_Atual) {
-         const labelFibra = this.fibraString || `"${fibraFinal}"`;
-         const conexao = `${this.Objeto_Anterior}->${novoObjetoAtual} [label=${labelFibra},color="${this.cor}",style="setlinewidth(2)",fontsize=18];`;
-         this.dotString += conexao;
-         console.log(`🔗 [DIO-CONEXÃO] ${this.Objeto_Anterior} -> ${novoObjetoAtual} (Label: ${labelFibra})`);
-       }
+      // 🆕 CORREÇÃO: Adicionar conexão entre objetos com label da fibra (igual ao VB6 linha 612)
+      if (this.Objeto_Atual) {
+        const labelFibra = this.fibraString || `"${fibraFinal}"`;
+        // 🎨 NOVO: Usar cor específica da fibra se disponível (passada via parâmetros globais)
+        const corAtual = (this as any).fibraColorAtual || this.cor;
+        const estiloLinha = this.getFiberStyle(corAtual, fiber);
+        const conexao = `${this.Objeto_Anterior}->${novoObjetoAtual} [label=${labelFibra},color="${corAtual}",style="setlinewidth(2),${estiloLinha}",fontsize=18];`;
+        this.dotString += conexao;
+        console.log(`🔗 [DIO-CONEXÃO] ${this.Objeto_Anterior} -> ${novoObjetoAtual} (Label: ${labelFibra}, Cor: ${corAtual}, Estilo: ${estiloLinha})`);
+      }
       
       this.Objeto_Atual = novoObjetoAtual;
       
@@ -1235,9 +1301,12 @@ export class FiberTraceUnifilarTotalService {
       
       // 🆕 CORREÇÃO: Adicionar conexão com label "Entrada" (igual ao VB6 linha 710)
       if (this.Objeto_Anterior) {
-        const conexao = `${this.Objeto_Anterior}->${novoObjetoAtual} [label="Entrada",color="${this.cor}",fontsize=9,weight=0.1];`;
+        // 🎨 NOVO: Usar cor específica da fibra se disponível (passada via parâmetros globais)
+        const corAtual = (this as any).fibraColorAtual || this.cor;
+        const estiloLinha = this.getFiberStyle(corAtual, fiber);
+        const conexao = `${this.Objeto_Anterior}->${novoObjetoAtual} [label="Entrada",color="${corAtual}",style="${estiloLinha}",fontsize=9,weight=0.1];`;
         this.dotString += conexao;
-        console.log(`🔗 [SPLITTER-CONEXÃO] ${this.Objeto_Anterior} -> ${novoObjetoAtual} (Label: "Entrada")`);
+        console.log(`🔗 [SPLITTER-CONEXÃO] ${this.Objeto_Anterior} -> ${novoObjetoAtual} (Label: "Entrada", Cor: ${corAtual}, Estilo: ${estiloLinha})`);
       }
       
       this.Objeto_Atual = novoObjetoAtual;
@@ -1348,9 +1417,12 @@ export class FiberTraceUnifilarTotalService {
       // 🆕 CORREÇÃO: Adicionar conexão entre objetos com label da fibra (igual ao VB6 linha 597)
       if (this.Objeto_Anterior) {
         const labelFibra = this.fibraString || `"${fiber}"`;
-        const conexao = `${this.Objeto_Anterior}->${novoObjetoAtual} [label=${labelFibra},color="${this.cor}",style="setlinewidth(2)",fontsize=18];`;
+        // 🎨 NOVO: Usar cor específica da fibra se disponível (passada via parâmetros globais)
+        const corAtual = (this as any).fibraColorAtual || this.cor;
+        const estiloLinha = this.getFiberStyle(corAtual, fiber);
+        const conexao = `${this.Objeto_Anterior}->${novoObjetoAtual} [label=${labelFibra},color="${corAtual}",style="setlinewidth(2),${estiloLinha}",fontsize=18];`;
         this.dotString += conexao;
-        console.log(`🔗 [POP-CONEXÃO] ${this.Objeto_Anterior} -> ${novoObjetoAtual} (Label: ${labelFibra})`);
+        console.log(`🔗 [POP-CONEXÃO] ${this.Objeto_Anterior} -> ${novoObjetoAtual} (Label: ${labelFibra}, Cor: ${corAtual}, Estilo: ${estiloLinha})`);
       }
       
       this.Objeto_Atual = novoObjetoAtual;
@@ -1408,9 +1480,12 @@ export class FiberTraceUnifilarTotalService {
       // 🆕 CORREÇÃO: Adicionar conexão entre objetos com label da fibra (igual ao VB6 linha 628)
       if (this.Objeto_Anterior) {
         const labelFibra = this.fibraString || `"${fiber}"`;
-        const conexao = `${this.Objeto_Anterior}->${novoObjetoAtual} [label=${labelFibra},color="${this.cor}"];`;
+        // 🎨 NOVO: Usar cor específica da fibra se disponível (passada via parâmetros globais)
+        const corAtual = (this as any).fibraColorAtual || this.cor;
+        const estiloLinha = this.getFiberStyle(corAtual, fiber);
+        const conexao = `${this.Objeto_Anterior}->${novoObjetoAtual} [label=${labelFibra},color="${corAtual}",style="${estiloLinha}"];`;
         this.dotString += conexao;
-        console.log(`🔗 [RABICHO-CONEXÃO] ${this.Objeto_Anterior} -> ${novoObjetoAtual} (Label: ${labelFibra})`);
+        console.log(`🔗 [RABICHO-CONEXÃO] ${this.Objeto_Anterior} -> ${novoObjetoAtual} (Label: ${labelFibra}, Cor: ${corAtual}, Estilo: ${estiloLinha})`);
       }
       
       this.Objeto_Atual = novoObjetoAtual;

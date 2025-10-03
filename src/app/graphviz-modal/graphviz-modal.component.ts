@@ -6,6 +6,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Graphviz } from "@hpcc-js/wasm-graphviz";
+import html2canvas from 'html2canvas';
+import { jsPDF } from 'jspdf';
 
 @Component({
   selector: 'app-graphviz-modal',
@@ -18,6 +20,7 @@ export class GraphvizModalComponent implements OnInit, AfterViewInit {
   dotContent: string = '';
   isLoading: boolean = true;
   error: string = '';
+  isGeneratingPDF: boolean = false;
   
   // Variáveis para zoom e pan
   private currentZoom: number = 1;
@@ -404,6 +407,107 @@ export class GraphvizModalComponent implements OnInit, AfterViewInit {
 
   onMouseUp(event: MouseEvent): void {
     this.isPanning = false;
+  }
+
+  // Método para gerar PDF do diagrama
+  async onPrintPDF(): Promise<void> {
+    try {
+      this.isGeneratingPDF = true;
+      console.log('🖨️ [PDF] Iniciando geração de PDF...');
+
+      // Aguardar um pouco para garantir que o SVG está renderizado
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      const container = document.getElementById('graphviz-container');
+      if (!container) {
+        throw new Error('Container do diagrama não encontrado');
+      }
+
+      const svg = container.querySelector('svg');
+      if (!svg) {
+        throw new Error('SVG do diagrama não encontrado');
+      }
+
+      console.log('🖨️ [PDF] Capturando SVG com html2canvas...');
+
+      // Capturar o SVG como canvas
+      const canvas = await html2canvas(container, {
+        backgroundColor: '#ffffff',
+        scale: 2, // Maior resolução
+        useCORS: true,
+        allowTaint: true,
+        logging: false,
+        width: container.scrollWidth,
+        height: container.scrollHeight
+      });
+
+      console.log('🖨️ [PDF] Canvas capturado:', canvas.width, 'x', canvas.height);
+
+      // Criar PDF
+      const pdf = new jsPDF({
+        orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+
+      // Calcular dimensões para ajustar ao PDF
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+      
+      // Calcular escala para ajustar a imagem ao PDF
+      const scaleX = pdfWidth / imgWidth;
+      const scaleY = pdfHeight / imgHeight;
+      const scale = Math.min(scaleX, scaleY) * 0.9; // 90% para margem
+
+      const finalWidth = imgWidth * scale;
+      const finalHeight = imgHeight * scale;
+
+      // Centralizar a imagem no PDF
+      const x = (pdfWidth - finalWidth) / 2;
+      const y = (pdfHeight - finalHeight) / 2;
+
+      console.log('🖨️ [PDF] Adicionando imagem ao PDF...');
+      console.log('🖨️ [PDF] Dimensões:', finalWidth, 'x', finalHeight);
+      console.log('🖨️ [PDF] Posição:', x, ',', y);
+
+      // Adicionar título se disponível
+      if (this.data?.title) {
+        pdf.setFontSize(16);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text(this.data.title, pdfWidth / 2, 20, { align: 'center' });
+      }
+
+      // Adicionar data de geração
+      const now = new Date();
+      const dateStr = now.toLocaleDateString('pt-BR') + ' ' + now.toLocaleTimeString('pt-BR');
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text(`Gerado em: ${dateStr}`, pdfWidth / 2, 30, { align: 'center' });
+
+      // Adicionar a imagem do diagrama
+      const imgData = canvas.toDataURL('image/png');
+      pdf.addImage(imgData, 'PNG', x, y + 10, finalWidth, finalHeight);
+
+      // Gerar nome do arquivo
+      const fileName = this.data?.title 
+        ? `diagrama_${this.data.title.replace(/[^a-zA-Z0-9]/g, '_')}_${now.getTime()}.pdf`
+        : `diagrama_graphviz_${now.getTime()}.pdf`;
+
+      console.log('🖨️ [PDF] Salvando arquivo:', fileName);
+
+      // Salvar o PDF
+      pdf.save(fileName);
+
+      console.log('✅ [PDF] PDF gerado com sucesso!');
+      
+    } catch (error) {
+      console.error('❌ [PDF] Erro ao gerar PDF:', error);
+      this.error = 'Erro ao gerar PDF: ' + (error as Error).message;
+    } finally {
+      this.isGeneratingPDF = false;
+    }
   }
 }
 

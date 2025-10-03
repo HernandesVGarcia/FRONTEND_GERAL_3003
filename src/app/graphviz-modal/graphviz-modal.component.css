@@ -58,6 +58,32 @@
   align-items: center;
 }
 
+/* Botão de PDF */
+.graphviz-modal-container .controls button[color="accent"] {
+  background-color: #f44336;
+  color: white;
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.graphviz-modal-container .controls button[color="accent"]:hover:not(:disabled) {
+  background-color: #d32f2f;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(244, 67, 54, 0.3);
+}
+
+.graphviz-modal-container .controls button[color="accent"]:disabled {
+  background-color: #ccc;
+  color: #666;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.graphviz-modal-container .controls button[color="accent"] mat-icon {
+  margin-right: 8px;
+}
+
 .graphviz-modal-container .zoom-controls {
   display: flex;
   gap: 4px;

@@ -14,6 +14,11 @@
         Atualizar
       </button>
       
+      <button mat-raised-button color="accent" (click)="onPrintPDF()" [disabled]="isLoading || error || isGeneratingPDF">
+        <mat-icon>picture_as_pdf</mat-icon>
+        {{ isGeneratingPDF ? 'Gerando PDF...' : 'Imprimir PDF' }}
+      </button>
+      
       <div class="zoom-controls" *ngIf="!isLoading && !error">
         <button mat-icon-button (click)="zoomIn()" title="Zoom In">
           <mat-icon>zoom_in</mat-icon>
