@@ -1,7 +1,10 @@
 <div class="visualiza-dio-container">
   <!-- Header -->
   <div class="modal-header">
-    <h2 class="modal-title">{{ config.title }}</h2>
+    <h2 class="modal-title">
+      <span *ngIf="dioSigla && estacaoSigla">DIO {{ dioSigla }} {{ estacaoSigla }}</span>
+      <span *ngIf="!dioSigla || !estacaoSigla">{{ config.title }}</span>
+    </h2>
     <div class="header-actions">
       <button *ngIf="isTracing" mat-raised-button color="warn" (click)="cancelTracing()" class="cancel-button">
         <mat-icon>stop</mat-icon>

@@ -61,6 +61,10 @@ export class VisualizaDioComponent implements OnInit, OnDestroy {
   fiberGroups: any[] = [];
   capacity = 144; // Capacidade padrão
   
+  // Dados do DIO e Estação
+  dioSigla: string = '';
+  estacaoSigla: string = '';
+  
   // Dados do FlexGrid (4 colunas x 12 linhas)
   flexGridData: any[][] = [];
   
@@ -144,6 +148,63 @@ export class VisualizaDioComponent implements OnInit, OnDestroy {
     return this.fb.group(formControls);
   }
 
+  /**
+   * 🆕 NOVO: Carrega sigla do DIO e estação para exibir no cabeçalho
+   */
+  private loadDioAndEstacaoInfo(): void {
+    console.log('🏠 [DIO-INFO] Carregando informações do DIO e estação...');
+    
+    // Consulta 1: DIO - obter sigla e ID da estação
+    this.fiberApiService.executeDynamicQuery(
+      'SELECT SIGLA AS NOME, ID_ESTACAO FROM tstmeta.dio WHERE id_meta = {idmeta}',
+      { idmeta: this.data.id_meta }
+    ).pipe(takeUntil(this.destroy$))
+    .subscribe({
+      next: (dioResponse) => {
+        console.log('📊 [DIO-INFO] Resposta DIO:', dioResponse);
+        
+        if (dioResponse?.success && dioResponse.data && dioResponse.data.length > 0) {
+          this.dioSigla = dioResponse.data[0].NOME;
+          const idEstacao = dioResponse.data[0].ID_ESTACAO;
+          console.log('🏠 [DIO-INFO] DIO encontrado:', this.dioSigla, 'ID Estação:', idEstacao);
+          
+          // Consulta 2: Estação - obter sigla da estação
+          this.fiberApiService.executeDynamicQuery(
+            'SELECT SIGLA FROM tst.estações WHERE ID_META = {idmeta}',
+            { idmeta: idEstacao }
+          ).pipe(takeUntil(this.destroy$))
+          .subscribe({
+            next: (estacaoResponse) => {
+              console.log('📊 [DIO-INFO] Resposta Estação:', estacaoResponse);
+              
+              if (estacaoResponse?.success && estacaoResponse.data && estacaoResponse.data.length > 0) {
+                this.estacaoSigla = estacaoResponse.data[0].SIGLA;
+                console.log('🏠 [DIO-INFO] Estação encontrada:', this.estacaoSigla);
+                console.log('🏠 [DIO-INFO] Título completo:', `DIO ${this.dioSigla} ${this.estacaoSigla}`);
+              } else {
+                console.warn('⚠️ [DIO-INFO] Estação não encontrada para ID:', idEstacao);
+                this.estacaoSigla = 'Estação não encontrada';
+              }
+            },
+            error: (error) => {
+              console.error('❌ [DIO-INFO] Erro ao carregar estação:', error);
+              this.estacaoSigla = 'Erro ao carregar estação';
+            }
+          });
+        } else {
+          console.warn('⚠️ [DIO-INFO] DIO não encontrado para ID:', this.data.id_meta);
+          this.dioSigla = 'DIO não encontrado';
+          this.estacaoSigla = '';
+        }
+      },
+      error: (error) => {
+        console.error('❌ [DIO-INFO] Erro ao carregar DIO:', error);
+        this.dioSigla = 'Erro ao carregar DIO';
+        this.estacaoSigla = '';
+      }
+    });
+  }
+
   private loadVisualizaDioData(): void {
     this.isLoading = true;
     this.errorMessage = '';
@@ -152,6 +213,9 @@ export class VisualizaDioComponent implements OnInit, OnDestroy {
     console.log('Carregando dados do DIO:');
     console.log('IDMETA:', this.data.id_meta, 'Tipo:', typeof this.data.id_meta);
     console.log('CAPACIDADE:', this.capacity, 'Tipo:', typeof this.capacity);
+
+    // 🆕 NOVO: Carregar sigla do DIO e estação
+    this.loadDioAndEstacaoInfo();
 
     // Carregar dados dos equipamentos DIO da API
     this.dioEquipamentoService.selecionar(this.data.id_meta, this.capacity)
@@ -468,13 +532,13 @@ export class VisualizaDioComponent implements OnInit, OnDestroy {
               console.log('🎨 [TRACER-TOTAL] Abrindo modal GraphViz com diagrama do grupo');
               
               // Abrir modal GraphViz com o diagrama DOT do grupo
-              const dialogRef = this.dialog.open(GraphvizModalComponent, {
+                const dialogRef = this.dialog.open(GraphvizModalComponent, {
                 width: '90vw',
                 height: '90vh',
                 maxWidth: '1200px',
                 maxHeight: '800px',
                 data: {
-                  title: `Diagrama Unifilar - ${currentGroup.label} (DIO ${this.data.id_meta})`,
+                  title: `Diagrama Unifilar - ${currentGroup.label} (DIO ${this.dioSigla} ${this.estacaoSigla})`,
                   dotString: result.dotString,
                   trace: result.trace
                 },
@@ -944,7 +1008,7 @@ export class VisualizaDioComponent implements OnInit, OnDestroy {
 
     // Selecionar o primeiro grupo
     const firstGroup = this.fiberGroups[0];
-    this.selectedGroup = firstGroup;
+    this.selectedGroup = firstGroup.id;
     console.log(`📊 [AUTO-TRACE] Grupo selecionado: ${firstGroup.label} (fibras ${firstGroup.start}-${firstGroup.end})`);
 
     // Disparar rastreamento
