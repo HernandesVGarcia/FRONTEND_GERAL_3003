@@ -20,7 +20,7 @@ import { CitySelectModalComponent } from '../city-select-modal/city-select-modal
 //import { CaixaInternasyncComponent } from '../caixa-internasync/caixa-internasync.component';
 //import { AppComponent } from '../app.component';
 //import {CaixaInternaSyncComponent} from '../caixa-interna-sync/caixa-interna-sync.component'
-import { GoogleGpsComponent } from '../google-gps/google-gps.component';
+//import { GoogleGpsComponent } from '../google-gps/google-gps.component';
 
 @Component({
   selector: 'app-toolbars',
@@ -36,14 +36,14 @@ import { GoogleGpsComponent } from '../google-gps/google-gps.component';
     CitySelectModalComponent,
     MatSelectModule,
     //CaixaInternaSyncComponent,
-    GoogleGpsComponent,
+    //GoogleGpsComponent,
     MatTooltipModule],
   templateUrl: './toolbars.component.html',
   styleUrls: ['./toolbars.component.css'],
   standalone: true
 })
 export class ToolbarsComponent {
-  @ViewChild('gpsComponent') gpsComponent!: GoogleGpsComponent;
+  //@ViewChild('gpsComponent') gpsComponent!: GoogleGpsComponent;
 
   cities: any[] = [];
   selectedCity: any;
@@ -138,7 +138,7 @@ export class ToolbarsComponent {
       }
 
 
-      // Métodos GPS
+      /* Métodos GPS
   getCurrentLocation(): void {
     console.log('Botão GPS clicado na toolbar');
     this.gpsComponent.getCurrentLocation();
@@ -164,7 +164,7 @@ export class ToolbarsComponent {
     alert(`Erro ao obter localização: ${error}`);
   }
 
-  
+  */
   
 
 

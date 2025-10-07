@@ -36,6 +36,12 @@ export class FiberTraceUnifilarTotalService {
   private flag_caixa: boolean = false; // 🆕 NOVO: Flag para controlar composição DOT da caixa
   private fibraString: string = ''; // 🆕 NOVO: String fibra composta para labels das conexões
   private fibraOriginal: number = 0; // 🎨 NOVO: Número da fibra original que iniciou o rastreamento
+  
+  // 🗺️ NOVO: Array para armazenar IDs dos cabos percorridos durante o rastreamento
+  private cabosPercorridos: number[] = [];
+  
+  // 🗺️ NOVO: Array para armazenar informações dos cabos percorridos (ID + capacidade)
+  private cabosInfo: Array<{id: number, capacidade: string}> = [];
 
   // 🎨 NOVO: Array de cores das fibras (padrão nacional TB12)
   private readonly coresFibras: string[] = [
@@ -56,6 +62,29 @@ export class FiberTraceUnifilarTotalService {
   constructor(
     private fiberApiService: FiberApiService
   ) {}
+
+  /**
+   * 🗺️ NOVO: Retorna os IDs dos cabos percorridos durante o último rastreamento
+   */
+  getCabosPercorridos(): number[] {
+    return [...this.cabosPercorridos]; // Retorna uma cópia para evitar modificações externas
+  }
+
+  /**
+   * 🗺️ NOVO: Retorna as informações dos cabos percorridos (ID + capacidade)
+   */
+  getCabosInfo(): Array<{id: number, capacidade: string}> {
+    return [...this.cabosInfo]; // Retorna uma cópia para evitar modificações externas
+  }
+
+  /**
+   * 🗺️ NOVO: Limpa o array de cabos percorridos
+   */
+  clearCabosPercorridos(): void {
+    this.cabosPercorridos = [];
+    this.cabosInfo = [];
+    console.log('🗺️ [CABO-TOTAL] Arrays de cabos percorridos limpos');
+  }
 
   /**
    * 🎨 NOVO: Obtém a cor específica da fibra baseado no padrão nacional TB12
@@ -117,6 +146,12 @@ export class FiberTraceUnifilarTotalService {
       this.cor = 'green';
       this.flag_caixa = false;
       this.fibraString = '';
+      
+      // 🗺️ CORREÇÃO: Limpar arrays ANTES de iniciar novo rastreamento
+      this.cabosPercorridos = [];
+      this.cabosInfo = [];
+      console.log(`🗺️ [INICIO-TOTAL] Rastreamento iniciado para DIO ${idmeta}, Fibras ${startFiber}-${endFiber}`);
+      console.log(`🗺️ [INICIO-TOTAL] Arrays limpos: cabosPercorridos=[${this.cabosPercorridos.join(', ')}], cabosInfo=[${this.cabosInfo.length}]`);
       
       // 🆕 NOVO: Determinar quantas fibras processar baseado na capacidade do DIO
       const maxFiber = Math.min(endFiber, capacity);
@@ -193,6 +228,7 @@ export class FiberTraceUnifilarTotalService {
       // 🆕 NOVO: Finalizar DOT string
       this.dotString += 'size="10"}';
       console.log(`🎨 [GROUP-TRACE] Diagrama final gerado: ${this.dotString}`);
+      console.log(`🗺️ [FIM-TOTAL] Cabos percorridos finais: [${this.cabosPercorridos.join(', ')}] (Total: ${this.cabosPercorridos.length})`);
       
       observer.next({
         success: true,
@@ -800,6 +836,27 @@ export class FiberTraceUnifilarTotalService {
     const ponta = match[2]; // A ou B
     const fibra = parseInt(match[3]);
     const tipo = match[4] || 'VALUE'; // Label, VALUE ou VALUE (padrão para conexão direta)
+
+    // 🗺️ NOVO: Adicionar ID do cabo ao array de cabos percorridos
+    if (!this.cabosPercorridos.includes(caboId)) {
+      this.cabosPercorridos.push(caboId);
+      
+      // 🗺️ NOVO: Consultar capacidade do cabo no banco de dados
+      try {
+        const capacidade = await this.fiberApiService.getCapacidadeCabo(caboId).toPromise() || 'unknown';
+        this.cabosInfo.push({id: caboId, capacidade: capacidade});
+        
+        console.log(`🗺️ [CABO-TOTAL] Cabo ${caboId} (${capacidade}) adicionado aos percorridos. Total: ${this.cabosPercorridos.length}`);
+        console.log(`🗺️ [CABO-TOTAL] Array atual: [${this.cabosPercorridos.join(', ')}]`);
+      } catch (error) {
+        console.error(`🗺️ [CABO-TOTAL] Erro ao consultar capacidade do cabo ${caboId}:`, error);
+        this.cabosInfo.push({id: caboId, capacidade: 'unknown'});
+        
+        console.log(`🗺️ [CABO-TOTAL] Cabo ${caboId} (unknown) adicionado aos percorridos. Total: ${this.cabosPercorridos.length}`);
+      }
+    } else {
+      console.log(`🗺️ [CABO-TOTAL] Cabo ${caboId} já existe no array. Total: ${this.cabosPercorridos.length}`);
+    }
 
     // Calcular tubo baseado na fibra
     const tubo = this.calculateTubo(fibra);

@@ -1,6 +1,8 @@
 import { Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { GoogleMapsModule } from '@angular/google-maps';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
 import { Cabos1f } from '../modelo/Cabos1f';
 import { Cabos2f } from '../modelo/Cabos2f';
 import { Cabos4f } from '../modelo/Cabos4f';
@@ -27,6 +29,7 @@ import { AuthService } from '../servico/auth.service';
 import { animate, animation } from '@angular/animations';
 
 import { MapSearchButtonsComponent } from '../map-search-buttons/map-search-buttons.component';
+import { MapTracerButtonsComponent } from '../map-tracer-buttons/map-tracer-buttons.component';
 import { CompartilhamentoService, CaixaData, ClienteData } from '../servico/compartilhamento.service';
 import { Subject, takeUntil } from 'rxjs';
 
@@ -44,7 +47,7 @@ import { GraphvizModalComponent } from '../graphviz-modal/graphviz-modal.compone
   templateUrl: './google-maps.component.html',
   styleUrls: ['./google-maps.component.css'],
   standalone: true,
-  imports: [CommonModule, GoogleMapsModule,GoJSDemoComponent,MapSearchButtonsComponent],
+  imports: [CommonModule, GoogleMapsModule, GoJSDemoComponent, MapSearchButtonsComponent, MapTracerButtonsComponent, MatIconModule, MatButtonModule],
 })
 export class GoogleMapsComponent implements OnInit, OnChanges {
   @Input() destinoCondominios: Condominios[]=[];
@@ -169,6 +172,281 @@ export class GoogleMapsComponent implements OnInit, OnChanges {
   infoWindows48f: google.maps.InfoWindow[] = [];
   infoWindows72f: google.maps.InfoWindow[] = [];
   infoWindows144f: google.maps.InfoWindow[] = [];
+
+  // 🗺️ NOVO: Controle de destaque dos cabos
+  highlightedPolylines: google.maps.Polyline[] = [];
+  originalPolylineOptions: Map<google.maps.Polyline, google.maps.PolylineOptions> = new Map();
+
+  /**
+   * 🗺️ NOVO: Configura listeners para eventos de destaque de cabos
+   */
+  private setupCabosHighlightListeners(): void {
+    // Listener para destacar cabos
+    window.addEventListener('highlightCabos', (event: Event) => {
+      const customEvent = event as CustomEvent;
+      const cabosPercorridos = customEvent.detail.cabosPercorridos;
+      console.log('🗺️ [LISTENER] Evento highlightCabos recebido:', cabosPercorridos);
+      this.highlightCabos(cabosPercorridos);
+    });
+
+    // Listener para destacar cabos com capacidade (otimizado)
+    window.addEventListener('highlightCabosComCapacidade', (event: Event) => {
+      const customEvent = event as CustomEvent;
+      const cabosInfo = customEvent.detail.cabosInfo;
+      console.log('🗺️ [LISTENER] Evento highlightCabosComCapacidade recebido:', cabosInfo);
+      this.highlightCabosComCapacidade(cabosInfo);
+    });
+
+    // Listener para limpar destaque
+    window.addEventListener('clearCabosHighlight', () => {
+      console.log('🗺️ [LISTENER] Evento clearCabosHighlight recebido');
+      this.clearCabosHighlight();
+    });
+  }
+
+  /**
+   * 🗺️ NOVO: Destaca cabos no mapa baseado nas informações de capacidade (otimizado)
+   */
+  private highlightCabosComCapacidade(cabosInfo: Array<{id: number, capacidade: string}>): void {
+    console.log('🗺️ [HIGHLIGHT-OTIMIZADO] ===== INICIANDO DESTAQUE =====');
+    console.log('🗺️ [HIGHLIGHT-OTIMIZADO] Cabos para destacar:', cabosInfo);
+    console.log('🗺️ [HIGHLIGHT-OTIMIZADO] Estado ANTES da limpeza - highlightedPolylines:', this.highlightedPolylines.length);
+    
+    // 🗺️ CORREÇÃO: Limpar destaque anterior ANTES de destacar novos cabos
+    this.clearCabosHighlight();
+    
+    console.log('🗺️ [HIGHLIGHT-OTIMIZADO] Estado APÓS a limpeza - highlightedPolylines:', this.highlightedPolylines.length);
+    
+    // Agrupar cabos por capacidade
+    const cabosPorCapacidade = new Map<string, number[]>();
+    cabosInfo.forEach(cabo => {
+      if (!cabosPorCapacidade.has(cabo.capacidade)) {
+        cabosPorCapacidade.set(cabo.capacidade, []);
+      }
+      cabosPorCapacidade.get(cabo.capacidade)!.push(cabo.id);
+    });
+    
+    console.log('🗺️ [HIGHLIGHT-OTIMIZADO] Cabos agrupados por capacidade:', cabosPorCapacidade);
+    
+    // Destacar apenas nos arrays correspondentes à capacidade
+    cabosPorCapacidade.forEach((ids, capacidade) => {
+      console.log(`🗺️ [HIGHLIGHT-OTIMIZADO] Processando capacidade ${capacidade} com ${ids.length} cabos`);
+      
+      switch (capacidade) {
+        case '1':
+        case '1f':
+          this.highlightCabosInArray(this.polylines1f, ids, this.destinoCabos1f);
+          break;
+        case '2':
+        case '2f':
+          this.highlightCabosInArray(this.polylines2f, ids, this.destinoCabos2f);
+          break;
+        case '4':
+        case '4f':
+          this.highlightCabosInArray(this.polylines4f, ids, this.destinoCabos4f);
+          break;
+        case '6':
+        case '6f':
+          this.highlightCabosInArray(this.polylines6f, ids, this.destinoCabos6f);
+          break;
+        case '8':
+        case '8f':
+          this.highlightCabosInArray(this.polylines8f, ids, this.destinoCabos8f);
+          break;
+        case '12':
+        case '12f':
+          this.highlightCabosInArray(this.polylines12f, ids, this.destinoCabos12f);
+          break;
+        case '24':
+        case '24f':
+          this.highlightCabosInArray(this.polylines24f, ids, this.destinoCabos24f);
+          break;
+        case '36':
+        case '36f':
+          this.highlightCabosInArray(this.polylines36f, ids, this.destinoCabos36f);
+          break;
+        case '48':
+        case '48f':
+          this.highlightCabosInArray(this.polylines48f, ids, this.destinoCabos48f);
+          break;
+        case '72':
+        case '72f':
+          this.highlightCabosInArray(this.polylines72f, ids, this.destinoCabos72f);
+          break;
+        case '144':
+        case '144f':
+          this.highlightCabosInArray(this.polylines144f, ids, this.destinoCabos144f);
+          break;
+        default:
+          console.warn(`🗺️ [HIGHLIGHT-OTIMIZADO] Capacidade desconhecida: ${capacidade}`);
+          // Fallback: buscar em todos os arrays
+          this.highlightCabos(ids);
+      }
+    });
+    
+    console.log('🗺️ [HIGHLIGHT-OTIMIZADO] Destaque otimizado concluído. Total de polylines destacadas:', this.highlightedPolylines.length);
+  }
+
+  /**
+   * 🗺️ NOVO: Destaca cabos no mapa baseado nos IDs fornecidos (método original)
+   */
+  private highlightCabos(cabosPercorridos: number[]): void {
+    console.log('🗺️ [HIGHLIGHT] Destacando cabos:', cabosPercorridos);
+    
+    // Limpar destaque anterior
+    this.clearCabosHighlight();
+    
+    // Destacar cabos em todos os arrays de polylines
+    console.log(`🗺️ [HIGHLIGHT] Verificando array 1f (${this.polylines1f.length} polylines, ${this.destinoCabos1f?.length || 0} cabos)`);
+    this.highlightCabosInArray(this.polylines1f, cabosPercorridos, this.destinoCabos1f);
+    
+    console.log(`🗺️ [HIGHLIGHT] Verificando array 2f (${this.polylines2f.length} polylines, ${this.destinoCabos2f?.length || 0} cabos)`);
+    this.highlightCabosInArray(this.polylines2f, cabosPercorridos, this.destinoCabos2f);
+    
+    console.log(`🗺️ [HIGHLIGHT] Verificando array 4f (${this.polylines4f.length} polylines, ${this.destinoCabos4f?.length || 0} cabos)`);
+    this.highlightCabosInArray(this.polylines4f, cabosPercorridos, this.destinoCabos4f);
+    
+    console.log(`🗺️ [HIGHLIGHT] Verificando array 6f (${this.polylines6f.length} polylines, ${this.destinoCabos6f?.length || 0} cabos)`);
+    this.highlightCabosInArray(this.polylines6f, cabosPercorridos, this.destinoCabos6f);
+    
+    console.log(`🗺️ [HIGHLIGHT] Verificando array 8f (${this.polylines8f.length} polylines, ${this.destinoCabos8f?.length || 0} cabos)`);
+    this.highlightCabosInArray(this.polylines8f, cabosPercorridos, this.destinoCabos8f);
+    
+    console.log(`🗺️ [HIGHLIGHT] Verificando array 12f (${this.polylines12f.length} polylines, ${this.destinoCabos12f?.length || 0} cabos)`);
+    this.highlightCabosInArray(this.polylines12f, cabosPercorridos, this.destinoCabos12f);
+    
+    console.log(`🗺️ [HIGHLIGHT] Verificando array 24f (${this.polylines24f.length} polylines, ${this.destinoCabos24f?.length || 0} cabos)`);
+    this.highlightCabosInArray(this.polylines24f, cabosPercorridos, this.destinoCabos24f);
+    
+    console.log(`🗺️ [HIGHLIGHT] Verificando array 36f (${this.polylines36f.length} polylines, ${this.destinoCabos36f?.length || 0} cabos)`);
+    this.highlightCabosInArray(this.polylines36f, cabosPercorridos, this.destinoCabos36f);
+    
+    console.log(`🗺️ [HIGHLIGHT] Verificando array 48f (${this.polylines48f.length} polylines, ${this.destinoCabos48f?.length || 0} cabos)`);
+    this.highlightCabosInArray(this.polylines48f, cabosPercorridos, this.destinoCabos48f);
+    
+    console.log(`🗺️ [HIGHLIGHT] Verificando array 72f (${this.polylines72f.length} polylines, ${this.destinoCabos72f?.length || 0} cabos)`);
+    this.highlightCabosInArray(this.polylines72f, cabosPercorridos, this.destinoCabos72f);
+    
+    console.log(`🗺️ [HIGHLIGHT] Verificando array 144f (${this.polylines144f.length} polylines, ${this.destinoCabos144f?.length || 0} cabos)`);
+    this.highlightCabosInArray(this.polylines144f, cabosPercorridos, this.destinoCabos144f);
+    
+    console.log('🗺️ [HIGHLIGHT] Destaque concluído. Total de polylines destacadas:', this.highlightedPolylines.length);
+  }
+
+  /**
+   * 🗺️ NOVO: Destaca cabos em um array específico de polylines (OTIMIZADO)
+   */
+  private highlightCabosInArray(polylines: google.maps.Polyline[], cabosPercorridos: number[], cabos: any[]): void {
+    if (!polylines) return;
+    
+    console.log(`🗺️ [HIGHLIGHT-OTIMIZADO] Verificando ${polylines.length} polylines`);
+    console.log(`🗺️ [HIGHLIGHT-OTIMIZADO] Cabos procurados: [${cabosPercorridos.join(', ')}]`);
+    
+    // 🗺️ OTIMIZAÇÃO: Buscar diretamente nas polylines por propriedade
+    polylines.forEach((polyline, index) => {
+      const idMeta = polyline.get('id_meta');
+      const capacidade = polyline.get('capacidade');
+      const tipo = polyline.get('tipo');
+      
+      console.log(`🗺️ [HIGHLIGHT-OTIMIZADO] Polyline ${index}: ID=${idMeta}, Capacidade=${capacidade}, Tipo=${tipo}`);
+      
+      if (idMeta && cabosPercorridos.includes(idMeta)) {
+        console.log(`🗺️ [HIGHLIGHT-OTIMIZADO] ✅ MATCH! Destacando cabo ${idMeta} (índice ${index})`);
+        
+        // 🗺️ OTIMIZAÇÃO: Usar dados da própria polyline para opções originais
+        const caboData = polyline.get('cabo_data');
+        const originalOptions = caboData ? this.getOriginalPolylineOptions(caboData) : this.getDefaultPolylineOptions(capacidade);
+        this.originalPolylineOptions.set(polyline, originalOptions);
+        
+        // Aplicar destaque (amarelo, mais espesso, z-index alto)
+        polyline.setOptions({
+          strokeColor: 'yellow',
+          strokeWeight: 8,
+          strokeOpacity: 0.9,
+          zIndex: 1000
+        });
+        
+        // Adicionar à lista de destacados
+        console.log(`🗺️ [HIGHLIGHT-OTIMIZADO] Adicionando polyline ${idMeta} à lista de destacados`);
+        console.log(`🗺️ [HIGHLIGHT-OTIMIZADO] Polyline já existe na lista?`, this.highlightedPolylines.includes(polyline));
+        
+        if (!this.highlightedPolylines.includes(polyline)) {
+          this.highlightedPolylines.push(polyline);
+          console.log(`🗺️ [HIGHLIGHT-OTIMIZADO] ✅ Polyline adicionada. Total: ${this.highlightedPolylines.length}`);
+        } else {
+          console.warn(`🗺️ [HIGHLIGHT-OTIMIZADO] ⚠️ Polyline ${idMeta} já existe na lista! Pulando...`);
+        }
+      }
+    });
+  }
+
+  /**
+   * 🗺️ NOVO: Retorna opções padrão baseadas na capacidade
+   */
+  private getDefaultPolylineOptions(capacidade: string): google.maps.PolylineOptions {
+    switch (capacidade) {
+      case '1f': return this.polylineOptions1f;
+      case '2f': return this.polylineOptions2f;
+      case '4f': return this.polylineOptions4f;
+      case '6f': return this.polylineOptions6f;
+      case '8f': return this.polylineOptions8f;
+      case '12f': return this.polylineOptions12f;
+      case '24f': return this.polylineOptions24f;
+      case '36f': return this.polylineOptions36f;
+      case '48f': return this.polylineOptions48f;
+      case '72f': return this.polylineOptions72f;
+      case '144f': return this.polylineOptions144f;
+      default: return this.polylineOptions1f; // Fallback
+    }
+  }
+
+  /**
+   * 🗺️ NOVO: Retorna opções originais baseadas no tipo de cabo
+   */
+  private getOriginalPolylineOptions(cabo: any): google.maps.PolylineOptions {
+    // Determinar tipo de cabo baseado no array de origem
+    if (this.destinoCabos1f?.includes(cabo)) return this.polylineOptions1f;
+    if (this.destinoCabos2f?.includes(cabo)) return this.polylineOptions2f;
+    if (this.destinoCabos4f?.includes(cabo)) return this.polylineOptions4f;
+    if (this.destinoCabos6f?.includes(cabo)) return this.polylineOptions6f;
+    if (this.destinoCabos8f?.includes(cabo)) return this.polylineOptions8f;
+    if (this.destinoCabos12f?.includes(cabo)) return this.polylineOptions12f;
+    if (this.destinoCabos24f?.includes(cabo)) return this.polylineOptions24f;
+    if (this.destinoCabos36f?.includes(cabo)) return this.polylineOptions36f;
+    if (this.destinoCabos48f?.includes(cabo)) return this.polylineOptions48f;
+    if (this.destinoCabos72f?.includes(cabo)) return this.polylineOptions72f;
+    if (this.destinoCabos144f?.includes(cabo)) return this.polylineOptions144f;
+    
+    // Fallback para opções padrão
+    return this.polylineOptions12f;
+  }
+
+  /**
+   * 🗺️ NOVO: Limpa destaque de todos os cabos
+   */
+  public clearCabosHighlight(): void {
+    console.log('🗺️ [CLEAR] ===== INICIANDO LIMPEZA =====');
+    console.log('🗺️ [CLEAR] Polylines destacadas antes da limpeza:', this.highlightedPolylines.length);
+    console.log('🗺️ [CLEAR] Opções originais armazenadas:', this.originalPolylineOptions.size);
+    
+    this.highlightedPolylines.forEach((polyline, index) => {
+      console.log(`🗺️ [CLEAR] Processando polyline ${index}:`, polyline);
+      const originalOptions = this.originalPolylineOptions.get(polyline);
+      if (originalOptions) {
+        console.log(`🗺️ [CLEAR] Restaurando opções originais para polyline ${index}:`, originalOptions);
+        polyline.setOptions(originalOptions);
+      } else {
+        console.warn(`🗺️ [CLEAR] ⚠️ Nenhuma opção original encontrada para polyline ${index}`);
+      }
+    });
+    
+    console.log('🗺️ [CLEAR] Limpando arrays...');
+    this.highlightedPolylines = [];
+    this.originalPolylineOptions.clear();
+    
+    console.log('🗺️ [CLEAR] Arrays limpos - highlightedPolylines:', this.highlightedPolylines.length, 'originalPolylineOptions:', this.originalPolylineOptions.size);
+    console.log('🗺️ [CLEAR] ===== LIMPEZA CONCLUÍDA =====');
+  }
 
   // InfoWindows para marcadores (caixas e CTOs)
   currentMarkerInfoWindow: google.maps.InfoWindow | null = null;
@@ -421,6 +699,9 @@ polylineOptions144f: google.maps.PolylineOptions = {
     this.checkGoogleMapsAPI();
     this.checkForGPSLocation();
     // Removido setupMapClickListener() daqui - será chamado em onMapInitialized()
+    
+    // 🗺️ NOVO: Escutar eventos de destaque de cabos
+    this.setupCabosHighlightListeners();
     
     
     //const lat= this.authService.getLat
@@ -2728,6 +3009,20 @@ closeGoJSModal() {
         // Usar o índice correto do array de cabos
         const caboIndex = indicesValidos[pathIndex];
         const cabo = cabos[caboIndex];
+        
+        // 🗺️ NOVO: Armazenar dados na polyline (como no Visio)
+        polyline.set('id_meta', cabo.id_meta);
+        polyline.set('capacidade', tipoFibra);
+        polyline.set('tipo', cabo.tipo || 'CABO');
+        polyline.set('label', cabo.Label_cabo || '');
+        polyline.set('cabo_data', cabo); // Dados completos do cabo
+        
+        console.log(`🗺️ [POLYLINE-DATA] Armazenando dados na polyline ${tipoFibra}:`, {
+          id_meta: cabo.id_meta,
+          capacidade: tipoFibra,
+          tipo: cabo.tipo,
+          label: cabo.Label_cabo
+        });
         
         // Criar InfoWindow para este cabo
         const infoWindow = new google.maps.InfoWindow({

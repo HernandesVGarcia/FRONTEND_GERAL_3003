@@ -1,0 +1,97 @@
+<div class="tracer-buttons-container">
+  <!-- Limpa Tracer -->
+  <div class="group">
+    <button 
+      class="map-tracer-button limpa-tracer"
+      (click)="onLimpaTracer()"
+      aria-label="Limpa Tracer">
+      <mat-icon>clear_all</mat-icon>
+    </button>
+    <div class="tooltip-limpa">Limpa Tracer</div>
+  </div>
+
+  
+
+  <!-- Minha Localização -->
+  <div class="group">
+    <button 
+      class="map-tracer-button minha-localizacao"
+      (click)="onMinhaLocalizacao()"
+      aria-label="Minha Localização">
+      <mat-icon>my_location</mat-icon>
+    </button>
+    <div class="tooltip-minha-localizacao">Minha Localização</div>
+  </div>
+
+  <!-- Selecionar Cidades -->
+  <div class="group">
+    <button 
+      class="map-tracer-button selecionar-cidades"
+      (click)="onSelecionarCidades()"
+      aria-label="Selecionar Cidades">
+      <mat-icon>location_city</mat-icon>
+    </button>
+    <div class="tooltip-selecionar-cidades">Selecionar Cidades</div>
+  </div>
+
+
+<!-- Componente GPS (invisível, apenas para funcionalidade) -->
+<app-google-gps 
+  #gpsComponent
+  (locationFound)="onLocationFound($event)"
+  (locationError)="onLocationError($event)"
+  style="display: none;">
+</app-google-gps>
+
+<!-- Modal de seleção de cidade -->
+<app-city-select-modal 
+  *ngIf="showCityModal" 
+  (citySelected)="onCitySelected($event)" 
+  (modalClosed)="onModalClosed()">
+</app-city-select-modal>
+
+<!-- Desenha Cabo -->
+<div class="group">
+    <button 
+      class="map-tracer-button desenha-cabo"
+      (click)="onDesenhaCabo()"
+      aria-label="Desenha Cabo">
+      <mat-icon>timeline</mat-icon>
+    </button>
+    <div class="tooltip-desenha-cabo">Desenha Cabo</div>
+  </div>
+
+  <!-- Finaliza Cabo -->
+  <div class="group">
+    <button 
+      class="map-tracer-button finaliza-cabo"
+      (click)="onFinalizaCabo()"
+      aria-label="Finaliza Cabo">
+      <mat-icon>check_circle</mat-icon>
+    </button>
+    <div class="tooltip-finaliza-cabo">Finaliza Cabo</div>
+  </div>
+
+  <!-- Desenha Polígono -->
+  <div class="group">
+    <button 
+      class="map-tracer-button desenha-poligono"
+      (click)="onDesenhaPoligono()"
+      aria-label="Desenha Polígono">
+      <mat-icon>category</mat-icon>
+    </button>
+    <div class="tooltip-desenha-poligono">Desenha Polígono</div>
+  </div>
+
+  <!-- Finaliza Polígono -->
+  <div class="group">
+    <button 
+      class="map-tracer-button finaliza-poligono"
+      (click)="onFinalizaPoligono()"
+      aria-label="Finaliza Polígono">
+      <mat-icon>done_all</mat-icon>
+    </button>
+    <div class="tooltip-finaliza-poligono">Finaliza Polígono</div>
+  </div>
+
+</div>

@@ -32,10 +32,39 @@ export class FiberTraceUnifilarService {
   private cor: string = 'green';
   private flag_caixa: boolean = false; // 🆕 NOVO: Flag para controlar composição DOT da caixa
   private fibraString: string = ''; // 🆕 NOVO: String fibra composta para labels das conexões
+  
+  // 🗺️ NOVO: Array para armazenar IDs dos cabos percorridos durante o rastreamento
+  private cabosPercorridos: number[] = [];
+  
+  // 🗺️ NOVO: Array para armazenar informações dos cabos percorridos (ID + capacidade)
+  private cabosInfo: Array<{id: number, capacidade: string}> = [];
 
   constructor(
     private fiberApiService: FiberApiService
   ) {}
+
+  /**
+   * 🗺️ NOVO: Retorna os IDs dos cabos percorridos durante o último rastreamento
+   */
+  getCabosPercorridos(): number[] {
+    return [...this.cabosPercorridos]; // Retorna uma cópia para evitar modificações externas
+  }
+
+  /**
+   * 🗺️ NOVO: Retorna as informações dos cabos percorridos (ID + capacidade)
+   */
+  getCabosInfo(): Array<{id: number, capacidade: string}> {
+    return [...this.cabosInfo]; // Retorna uma cópia para evitar modificações externas
+  }
+
+  /**
+   * 🗺️ NOVO: Limpa o array de cabos percorridos
+   */
+  clearCabosPercorridos(): void {
+    this.cabosPercorridos = [];
+    this.cabosInfo = [];
+    console.log('🗺️ [CABO] Arrays de cabos percorridos limpos');
+  }
 
   /**
    * MÉTODO PRINCIPAL: Rastreamento de Fibra
@@ -51,6 +80,12 @@ export class FiberTraceUnifilarService {
       this.cor = 'green';
       this.flag_caixa = false; // 🆕 NOVO: Inicializar flag da caixa
       this.fibraString = ''; // 🆕 NOVO: Inicializar string fibra
+      
+      // 🗺️ CORREÇÃO: Limpar arrays ANTES de iniciar novo rastreamento
+      this.cabosPercorridos = [];
+      this.cabosInfo = [];
+      console.log(`🗺️ [INICIO-UNIFILAR] Rastreamento iniciado para DIO ${idmeta}, Fibra ${fiber}`);
+      console.log(`🗺️ [INICIO-UNIFILAR] Arrays limpos: cabosPercorridos=[${this.cabosPercorridos.join(', ')}], cabosInfo=[${this.cabosInfo.length}]`);
       
       this.performTrace(idmeta, fiber, tabela, registro, [], observer, 0);
     });
@@ -105,6 +140,7 @@ export class FiberTraceUnifilarService {
         this.dotString += 'size="10"}';
         console.log(`🎨 [DOT] Diagrama final gerado: ${this.dotString}`);
         
+        console.log(`🗺️ [FIM-UNIFILAR] Cabos percorridos finais: [${this.cabosPercorridos.join(', ')}] (Total: ${this.cabosPercorridos.length})`);
         observer.next({ 
           success: true, 
           trace: tracePath, 
@@ -141,6 +177,7 @@ export class FiberTraceUnifilarService {
         this.dotString += 'size="10"}';
         console.log(`🎨 [DOT] Diagrama final gerado: ${this.dotString}`);
         
+        console.log(`🗺️ [FIM-UNIFILAR] Cabos percorridos finais: [${this.cabosPercorridos.join(', ')}] (Total: ${this.cabosPercorridos.length})`);
         observer.next({ 
           success: true, 
           trace: tracePath, 
@@ -165,6 +202,7 @@ export class FiberTraceUnifilarService {
         this.dotString += 'size="10"}';
         console.log(`🎨 [DOT] Diagrama final gerado: ${this.dotString}`);
         
+        console.log(`🗺️ [FIM-UNIFILAR] Cabos percorridos finais: [${this.cabosPercorridos.join(', ')}] (Total: ${this.cabosPercorridos.length})`);
         observer.next({ 
           success: true, 
           trace: tracePath, 
@@ -236,6 +274,7 @@ export class FiberTraceUnifilarService {
           this.dotString += ';size="10"}';
           console.log(`🎨 [DOT] Diagrama final gerado: ${this.dotString}`);
           
+        console.log(`🗺️ [FIM-UNIFILAR] Cabos percorridos finais: [${this.cabosPercorridos.join(', ')}] (Total: ${this.cabosPercorridos.length})`);
         observer.next({ 
           success: true, 
           trace: tracePath, 
@@ -435,6 +474,29 @@ export class FiberTraceUnifilarService {
     const ponta = match[2]; // A ou B
     const fibra = parseInt(match[3]);
     const tipo = match[4] || 'VALUE'; // Label, VALUE ou VALUE (padrão para conexão direta)
+
+    // 🗺️ NOVO: Adicionar ID do cabo ao array de cabos percorridos
+    if (!this.cabosPercorridos.includes(caboId)) {
+      this.cabosPercorridos.push(caboId);
+      
+      // 🗺️ NOVO: Consultar capacidade do cabo no banco de dados
+      try {
+        const capacidade = await this.fiberApiService.getCapacidadeCabo(caboId).toPromise() || 'unknown';
+        this.cabosInfo.push({id: caboId, capacidade: capacidade});
+        
+        console.log(`🗺️ [CABO-UNIFILAR] ✅ CABO ENCONTRADO! Cabo ${caboId} (${capacidade}) adicionado aos percorridos. Total: ${this.cabosPercorridos.length}`);
+        console.log(`🗺️ [CABO-UNIFILAR] Conteúdo do cabo: ${conteudo}`);
+        console.log(`🗺️ [CABO-UNIFILAR] Regex match: ${match}`);
+        console.log(`🗺️ [CABO-UNIFILAR] Array atual: [${this.cabosPercorridos.join(', ')}]`);
+      } catch (error) {
+        console.error(`🗺️ [CABO-UNIFILAR] Erro ao consultar capacidade do cabo ${caboId}:`, error);
+        this.cabosInfo.push({id: caboId, capacidade: 'unknown'});
+        
+        console.log(`🗺️ [CABO-UNIFILAR] ✅ CABO ENCONTRADO! Cabo ${caboId} (unknown) adicionado aos percorridos. Total: ${this.cabosPercorridos.length}`);
+      }
+    } else {
+      console.log(`🗺️ [CABO-UNIFILAR] Cabo ${caboId} já existe no array. Total: ${this.cabosPercorridos.length}`);
+    }
 
     // Calcular tubo baseado na fibra
     const tubo = this.calculateTubo(fibra);

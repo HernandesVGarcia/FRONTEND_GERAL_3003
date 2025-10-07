@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError, Subject } from 'rxjs';
-import { retry, timeout, catchError, takeUntil } from 'rxjs/operators';
+import { retry, timeout, catchError, takeUntil, map } from 'rxjs/operators';
 import { AuthService } from '../servico/auth.service';
 import { environment } from '../environments/environment';
 
@@ -195,6 +195,32 @@ export class FiberApiService {
       retry(this.RETRY_ATTEMPTS),
       catchError(error => {
         console.error('Erro ao buscar fibra conectada:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
+   * 🗺️ NOVO: Buscar capacidade do cabo por IDMETA
+   * SELECT capacidade FROM tstmeta.cabopa WHERE id_meta = {idMeta}
+   */
+  getCapacidadeCabo(idMeta: number): Observable<string> {
+    const query = `SELECT capacidade FROM tstmeta.cabopa WHERE id_meta = ${idMeta}`;
+    console.log(`🗺️ [API-CAPACIDADE] Consultando capacidade do cabo ${idMeta}: ${query}`);
+    
+    return this.executeDynamicQuery(query, {}).pipe(
+      map(response => {
+        if (response.success && response.data && response.data.length > 0) {
+          const capacidade = response.data[0].capacidade;
+          console.log(`🗺️ [API-CAPACIDADE] Capacidade encontrada para cabo ${idMeta}: ${capacidade}`);
+          return capacidade;
+        } else {
+          console.warn(`🗺️ [API-CAPACIDADE] Capacidade não encontrada para cabo ${idMeta}`);
+          return 'unknown';
+        }
+      }),
+      catchError(error => {
+        console.error(`🗺️ [API-CAPACIDADE] Erro ao consultar capacidade do cabo ${idMeta}:`, error);
         return throwError(() => error);
       })
     );

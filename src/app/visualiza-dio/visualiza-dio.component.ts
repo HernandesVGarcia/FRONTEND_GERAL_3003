@@ -523,6 +523,16 @@ export class VisualizaDioComponent implements OnInit, OnDestroy {
             console.log('📊 [TRACER-TOTAL] Status final:', result.status);
             console.log('🔍 [TRACER-TOTAL] Passos do rastreamento:', result.trace);
             
+            // 🗺️ NOVO: Capturar cabos percorridos e destacar no mapa
+            const cabosPercorridos = this.fiberTraceUnifilarTotalService.getCabosPercorridos();
+            const cabosInfo = this.fiberTraceUnifilarTotalService.getCabosInfo();
+            console.log('🗺️ [TRACER-TOTAL] Cabos percorridos capturados:', cabosPercorridos);
+            console.log('🗺️ [TRACER-TOTAL] Informações dos cabos:', cabosInfo);
+            console.log('🗺️ [TRACER-TOTAL] Total de cabos:', cabosPercorridos.length);
+            
+            // 🗺️ NOVO: Comunicar com o Google Maps para destacar os cabos com capacidade
+            this.highlightCabosNoMapaComCapacidade(cabosInfo);
+            
             // 🆕 NOVO: DOT string já vem do rastreamento de grupo
             console.log('🎨 [TRACER-TOTAL] DOT String gerado durante o rastreamento de grupo:');
             console.log(result.dotString);
@@ -600,6 +610,16 @@ export class VisualizaDioComponent implements OnInit, OnDestroy {
                  console.log('📊 [TRACER] Status final:', result.status);
                  console.log('🔍 [TRACER] Passos do rastreamento:', result.trace);
                  
+                 // 🗺️ NOVO: Capturar cabos percorridos e destacar no mapa
+                 const cabosPercorridos = this.fiberTraceUnifilarService.getCabosPercorridos();
+                 const cabosInfo = this.fiberTraceUnifilarService.getCabosInfo();
+                 console.log('🗺️ [TRACER-UNIFILAR] Cabos percorridos capturados:', cabosPercorridos);
+                 console.log('🗺️ [TRACER-UNIFILAR] Informações dos cabos:', cabosInfo);
+                 console.log('🗺️ [TRACER-UNIFILAR] Total de cabos:', cabosPercorridos.length);
+                 
+                 // 🗺️ NOVO: Comunicar com o Google Maps para destacar os cabos com capacidade
+                 this.highlightCabosNoMapaComCapacidade(cabosInfo);
+                 
                  // 🆕 NOVO: DOT string já vem do rastreamento (refatorado!)
                  console.log('🎨 [TRACER] DOT String gerado durante o rastreamento:');
                  console.log(result.dotString);
@@ -624,6 +644,49 @@ export class VisualizaDioComponent implements OnInit, OnDestroy {
           this.errorMessage = `Erro no rastreamento: ${error.message}`;
         }
       });
+  }
+
+  /**
+   * 🗺️ NOVO: Destaca cabos percorridos no Google Maps
+   */
+  private highlightCabosNoMapa(cabosPercorridos: number[]): void {
+    console.log('🗺️ [HIGHLIGHT] Destacando cabos no mapa:', cabosPercorridos);
+    
+    // 🗺️ NOVO: Comunicar com o Google Maps via evento customizado
+    const event = new CustomEvent('highlightCabos', {
+      detail: { cabosPercorridos }
+    });
+    window.dispatchEvent(event);
+    
+    console.log('🗺️ [HIGHLIGHT] Evento de destaque enviado para o Google Maps');
+  }
+
+  /**
+   * 🗺️ NOVO: Destaca cabos percorridos no Google Maps com informações de capacidade
+   */
+  private highlightCabosNoMapaComCapacidade(cabosInfo: Array<{id: number, capacidade: string}>): void {
+    console.log('🗺️ [HIGHLIGHT] Destacando cabos no mapa com capacidade:', cabosInfo);
+    
+    // 🗺️ NOVO: Comunicar com o Google Maps via evento customizado
+    const event = new CustomEvent('highlightCabosComCapacidade', {
+      detail: { cabosInfo }
+    });
+    window.dispatchEvent(event);
+    
+    console.log('🗺️ [HIGHLIGHT] Evento de destaque com capacidade enviado para o Google Maps');
+  }
+
+  /**
+   * 🗺️ NOVO: Limpa destaque dos cabos no Google Maps
+   */
+  private clearCabosHighlight(): void {
+    console.log('🗺️ [CLEAR] Limpando destaque dos cabos no mapa');
+    
+    // 🗺️ NOVO: Comunicar com o Google Maps via evento customizado
+    const event = new CustomEvent('clearCabosHighlight');
+    window.dispatchEvent(event);
+    
+    console.log('🗺️ [CLEAR] Evento de limpeza enviado para o Google Maps');
   }
 
   /**

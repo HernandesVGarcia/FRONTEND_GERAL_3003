@@ -1,0 +1,246 @@
+ 🔍 [TRACER] Passos do rastreamento: 
+Array(8) [ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+​
+0: Object { idmeta: 749874, fiber: 1, tabela: "dio_t1", … }
+​
+1: Object { idmeta: 749879, fiber: 0, tabela: "caboa_t1", … }
+​
+2: Object { idmeta: 749879, fiber: 1, tabela: "cabob_t1", … }
+​
+3: Object { idmeta: 749876, fiber: 1, tabela: "cxboca1_t1", … }
+​
+4: Object { idmeta: 749876, fiber: 1, tabela: "cxboca2_t1", … }
+​
+5: Object { idmeta: 749880, fiber: 1, tabela: "caboa_t1", … }
+​
+6: Object { idmeta: 749880, fiber: 1, tabela: "cabob_t1", … }
+​
+7: Object { idmeta: 749875, fiber: 7, tipo: "dio", … }
+​
+length: 8
+​
+<prototype>: Array []
+visualiza-dio.component.ts:611:26
+🗺️ [TRACER-UNIFILAR] Cabos percorridos capturados: 
+Array [ 749879, 749880 ]
+​
+0: 749879
+​
+1: 749880
+​
+length: 2
+​
+<prototype>: Array []
+visualiza-dio.component.ts:616:26
+🗺️ [TRACER-UNIFILAR] Informações dos cabos: 
+Array [ {…}, {…} ]
+​
+0: Object { id: 749879, capacidade: "unknown" }
+​
+1: Object { id: 749880, capacidade: "unknown" }
+​
+length: 2
+​
+<prototype>: Array []
+​​
+at: function at()
+​​
+concat: function concat()
+​​
+constructor: function Array()
+​​
+copyWithin: function copyWithin()
+​​
+entries: function entries()
+​​
+every: function every()
+​​
+fill: function fill()
+​​
+filter: function filter()
+​​
+find: function find()
+​​
+findIndex: function findIndex()
+​​
+findLast: function findLast()
+​​
+findLastIndex: function findLastIndex()
+​​
+flat: function flat()
+​​
+flatMap: function flatMap()
+​​
+forEach: function forEach()
+​​
+includes: function includes()
+​​
+indexOf: function indexOf()
+​​
+join: function join()
+​​
+keys: function keys()
+​​
+lastIndexOf: function lastIndexOf()
+​​
+length: 0
+​​
+map: function map()
+​​
+pop: function pop()
+​​
+push: function push()
+​​
+reduce: function reduce()
+​​
+reduceRight: function reduceRight()
+​​
+reverse: function reverse()
+​​
+shift: function shift()
+​​
+slice: function slice()
+​​
+some: function some()
+​​
+sort: function sort()
+​​
+splice: function splice()
+​​
+toLocaleString: function toLocaleString()
+​​
+toReversed: function toReversed()
+​​
+toSorted: function toSorted()
+​​
+toSpliced: function toSpliced()
+​​
+toString: function toString()
+​​
+unshift: function unshift()
+​​
+values: function values()
+​​
+with: function with()
+​​
+Symbol(Symbol.iterator): function values()
+​​
+Symbol(Symbol.unscopables): Object { at: true, copyWithin: true, entries: true, … }
+​​
+<prototype>: Object { … }
+visualiza-dio.component.ts:617:26
+🗺️ [HIGHLIGHT] Destacando cabos no mapa com capacidade: 
+Array [ {…}, {…} ]
+​
+0: Object { id: 749879, capacidade: "unknown" }
+​
+1: Object { id: 749880, capacidade: "unknown" }
+​
+length: 2
+​
+<prototype>: Array []
+visualiza-dio.component.ts:668:13
+🗺️ [LISTENER] Evento highlightCabosComCapacidade recebido: 
+Array [ {…}, {…} ]
+​
+0: Object { id: 749879, capacidade: "unknown" }
+​
+1: Object { id: 749880, capacidade: "unknown" }
+​
+length: 2
+​
+<prototype>: Array []
+google-maps.component.ts:195:15
+🗺️ [HIGHLIGHT-OTIMIZADO] Iniciando destaque otimizado de cabos: 
+Array [ {…}, {…} ]
+​
+0: Object { id: 749879, capacidade: "unknown" }
+​
+1: Object { id: 749880, capacidade: "unknown" }
+​
+length: 2
+​
+<prototype>: Array []
+google-maps.component.ts:210:13
+🗺️ [HIGHLIGHT-OTIMIZADO] Cabos agrupados por capacidade: 
+Map { unknown → (2) […] }
+google-maps.component.ts:221:13
+🗺️ [HIGHLIGHT-OTIMIZADO] Processando capacidade unknown com 2 cabos google-maps.component.ts:225:15
+🗺️ [HIGHLIGHT-OTIMIZADO] Capacidade desconhecida: unknown google-maps.component.ts:262:19
+🗺️ [HIGHLIGHT] Destacando cabos: 
+Array [ 749879, 749880 ]
+google-maps.component.ts:275:13
+🗺️ [CLEAR] Limpando destaque de 0 polylines google-maps.component.ts:389:13
+🗺️ [CLEAR] Destaque limpo com sucesso google-maps.component.ts:401:13
+🗺️ [HIGHLIGHT] Verificando array 1f (6 polylines, 6 cabos) google-maps.component.ts:281:13
+🗺️ [HIGHLIGHT-ARRAY] Verificando 6 polylines contra 6 cabos google-maps.component.ts:323:13
+🗺️ [HIGHLIGHT-ARRAY] Cabos procurados: [749879, 749880] google-maps.component.ts:324:13
+🗺️ [HIGHLIGHT-ARRAY] Cabos disponíveis neste array: [374346, 374365, 374366, 728693, 737635, 737636] google-maps.component.ts:328:13
+🗺️ [HIGHLIGHT-ARRAY] Índice 0: Cabo 374346 - Procurando: false google-maps.component.ts:334:17
+🗺️ [HIGHLIGHT-ARRAY] Índice 1: Cabo 374365 - Procurando: false google-maps.component.ts:334:17
+🗺️ [HIGHLIGHT-ARRAY] Índice 2: Cabo 374366 - Procurando: false google-maps.component.ts:334:17
+🗺️ [HIGHLIGHT-ARRAY] Índice 3: Cabo 728693 - Procurando: false google-maps.component.ts:334:17
+🗺️ [HIGHLIGHT-ARRAY] Índice 4: Cabo 737635 - Procurando: false google-maps.component.ts:334:17
+🗺️ [HIGHLIGHT-ARRAY] Índice 5: Cabo 737636 - Procurando: false google-maps.component.ts:334:17
+🗺️ [HIGHLIGHT] Verificando array 2f (8 polylines, 8 cabos) google-maps.component.ts:284:13
+🗺️ [HIGHLIGHT-ARRAY] Verificando 8 polylines contra 8 cabos google-maps.component.ts:323:13
+🗺️ [HIGHLIGHT-ARRAY] Cabos procurados: [749879, 749880] google-maps.component.ts:324:13
+🗺️ [HIGHLIGHT-ARRAY] Cabos disponíveis neste array: [473246, 540320, 617339, 617340, 728694, 737227, 737420, 737620] google-maps.component.ts:328:13
+🗺️ [HIGHLIGHT-ARRAY] Índice 0: Cabo 473246 - Procurando: false google-maps.component.ts:334:17
+🗺️ [HIGHLIGHT-ARRAY] Índice 1: Cabo 540320 - Procurando: false google-maps.component.ts:334:17
+🗺️ [HIGHLIGHT-ARRAY] Índice 2: Cabo 617339 - Procurando: false google-maps.component.ts:334:17
+🗺️ [HIGHLIGHT-ARRAY] Índice 3: Cabo 617340 - Procurando: false google-maps.component.ts:334:17
+🗺️ [HIGHLIGHT-ARRAY] Índice 4: Cabo 728694 - Procurando: false google-maps.component.ts:334:17
+🗺️ [HIGHLIGHT-ARRAY] Índice 5: Cabo 737227 - Procurando: false google-maps.component.ts:334:17
+🗺️ [HIGHLIGHT-ARRAY] Índice 6: Cabo 737420 - Procurando: false google-maps.component.ts:334:17
+🗺️ [HIGHLIGHT-ARRAY] Índice 7: Cabo 737620 - Procurando: false google-maps.component.ts:334:17
+🗺️ [HIGHLIGHT] Verificando array 4f (4 polylines, 4 cabos) google-maps.component.ts:287:13
+🗺️ [HIGHLIGHT-ARRAY] Verificando 4 polylines contra 4 cabos google-maps.component.ts:323:13
+🗺️ [HIGHLIGHT-ARRAY] Cabos procurados: [749879, 749880] google-maps.component.ts:324:13
+🗺️ [HIGHLIGHT-ARRAY] Cabos disponíveis neste array: [737228, 737343, 737638, 737639] google-maps.component.ts:328:13
+🗺️ [HIGHLIGHT-ARRAY] Índice 0: Cabo 737228 - Procurando: false google-maps.component.ts:334:17
+🗺️ [HIGHLIGHT-ARRAY] Índice 1: Cabo 737343 - Procurando: false google-maps.component.ts:334:17
+🗺️ [HIGHLIGHT-ARRAY] Índice 2: Cabo 737638 - Procurando: false google-maps.component.ts:334:17
+🗺️ [HIGHLIGHT-ARRAY] Índice 3: Cabo 737639 - Procurando: false google-maps.component.ts:334:17
+🗺️ [HIGHLIGHT] Verificando array 6f (146 polylines, 147 cabos) google-maps.component.ts:290:13
+🗺️ [HIGHLIGHT-ARRAY] Verificando 146 polylines contra 147 cabos google-maps.component.ts:323:13
+🗺️ [HIGHLIGHT-ARRAY] Cabos procurados: [749879, 749880] google-maps.component.ts:324:13
+🗺️ [HIGHLIGHT-ARRAY] Cabos disponíveis neste array: [302042, 302043, 302044, 302045, 302046, 302047, 302048, 302049, 302050, 302051, 302052, 302053, 302054, 302055, 302056, 302057, 302058, 302059, 302060, 302061, 302062, 302063, 302064, 302065, 302066, 302067, 302068, 302069, 302070, 302071, 302072, 302859, 302874, 302875, 302876, 303001, 303002, 306318, 312699, 313506, 313507, 313508, 313536, 313537, 313538, 313855, 313856, 313857, 313861, 314329, 339517, 339518, 357335, 367467, 389139, 389140, 389141, 400124, 402442, 403201, 403203, 408084, 408250, 411808, 415045, 434096, 438243, 438245, 438247, 438248, 450132, 450133, 450146, 450147, 451269, 451272, 459032, 459039, 459052, 459062, 473236, 473241, 473331, 473333, 473346, 473347, 473348, 473349, 473361, 473362, 474550, 484220, 484221, 484222, 488417, 502458, 502468, 532984, 553294, 553295, 554699, 554714, 554717, 554726, 581349, 582302, 582329, 582340, 582349, 603729, 603730, 603735, 604568, 604572, 604759, 604761, 620509, 626553, 626554, 626559, 628262, 649714, 649723, 660342, 672864, 676369, 676370, 676375, 676376, 676386, 676388, 676389, 676406, 714346, 714391, 714395, 727073, 728695, 730279, 735232, 736364, 736691, 737645, 737646, 740916, 753986, 753988] google-maps.component.ts:328:13
+🗺️ [HIGHLIGHT-ARRAY] Índice 0: Cabo 302042 - Procurando: false google-maps.component.ts:334:17
+🗺️ [HIGHLIGHT-ARRAY] Índice 1: Cabo 302043 - Procurando: false google-maps.component.ts:334:17
+🗺️ [HIGHLIGHT-ARRAY] Índice 2: Cabo 302044 - Procurando: false google-maps.component.ts:334:17
+🗺️ [HIGHLIGHT-ARRAY] Índice 3: Cabo 302045 - Procurando: false google-maps.component.ts:334:17
+🗺️ [HIGHLIGHT-ARRAY] Índice 4: Cabo 302046 - Procurando: false google-maps.component.ts:334:17
+🗺️ [HIGHLIGHT-ARRAY] Índice 5: Cabo 302047 - Procurando: false google-maps.component.ts:334:17
+🗺️ [HIGHLIGHT-ARRAY] Índice 6: Cabo 302048 - Procurando: false google-maps.component.ts:334:17
+🗺️ [HIGHLIGHT-ARRAY] Índice 7: Cabo 302049 - Procurando: false google-maps.component.ts:334:17
+🗺️ [HIGHLIGHT-ARRAY] Índice 8: Cabo 302050 - Procurando: false google-maps.component.ts:334:17
+🗺️ [HIGHLIGHT-ARRAY] Índice 9: Cabo 302051 - Procurando: false google-maps.component.ts:334:17
+🗺️ [HIGHLIGHT-ARRAY] Índice 10: Cabo 302052 - Procurando: false google-maps.component.ts:334:17
+🗺️ [HIGHLIGHT-ARRAY] Índice 11: Cabo 302053 - Procurando: false google-maps.component.ts:334:17
+🗺️ [HIGHLIGHT-ARRAY] Índice 12: Cabo 302054 - Procurando: false google-maps.component.ts:334:17
+🗺️ [HIGHLIGHT-ARRAY] Índice 13: Cabo 302055 - Procurando: false google-maps.component.ts:334:17
+🗺️ [HIGHLIGHT-ARRAY] Índice 14: Cabo 302056 - Procurando: false google-maps.component.ts:334:17
+🗺️ [HIGHLIGHT-ARRAY] Índice 15: Cabo 302057 - Procurando: false google-maps.component.ts:334:17
+🗺️ [HIGHLIGHT-ARRAY] Índice 16: Cabo 302058 - Procurando: false google-maps.component.ts:334:17
+🗺️ [HIGHLIGHT-ARRAY] Índice 17: Cabo 302059 - Procurando: false google-maps.component.ts:334:17
+🗺️ [HIGHLIGHT-ARRAY] Índice 18: Cabo 302060 - Procurando: false google-maps.component.ts:334:17
+🗺️ [HIGHLIGHT-ARRAY] Índice 19: Cabo 302061 - Procurando: false google-maps.component.ts:334:17
+🗺️ [HIGHLIGHT-ARRAY] Índice 20: Cabo 302062 - Procurando: false google-maps.component.ts:334:17
+🗺️ [HIGHLIGHT-ARRAY] Índice 21: Cabo 302063 - Procurando: false google-maps.component.ts:334:17
+🗺️ [HIGHLIGHT-ARRAY] Índice 22: Cabo 302064 - Procurando: false google-maps.component.ts:334:17
+🗺️ [HIGHLIGHT-ARRAY] Índice 23: Cabo 302065 - Procurando: false google-maps.component.ts:334:17
+🗺️ [HIGHLIGHT-ARRAY] Índice 24: Cabo 302066 - Procurando: false google-maps.component.ts:334:17
+🗺️ [HIGHLIGHT-ARRAY] Índice 25: Cabo 302067 - Procurando: false google-maps.component.ts:334:17
+🗺️ [HIGHLIGHT-ARRAY] Índice 26: Cabo 302068 - Procurando: false google-maps.component.ts:334:17
+🗺️ [HIGHLIGHT-ARRAY] Índice 27: Cabo 302069 - Procurando: false google-maps.component.ts:334:17
+🗺️ [HIGHLIGHT-ARRAY] Índice 28: Cabo 302070 - Procurando: false google-maps.component.ts:334:17
+🗺️ [HIGHLIGHT-ARRAY] Índice 29: Cabo 302071 - Procurando: false google-maps.component.ts:334:17
+🗺️ [HIGHLIGHT-ARRAY] Índice 30: Cabo 302072 - Procurando: false google-maps.component.ts:334:17
+🗺️ [HIGHLIGHT-ARRAY] Índice 31: Cabo 302859 - Procurando: false google-maps.component.ts:334:17
+🗺️ [HIGHLIGHT-ARRAY] Índice 32: Cabo 302874 - Procurando: false google-maps.component.ts:334:17
+🗺️ [HIGHLIGHT-ARRAY] Índice 33: Cabo 302875 - Procurando: false google-maps.component.ts:334:17
+🗺️ [HIGHLIGHT-ARRAY] Índice 34: Cabo 302876 - Procurando: false google-maps.component.ts:334:17
+🗺️ [HIGHLIGHT-ARRAY] Índice 35: Cabo 303001 - Procurando: false google-maps.component.ts:334:17
+🗺️ [HIGHLIGHT-ARRAY] Índice 36: Cabo 303002 - Procurando: false google-maps.component.ts:334:17
+🗺️ [HIGHLIGHT-ARRAY] Índice 37: Cabo 306318 - Procurando: false google-maps.component.ts:334:17
