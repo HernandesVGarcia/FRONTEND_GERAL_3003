@@ -166,7 +166,7 @@
 /* Responsividade para mobile */
 @media (max-width: 768px) {
   .tracer-buttons-container {
-    top: 80px; /* Mais abaixo para evitar conflito com toolbar */
+    top: 100px; /* Mais abaixo para evitar conflito com toolbar */
     gap: 8px;
   }
 
@@ -197,7 +197,7 @@
 /* Mobile muito pequeno */
 @media (max-width: 480px) {
   .tracer-buttons-container {
-    top: 70px; /* Ajustado para telas muito pequenas */
+    top: 90px; /* Ajustado para telas muito pequenas */
     gap: 6px;
   }
 
