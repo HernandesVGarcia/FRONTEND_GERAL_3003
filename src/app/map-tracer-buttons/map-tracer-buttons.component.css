@@ -155,10 +155,18 @@
   border-bottom-color: #1f2937;
 }
 
+/* Responsividade para tablet */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .tracer-buttons-container {
+    top: 60px; /* Posição intermediária para tablets */
+    gap: 10px;
+  }
+}
+
 /* Responsividade para mobile */
 @media (max-width: 768px) {
   .tracer-buttons-container {
-    top: 10px;
+    top: 80px; /* Mais abaixo para evitar conflito com toolbar */
     gap: 8px;
   }
 
@@ -189,7 +197,7 @@
 /* Mobile muito pequeno */
 @media (max-width: 480px) {
   .tracer-buttons-container {
-    top: 5px;
+    top: 70px; /* Ajustado para telas muito pequenas */
     gap: 6px;
   }
 

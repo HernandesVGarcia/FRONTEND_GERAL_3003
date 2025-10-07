@@ -137,6 +137,7 @@ button[mat-icon-button] {
     font-size: 9px;
   }
   
+  /*
   .brand-text-full {
     display: none;
   }
@@ -145,7 +146,17 @@ button[mat-icon-button] {
     display: inline;
     font-size: 12px;
   }
+  */
   
+  .brand-text-mobile {
+    display: none;
+  }
+  
+  .brand-text-full {
+    display: inline;
+  }
+
+
   .logo-img {
     width: 30px !important;
     height: 30px !important;
@@ -184,11 +195,20 @@ button[mat-icon-button] {
   .mat-label {
     font-size: 8px;
   }
-  
+  /*
   .brand-text-mobile {
     font-size: 10px;
   }
+  */
+
+  .brand-text-mobile {
+    display: none;
+  }
   
+  .brand-text-full {
+    display: inline;
+  }
+
   .logo-img {
     width: 25px !important;
     height: 25px !important;
