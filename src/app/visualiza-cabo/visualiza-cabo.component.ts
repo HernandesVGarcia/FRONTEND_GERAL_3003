@@ -8,8 +8,11 @@ import { takeUntil } from 'rxjs/operators';
 import { FibraDestinoCaboService } from '../servico/fibra-destino-cabo.service';
 import { Cabo_TipoService } from '../servico/cabo-tipo.service';
 import { FibraDestino, CaboInfo } from '../modelo/FibraDestino';
+import { FiberTraceService, FiberTraceResult, FiberTraceStep } from '../servico/fiber-trace.service';
 import { Cabo_tipo } from '../modelo/Cabo_tipo';
 import { GraphvizModalComponent } from '../graphviz-modal/graphviz-modal.component';
+import { FiberTraceUnifilarCaboService } from '../servico/fiber-trace-unifilar-cabo.service';
+
 
 export interface VisualizaCaboData {
   id_meta: number;
@@ -95,8 +98,10 @@ export class VisualizaCaboComponent implements OnInit, OnDestroy, AfterViewInit 
     public dialogRef: MatDialogRef<VisualizaCaboComponent>,
     @Inject(MAT_DIALOG_DATA) public data: VisualizaCaboDialogData,
     private fibraDestinoService: FibraDestinoCaboService,
+    private fiberTraceService: FiberTraceService,
     private caboTipoService: Cabo_TipoService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private FiberTraceUnifilarCaboServ: FiberTraceUnifilarCaboService,
   ) {
     this.config = data.config || {
       title: 'Visualiza Cabo',
@@ -354,18 +359,145 @@ export class VisualizaCaboComponent implements OnInit, OnDestroy, AfterViewInit 
   }
 
   onFibraEsClick(fibraNumber: number): void {
-    console.log(`FIBRA_ES${fibraNumber} clicada`);
-    // Aqui você pode adicionar a lógica específica para FIBRA_ES
-    // Por exemplo, destacar a linha correspondente no grid
-    this.highlightFiberRow(fibraNumber - 1);
-  }
+    fibraNumber = fibraNumber +((this.selectedFiberGroup-1)*12);
+    const tubo = this.fiberTraceService.calculateTubo(fibraNumber);
 
-  onFibraDsClick(fibraNumber: number): void {
-    console.log(`FIBRA_DS${fibraNumber} clicada`);
+    console.log(`🔴 [DEBUG] onFibraDsClick chamado com fibraNumber: ${fibraNumber}`);
+    console.log(`FIBRA_ES${fibraNumber} clicada`);
+    
+    const tabela = `caboa_t${tubo}`;
+    const regist = `FIBRA_${fibraNumber}LABEL`; // FIBRA_1LABEL FIBRA_2LABEL etc. 
+
+    console.log(`🔍 [TRACER-UNIFILAR CABO] Parâmetros: IDMETA=${this.data.id_meta}, Fiber=${fibraNumber}, Tabela=${tabela}, Registro=${regist}`);
+
+    this.FiberTraceUnifilarCaboServ.ANALISA_TABELAGRAFO(this.data.id_meta, fibraNumber, tabela, regist)
+    .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: async (result: any) => {
+          this.isLoading = false;
+          
+          if (result.success) {
+                 console.log('✅ [TRACER-UNIFILAR CABO] Rastreamento concluído com sucesso:', result.trace.length, 'passos');
+                 console.log('📊 [TRACER-UNIFILAR CABO] Status final:', result.status);
+                 console.log('🔍 [TRACER-UNIFILAR CABO] Passos do rastreamento:', result.trace);
+                 
+                 // 🗺️ NOVO: Capturar cabos percorridos e destacar no mapa
+                 const cabosPercorridos = this.FiberTraceUnifilarCaboServ.getCabosPercorridos();
+                 const cabosInfo = this.FiberTraceUnifilarCaboServ.getCabosInfo();
+                 console.log('🗺️ [TRACER-UNIFILAR CABO] Cabos percorridos capturados:', cabosPercorridos);
+                 console.log('🗺️ [TRACER-UNIFILAR CABO] Informações dos cabos:', cabosInfo);
+                 console.log('🗺️ [TRACER-UNIFILAR CABO] Total de cabos:', cabosPercorridos.length);
+                 
+                 // 🗺️ NOVO: Comunicar com o Google Maps para destacar os cabos com capacidade
+                 this.highlightCabosNoMapaComCapacidade(cabosInfo);
+                 
+                 // 🆕 NOVO: DOT string já vem do rastreamento (refatorado!)
+                 console.log('🎨 [TRACER] DOT String gerado durante o rastreamento:');
+                 console.log(result.dotString);
+            
+            // 🆕 CORREÇÃO: Só abrir modal quando o rastreamento estiver realmente completo
+            if (result.status === 'fim' && result.dotString && result.dotString.includes('size="10"}')) {
+              console.log('🎨 [TRACER] DOT String completo - Abrindo modal GraphViz');
+              this.openGraphvizModal(result.dotString, fibraNumber);
+            } else {
+              console.log('⏳ [TRACER] Rastreamento ainda em andamento ou DOT incompleto');
+            }
+            
+           // this.errorMessage = `Rastreamento concluído! ${result.trace.length} passos executados. Status: ${result.status}`;
+          } else {
+            console.error('❌ [TRACER-UNIFILAR CABO] Erro no rastreamento:', result.error);
+            this.errorMessage = `Erro no rastreamento: ${result.error}`;
+          }
+        },
+        error: (error: any) => {
+          this.isLoading = false;
+          console.error('❌ [TRACER-UNIFILAR CABO] Erro no rastreamento:', error);
+          this.errorMessage = `Erro no rastreamento: ${error.message}`;
+        }
+      });
+
+    
+
+
+
     // Aqui você pode adicionar a lógica específica para FIBRA_DS
     // Por exemplo, destacar a linha correspondente no grid
     this.highlightFiberRow(fibraNumber - 1);
   }
+  
+
+
+  //==============================================firbras ponta B do cabo==================================================================
+  onFibraDsClick(fibraNumber: number): void {
+    
+
+    fibraNumber = fibraNumber +((this.selectedFiberGroup-1)*12);
+    const tubo = this.fiberTraceService.calculateTubo(fibraNumber);
+
+    console.log(`🔴 [DEBUG] onFibraDsClick chamado com fibraNumber: ${fibraNumber}`);
+    console.log(`FIBRA_DS${fibraNumber} clicada`);
+    
+    const tabela = `cabob_t${tubo}`;
+    const regist = `FIBRA_${fibraNumber}LABEL`; // FIBRA_1LABEL FIBRA_2LABEL etc. 
+
+    console.log(`🔍 [TRACER-UNIFILAR CABO] Parâmetros: IDMETA=${this.data.id_meta}, Fiber=${fibraNumber}, Tabela=${tabela}, Registro=${regist}`);
+
+    this.FiberTraceUnifilarCaboServ.ANALISA_TABELAGRAFO(this.data.id_meta, fibraNumber, tabela, regist)
+    .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: async (result: any) => {
+          this.isLoading = false;
+          
+          if (result.success) {
+                 console.log('✅ [TRACER-UNIFILAR CABO] Rastreamento concluído com sucesso:', result.trace.length, 'passos');
+                 console.log('📊 [TRACER-UNIFILAR CABO] Status final:', result.status);
+                 console.log('🔍 [TRACER-UNIFILAR CABO] Passos do rastreamento:', result.trace);
+                 
+                 // 🗺️ NOVO: Capturar cabos percorridos e destacar no mapa
+                 const cabosPercorridos = this.FiberTraceUnifilarCaboServ.getCabosPercorridos();
+                 const cabosInfo = this.FiberTraceUnifilarCaboServ.getCabosInfo();
+                 console.log('🗺️ [TRACER-UNIFILAR CABO] Cabos percorridos capturados:', cabosPercorridos);
+                 console.log('🗺️ [TRACER-UNIFILAR CABO] Informações dos cabos:', cabosInfo);
+                 console.log('🗺️ [TRACER-UNIFILAR CABO] Total de cabos:', cabosPercorridos.length);
+                 
+                 // 🗺️ NOVO: Comunicar com o Google Maps para destacar os cabos com capacidade
+                 this.highlightCabosNoMapaComCapacidade(cabosInfo);
+                 
+                 // 🆕 NOVO: DOT string já vem do rastreamento (refatorado!)
+                 console.log('🎨 [TRACER] DOT String gerado durante o rastreamento:');
+                 console.log(result.dotString);
+            
+            // 🆕 CORREÇÃO: Só abrir modal quando o rastreamento estiver realmente completo
+            if (result.status === 'fim' && result.dotString && result.dotString.includes('size="10"}')) {
+              console.log('🎨 [TRACER] DOT String completo - Abrindo modal GraphViz');
+              this.openGraphvizModal(result.dotString, fibraNumber);
+            } else {
+              console.log('⏳ [TRACER] Rastreamento ainda em andamento ou DOT incompleto');
+            }
+            
+           // this.errorMessage = `Rastreamento concluído! ${result.trace.length} passos executados. Status: ${result.status}`;
+          } else {
+            console.error('❌ [TRACER-UNIFILAR CABO] Erro no rastreamento:', result.error);
+            this.errorMessage = `Erro no rastreamento: ${result.error}`;
+          }
+        },
+        error: (error: any) => {
+          this.isLoading = false;
+          console.error('❌ [TRACER-UNIFILAR CABO] Erro no rastreamento:', error);
+          this.errorMessage = `Erro no rastreamento: ${error.message}`;
+        }
+      });
+
+    
+
+
+
+    // Aqui você pode adicionar a lógica específica para FIBRA_DS
+    // Por exemplo, destacar a linha correspondente no grid
+    this.highlightFiberRow(fibraNumber - 1);
+  }
+
+  //================================================================================================================
 
   onFibraDsmClick(fibraNumber: number): void {
     console.log(`FIBRA_DSM${fibraNumber} clicada`);
@@ -627,15 +759,49 @@ export class VisualizaCaboComponent implements OnInit, OnDestroy, AfterViewInit 
     }
   }
 
+
+/**
+   * 🗺️ NOVO: Destaca cabos percorridos no Google Maps com informações de capacidade
+   */
+private highlightCabosNoMapaComCapacidade(cabosInfo: Array<{id: number, capacidade: string}>): void {
+  console.log('🗺️ [HIGHLIGHT] Destacando cabos no mapa com capacidade:', cabosInfo);
+  
+  // 🗺️ NOVO: Comunicar com o Google Maps via evento customizado
+  const event = new CustomEvent('highlightCabosComCapacidade', {
+    detail: { cabosInfo }
+  });
+  window.dispatchEvent(event);
+  
+  console.log('🗺️ [HIGHLIGHT] Evento de destaque com capacidade enviado para o Google Maps');
+}
+
+/**
+ * 🗺️ NOVO: Limpa destaque dos cabos no Google Maps
+ */
+private clearCabosHighlight(): void {
+  console.log('🗺️ [CLEAR] Limpando destaque dos cabos no mapa');
+  
+  // 🗺️ NOVO: Comunicar com o Google Maps via evento customizado
+  const event = new CustomEvent('clearCabosHighlight');
+  window.dispatchEvent(event);
+  
+  console.log('🗺️ [CLEAR] Evento de limpeza enviado para o Google Maps');
+}
+
+
+
   // Método para abrir o modal GraphViz
-  openGraphvizModal(): void {
+  openGraphvizModal(dotString?: string, fibraNumber?: number): void {
     const dialogRef = this.dialog.open(GraphvizModalComponent, {
       width: '90vw',
       height: '90vh',
       maxWidth: '1200px',
       maxHeight: '800px',
       disableClose: false,
-      data: { title: 'Teste GraphViz - @hpcc-js/wasm' }
+      data: { 
+        title: `Diagrama Unifilar Cabo - F${fibraNumber || 'N/A'} (Cabo ${this.data.id_meta})`,
+        dotString: dotString || ''
+      }
     });
 
     dialogRef.afterClosed().subscribe(result => {

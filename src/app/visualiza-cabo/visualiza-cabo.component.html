@@ -100,8 +100,8 @@
           <button 
             *ngFor="let button of fibraDsButtons; let i = index" 
             class="fiber-button fibra-ds-button"
-            (click)="i === 0 ? openGraphvizModal() : onFibraDsClick(i + 1)"
-            [title]="i === 0 ? 'Abrir GraphViz - FIBRA_DS1' : 'FIBRA_DS' + (i + 1)">
+            (click)="onFibraDsClick(i + 1)"
+            [title]="'FIBRA_DS' + (i + 1)">
           </button>
         </div>
         

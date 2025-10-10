@@ -30,6 +30,7 @@ import { animate, animation } from '@angular/animations';
 
 import { MapSearchButtonsComponent } from '../map-search-buttons/map-search-buttons.component';
 import { MapTracerButtonsComponent } from '../map-tracer-buttons/map-tracer-buttons.component';
+import { MapContextMenuComponent } from '../map-context-menu/map-context-menu.component';
 import { CompartilhamentoService, CaixaData, ClienteData } from '../servico/compartilhamento.service';
 import { Subject, takeUntil } from 'rxjs';
 
@@ -47,7 +48,7 @@ import { GraphvizModalComponent } from '../graphviz-modal/graphviz-modal.compone
   templateUrl: './google-maps.component.html',
   styleUrls: ['./google-maps.component.css'],
   standalone: true,
-  imports: [CommonModule, GoogleMapsModule, GoJSDemoComponent, MapSearchButtonsComponent, MapTracerButtonsComponent, MatIconModule, MatButtonModule],
+  imports: [CommonModule, GoogleMapsModule, GoJSDemoComponent, MapSearchButtonsComponent, MapTracerButtonsComponent, MapContextMenuComponent, MatIconModule, MatButtonModule],
 })
 export class GoogleMapsComponent implements OnInit, OnChanges {
   @Input() destinoCondominios: Condominios[]=[];
@@ -176,6 +177,164 @@ export class GoogleMapsComponent implements OnInit, OnChanges {
   // 🗺️ NOVO: Controle de destaque dos cabos
   highlightedPolylines: google.maps.Polyline[] = [];
   originalPolylineOptions: Map<google.maps.Polyline, google.maps.PolylineOptions> = new Map();
+
+  // 🎯 Propriedades para context menu
+  contextMenuVisible = false;
+  contextMenuPosition = { x: 0, y: 0 };
+  private contextMenuListenerAdded = false; // Flag para evitar listeners duplicados
+
+  /**
+   * 🎯 Configura o listener do context menu no mapa
+   */
+  private setupContextMenuListener(): void {
+    // Verificar se já foi adicionado
+    if (this.contextMenuListenerAdded) {
+      return;
+    }
+    
+    if (this.map) {
+      // Listener para clique com botão direito no mapa (não nos elementos)
+      this.map.addListener('rightclick', (event: google.maps.MapMouseEvent) => {
+        // Verificar se o clique foi no mapa mesmo (não em elementos)
+        if (event.domEvent && event.domEvent.target) {
+          const target = event.domEvent.target as HTMLElement;
+          
+          // Verificar se o clique foi no mapa (mais amplo)
+          const isMapClick = target.tagName === 'CANVAS' || 
+                           target.classList.contains('gm-style') ||
+                           target.closest('.gm-style') !== null ||
+                           target.closest('google-map') !== null;
+          
+          // 🚫 Bloquear context menu no GoJS-demo
+          const isInGoJSModal = target.closest('.gojs-container') !== null ||
+                               target.closest('.diagram-container') !== null ||
+                               target.closest('.diagram-div') !== null ||
+                               target.closest('#gojsDiagram') !== null;
+          
+          if (isMapClick && !isInGoJSModal) {
+            const mouseEvent = event.domEvent as MouseEvent;
+            this.showContextMenu(mouseEvent.clientX, mouseEvent.clientY);
+          }
+        }
+      });
+    }
+
+    // 🎯 Listener alternativo usando DOM nativo (apenas uma vez)
+    document.addEventListener('contextmenu', (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      
+      // Verificar se o clique foi no mapa
+      const isMapClick = target.tagName === 'CANVAS' || 
+                        target.classList.contains('gm-style') ||
+                        target.closest('.gm-style') !== null ||
+                        target.closest('google-map') !== null ||
+                        target.closest('.google-map') !== null;
+      
+      // 🚫 Bloquear context menu no GoJS-demo
+      const isInGoJSModal = target.closest('.gojs-container') !== null ||
+                           target.closest('.diagram-container') !== null ||
+                           target.closest('.diagram-div') !== null ||
+                           target.closest('#gojsDiagram') !== null;
+      
+      if (isMapClick && !isInGoJSModal) {
+        event.preventDefault(); // Previne o menu padrão do navegador
+        this.showContextMenu(event.clientX, event.clientY);
+      }
+    });
+    
+    // Marcar como adicionado
+    this.contextMenuListenerAdded = true;
+  }
+
+  /**
+   * 🎯 Mostra o context menu na posição especificada
+   */
+  private showContextMenu(x: number, y: number): void {
+    this.contextMenuPosition = { x, y };
+    this.contextMenuVisible = true;
+    
+    // 🎯 Forçar detecção de mudanças
+    this.cdr.detectChanges();
+  }
+
+  /**
+   * 🎯 Esconde o context menu
+   */
+  public hideContextMenu(): void {
+    this.contextMenuVisible = false;
+    
+    // 🎯 Forçar detecção de mudanças
+    this.cdr.detectChanges();
+  }
+
+  /**
+   * 🎯 Executa uma ação do context menu
+   */
+  onContextMenuAction(action: string): void {
+    console.log('🗺️ [CONTEXT-MENU] Ação executada:', action);
+    
+    switch (action) {
+      case 'cria-caixa':
+        this.criarCaixa();
+        break;
+      case 'cria-dio':
+        this.criarDIO();
+        break;
+      case 'cria-cliente':
+        this.criarCliente();
+        break;
+      case 'cria-estacao':
+        this.criarEstacao();
+        break;
+      case 'cria-condominio':
+        this.criarCondominio();
+        break;
+      case 'cria-anotacao':
+        this.criarAnotacao();
+        break;
+      case 'cria-sobra':
+        this.criarSobra();
+        break;
+      default:
+        console.warn('🗺️ [CONTEXT-MENU] Ação não reconhecida:', action);
+    }
+  }
+
+  // Métodos placeholder para as ações do context menu
+  private criarCaixa(): void {
+    console.log('🗺️ [CONTEXT-MENU] Criando caixa...');
+    alert('Funcionalidade de criar caixa será implementada em breve!');
+  }
+
+  private criarDIO(): void {
+    console.log('🗺️ [CONTEXT-MENU] Criando DIO...');
+    alert('Funcionalidade de criar DIO será implementada em breve!');
+  }
+
+  private criarCliente(): void {
+    console.log('🗺️ [CONTEXT-MENU] Criando cliente...');
+    alert('Funcionalidade de criar cliente será implementada em breve!');
+  }
+
+  private criarEstacao(): void {
+    console.log('🗺️ [CONTEXT-MENU] Criando estação...');
+    alert('Funcionalidade de criar estação será implementada em breve!');
+  }
+
+  private criarCondominio(): void {
+    console.log('🗺️ [CONTEXT-MENU] Criando condomínio...');
+    alert('Funcionalidade de criar condomínio será implementada em breve!');
+  }
+
+  private criarAnotacao(): void {
+    console.log('🗺️ [CONTEXT-MENU] Criando anotação...');
+    alert('Funcionalidade de criar anotação será implementada em breve!');
+  }
+
+  private criarSobra(): void {
+    console.log('🗺️ [CONTEXT-MENU] Criando sobra...');
+    alert('Funcionalidade de criar sobra será implementada em breve!');
+  }
 
   /**
    * 🗺️ NOVO: Configura listeners para eventos de destaque de cabos
@@ -2100,6 +2259,8 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
   //==2 dispara o evento para monitorar os boundsChange para executar o callback de visible markers===========================
 
   onMapInitialized(map: google.maps.Map) {
+    console.log('🗺️ [MAP-INIT] ===== MAPA INICIALIZADO =====');
+    console.log('🗺️ [MAP-INIT] Map object:', map);
 
     //==========================================================para mobile
     if (window.innerWidth < 768) {
@@ -2109,6 +2270,11 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
       scrollwheel: true
     });
   } //===========================================================
+
+    // 🎯 Configurar context menu
+    console.log('🗺️ [MAP-INIT] Chamando setupContextMenuListener...');
+    this.setupContextMenuListener();
+    console.log('🗺️ [MAP-INIT] setupContextMenuListener chamado!');
 
   // Configurar controles responsivos
   map.setOptions({
