@@ -1,4 +1,5 @@
 .modal-content {
+  top:100px;
   position: absolute;
   background-color: white;
   border-radius: 5px;
@@ -210,7 +211,7 @@
 }
 
 .modal-content.dragging {
-  opacity: 0.8;
+  opacity: 0.5; /* 🚀 CORREÇÃO: Menos transparente durante o movimento */
 }
 
 
@@ -274,3 +275,22 @@
 
 
 /* Removemos os estilos personalizados de scrollbar, pois agora o GoJS controlará suas próprias barras */
+
+/* 🏠 NOVO: Garantir que o GoJS modal apareça por cima de todos os outros modais */
+:host {
+  z-index: 9999 !important;
+}
+
+.modal {
+  z-index: 9999 !important; /* Mais alto que outros modais */
+}
+
+/* Alternativa mais específica para Angular Material */
+.cdk-overlay-container .modal {
+  z-index: 9999 !important;
+}
+
+/* Garantir que o conteúdo do modal também tenha z-index alto */
+.modal-content {
+  z-index: 10000 !important;
+}

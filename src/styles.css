@@ -3,3 +3,14 @@
 
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+/* 🏠 NOVO: Estilos para GoJS MatDialog - REMOVIDOS TEMPORARIAMENTE PARA TESTE */
+/* .gojs-dialog-container .mat-mdc-dialog-container {
+  padding: 0 !important;
+  overflow: hidden !important;
+  background: transparent !important;
+}
+
+.gojs-dialog-container {
+  z-index: 9999 !important;
+} */

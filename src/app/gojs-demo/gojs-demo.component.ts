@@ -311,7 +311,6 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
     */
 
     this.carregarDadosCompletosAsync();
-
     //setTimeout(() => {this.carregarConexoesBocas()},1);
     //setTimeout(() => {this.carregarConexoesSplitters()},3000);
     //setTimeout(() => {this.carregarConexoesBocas9798()},2000);
@@ -320,6 +319,7 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
         console.log('GoJSDemo Component inicializado');
         
   }
+
 
 //================================================================================================
 

@@ -57,6 +57,19 @@ export class GraphvizModalComponent implements OnInit, AfterViewInit {
       // Fallback: carregar do arquivo (comportamento original)
       this.loadGraphvizFile();
     }
+
+    // 🏠 NOVO: Função global para cliques em caixas (Opção 1 - Evento Customizado)
+    (window as any).onCaixaClick = (idmeta: number, numerocx: string, label_cx: string) => {
+      console.log('🏠 [CAIXA-CLICK] Caixa clicada:', { idmeta, numerocx, label_cx });
+      
+      // Enviar evento para o google-maps abrir o GoJS modal
+      const event = new CustomEvent('openGoJSModal', {
+        detail: { idmeta, numerocx, label_cx }
+      });
+      window.dispatchEvent(event);
+      
+      console.log('🏠 [CAIXA-CLICK] Evento openGoJSModal enviado para o Google Maps');
+    };
   }
 
   async ngAfterViewInit() {

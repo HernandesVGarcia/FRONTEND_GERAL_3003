@@ -1,4 +1,5 @@
 .graphviz-modal-container {
+  top:-100px;
   display: flex;
   flex-direction: column;
   height: 100%;

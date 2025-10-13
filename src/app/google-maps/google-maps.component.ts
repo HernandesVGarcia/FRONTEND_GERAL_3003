@@ -363,6 +363,25 @@ export class GoogleMapsComponent implements OnInit, OnChanges {
     });
   }
 
+  // 🏠 NOVO: Configurar listener para abrir GoJS modal a partir do GraphViz
+  private setupGoJSModalListener(): void {
+    window.addEventListener('openGoJSModal', (event: Event) => {
+      const customEvent = event as CustomEvent;
+      const { idmeta, numerocx, label_cx } = customEvent.detail;
+      
+      console.log('🗺️ [GOOGLE-MAPS] Recebendo solicitação para abrir GoJS modal:', { idmeta, numerocx, label_cx });
+      
+      // Salvar idmeta no storage (igual ao clique no mapa)
+      this.authService.setIDmetaCaixa(idmeta);
+      
+      // 🚀 CORREÇÃO: Usar o sistema original que funciona
+      this.isGoJSModalOpen = true;
+      this.cdr.detectChanges();
+      
+      console.log('🗺️ [GOOGLE-MAPS] GoJS modal aberto com idmeta:', idmeta);
+    });
+  }
+
   /**
    * 🗺️ NOVO: Destaca cabos no mapa baseado nas informações de capacidade (otimizado)
    */
@@ -861,6 +880,9 @@ polylineOptions144f: google.maps.PolylineOptions = {
     
     // 🗺️ NOVO: Escutar eventos de destaque de cabos
     this.setupCabosHighlightListeners();
+    
+    // 🏠 NOVO: Escutar eventos para abrir GoJS modal a partir do GraphViz
+    this.setupGoJSModalListener();
     
     
     //const lat= this.authService.getLat
