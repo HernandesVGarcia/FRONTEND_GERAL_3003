@@ -110,6 +110,8 @@ import { CaboDestinoCxService } from '../servico/cabo-destino-cx.service';
 import { GojsDropComponent } from '../gojs-drop/gojs-drop.component';
 import { PopClienteService } from '../servico/pop-cliente.service';
 import { UpdateBocaXYService} from '../servico/update-boca-xy.service';
+import { AuthService } from '../servico/auth.service'; // 🏠 NOVO: Import AuthService
+import { FiberApiService } from '../servico/fiber-api.service'; // 🏠 NOVO: Import FiberApiService
 import { UpdateSplitterXYService} from '../servico/update-splitter-xy.service';
 import { UpdateBocaAngleService} from '../servico/update-boca-angle.service';
 import { UpdateBocaLadoService} from '../servico/update-boca-lado.service';
@@ -146,6 +148,9 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
   // Novas propriedades para controle de conexões
   private conexoesCarregadas: ConexaoBoca[] = [];
   private conexoesCarregadasSpSp: ConexaoSplitter[] = [];
+  
+  // 🏠 NOVO: Propriedade para armazenar o número da caixa
+  public caixaNumerocx: string = 'N/A';
   private conexoesSPCarregadas: ConexaoSplitter[] = [];
   private conexoesPorBoca: Map<number, ConexaoBoca[]> = new Map();
   private conexoesPorSplitter: Map<number, ConexaoSplitter[]> = new Map();
@@ -288,12 +293,45 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
      private UpdateBCLadoService:UpdateBocaLadoService,    
      private popClienteService: PopClienteService,
      private pesquisaSiglaService: PesquisaSiglaService,
+     private authService: AuthService, // 🏠 NOVO: Injetar AuthService
+     private fiberApiService: FiberApiService, // 🏠 NOVO: Injetar FiberApiService
     ) {}
 
 
   //==============================================================================================================  
 
-  ngOnInit(): void {
+  /**
+   * 🏠 NOVO: Carrega o número da caixa (numerocx) usando o idmeta disponível
+   */
+  private async carregarNumerocxCaixa(): Promise<void> {
+    try {
+      const idmeta = this.authService.getIDmetaCaixa();
+      if (idmeta) {
+        console.log('🏠 [GOJS] Consultando numerocx para idmeta:', idmeta);
+        
+        const response = await this.fiberApiService.executeDynamicQuery(
+          `SELECT numerocx FROM tstmeta.caixa WHERE id_meta = {idmeta}`,
+          { idmeta: idmeta }
+        ).toPromise();
+        
+        if (response?.success && response.data && response.data.length > 0) {
+          this.caixaNumerocx = response.data[0].numerocx || 'N/A';
+          console.log('🏠 [GOJS] Numerocx da caixa carregado:', this.caixaNumerocx);
+        } else {
+          this.caixaNumerocx = 'N/A';
+          console.log('🏠 [GOJS] Numerocx não encontrado para idmeta:', idmeta);
+        }
+      } else {
+        this.caixaNumerocx = 'N/A';
+        console.log('🏠 [GOJS] IDMETA da caixa não disponível');
+      }
+    } catch (error) {
+      console.error('❌ [GOJS] Erro ao carregar numerocx da caixa:', error);
+      this.caixaNumerocx = 'N/A';
+    }
+  }
+
+  async ngOnInit(): Promise<void> {
     /*
     console.log('GoJSDemo Component inicializado');
     /////////////////////setTimeout(() => {this.selecionar_Bocas()},1);// <-----função para ler bocas para desenhar cabos
@@ -310,6 +348,9 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
 
     */
 
+    // 🏠 NOVO: Carregar numerocx da caixa antes dos dados completos
+    await this.carregarNumerocxCaixa();
+    
     this.carregarDadosCompletosAsync();
     //setTimeout(() => {this.carregarConexoesBocas()},1);
     //setTimeout(() => {this.carregarConexoesSplitters()},3000);

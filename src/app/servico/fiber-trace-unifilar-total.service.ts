@@ -1015,8 +1015,10 @@ export class FiberTraceUnifilarTotalService {
         // Compor novo objeto atual (igual ao VB6 linha 581)
         const novoObjetoAtual = `CX_${numerocx}_CX`;
         
-        // 🆕 CORREÇÃO: Adicionar nó do objeto atual (igual ao VB6 linha 581)
-        this.dotString += `${novoObjetoAtual}[label="${novoObjetoAtual}",shape=box,ranksep=0.001,fontsize=8,style="rounded,filled",fillcolor=lemonchiffon];`;
+        // 🆕 CORREÇÃO: Adicionar nó do objeto atual (igual ao VB6 linha 581) com interatividade
+        const url = `javascript:onCaixaClick(${caixaId}, '${numerocx}', '${label_cx}')`;
+        const tooltip = `Caixa ${numerocx} - ${label_cx}`;
+        this.dotString += `${novoObjetoAtual}[label="${novoObjetoAtual}",shape=box,ranksep=0.001,fontsize=8,style="rounded,filled",fillcolor=lemonchiffon,URL="${url}",tooltip="${tooltip}"];`;
         
 
 
