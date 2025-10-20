@@ -125,6 +125,7 @@ export class MapTracerButtonsComponent implements OnInit {
   onSelecionarCidades(): void {
     console.log('🗺️ [TRACER-BUTTONS] Selecionar Cidades clicado');
     this.showCityModal = true;
+    
   }
 
   /**

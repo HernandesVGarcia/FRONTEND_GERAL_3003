@@ -1,0 +1,106 @@
+/* 🎯 NOVO: Z-index MUITO alto para aparecer na frente do GoJS */
+:host {
+  z-index: 999999 !important;
+  position: fixed !important;
+}
+
+.modal-header {
+  z-index: 999999 !important;
+  position: relative !important;
+}
+
+.modal-content {
+  z-index: 999999 !important;
+  position: relative !important;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 15px;
+  background-color: #f0f0f0;
+  border-bottom: 1px solid #ddd;
+  border-radius: 5px 5px 0 0;
+  cursor: move;
+}
+
+.modal-content {
+  padding: 15px;
+  min-height: 400px;
+}
+
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
+
+.error {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  background-color: #f8d7da;
+  border-left: 4px solid #dc3545;
+  color: #721c24;
+  border-radius: 4px;
+}
+
+.error mat-icon {
+  margin-right: 10px;
+}
+
+.graphviz-container {
+  width: 100%;
+  height: 70vh;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  overflow: hidden;
+  background-color: #f9f9f9;
+}
+
+#graphviz-container {
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+}
+
+#graphviz-container:active {
+  cursor: grabbing;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-top: 1px solid #ddd;
+}
+
+.close-button {
+  color: #aaa;
+  cursor: pointer;
+}
+
+.close-button:hover {
+  color: #000;
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+  .modal-content {
+    padding: 10px;
+  }
+  
+  .graphviz-container {
+    height: 60vh;
+  }
+  
+  .modal-footer {
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+}

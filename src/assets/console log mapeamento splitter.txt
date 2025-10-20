@@ -1,0 +1,244 @@
+🔀 [SPLITTER-TEMPLATE] Mapear Splitter clicado: 
+Object { category: "splitter12", labelText: "XXXXXSXX (1:2)", key: "Splitter411798", loc: "825 973", idmeta: 411798, tipoSplitter: 12 }
+spliter-1-p2.component.ts:27:25
+🔀 [SPLITTER-EVENT] Evento recebido: 
+Object { action: "mapear", data: {…} }
+gojs-demo.component.ts:3147:21
+🔀 [SPLITTER-EVENT] Abrindo modal para splitter: 
+Object { category: "splitter12", labelText: "XXXXXSXX (1:2)", key: "Splitter411798", loc: "825 973", idmeta: 411798, tipoSplitter: 12 }
+gojs-demo.component.ts:3152:25
+🔀 [SPLITTER-CONTEXT] Abrindo modal para splitter: 
+Object { category: "splitter12", labelText: "XXXXXSXX (1:2)", key: "Splitter411798", loc: "825 973", idmeta: 411798, tipoSplitter: 12 }
+gojs-demo.component.ts:3957:13
+🔀 [SPLITTER-CONTEXT] Stack trace: abrirModalSplitter@http://localhost:4200/main.js:16530:62
+initializeDiagram/</this.handleSplitterContextMenu@http://localhost:4200/main.js:16021:22
+invokeTask@http://localhost:4200/polyfills.js:327:171
+runTask@http://localhost:4200/polyfills.js:135:37
+invokeTask@http://localhost:4200/polyfills.js:398:26
+invokeTask@http://localhost:4200/polyfills.js:924:12
+globalCallback@http://localhost:4200/polyfills.js:953:33
+globalZoneAwareCallback@http://localhost:4200/polyfills.js:970:12
+click@http://localhost:4200/main.js:10991:20
+bF@http://localhost:4200/@fs/C:/DROPBOX/NODE_Fiberworks_WEB%20CURSOR/angular-google-maps/.angular/cache/19.1.4/angular-google-maps/vite/deps/gojs.js?v=10bf98db:4963:28
+standardMouseClick@http://localhost:4200/@fs/C:/DROPBOX/NODE_Fiberworks_WEB%20CURSOR/angular-google-maps/.angular/cache/19.1.4/angular-google-maps/vite/deps/gojs.js?v=10bf98db:4916:39
+doContextClick@http://localhost:4200/@fs/C:/DROPBOX/NODE_Fiberworks_WEB%20CURSOR/angular-google-maps/.angular/cache/19.1.4/angular-google-maps/vite/deps/gojs.js?v=10bf98db:7879:136
+doMouseUp@http://localhost:4200/@fs/C:/DROPBOX/NODE_Fiberworks_WEB%20CURSOR/angular-google-maps/.angular/cache/19.1.4/angular-google-maps/vite/deps/gojs.js?v=10bf98db:7870:12
+doMouseUp@http://localhost:4200/@fs/C:/DROPBOX/NODE_Fiberworks_WEB%20CURSOR/angular-google-maps/.angular/cache/19.1.4/angular-google-maps/vite/deps/gojs.js?v=10bf98db:9832:24
+z2/i.fa@http://localhost:4200/@fs/C:/DROPBOX/NODE_Fiberworks_WEB%20CURSOR/angular-google-maps/.angular/cache/19.1.4/angular-google-maps/vite/deps/gojs.js?v=10bf98db:9766:320
+invokeTask@http://localhost:4200/polyfills.js:327:171
+runTask@http://localhost:4200/polyfills.js:135:37
+invokeTask@http://localhost:4200/polyfills.js:398:26
+invokeTask@http://localhost:4200/polyfills.js:924:12
+globalCallback@http://localhost:4200/polyfills.js:945:31
+globalZoneAwareCallback@http://localhost:4200/polyfills.js:970:12
+EventListener.handleEvent*customScheduleGlobal@http://localhost:4200/polyfills.js:1037:37
+scheduleTask@http://localhost:4200/polyfills.js:317:16
+scheduleTask@http://localhost:4200/polyfills.js:174:35
+scheduleEventTask@http://localhost:4200/polyfills.js:195:19
+patchEventTarget/patchEventTargetMethods/makeAddListener/<@http://localhost:4200/polyfills.js:1187:27
+Ut@http://localhost:4200/@fs/C:/DROPBOX/NODE_Fiberworks_WEB%20CURSOR/angular-google-maps/.angular/cache/19.1.4/angular-google-maps/vite/deps/gojs.js?v=10bf98db:9793:9
+SR@http://localhost:4200/@fs/C:/DROPBOX/NODE_Fiberworks_WEB%20CURSOR/angular-google-maps/.angular/cache/19.1.4/angular-google-maps/vite/deps/gojs.js?v=10bf98db:9811:139
+z2@http://localhost:4200/@fs/C:/DROPBOX/NODE_Fiberworks_WEB%20CURSOR/angular-google-maps/.angular/cache/19.1.4/angular-google-maps/vite/deps/gojs.js?v=10bf98db:9781:122
+Diagram2@http://localhost:4200/@fs/C:/DROPBOX/NODE_Fiberworks_WEB%20CURSOR/angular-google-maps/.angular/cache/19.1.4/angular-google-maps/vite/deps/gojs.js?v=10bf98db:9475:163
+initializeDiagram/<@http://localhost:4200/main.js:15892:24
+invoke@http://localhost:4200/polyfills.js:301:158
+run@http://localhost:4200/polyfills.js:97:35
+runOutsideAngular@http://localhost:4200/@fs/C:/DROPBOX/NODE_Fiberworks_WEB%20CURSOR/angular-google-maps/.angular/cache/19.1.4/angular-google-maps/vite/deps/chunk-5JSSIRB3.js?v=10bf98db:5598:24
+initializeDiagram@http://localhost:4200/main.js:15882:19
+ngOnChanges/<@http://localhost:4200/main.js:14505:16
+timer@http://localhost:4200/polyfills.js:1428:27
+invokeTask@http://localhost:4200/polyfills.js:327:171
+runTask@http://localhost:4200/polyfills.js:135:37
+invokeTask@http://localhost:4200/polyfills.js:398:26
+initZone/ZoneTask/this.invoke@http://localhost:4200/polyfills.js:387:38
+patchTimer/scheduleTask/data.args[0]@http://localhost:4200/polyfills.js:1402:26
+setTimeout handler*scheduleTask@http://localhost:4200/polyfills.js:1404:34
+scheduleTask@http://localhost:4200/polyfills.js:317:16
+scheduleTask@http://localhost:4200/polyfills.js:174:35
+scheduleMacroTask@http://localhost:4200/polyfills.js:192:19
+scheduleMacroTaskWithCurrentZone@http://localhost:4200/polyfills.js:557:23
+patchTimer/setNative</<@http://localhost:4200/polyfills.js:1440:52
+patchMethod/proto[name]@http://localhost:4200/polyfills.js:813:16
+ngOnChanges@http://localhost:4200/main.js:14503:19
+rememberChangeHistoryAndInvokeOnChangesHook@http://localhost:4200/@fs/C:/DROPBOX/NODE_Fiberworks_WEB%20CURSOR/angular-google-maps/.angular/cache/19.1.4/angular-google-maps/vite/deps/chunk-5JSSIRB3.js?v=10bf98db:3627:10
+callHookInternal@http://localhost:4200/@fs/C:/DROPBOX/NODE_Fiberworks_WEB%20CURSOR/angular-google-maps/.angular/cache/19.1.4/angular-google-maps/vite/deps/chunk-5JSSIRB3.js?v=10bf98db:4231:10
+callHook@http://localhost:4200/@fs/C:/DROPBOX/NODE_Fiberworks_WEB%20CURSOR/angular-google-maps/.angular/cache/19.1.4/angular-google-maps/vite/deps/chunk-5JSSIRB3.js?v=10bf98db:4249:21
+callHooks@http://localhost:4200/@fs/C:/DROPBOX/NODE_Fiberworks_WEB%20CURSOR/angular-google-maps/.angular/cache/19.1.4/angular-google-maps/vite/deps/chunk-5JSSIRB3.js?v=10bf98db:4220:17
+executeInitAndCheckHooks@http://localhost:4200/@fs/C:/DROPBOX/NODE_Fiberworks_WEB%20CURSOR/angular-google-maps/.angular/cache/19.1.4/angular-google-maps/vite/deps/chunk-5JSSIRB3.js?v=10bf98db:4189:14
+refreshView@http://localhost:4200/@fs/C:/DROPBOX/NODE_Fiberworks_WEB%20CURSOR/angular-google-maps/.angular/cache/19.1.4/angular-google-maps/vite/deps/chunk-5JSSIRB3.js?v=10bf98db:10405:35
+detectChangesInView@http://localhost:4200/@fs/C:/DROPBOX/NODE_Fiberworks_WEB%20CURSOR/angular-google-maps/.angular/cache/19.1.4/angular-google-maps/vite/deps/chunk-5JSSIRB3.js?v=10bf98db:10558:16
+detectChangesInViewIfAttached@http://localhost:4200/@fs/C:/DROPBOX/NODE_Fiberworks_WEB%20CURSOR/angular-google-maps/.angular/cache/19.1.4/angular-google-maps/vite/deps/chunk-5JSSIRB3.js?v=10bf98db:10541:22
+detectChangesInEmbeddedViews@http://localhost:4200/@fs/C:/DROPBOX/NODE_Fiberworks_WEB%20CURSOR/angular-google-maps/.angular/cache/19.1.4/angular-google-maps/vite/deps/chunk-5JSSIRB3.js?v=10bf98db:10517:36
+refreshView@http://localhost:4200/@fs/C:/DROPBOX/NODE_Fiberworks_WEB%20CURSOR/angular-google-maps/.angular/cache/19.1.4/angular-google-maps/vite/deps/chunk-5JSSIRB3.js?v=10bf98db:10418:33
+detectChangesInView@http://localhost:4200/@fs/C:/DROPBOX/NODE_Fiberworks_WEB%20CURSOR/angular-google-maps/.angular/cache/19.1.4/angular-google-maps/vite/deps/chunk-5JSSIRB3.js?v=10bf98db:10558:16
+detectChangesInViewWhileDirty@http://localhost:4200/@fs/C:/DROPBOX/NODE_Fiberworks_WEB%20CURSOR/angular-google-maps/.angular/cache/19.1.4/angular-google-maps/vite/deps/chunk-5JSSIRB3.js?v=10bf98db:10338:24
+detectChangesInternal@http://localhost:4200/@fs/C:/DROPBOX/NODE_Fiberworks_WEB%20CURSOR/angular-google-maps/.angular/cache/19.1.4/angular-google-maps/vite/deps/chunk-5JSSIRB3.js?v=10bf98db:10322:34
+detectChanges@http://localhost:4200/@fs/C:/DROPBOX/NODE_Fiberworks_WEB%20CURSOR/angular-google-maps/.angular/cache/19.1.4/angular-google-maps/vite/deps/chunk-5JSSIRB3.js?v=10bf98db:10868:26
+onMarkerClick@http://localhost:4200/main.js:27687:18
+addMarkerEventListeners/<@http://localhost:4200/main.js:27618:16
+_.Ln@https://maps.googleapis.com/maps/api/js?key=AIzaSyCfJrOfhVGCOKdAOz1LagKl7yi4PAWLQ8Q&callback=console.debug&libraries=maps,marker&v=beta:916:463
+nVa/</<@https://maps.googleapis.com/maps/api/js?key=AIzaSyCfJrOfhVGCOKdAOz1LagKl7yi4PAWLQ8Q&callback=console.debug&libraries=maps,marker&v=beta:408:475
+_.Ln@https://maps.googleapis.com/maps/api/js?key=AIzaSyCfJrOfhVGCOKdAOz1LagKl7yi4PAWLQ8Q&callback=console.debug&libraries=maps,marker&v=beta:916:463
+hm@https://maps.googleapis.com/maps/api/js?key=AIzaSyCfJrOfhVGCOKdAOz1LagKl7yi4PAWLQ8Q&callback=console.debug&libraries=maps,marker&v=beta:406:5
+oka/this.Mg<@https://maps.googleapis.com/maps/api/js?key=AIzaSyCfJrOfhVGCOKdAOz1LagKl7yi4PAWLQ8Q&callback=console.debug&libraries=maps,marker&v=beta:685:234
+invokeTask@http://localhost:4200/polyfills.js:327:171
+🔀 [SPLITTER-EVENT] Abrindo modal para splitter: 
+Object { category: "splitter12", labelText: "XXXXXSXX (1:2)", key: "Splitter411798", loc: "825 973", idmeta: 411798, tipoSplitter: 12 }
+gojs-demo.component.ts:3152:25
+🔀 [SPLITTER-CONTEXT] Abrindo modal para splitter: 
+Object { category: "splitter12", labelText: "XXXXXSXX (1:2)", key: "Splitter411798", loc: "825 973", idmeta: 411798, tipoSplitter: 12 }
+gojs-demo.component.ts:3957:13
+🔀 [SPLITTER-CONTEXT] Stack trace: abrirModalSplitter@http://localhost:4200/main.js:16530:62
+initializeDiagram/</this.handleSplitterContextMenu@http://localhost:4200/main.js:16021:22
+invokeTask@http://localhost:4200/polyfills.js:327:171
+runTask@http://localhost:4200/polyfills.js:135:37
+invokeTask@http://localhost:4200/polyfills.js:398:26
+invokeTask@http://localhost:4200/polyfills.js:924:12
+globalCallback@http://localhost:4200/polyfills.js:953:33
+globalZoneAwareCallback@http://localhost:4200/polyfills.js:970:12
+click@http://localhost:4200/main.js:10991:20
+bF@http://localhost:4200/@fs/C:/DROPBOX/NODE_Fiberworks_WEB%20CURSOR/angular-google-maps/.angular/cache/19.1.4/angular-google-maps/vite/deps/gojs.js?v=10bf98db:4963:28
+standardMouseClick@http://localhost:4200/@fs/C:/DROPBOX/NODE_Fiberworks_WEB%20CURSOR/angular-google-maps/.angular/cache/19.1.4/angular-google-maps/vite/deps/gojs.js?v=10bf98db:4916:39
+doContextClick@http://localhost:4200/@fs/C:/DROPBOX/NODE_Fiberworks_WEB%20CURSOR/angular-google-maps/.angular/cache/19.1.4/angular-google-maps/vite/deps/gojs.js?v=10bf98db:7879:136
+doMouseUp@http://localhost:4200/@fs/C:/DROPBOX/NODE_Fiberworks_WEB%20CURSOR/angular-google-maps/.angular/cache/19.1.4/angular-google-maps/vite/deps/gojs.js?v=10bf98db:7870:12
+doMouseUp@http://localhost:4200/@fs/C:/DROPBOX/NODE_Fiberworks_WEB%20CURSOR/angular-google-maps/.angular/cache/19.1.4/angular-google-maps/vite/deps/gojs.js?v=10bf98db:9832:24
+z2/i.fa@http://localhost:4200/@fs/C:/DROPBOX/NODE_Fiberworks_WEB%20CURSOR/angular-google-maps/.angular/cache/19.1.4/angular-google-maps/vite/deps/gojs.js?v=10bf98db:9766:320
+invokeTask@http://localhost:4200/polyfills.js:327:171
+runTask@http://localhost:4200/polyfills.js:135:37
+invokeTask@http://localhost:4200/polyfills.js:398:26
+invokeTask@http://localhost:4200/polyfills.js:924:12
+globalCallback@http://localhost:4200/polyfills.js:945:31
+globalZoneAwareCallback@http://localhost:4200/polyfills.js:970:12
+EventListener.handleEvent*customScheduleGlobal@http://localhost:4200/polyfills.js:1037:37
+scheduleTask@http://localhost:4200/polyfills.js:317:16
+scheduleTask@http://localhost:4200/polyfills.js:174:35
+scheduleEventTask@http://localhost:4200/polyfills.js:195:19
+patchEventTarget/patchEventTargetMethods/makeAddListener/<@http://localhost:4200/polyfills.js:1187:27
+Ut@http://localhost:4200/@fs/C:/DROPBOX/NODE_Fiberworks_WEB%20CURSOR/angular-google-maps/.angular/cache/19.1.4/angular-google-maps/vite/deps/gojs.js?v=10bf98db:9793:9
+SR@http://localhost:4200/@fs/C:/DROPBOX/NODE_Fiberworks_WEB%20CURSOR/angular-google-maps/.angular/cache/19.1.4/angular-google-maps/vite/deps/gojs.js?v=10bf98db:9811:139
+z2@http://localhost:4200/@fs/C:/DROPBOX/NODE_Fiberworks_WEB%20CURSOR/angular-google-maps/.angular/cache/19.1.4/angular-google-maps/vite/deps/gojs.js?v=10bf98db:9781:122
+Diagram2@http://localhost:4200/@fs/C:/DROPBOX/NODE_Fiberworks_WEB%20CURSOR/angular-google-maps/.angular/cache/19.1.4/angular-google-maps/vite/deps/gojs.js?v=10bf98db:9475:163
+initializeDiagram/<@http://localhost:4200/main.js:15892:24
+invoke@http://localhost:4200/polyfills.js:301:158
+run@http://localhost:4200/polyfills.js:97:35
+runOutsideAngular@http://localhost:4200/@fs/C:/DROPBOX/NODE_Fiberworks_WEB%20CURSOR/angular-google-maps/.angular/cache/19.1.4/angular-google-maps/vite/deps/chunk-5JSSIRB3.js?v=10bf98db:5598:24
+initializeDiagram@http://localhost:4200/main.js:15882:19
+ngOnChanges/<@http://localhost:4200/main.js:14505:16
+timer@http://localhost:4200/polyfills.js:1428:27
+invokeTask@http://localhost:4200/polyfills.js:327:171
+runTask@http://localhost:4200/polyfills.js:135:37
+invokeTask@http://localhost:4200/polyfills.js:398:26
+initZone/ZoneTask/this.invoke@http://localhost:4200/polyfills.js:387:38
+patchTimer/scheduleTask/data.args[0]@http://localhost:4200/polyfills.js:1402:26
+setTimeout handler*scheduleTask@http://localhost:4200/polyfills.js:1404:34
+scheduleTask@http://localhost:4200/polyfills.js:317:16
+scheduleTask@http://localhost:4200/polyfills.js:174:35
+scheduleMacroTask@http://localhost:4200/polyfills.js:192:19
+scheduleMacroTaskWithCurrentZone@http://localhost:4200/polyfills.js:557:23
+patchTimer/setNative</<@http://localhost:4200/polyfills.js:1440:52
+patchMethod/proto[name]@http://localhost:4200/polyfills.js:813:16
+ngOnChanges@http://localhost:4200/main.js:14503:19
+rememberChangeHistoryAndInvokeOnChangesHook@http://localhost:4200/@fs/C:/DROPBOX/NODE_Fiberworks_WEB%20CURSOR/angular-google-maps/.angular/cache/19.1.4/angular-google-maps/vite/deps/chunk-5JSSIRB3.js?v=10bf98db:3627:10
+callHookInternal@http://localhost:4200/@fs/C:/DROPBOX/NODE_Fiberworks_WEB%20CURSOR/angular-google-maps/.angular/cache/19.1.4/angular-google-maps/vite/deps/chunk-5JSSIRB3.js?v=10bf98db:4231:10
+callHook@http://localhost:4200/@fs/C:/DROPBOX/NODE_Fiberworks_WEB%20CURSOR/angular-google-maps/.angular/cache/19.1.4/angular-google-maps/vite/deps/chunk-5JSSIRB3.js?v=10bf98db:4249:21
+callHooks@http://localhost:4200/@fs/C:/DROPBOX/NODE_Fiberworks_WEB%20CURSOR/angular-google-maps/.angular/cache/19.1.4/angular-google-maps/vite/deps/chunk-5JSSIRB3.js?v=10bf98db:4220:17
+executeInitAndCheckHooks@http://localhost:4200/@fs/C:/DROPBOX/NODE_Fiberworks_WEB%20CURSOR/angular-google-maps/.angular/cache/19.1.4/angular-google-maps/vite/deps/chunk-5JSSIRB3.js?v=10bf98db:4189:14
+refreshView@http://localhost:4200/@fs/C:/DROPBOX/NODE_Fiberworks_WEB%20CURSOR/angular-google-maps/.angular/cache/19.1.4/angular-google-maps/vite/deps/chunk-5JSSIRB3.js?v=10bf98db:10405:35
+detectChangesInView@http://localhost:4200/@fs/C:/DROPBOX/NODE_Fiberworks_WEB%20CURSOR/angular-google-maps/.angular/cache/19.1.4/angular-google-maps/vite/deps/chunk-5JSSIRB3.js?v=10bf98db:10558:16
+detectChangesInViewIfAttached@http://localhost:4200/@fs/C:/DROPBOX/NODE_Fiberworks_WEB%20CURSOR/angular-google-maps/.angular/cache/19.1.4/angular-google-maps/vite/deps/chunk-5JSSIRB3.js?v=10bf98db:10541:22
+detectChangesInEmbeddedViews@http://localhost:4200/@fs/C:/DROPBOX/NODE_Fiberworks_WEB%20CURSOR/angular-google-maps/.angular/cache/19.1.4/angular-google-maps/vite/deps/chunk-5JSSIRB3.js?v=10bf98db:10517:36
+refreshView@http://localhost:4200/@fs/C:/DROPBOX/NODE_Fiberworks_WEB%20CURSOR/angular-google-maps/.angular/cache/19.1.4/angular-google-maps/vite/deps/chunk-5JSSIRB3.js?v=10bf98db:10418:33
+detectChangesInView@http://localhost:4200/@fs/C:/DROPBOX/NODE_Fiberworks_WEB%20CURSOR/angular-google-maps/.angular/cache/19.1.4/angular-google-maps/vite/deps/chunk-5JSSIRB3.js?v=10bf98db:10558:16
+detectChangesInViewWhileDirty@http://localhost:4200/@fs/C:/DROPBOX/NODE_Fiberworks_WEB%20CURSOR/angular-google-maps/.angular/cache/19.1.4/angular-google-maps/vite/deps/chunk-5JSSIRB3.js?v=10bf98db:10338:24
+detectChangesInternal@http://localhost:4200/@fs/C:/DROPBOX/NODE_Fiberworks_WEB%20CURSOR/angular-google-maps/.angular/cache/19.1.4/angular-google-maps/vite/deps/chunk-5JSSIRB3.js?v=10bf98db:10322:34
+detectChanges@http://localhost:4200/@fs/C:/DROPBOX/NODE_Fiberworks_WEB%20CURSOR/angular-google-maps/.angular/cache/19.1.4/angular-google-maps/vite/deps/chunk-5JSSIRB3.js?v=10bf98db:10868:26
+onMarkerClick@http://localhost:4200/main.js:27687:18
+addMarkerEventListeners/<@http://localhost:4200/main.js:27618:16
+_.Ln@https://maps.googleapis.com/maps/api/js?key=AIzaSyCfJrOfhVGCOKdAOz1LagKl7yi4PAWLQ8Q&callback=console.debug&libraries=maps,marker&v=beta:916:463
+nVa/</<@https://maps.googleapis.com/maps/api/js?key=AIzaSyCfJrOfhVGCOKdAOz1LagKl7yi4PAWLQ8Q&callback=console.debug&libraries=maps,marker&v=beta:408:475
+_.Ln@https://maps.googleapis.com/maps/api/js?key=AIzaSyCfJrOfhVGCOKdAOz1LagKl7yi4PAWLQ8Q&callback=console.debug&libraries=maps,marker&v=beta:916:463
+hm@https://maps.googleapis.com/maps/api/js?key=AIzaSyCfJrOfhVGCOKdAOz1LagKl7yi4PAWLQ8Q&callback=console.debug&libraries=maps,marker&v=beta:406:5
+oka/this.Mg<@https://maps.googleapis.com/maps/api/js?key=AIzaSyCfJrOfhVGCOKdAOz1LagKl7yi4PAWLQ8Q&callback=console.debug&libraries=maps,marker&v=beta:685:234
+invokeTask@http://localhost:4200/polyfills.js:327:171
+gojs-demo.component.ts:3958:13
+🔧 [DRAG] dragEnd chamado. isDragging: false 2 graphviz-splitter-modal.component.ts:321:13
+🔀 [SPLITTER-MODAL] Carregando splitter IDMETA: 411798 graphviz-splitter-modal.component.ts:61:15
+🔍 [GRAPHVIZ] Capacidade: 2 graphviz-splitter-modal.component.ts:165:11
+🔍 [TOTAL] Iniciando rastreamento de grupo: fibras 1 a 2 (capacidade: 2) fiber-trace-unifilar-splitter.service.ts:143:15
+🗺️ [INICIO-TOTAL] Rastreamento iniciado para DIO 411798, Fibras 1-2 fiber-trace-unifilar-splitter.service.ts:156:15
+🗺️ [INICIO-TOTAL] Arrays limpos: cabosPercorridos=[], cabosInfo=[0] fiber-trace-unifilar-splitter.service.ts:157:15
+🔍 [TOTAL] Processando 2 fibras: 1 a 2 fiber-trace-unifilar-splitter.service.ts:163:15
+🔍 [GROUP-TRACE] Processando grupo: fibras 1 a 2 fiber-trace-unifilar-splitter.service.ts:183:15
+🎯 [GROUP-TRACE] Iniciando rastreamento de grupo sem DIO inicial fiber-trace-unifilar-splitter.service.ts:187:15
+🔍 [GROUP-TRACE] Processando fibra 1/2 fiber-trace-unifilar-splitter.service.ts:195:17
+🔍 [GROUP-TRACE] Fibra 1: Tabela=splitter_t1, Registro=F1 fiber-trace-unifilar-splitter.service.ts:202:17
+🔍 [SINGLE-FIBER] Rastreando fibra 1: splitter_t1.F1 fiber-trace-unifilar-splitter.service.ts:268:15
+🎨 [SINGLE-FIBER] Cor da fibra 1: #00FF00 fiber-trace-unifilar-splitter.service.ts:272:15
+🔄 [SINGLE-FIBER] Flag_caixa resetada para fibra 1: false fiber-trace-unifilar-splitter.service.ts:277:15
+🎨 [TRACE] Cor da fibra 1 definida: #00FF00 (DIO sempre verde, conexões coloridas) fiber-trace-unifilar-splitter.service.ts:333:17
+🎨 [TRACE] Fibra original definida: 1 (para estilo dashed) fiber-trace-unifilar-splitter.service.ts:339:17
+🔀 [SPLITTER-MODAL] Carregando splitter IDMETA: 411798 graphviz-splitter-modal.component.ts:61:15
+🔍 [GRAPHVIZ] Capacidade: 2 graphviz-splitter-modal.component.ts:165:11
+🔍 [TOTAL] Iniciando rastreamento de grupo: fibras 1 a 2 (capacidade: 2) fiber-trace-unifilar-splitter.service.ts:143:15
+🗺️ [INICIO-TOTAL] Rastreamento iniciado para DIO 411798, Fibras 1-2 fiber-trace-unifilar-splitter.service.ts:156:15
+🗺️ [INICIO-TOTAL] Arrays limpos: cabosPercorridos=[], cabosInfo=[0] fiber-trace-unifilar-splitter.service.ts:157:15
+🔍 [TOTAL] Processando 2 fibras: 1 a 2 fiber-trace-unifilar-splitter.service.ts:163:15
+🔍 [GROUP-TRACE] Processando grupo: fibras 1 a 2 fiber-trace-unifilar-splitter.service.ts:183:15
+🎯 [GROUP-TRACE] Iniciando rastreamento de grupo sem DIO inicial fiber-trace-unifilar-splitter.service.ts:187:15
+🔍 [GROUP-TRACE] Processando fibra 1/2 fiber-trace-unifilar-splitter.service.ts:195:17
+🔍 [GROUP-TRACE] Fibra 1: Tabela=splitter_t1, Registro=F1 fiber-trace-unifilar-splitter.service.ts:202:17
+🔍 [SINGLE-FIBER] Rastreando fibra 1: splitter_t1.F1 fiber-trace-unifilar-splitter.service.ts:268:15
+🎨 [SINGLE-FIBER] Cor da fibra 1: #00FF00 fiber-trace-unifilar-splitter.service.ts:272:15
+🔄 [SINGLE-FIBER] Flag_caixa resetada para fibra 1: false fiber-trace-unifilar-splitter.service.ts:277:15
+🎨 [TRACE] Cor da fibra 1 definida: #00FF00 (DIO sempre verde, conexões coloridas) fiber-trace-unifilar-splitter.service.ts:333:17
+🎨 [TRACE] Fibra original definida: 1 (para estilo dashed) fiber-trace-unifilar-splitter.service.ts:339:17
+entrada: prop.boca1_1.label tipo_splitter: 12 id_meta_cx: 411795 fiber-trace-unifilar-splitter.service.ts:352:17
+*****------------------>🔍 [ENTRADA] flag_entrada_splitter_processada: false fiber-trace-unifilar-splitter.service.ts:356:17
+------------------>🔍 [ENTRADA] idmetacx:411795, entrada:prop.boca1_1.label, tipo_splitter:12 fiber-trace-unifilar-splitter.service.ts:592:11
+entrada: prop.boca1_1.label tipo_splitter: 12 id_meta_cx: 411795 fiber-trace-unifilar-splitter.service.ts:352:17
+*****------------------>🔍 [ENTRADA] flag_entrada_splitter_processada: true fiber-trace-unifilar-splitter.service.ts:356:17
+🔍 Rastreando fibra: caboB_t1 - 676159 - FIBRA_1 (Fibra do cabo: 1) - PONTA B fibra-destino-cabo.service.ts:329:15
+🎯 [DOT] conteudosp: prop.boca4_1.label, Boca: boca4, Fibra: 1 fiber-trace-unifilar-splitter.service.ts:400:17
+🎯 [DOT] Primeiro objeto definido: SPLITTER:f1 (cor: verde - SPLITTER) fiber-trace-unifilar-splitter.service.ts:402:17
+🎯 [DOT] tabela: cxboca4_t1, registro: F1L idmeta: 411795 fiber-trace-unifilar-splitter.service.ts:407:17
+🔍 [RASTREIO] Passo 1/150 - IDMETA: 411795, Fibra: 1, Tabela: cxboca4_t1, Registro: F1L fiber-trace-unifilar-splitter.service.ts:442:15
+🔍 [RASTREIO] ENVIADO registro atual: cxboca4_t1, 411795, F1L fiber-trace-unifilar-splitter.service.ts:455:15
+🔍 [RASTREIO] RESPOSTA registro atual: [object Object] fiber-trace-unifilar-splitter.service.ts:457:15
+✅ [CONEXÃO] Encontrada conexão: =cabo411808A!Prop.Fibra_1.VALUE fiber-trace-unifilar-splitter.service.ts:482:15
+🔍 [ANALISAR] Conteúdo: =cabo411808A!Prop.Fibra_1.VALUE fiber-trace-unifilar-splitter.service.ts:775:13
+🎯 [TIPO] Tipo identificado pelo conteúdo: cabo fiber-trace-unifilar-splitter.service.ts:509:15
+🔄 [PROCESSAR] Tipo: cabo, Conteúdo: =cabo411808A!Prop.Fibra_1.VALUE fiber-trace-unifilar-splitter.service.ts:869:13
+🔌 [CABO] Processando cabo: =cabo411808A!Prop.Fibra_1.VALUE fiber-trace-unifilar-splitter.service.ts:928:13
+🗺️ [API-CAPACIDADE] Consultando capacidade do cabo 411808: SELECT capacidade FROM tstmeta.cabopa WHERE id_meta = 411808 fiber-api.service.ts:209:13
+🔍 [GRAPHVIZ] ngAfterViewInit - Verificando container... graphviz-splitter-modal.component.ts:142:13
+🔍 [GRAPHVIZ] Container encontrado: false graphviz-splitter-modal.component.ts:144:13
+🔍 [GRAPHVIZ] ngAfterViewInit - Verificando container... graphviz-splitter-modal.component.ts:142:13
+🔍 [GRAPHVIZ] Container encontrado: false graphviz-splitter-modal.component.ts:144:13
+🗺️ [API-CAPACIDADE] Capacidade encontrada para cabo 411808: 6 fiber-api.service.ts:215:19
+🗺️ [CABO-TOTAL] Cabo 411808 (6) adicionado aos percorridos. Total: 1 fiber-trace-unifilar-splitter.service.ts:964:17
+🗺️ [CABO-TOTAL] Array atual: [411808] fiber-trace-unifilar-splitter.service.ts:965:17
+✅ [CABO] Próximo passo - Tabela: caboa_t1, Registro: FIBRA_1 fiber-trace-unifilar-splitter.service.ts:1012:13
+🔌 [CABO-FIBRA] String composta: "6F  (1) FEEDER_B" fiber-trace-unifilar-splitter.service.ts:1040:15
+➡️ [CONTINUA] Próximo passo - IDMETA: 411808, Fibra: 1, Tabela: caboa_t1, Registro: FIBRA_1 fiber-trace-unifilar-splitter.service.ts:557:17
+🎨 [TRACE] Cor da fibra 1 definida: #00FF00 (DIO sempre verde, conexões coloridas) fiber-trace-unifilar-splitter.service.ts:333:17
+🔍 [RASTREIO] Passo 2/150 - IDMETA: 411808, Fibra: 1, Tabela: caboa_t1, Registro: FIBRA_1 fiber-trace-unifilar-splitter.service.ts:442:15
+🔍 [RASTREIO] ENVIADO registro atual: caboa_t1, 411808, FIBRA_1 fiber-trace-unifilar-splitter.service.ts:455:15
+🔍 [RASTREIO] RESPOSTA registro atual: [object Object] fiber-trace-unifilar-splitter.service.ts:457:15
+✅ [CONEXÃO] Encontrada conexão: =cabo411808B!Prop.Fibra_1.Label fiber-trace-unifilar-splitter.service.ts:482:15
+🔍 [ANALISAR] Conteúdo: =cabo411808B!Prop.Fibra_1.Label fiber-trace-unifilar-splitter.service.ts:775:13
+🎯 [TIPO] Tipo identificado pelo conteúdo: cabo fiber-trace-unifilar-splitter.service.ts:509:15
+🔄 [DOT] Atualizando objeto anterior: SPLITTER:f1 fiber-trace-unifilar-splitter.service.ts:514:17
+🔄 [PROCESSAR] Tipo: cabo, Conteúdo: =cabo411808B!Prop.Fibra_1.Label fiber-trace-unifilar-splitter.service.ts:869:13
+🔌 [CABO] Processando cabo: =cabo411808B!Prop.Fibra_1.Label fiber-trace-unifilar-splitter.service.ts:928:13
+🗺️ [CABO-TOTAL] Cabo 411808 já existe no array. Total: 1 fiber-trace-unifilar-splitter.service.ts:973:15
+✅ [CABO] Próximo passo - Tabela: cabob_t1, Registro: FIBRA_1LABEL fiber-trace-unifilar-splitter.service.ts:1012:13
+🔍 [DIO] Processando DIO para IDMETA: 676177 fibra-destino-cabo.service.ts:209:15
+🔌 [CABO-FIBRA] String composta: "6F  (1) FEEDER_B" fiber-trace-unifilar-splitter.service.ts:1040:15
+➡️ [CONTINUA] Próximo passo - IDMETA: 411808, Fibra: 1, Tabela: cabob_t1, Registro: FIBRA_1LABEL fiber-trace-unifilar-splitter.service.ts:557:17
+🎨 [TRACE] Cor da fibra 1 definida: #00FF00 (DIO sempre verde, conexões coloridas) fiber-trace-unifilar-splitter.service.ts:333:17
+🔍 [RASTREIO] Passo 3/150 - IDMETA: 411808, Fibra: 1, Tabela: cabob_t1, Registro: FIBRA_1LABEL fiber-trace-unifilar-splitter.service.ts:442:15
+💓 Heartbeat enviado: 
+Object { mensagem: "Heartbeat atualizado", timestamp: "2025-10-20T21:52:48.854Z" }
+heartbeat.service.ts:58:17
+
+​

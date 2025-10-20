@@ -294,3 +294,36 @@
 .modal-content {
   z-index: 10000 !important;
 }
+
+/* 🔀 NOVO: Estilos para context menu de splitters */
+.splitter-context-menu {
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  padding: 8px 0;
+  min-width: 150px;
+  font-family: 'Roboto', sans-serif;
+}
+
+.context-menu-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-size: 14px;
+  color: #333;
+}
+
+.context-menu-item:hover {
+  background-color: #f5f5f5;
+}
+
+.context-menu-item mat-icon {
+  margin-right: 8px;
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: #666;
+}

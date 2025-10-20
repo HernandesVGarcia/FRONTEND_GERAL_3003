@@ -57,7 +57,7 @@ export class GraphvizModalComponent implements OnInit, AfterViewInit {
       // Fallback: carregar do arquivo (comportamento original)
       this.loadGraphvizFile();
     }
-
+     // ****************************click em caixas no diagrama unifilar cabo*******
     // 🏠 NOVO: Função global para cliques em caixas (Opção 1 - Evento Customizado)
     (window as any).onCaixaClick = (idmeta: number, numerocx: string, label_cx: string) => {
       console.log('🏠 [CAIXA-CLICK] Caixa clicada:', { idmeta, numerocx, label_cx });
@@ -71,6 +71,7 @@ export class GraphvizModalComponent implements OnInit, AfterViewInit {
       console.log('🏠 [CAIXA-CLICK] Evento openGoJSModal enviado para o Google Maps');
     };
   }
+  // ********************************************************************************
 
   async ngAfterViewInit() {
     // Configurar funcionalidade de drag (padrão visualiza-dio)

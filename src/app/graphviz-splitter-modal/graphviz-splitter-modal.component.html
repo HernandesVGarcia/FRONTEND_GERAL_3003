@@ -1,1 +1,46 @@
-<p>graphviz-splitter-modal works!</p>
+<div class="modal-header">
+  <h3>{{data.title}}</h3>
+  <button mat-icon-button (click)="onClose()" class="close-button">
+    <mat-icon>close</mat-icon>
+  </button>
+</div>
+
+<div class="modal-content">
+  <div *ngIf="isLoading" class="loading">
+    <mat-spinner></mat-spinner>
+    <p>Carregando diagrama do splitter...</p>
+  </div>
+
+  <div *ngIf="error" class="error">
+    <mat-icon>error</mat-icon>
+    <p>{{error}}</p>
+  </div>
+
+  <div *ngIf="!isLoading && !error && dotContent" class="graphviz-container">
+    <div id="graphviz-container" 
+         (wheel)="onWheel($event)"
+         (mousedown)="onMouseDown($event)"
+         (mousemove)="onMouseMove($event)"
+         (mouseup)="onMouseUp($event)">
+    </div>
+  </div>
+</div>
+
+<div class="modal-footer" *ngIf="!isLoading && !error">
+  <button mat-button (click)="zoomIn()">
+    <mat-icon>zoom_in</mat-icon>
+    Zoom In
+  </button>
+  <button mat-button (click)="zoomOut()">
+    <mat-icon>zoom_out</mat-icon>
+    Zoom Out
+  </button>
+  <button mat-button (click)="resetZoom()">
+    <mat-icon>refresh</mat-icon>
+    Reset
+  </button>
+  <button mat-button (click)="onPrintPDF()" [disabled]="isGeneratingPDF">
+    <mat-icon>print</mat-icon>
+    {{isGeneratingPDF ? 'Gerando PDF...' : 'Imprimir PDF'}}
+  </button>
+</div>

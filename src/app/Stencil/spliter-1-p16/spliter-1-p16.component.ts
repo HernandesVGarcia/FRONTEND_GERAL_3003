@@ -12,7 +12,64 @@ export class Splitter116Component {
 
   // Método que retorna o template do nó para o GoJS
   getNodeTemplate(): go.Node {
-    return new go.Node("Spot")
+    return new go.Node("Spot", {
+      contextMenu: go.GraphObject.build("ContextMenu", {
+        // 🎯 NOVO: Alinhamento à esquerda
+        alignment: go.Spot.Left,
+        alignmentFocus: go.Spot.Right
+      })
+        .add(
+          go.GraphObject.build("ContextMenuButton", {
+            click: (e, obj) => {
+              const contextmenu = obj.part;
+              if (contextmenu && contextmenu.data) {
+                const splitterData = contextmenu.data;
+                console.log('🔀 [SPLITTER-TEMPLATE] Mapear Splitter clicado:', splitterData);
+                // Disparar evento customizado para o componente pai
+                window.dispatchEvent(new CustomEvent('splitterContextMenu', { 
+                  detail: { action: 'mapear', data: splitterData } 
+                }));
+              }
+            }
+          })
+          .add(new go.TextBlock("Mapear Splitter", { 
+            textAlign: "left",
+            alignment: go.Spot.Left
+          }))
+        )
+        .add(
+          go.GraphObject.build("ContextMenuButton", {
+            click: (e, obj) => {
+              const contextmenu = obj.part;
+              if (contextmenu && contextmenu.data) {
+                const splitterData = contextmenu.data;
+                console.log('🔀 [SPLITTER-TEMPLATE] Excluir Splitter clicado:', splitterData);
+                alert('Função de exclusão será implementada em breve!');
+              }
+            }
+          })
+          .add(new go.TextBlock("Excluir Splitter", { 
+            textAlign: "left",
+            alignment: go.Spot.Left
+          }))
+        )
+        .add(
+          go.GraphObject.build("ContextMenuButton", {
+            click: (e, obj) => {
+              const contextmenu = obj.part;
+              if (contextmenu && contextmenu.data) {
+                const splitterData = contextmenu.data;
+                console.log('🔀 [SPLITTER-TEMPLATE] Power Meter clicado:', splitterData);
+                alert(`Splitter: ${splitterData.labelText}\nID: ${splitterData.idmeta}\nTipo: ${splitterData.tipoSplitter}`);
+              }
+            }
+          })
+          .add(new go.TextBlock("Power Meter", { 
+            textAlign: "left",
+            alignment: go.Spot.Left
+          }))
+        )
+    })
       .add(
         new go.Panel("Spot")
           .add(

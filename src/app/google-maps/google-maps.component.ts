@@ -230,15 +230,21 @@ export class GoogleMapsComponent implements OnInit, OnChanges {
                         target.closest('google-map') !== null ||
                         target.closest('.google-map') !== null;
       
-      // 🚫 Bloquear context menu no GoJS-demo
+      // 🚫 Bloquear context menu no GoJS-demo, MAS permitir para splitters
       const isInGoJSModal = target.closest('.gojs-container') !== null ||
                            target.closest('.diagram-container') !== null ||
                            target.closest('.diagram-div') !== null ||
                            target.closest('#gojsDiagram') !== null;
       
+      // 🔀 NOVO: Verificar se é um splitter clicado (simplificado)
+      const isSplitterClick = target.closest('.splitter-context-menu') !== null;
+      
       if (isMapClick && !isInGoJSModal) {
         event.preventDefault(); // Previne o menu padrão do navegador
         this.showContextMenu(event.clientX, event.clientY);
+      } else if (isInGoJSModal && !isSplitterClick) {
+        // Bloquear context menu no GoJS, exceto para splitters
+        event.preventDefault();
       }
     });
     

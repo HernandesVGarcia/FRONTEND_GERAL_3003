@@ -14,3 +14,36 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 .gojs-dialog-container {
   z-index: 9999 !important;
 } */
+
+/* 🔀 NOVO: Estilos para Modal Splitter - Z-index MUITO alto para aparecer na frente do GoJS */
+.splitter-modal-container .mat-mdc-dialog-container {
+  z-index: 999999 !important;
+  position: fixed !important;
+  background: white !important;
+  border: 2px solid #007bff !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3) !important;
+}
+
+.splitter-modal-container {
+  z-index: 999999 !important;
+}
+
+/* Garantir que o backdrop também tenha z-index alto */
+.cdk-overlay-backdrop {
+  z-index: 999998 !important;
+}
+
+/* Forçar z-index alto em todos os elementos do modal */
+.cdk-overlay-container {
+  z-index: 999999 !important;
+}
+
+.cdk-overlay-pane {
+  z-index: 999999 !important;
+}
+
+/* Remover backdrop quando hasBackdrop: false */
+.cdk-overlay-backdrop.cdk-overlay-backdrop-showing {
+  display: none !important;
+}

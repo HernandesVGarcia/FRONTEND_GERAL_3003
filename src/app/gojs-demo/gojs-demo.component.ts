@@ -13,6 +13,7 @@ import { Component,
   OnChanges,
   OnDestroy, 
   SimpleChanges } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
 import { firstValueFrom } from 'rxjs';  
 import { CommonModule } from '@angular/common';
 import * as go from 'gojs';
@@ -273,7 +274,21 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
   // 🆕 NOVO - Vetor para dados dos POPs
   VetorDadosPops: any[] = [];
   
- 
+  // Adicionar propriedade para armazenar a referência do handler
+  private handleSplitterContextMenu: ((event: any) => void) | null = null;
+  
+  // Adicionar flag para evitar múltiplas chamadas
+  private modalSplitterOpen = false;
+  
+  // Adicionar debounce para evitar múltiplas chamadas rápidas
+  private lastModalCallTime = 0;
+  
+  // Adicionar controle de eventos duplicados
+  private lastEventId = '';
+  
+  // Flag global para controlar se o listener já foi adicionado
+  private static globalListenerAdded = false;
+  
   constructor(
      private ngZone: NgZone,
      private cdr: ChangeDetectorRef,
@@ -295,6 +310,7 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
      private pesquisaSiglaService: PesquisaSiglaService,
      private authService: AuthService, // 🏠 NOVO: Injetar AuthService
      private fiberApiService: FiberApiService, // 🏠 NOVO: Injetar FiberApiService
+     private dialog: MatDialog // 🔀 NOVO: Injetar MatDialog para context menu
     ) {}
 
 
@@ -332,6 +348,8 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
   }
 
   async ngOnInit(): Promise<void> {
+    console.log('🔀 [DEBUG] ngOnInit() chamado - GoJS Demo Component inicializado');
+    console.log('🔀 [DEBUG] Componente GoJS está sendo inicializado...');
     /*
     console.log('GoJSDemo Component inicializado');
     /////////////////////setTimeout(() => {this.selecionar_Bocas()},1);// <-----função para ler bocas para desenhar cabos
@@ -792,7 +810,171 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
 
 
 
+  /**
+   * 🆕 NOVO: Configura context menu HTML customizado para splitters
+   */
+  private setupCustomContextMenu(): void {
+    console.log('🔀 [CUSTOM-CONTEXT] Configurando context menu HTML customizado...');
+    
+    // Criar elemento HTML do context menu
+    const contextMenu = document.createElement('div');
+    contextMenu.id = 'splitter-context-menu';
+    contextMenu.className = 'splitter-context-menu';
+    contextMenu.style.cssText = `
+      position: fixed;
+      background: white;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      padding: 8px 0;
+      min-width: 150px;
+      font-family: 'Roboto', sans-serif;
+      z-index: 10000;
+      display: none;
+    `;
+    
+    // Adicionar opções do menu
+    const options = [
+      { text: 'Mapear Splitter', action: 'mapear' },
+      { text: 'Informações', action: 'info' },
+      { text: 'Configurar', action: 'config' }
+    ];
+    
+    options.forEach(option => {
+      const menuItem = document.createElement('div');
+      menuItem.className = 'context-menu-item';
+      menuItem.style.cssText = `
+        display: flex;
+        align-items: center;
+        padding: 8px 16px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        font-size: 14px;
+        color: #333;
+      `;
+      menuItem.textContent = option.text;
+      
+      menuItem.addEventListener('mouseenter', () => {
+        menuItem.style.backgroundColor = '#f5f5f5';
+      });
+      
+      menuItem.addEventListener('mouseleave', () => {
+        menuItem.style.backgroundColor = 'transparent';
+      });
+      
+      menuItem.addEventListener('click', () => {
+        console.log(`🔀 [CUSTOM-CONTEXT] Opção clicada: ${option.action}`);
+        this.handleContextMenuAction(option.action);
+        this.hideCustomContextMenu();
+      });
+      
+      contextMenu.appendChild(menuItem);
+    });
+    
+    // Adicionar ao body
+    document.body.appendChild(contextMenu);
+    
+    // Adicionar listener para botão direito no diagrama
+    if (this.diagram && this.diagram.div) {
+      this.diagram.div.addEventListener('contextmenu', (event: MouseEvent) => {
+        console.log('🔀 [CUSTOM-CONTEXT] Botão direito detectado no GoJS');
+        console.log('🔀 [CUSTOM-CONTEXT] Event target:', event.target);
+        console.log('🔀 [CUSTOM-CONTEXT] ClientX:', event.clientX, 'ClientY:', event.clientY);
+        
+        // 🔧 CORREÇÃO: Usar coordenadas relativas ao canvas
+        const canvas = event.target as HTMLCanvasElement;
+        const rect = canvas.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+        
+        console.log('🔀 [CUSTOM-CONTEXT] Coordenadas relativas ao canvas:', x, y);
+        
+        // Encontrar o objeto clicado usando coordenadas do canvas
+        const point = new go.Point(x, y);
+        const goObject = this.diagram!.findObjectAt(point);
+        
+        console.log('🔀 [CUSTOM-CONTEXT] GoObject encontrado:', goObject);
+        
+        if (goObject && goObject.part && goObject.part.data && goObject.part.data.key && goObject.part.data.key.startsWith("Splitter")) {
+          console.log('🔀 [CUSTOM-CONTEXT] Splitter clicado:', goObject.part.data);
+          event.preventDefault();
+          event.stopPropagation();
+          
+          // Salvar dados do splitter
+          this.currentSplitterData = goObject.part.data;
+          
+          // Mostrar context menu
+          this.showCustomContextMenu(event.clientX, event.clientY);
+        } else {
+          console.log('🔀 [CUSTOM-CONTEXT] Não é um splitter ou objeto não encontrado');
+          if (goObject) {
+            console.log('🔀 [CUSTOM-CONTEXT] Objeto encontrado mas não é splitter:', goObject.part?.data);
+          }
+        }
+      });
+    }
+    
+    // Adicionar listener para fechar o menu ao clicar fora
+    document.addEventListener('click', () => {
+      this.hideCustomContextMenu();
+    });
+    
+    console.log('🔀 [CUSTOM-CONTEXT] Context menu HTML customizado configurado com sucesso!');
+  }
+
+  /**
+   * 🆕 NOVO: Mostra o context menu customizado
+   */
+  private showCustomContextMenu(x: number, y: number): void {
+    const contextMenu = document.getElementById('splitter-context-menu');
+    if (contextMenu) {
+      contextMenu.style.left = `${x}px`;
+      contextMenu.style.top = `${y}px`;
+      contextMenu.style.display = 'block';
+      console.log('🔀 [CUSTOM-CONTEXT] Context menu mostrado');
+    }
+  }
+
+  /**
+   * 🆕 NOVO: Esconde o context menu customizado
+   */
+  private hideCustomContextMenu(): void {
+    const contextMenu = document.getElementById('splitter-context-menu');
+    if (contextMenu) {
+      contextMenu.style.display = 'none';
+    }
+  }
+
+  /**
+   * 🆕 NOVO: Manipula ações do context menu
+   */
+  private handleContextMenuAction(action: string): void {
+    if (!this.currentSplitterData) {
+      console.log('🔀 [CUSTOM-CONTEXT] Nenhum splitter selecionado');
+      return;
+    }
+    
+    console.log(`🔀 [CUSTOM-CONTEXT] Executando ação: ${action}`, this.currentSplitterData);
+    
+    switch (action) {
+      case 'mapear':
+        this.abrirModalSplitter(this.currentSplitterData);
+        break;
+      case 'info':
+        alert(`Splitter: ${this.currentSplitterData.labelText}\nID: ${this.currentSplitterData.idmeta}\nTipo: ${this.currentSplitterData.tipoSplitter}`);
+        break;
+      case 'config':
+        alert('Função de configuração será implementada em breve!');
+        break;
+    }
+  }
+
+  // 🆕 NOVO: Propriedade para armazenar dados do splitter atual
+  private currentSplitterData: any = null;
+
   ngOnChanges(changes: SimpleChanges): void {
+    console.log('🔀 [DEBUG] ngOnChanges() chamado');
+    console.log('🔀 [DEBUG] changes:', changes);
     if (changes['isOpen'] && changes['isOpen'].currentValue === true) {
       console.log('Modal está sendo aberto');
       if (!this.diagramInitialized || !this.diagram) {
@@ -813,6 +995,8 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
   //===============================================================================================================
  
   ngAfterViewInit(): void {
+    console.log('🔀 [DEBUG] ngAfterViewInit() chamado');
+    console.log('🔀 [DEBUG] isOpen:', this.isOpen);
     if (this.isOpen) {
       console.log('AfterViewInit: Modal está aberto, inicializando diagrama');
       this.mostrarCursorEspera();
@@ -2759,6 +2943,8 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
 //==============================================================================================================
 //======================================= inicicialise diagrama ===============================================
   private initializeDiagram(): void {
+    console.log('🔀 [DEBUG] Método initializeDiagram() chamado');
+    console.log('🔀 [DEBUG] Iniciando diagrama GoJS...');
     if (!this.diagramDiv?.nativeElement) {
       console.error('Elemento DOM do diagrama não encontrado');
       this.initializationError = 'Erro: Elemento do diagrama não encontrado';
@@ -2955,6 +3141,36 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
             }
           }
         });
+
+        // 🆕 NOVO: Context menu nativo do GoJS para splitters
+        // 🆕 CORREÇÃO: Adicionar listener APENAS UMA VEZ globalmente
+        if (!GoJSDemoComponent.globalListenerAdded) {
+          console.log('🔀 [GLOBAL] Adicionando listener splitterContextMenu pela primeira vez');
+          
+          this.handleSplitterContextMenu = (event: any) => {
+            const { action, data } = event.detail;
+            
+            switch (action) {
+              case 'mapear':
+                this.abrirModalSplitter(data);
+                break;
+              case 'info':
+                alert(`Splitter: ${data.labelText}\nID: ${data.idmeta}\nTipo: ${data.tipoSplitter}`);
+                break;
+              case 'config':
+                alert('Função de configuração será implementada em breve!');
+                break;
+            }
+          };
+
+          window.addEventListener('splitterContextMenu', this.handleSplitterContextMenu);
+          GoJSDemoComponent.globalListenerAdded = true;
+          console.log('🔀 [GLOBAL] Listener splitterContextMenu adicionado globalmente');
+        } else {
+          console.log('🔀 [GLOBAL] Listener splitterContextMenu já existe globalmente');
+        }
+
+
 
         
 
@@ -3664,6 +3880,150 @@ espelhar(): void {
 
     setTimeout(() => {this.redesenharDiagrama();},500)
 
+  }
+
+  /**
+   * 🆕 NOVO: Mostrar context menu para splitters
+   */
+  private showSplitterContextMenu(event: any, splitterData: any): void {
+    console.log('🔀 [SPLITTER-CONTEXT] Mostrando context menu para:', splitterData);
+    
+    // Criar context menu
+    const contextMenu = document.createElement('div');
+    contextMenu.className = 'splitter-context-menu';
+    contextMenu.innerHTML = `
+      <div class="context-menu-item" data-action="mapear">
+        <mat-icon>account_tree</mat-icon>
+        Mapear Splitter
+      </div>
+    `;
+    
+    // Determinar posição do mouse
+    let x: number, y: number;
+    if (event.clientX !== undefined) {
+      // Evento de mouse normal
+      x = event.clientX;
+      y = event.clientY;
+    } else if (event.x !== undefined) {
+      // Evento do GoJS
+      x = event.x;
+      y = event.y;
+    } else {
+      // Fallback
+      x = 100;
+      y = 100;
+    }
+    
+    // Posicionar menu
+    contextMenu.style.position = 'fixed';
+    contextMenu.style.left = x + 'px';
+    contextMenu.style.top = y + 'px';
+    contextMenu.style.zIndex = '10000';
+    
+    // Adicionar ao DOM
+    document.body.appendChild(contextMenu);
+    
+    // Adicionar listener para clique
+    contextMenu.addEventListener('click', (e) => {
+      const action = (e.target as HTMLElement).closest('[data-action]')?.getAttribute('data-action');
+      if (action === 'mapear') {
+        this.abrirModalSplitter(splitterData);
+      }
+      document.body.removeChild(contextMenu);
+    });
+    
+    // Remover menu ao clicar fora
+    setTimeout(() => {
+      document.addEventListener('click', () => {
+        if (document.body.contains(contextMenu)) {
+          document.body.removeChild(contextMenu);
+        }
+      }, { once: true });
+    }, 100);
+  }
+
+  /**
+   * 🆕 NOVO: Abrir modal de splitter
+   */
+  private abrirModalSplitter(splitterData: any): void {
+    // 🆕 CORREÇÃO: Debounce mais rigoroso para evitar múltiplas chamadas rápidas
+    const now = Date.now();
+    const timeDiff = now - this.lastModalCallTime;
+    
+    if (timeDiff < 1000) { // 1000ms de debounce (aumentado)
+      console.log(`🔀 [BLOQUEADO] Chamada muito rápida (${timeDiff}ms)`);
+      return;
+    }
+    this.lastModalCallTime = now;
+    
+    // 🆕 CORREÇÃO: Evitar múltiplas chamadas simultâneas
+    if (this.modalSplitterOpen) {
+      console.log('🔀 [BLOQUEADO] Modal já está aberto');
+      return;
+    }
+    
+    this.modalSplitterOpen = true;
+    console.log('🔀 [ABRINDO] Modal para splitter:', splitterData.idmeta);
+    
+    // 🆕 DEBUG: Stack trace completo para identificar origem
+    const stack = new Error().stack?.split('\n').slice(1, 5);
+    console.log('🔀 [STACK] Origem da chamada:');
+    stack?.forEach((line, index) => {
+      console.log(`  ${index + 1}: ${line.trim()}`);
+    });
+    
+    // Importar MatDialog dinamicamente
+    import('@angular/material/dialog').then(({ MatDialog }) => {
+      import('../graphviz-splitter-modal/graphviz-splitter-modal.component').then(({ GraphvizSplitterModalComponent }) => {
+        const dialogRef = this.dialog.open(GraphvizSplitterModalComponent, {
+          width: '90vw',
+          height: '90vh',
+          maxWidth: '1200px',
+          maxHeight: '800px',
+          disableClose: false,
+          hasBackdrop: false, // 🎯 NOVO: Remover backdrop para não bloquear
+          panelClass: 'splitter-modal-container', // 🎯 NOVO: Classe para z-index alto
+          data: { 
+            idmeta: splitterData.idmeta || (splitterData.key ? splitterData.key.replace('Splitter', '') : splitterData),
+            title: `Diagrama Splitter - ${splitterData.label || splitterData.key}`,
+            capacidade: this.getCapacidadeFromTipo(splitterData.tipoSplitter) || 8,
+
+          }
+        });
+
+        dialogRef.afterClosed().subscribe(result => {
+          console.log('Modal Splitter fechado:', result);
+          // 🆕 CORREÇÃO: Resetar flag quando modal for fechado
+          this.modalSplitterOpen = false;
+        });
+      });
+    });
+  }
+
+
+  private getCapacidadeFromTipo(tipoSplitter: number): number {
+    switch(tipoSplitter) {
+
+
+
+      case 1: return 2;   // 1:2 Splitter desbalanceado 1/99
+      case 2: return 2;   // 1:2 Splitter desbalanceado2/98
+      case 3: return 2;   // 1:2 Splitter desbalanceado 5/95
+      case 4: return 2;   // 1:2 Splitter desbalanceado 10/90
+      case 5: return 2;   // 1:2 Splitter desbalanceado 15/85
+      case 6: return 2;   // 1:2 Splitter desbalanceado 20/80
+      case 7: return 2;   // 1:2 Splitter desbalanceado 25/75
+      case 8: return 2;   // 1:2 Splitter desbalanceado 30/70
+      case 9: return 2;   // 1:2 Splitter desbalanceado 35/65
+      case 10: return 2;   // 1:2 Splitter desbalanceado 40/60
+      case 11: return 2;   // 1:2 Splitter desbalanceado 45/55
+      case 12: return 2;   // 1:2
+      case 13: return 4;   // 1:4
+      case 14: return 8;   // 1:8
+      case 15: return 16;  // 1:16
+      case 16: return 32;  // 1:32
+      default: return 8;  // fallback
+    }
   }
 
 

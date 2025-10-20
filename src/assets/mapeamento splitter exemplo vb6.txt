@@ -1,0 +1,128 @@
+Set rs = VIEW_PROJETO_CONEXOES_CAIXA_VISIO_CADASTRO.connMETA.Execute("SELECT F" & saida & " as saidaSP,id_meta_caixa  from " & TABELASP & ", splitter_e WHERE splitter_e.IDMETA=" & TABELASP & ".idmeta and splitter_e.IDMETA='" & IDsplitter & "';")
+
+
+    fibra = rs!saidasp
+    idcx = rs!ID_META_CAIXA
+
+    FI = FI + 1
+
+    If fibra = "=id()" Then GoTo FIM
+
+
+
+    '************* extraio tabela da boca da caixa ****************
+    POS_1 = InStr(1, fibra, ".b") + 1 ' campo  exemplo prop.boca1_6.label
+    POS_2 = InStr(1, fibra, "_")
+    DIGITOS = POS_2 - POS_1
+    BOCA = Mid(fibra, POS_1, DIGITOS)
+    TABELA = "cx" & BOCA
+
+    '************Extraio fibra da boca
+    POS_1 = InStr(1, fibra, ".l") + 1 ' campo  exemplo prop.boca1_6.label
+    POS_2 = InStr(1, fibra, "_")
+    DIGITOS = (POS_1 - 2) - POS_2
+    fibra = Mid(fibra, POS_2 + 1, DIGITOS)
+
+    'If fibra <= 12 Then TABELA = TABELA & "_t1": GoTo Analisa
+    'If fibra <= 24 Then TABELA = TABELA & "_t2": GoTo Analisa
+    'If fibra <= 36 Then TABELA = TABELA & "_t3": GoTo Analisa
+    'If fibra <= 48 Then TABELA = TABELA & "_t4": GoTo Analisa
+    'If fibra <= 60 Then TABELA = TABELA & "_t5": GoTo Analisa
+    'If fibra <= 72 Then TABELA = TABELA & "_t6": GoTo Analisa
+    'If fibra <= 84 Then TABELA = TABELA & "_t7": GoTo Analisa
+    'If fibra <= 96 Then TABELA = TABELA & "_t8": GoTo Analisa
+    'If fibra <= 108 Then TABELA = TABELA & "_t9": GoTo Analisa
+    'If fibra <= 120 Then TABELA = TABELA & "_t10": GoTo Analisa
+    'If fibra <= 132 Then TABELA = TABELA & "_t11": GoTo Analisa
+    'If fibra > 132 Then TABELA = TABELA & "_t12": GoTo Analisa
+
+
+    If fibra <= 12 Then TABELA = TABELA & "_t1": GoTo Analisa
+    If fibra <= 24 Then TABELA = TABELA & "_t2": GoTo Analisa
+    If fibra <= 36 Then TABELA = TABELA & "_t3": GoTo Analisa
+    If fibra <= 48 Then TABELA = TABELA & "_t4": GoTo Analisa
+    If fibra <= 60 Then TABELA = TABELA & "_t5": GoTo Analisa
+    If fibra <= 72 Then TABELA = TABELA & "_t6": GoTo Analisa
+    If fibra <= 84 Then TABELA = TABELA & "_t7": GoTo Analisa
+    If fibra <= 96 Then TABELA = TABELA & "_t8": GoTo Analisa
+    If fibra <= 108 Then TABELA = TABELA & "_t9": GoTo Analisa
+    If fibra <= 120 Then TABELA = TABELA & "_t10": GoTo Analisa
+    If fibra <= 132 Then TABELA = TABELA & "_t11": GoTo Analisa
+    If fibra > 132 Then TABELA = TABELA & "_t12": GoTo Analisa
+
+
+
+Analisa:
+
+    'FI = FI + 1   20-11-2013
+
+    If cont = 1 Then COR = "green"
+    If cont = 2 Then COR = "yellow"
+    If cont = 3 Then COR = "aquamarine"
+    If cont = 4 Then COR = "blue"
+    If cont = 5 Then COR = "red"
+    If cont = 6 Then COR = "darkviolet"
+    If cont = 7 Then COR = "brown"
+    If cont = 8 Then COR = "pink"
+    If cont = 9 Then COR = "black"
+    If cont = 10 Then COR = "gray"
+    If cont = 11 Then COR = "orange1"
+    If cont = 12 Then COR = "cyan3"
+    If cont = 13 Then COR = "greenyellow"
+    If cont = 14 Then COR = "gold"
+    If cont = 15 Then COR = "black"
+    If cont = 16 Then COR = "tan"
+
+
+    registro = "F" & fibra & "L"
+
+    SAIDA_SPLITTER = FI
+
+    'If cont = 1 And FI = 1 Then OBJETO_MASTER = "SPLITTER" & ":f" & FI '*********
+     OBJETO_MASTER = "SPLITTER" & ":f" & FI '*********
+
+
+
+    OBJETO_ANTERIOR = "SPLITTER" & ":f" & FI
+    PRIMEIRO_OBJETO = OBJETO_ANTERIOR
+
+
+    Do While CHEGOU <> "FIM" '**************************************
+
+        CONTA_OBJETO = CONTA_OBJETO + 1
+
+        ANALISA_TABELAGRAFO registro, TABELA, idcx, fibra ' DENTRO MODULO  LEGRAFO_DIO
+        
+        If registro = "ERRO" Then STATUS_GLOBAL_MAPEAMENTO = "ABORTAR": CHEGOU = "FIM"
+
+        If cont > 1 And CONTA_OBJETO = 1 Then Text_MAP = Text_MAP & "{rankdir=" & Sentido & ";rank = same;" & OBJETO_MASTER & ";" & OBJETO_ANTERIOR & ";}" '**********
+        Set RSID = VIEW_PROJETO_CONEXOES_CAIXA_VISIO_CADASTRO.connMETA.Execute("SELECT TIPO_OBJETO FROM ids WHERE ID_META=" & idcx & ";")
+        If RSID!tipo_objeto <> "CAIXA" And RSID!tipo_objeto <> "cabo" And RSID!tipo_objeto <> "POP" And FLAG_SP = 0 And RSID!tipo_objeto <> "DIO" And RSID!tipo_objeto <> "Rabicho" And RSID!tipo_objeto <> "CONDOMINIO" Then Splitter_Funcao
+       ' If OBJETO_ANTERIOR <> OBJETO_ATUAL And RSID!tipo_objeto <> "splitter" And RSID!tipo_objeto <> "cabo" And RSID!tipo_objeto <> "POP" And flag_caixa = 0 And RSID!tipo_objeto <> "DIO" And RSID!tipo_objeto <> "Rabicho" And RSID!tipo_objeto <> "CONDOMINIO" Then CAIXA
+        If RSID!tipo_objeto <> "splitter" And RSID!tipo_objeto <> "cabo" And RSID!tipo_objeto <> "POP" And flag_caixa = 0 And RSID!tipo_objeto <> "DIO" And RSID!tipo_objeto <> "Rabicho" And RSID!tipo_objeto <> "CONDOMINIO" Then CAIXA
+
+
+        If RSID!tipo_objeto = "CAIXA" Then INVERTE_FLAG
+        If RSID!tipo_objeto = "splitter" Then INVERTE_FLAG_SP
+        'If RSID!tipo_objeto = "splitter" Then SPLITTER_FUNCAO: CHEGOU = "FIM"
+        If RSID!tipo_objeto = "Rabicho" Then RABICHO: CHEGOU = "FIM"
+        If RSID!tipo_objeto = "POP" Then pop: CHEGOU = "FIM"
+        If RSID!tipo_objeto = "CONDOMINIO" Then CONDOMINIO: CHEGOU = "FIM"
+        If RSID!tipo_objeto = "DIO" Then fibra_dio = fibra: DIO: CHEGOU = "FIM"
+        If registro = "" Then CHEGOU = "FIM"
+         If RSID!tipo_objeto = "cabo" Then Cabo_FUNCAO: GoTo pula
+
+        OBJETO_ANTERIOR = OBJETO_ATUAL
+
+pula:
+
+        Loop
+
+
+
+
+
+
+
+
+ digraph G {nodesep = 0.01;size= 7.9;ranksep=0.5;rankdir=LR;node[label="POP_Centro: B1C1_F2\n  (OLT_1_1_2)",shape=record,width=.1,height=.15,fontsize=8.5];SPLITTERE;node[shape=record,width=.1,height=.1,fontsize=9];SPLITTER[ label= "< f1 >1|< f2 > 2|< f3 >3|< f4 > 4|< f5 > 5|< f6 > 6|< f7 > 7|< f8 > 8",height=1.8,fontsize=10];SPLITTERE->SPLITTER[label="CABO_FEEDER_04 (1)",fontsize=9];   CX_CTO_17[label=" CX_CTO_17",shape=box,ranksep=0.001,fontsize=8,style="rounded,filled",fillcolor=lemonchiffon];SPLITTER:f1-> CX_CTO_17 [label="(1)    302034  CABO_AB_01",fontcolor=black,color=green,style ="setlinewidth(1.5)",fontsize=7.8,arrowsize=0.5] CX_CTO_17[ranksep=0.001];SPLIT_398189_CX_CTO_17[label="_10/90_SPLITTER:398189\n( CX_CTO_17 )",shape=polygon,sides="4",style="rounded,filled",ranksep=0.001,fontsize=6.5,GRADIENTANGLE=100,fillcolor=palegreen]; CX_CTO_17->SPLIT_398189_CX_CTO_17[label="Entrada",color=green,fontsize=9,weight=0.1]{rankdir=LR;rank = same;SPLITTER:f2;SPLITTER:f2;} CX_CTO_17[label=" CX_CTO_17",shape=box,ranksep=0.001,fontsize=8,style="rounded,filled",fillcolor=lemonchiffon];SPLITTER:f2-> CX_CTO_17 [label="(2)    302034  CABO_AB_01",fontcolor=black,color=yellow,style ="setlinewidth(1.5)",fontsize=7.8,arrowsize=0.5] CX_CTO_18[label=" CX_CTO_18",shape=box,ranksep=0.001,fontsize=8,style="rounded,filled",fillcolor=lemonchiffon]; CX_CTO_17-> CX_CTO_18 [label="(2)    302036  CABO_AB_01",fontcolor=black,color=yellow,style ="setlinewidth(1.5)",fontsize=7.8,arrowsize=0.5]{rankdir=LR;rank = same;SPLITTER:f3;SPLITTER:f3;} CX_CTO_17[label=" CX_CTO_17",shape=box,ranksep=0.001,fontsize=8,style="rounded,filled",fillcolor=lemonchiffon];SPLITTER:f3-> CX_CTO_17 [label="(3)    302034  CABO_AB_01",fontcolor=black,color=aquamarine,style ="setlinewidth(1.5)",fontsize=7.8,arrowsize=0.5] CX_CTO_18[label=" CX_CTO_18",shape=box,ranksep=0.001,fontsize=8,style="rounded,filled",fillcolor=lemonchiffon]; CX_CTO_17-> CX_CTO_18 [label="(3)    302036  CABO_AB_01",fontcolor=black,color=aquamarine,style ="setlinewidth(1.5)",fontsize=7.8,arrowsize=0.5] CX_CTO_19[label=" CX_CTO_19",shape=box,ranksep=0.001,fontsize=8,style="rounded,filled",fillcolor=lemonchiffon]; CX_CTO_18-> CX_CTO_19 [label="(3)    302037  CABO_AB_01",fontcolor=black,color=aquamarine,style ="setlinewidth(1.5)",fontsize=7.8,arrowsize=0.5]{rankdir=LR;rank = same;SPLITTER:f4;SPLITTER:f4;} CX_CTO_17[label=" CX_CTO_17",shape=box,ranksep=0.001,fontsize=8,style="rounded,filled",fillcolor=lemonchiffon];SPLITTER:f4-> CX_CTO_17 [label="(4)    302034  CABO_AB_01",fontcolor=black,color=blue,style ="setlinewidth(1.5)",fontsize=7.8,arrowsize=0.5] CX_CTO_18[label=" CX_CTO_18",shape=box,ranksep=0.001,fontsize=8,style="rounded,filled",fillcolor=lemonchiffon]; CX_CTO_17-> CX_CTO_18 [label="(4)    302036  CABO_AB_01",fontcolor=black,color=blue,style ="setlinewidth(1.5)",fontsize=7.8,arrowsize=0.5] CX_CTO_19[label=" CX_CTO_19",shape=box,ranksep=0.001,fontsize=8,style="rounded,filled",fillcolor=lemonchiffon]; CX_CTO_18-> CX_CTO_19 [label="(4)    302037  CABO_AB_01",fontcolor=black,color=blue,style ="setlinewidth(1.5)",fontsize=7.8,arrowsize=0.5] CX_CTO_20[label=" CX_CTO_20",shape=box,ranksep=0.001,fontsize=8,style="rounded,filled",fillcolor=lemonchiffon]; CX_CTO_19-> CX_CTO_20 [label="(4)    302038  CABO_AB_01",fontcolor=black,color=blue,style ="setlinewidth(1.5)",fontsize=7.8,arrowsize=0.5]{rankdir=LR;rank = same;SPLITTER:f5;SPLITTER:f5;} CX_CTO_17[label=" CX_CTO_17",shape=box,ranksep=0.001,fontsize=8,style="rounded,filled",fillcolor=lemonchiffon];SPLITTER:f5-> CX_CTO_17 [label="(5)    302034  CABO_AB_01",fontcolor=black,color=red,style ="setlinewidth(1.5)",fontsize=7.8,arrowsize=0.5] CX_CTO_18[label=" CX_CTO_18",shape=box,ranksep=0.001,fontsize=8,style="rounded,filled",fillcolor=lemonchiffon]; CX_CTO_17-> CX_CTO_18 [label="(5)    302036  CABO_AB_01",fontcolor=black,color=red,style ="setlinewidth(1.5)",fontsize=7.8,arrowsize=0.5] CX_CTO_19[label=" CX_CTO_19",shape=box,ranksep=0.001,fontsize=8,style="rounded,filled",fillcolor=lemonchiffon]; CX_CTO_18-> CX_CTO_19 [label="(5)    302037  CABO_AB_01",fontcolor=black,color=red,style ="setlinewidth(1.5)",fontsize=7.8,arrowsize=0.5] CX_CTO_20[label=" CX_CTO_20",shape=box,ranksep=0.001,fontsize=8,style="rounded,filled",fillcolor=lemonchiffon]; CX_CTO_19-> CX_CTO_20 [label="(5)    302038  CABO_AB_01",fontcolor=black,color=red,style ="setlinewidth(1.5)",fontsize=7.8,arrowsize=0.5] CX_CTO_21[label=" CX_CTO_21",shape=box,ranksep=0.001,fontsize=8,style="rounded,filled",fillcolor=lemonchiffon]; CX_CTO_20-> CX_CTO_21 [label="(5)    302039  CABO_AB_01",fontcolor=black,color=red,style ="setlinewidth(1.5)",fontsize=7.8,arrowsize=0.5]{rankdir=LR;rank = same;SPLITTER:f6;SPLITTER:f6;} CX_CTO_17[label=" CX_CTO_17",shape=box,ranksep=0.001,fontsize=8,style="rounded,filled",fillcolor=lemonchiffon];SPLITTER:f6-> CX_CTO_17 [label="(6)    302034  CABO_AB_01",fontcolor=black,color=darkviolet,style ="setlinewidth(1.5)",fontsize=7.8,arrowsize=0.5] CX_CTO_18[label=" CX_CTO_18",shape=box,ranksep=0.001,fontsize=8,style="rounded,filled",fillcolor=lemonchiffon]; CX_CTO_17-> CX_CTO_18 [label="(6)    302036  CABO_AB_01",fontcolor=black,color=darkviolet,style ="setlinewidth(1.5)",fontsize=7.8,arrowsize=0.5] CX_CTO_19[label=" CX_CTO_19",shape=box,ranksep=0.001,fontsize=8,style="rounded,filled",fillcolor=lemonchiffon]; CX_CTO_18-> CX_CTO_19 [label="(6)    302037  CABO_AB_01",fontcolor=black,color=darkviolet,style ="setlinewidth(1.5)",fontsize=7.8,arrowsize=0.5] CX_CTO_20[label=" CX_CTO_20",shape=box,ranksep=0.001,fontsize=8,style="rounded,filled",fillcolor=lemonchiffon]; CX_CTO_19-> CX_CTO_20 [label="(6)    302038  CABO_AB_01",fontcolor=black,color=darkviolet,style ="setlinewidth(1.5)",fontsize=7.8,arrowsize=0.5] CX_CTO_21[label=" CX_CTO_21",shape=box,ranksep=0.001,fontsize=8,style="rounded,filled",fillcolor=lemonchiffon]; CX_CTO_20-> CX_CTO_21 [label="(6)    302039  CABO_AB_01",fontcolor=black,color=darkviolet,style ="setlinewidth(1.5)",fontsize=7.8,arrowsize=0.5] CX_CTO_22[label=" CX_CTO_22",shape=box,ranksep=0.001,fontsize=8,style="rounded,filled",fillcolor=lemonchiffon]; CX_CTO_21-> CX_CTO_22 [label="(6)    302040  CABO_AB_01",fontcolor=black,color=darkviolet,style ="setlinewidth(1.5)",fontsize=7.8,arrowsize=0.5] CX_CTO_23[label=" CX_CTO_23",shape=box,ranksep=0.001,fontsize=8,style="rounded,filled",fillcolor=lemonchiffon]; CX_CTO_22-> CX_CTO_23 [label="(6)    302041  CABO_AB_01",fontcolor=black,color=darkviolet,style ="setlinewidth(1.5)",fontsize=7.8,arrowsize=0.5]{rankdir=LR;rank = same;SPLITTER:f7;SPLITTER:f7;} CX_CTO_17[label=" CX_CTO_17",shape=box,ranksep=0.001,fontsize=8,style="rounded,filled",fillcolor=lemonchiffon];SPLITTER:f7-> CX_CTO_17 [label="(7)    302034  CABO_AB_01",fontcolor=black,color=brown,style ="setlinewidth(1.5)",fontsize=7.8,arrowsize=0.5] CX_CTO_18[label=" CX_CTO_18",shape=box,ranksep=0.001,fontsize=8,style="rounded,filled",fillcolor=lemonchiffon]; CX_CTO_17-> CX_CTO_18 [label="(7)    302036  CABO_AB_01",fontcolor=black,color=brown,style ="setlinewidth(1.5)",fontsize=7.8,arrowsize=0.5] CX_CTO_19[label=" CX_CTO_19",shape=box,ranksep=0.001,fontsize=8,style="rounded,filled",fillcolor=lemonchiffon]; CX_CTO_18-> CX_CTO_19 [label="(7)    302037  CABO_AB_01",fontcolor=black,color=brown,style ="setlinewidth(1.5)",fontsize=7.8,arrowsize=0.5] CX_CTO_20[label=" CX_CTO_20",shape=box,ranksep=0.001,fontsize=8,style="rounded,filled",fillcolor=lemonchiffon]; CX_CTO_19-> CX_CTO_20 [label="(7)    302038  CABO_AB_01",fontcolor=black,color=brown,style ="setlinewidth(1.5)",fontsize=7.8,arrowsize=0.5] CX_CTO_21[label=" CX_CTO_21",shape=box,ranksep=0.001,fontsize=8,style="rounded,filled",fillcolor=lemonchiffon]; CX_CTO_20-> CX_CTO_21 [label="(7)    302039  CABO_AB_01",fontcolor=black,color=brown,style ="setlinewidth(1.5)",fontsize=7.8,arrowsize=0.5] CX_CTO_22[label=" CX_CTO_22",shape=box,ranksep=0.001,fontsize=8,style="rounded,filled",fillcolor=lemonchiffon]; CX_CTO_21-> CX_CTO_22 [label="(7)    302040  CABO_AB_01",fontcolor=black,color=brown,style ="setlinewidth(1.5)",fontsize=7.8,arrowsize=0.5] CX_CTO_23[label=" CX_CTO_23",shape=box,ranksep=0.001,fontsize=8,style="rounded,filled",fillcolor=lemonchiffon]; CX_CTO_22-> CX_CTO_23 [label="(7)    302041  CABO_AB_01",fontcolor=black,color=brown,style ="setlinewidth(1.5)",fontsize=7.8,arrowsize=0.5]{rankdir=LR;rank = same;SPLITTER:f8;SPLITTER:f8;} CX_CTO_17[label=" CX_CTO_17",shape=box,ranksep=0.001,fontsize=8,style="rounded,filled",fillcolor=lemonchiffon];SPLITTER:f8-> CX_CTO_17 [label="(8)    302034  CABO_AB_01",fontcolor=black,color=pink,style ="setlinewidth(1.5)",fontsize=7.8,arrowsize=0.5] CX_CTO_18[label=" CX_CTO_18",shape=box,ranksep=0.001,fontsize=8,style="rounded,filled",fillcolor=lemonchiffon]; CX_CTO_17-> CX_CTO_18 [label="(8)    302036  CABO_AB_01",fontcolor=black,color=pink,style ="setlinewidth(1.5)",fontsize=7.8,arrowsize=0.5] CX_CTO_19[label=" CX_CTO_19",shape=box,ranksep=0.001,fontsize=8,style="rounded,filled",fillcolor=lemonchiffon]; CX_CTO_18-> CX_CTO_19 [label="(8)    302037  CABO_AB_01",fontcolor=black,color=pink,style ="setlinewidth(1.5)",fontsize=7.8,arrowsize=0.5] CX_CTO_20[label=" CX_CTO_20",shape=box,ranksep=0.001,fontsize=8,style="rounded,filled",fillcolor=lemonchiffon]; CX_CTO_19-> CX_CTO_20 [label="(8)    302038  CABO_AB_01",fontcolor=black,color=pink,style ="setlinewidth(1.5)",fontsize=7.8,arrowsize=0.5] CX_CTO_21[label=" CX_CTO_21",shape=box,ranksep=0.001,fontsize=8,style="rounded,filled",fillcolor=lemonchiffon]; CX_CTO_20-> CX_CTO_21 [label="(8)    302039  CABO_AB_01",fontcolor=black,color=pink,style ="setlinewidth(1.5)",fontsize=7.8,arrowsize=0.5] CX_CTO_22[label=" CX_CTO_22",shape=box,ranksep=0.001,fontsize=8,style="rounded,filled",fillcolor=lemonchiffon]; CX_CTO_21-> CX_CTO_22 [label="(8)    302040  CABO_AB_01",fontcolor=black,color=pink,style ="setlinewidth(1.5)",fontsize=7.8,arrowsize=0.5] CX_CTO_23[label=" CX_CTO_23",shape=box,ranksep=0.001,fontsize=8,style="rounded,filled",fillcolor=lemonchiffon]; CX_CTO_22-> CX_CTO_23 [label="(8)    302041  CABO_AB_01",fontcolor=black,color=pink,style ="setlinewidth(1.5)",fontsize=7.8,arrowsize=0.5]size = "60";}
