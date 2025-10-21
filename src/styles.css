@@ -4,20 +4,36 @@
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
-/* 🏠 NOVO: Estilos para GoJS MatDialog - REMOVIDOS TEMPORARIAMENTE PARA TESTE */
-/* .gojs-dialog-container .mat-mdc-dialog-container {
-  padding: 0 !important;
-  overflow: hidden !important;
-  background: transparent !important;
+/* 🎯 HIERARQUIA SIMPLES DE Z-INDEX */
+/* Visualiza-DIO < Graphviz-Modal < GoJS-Demo < Graphviz-Splitter-Modal */
+
+/* 1. Visualiza-DIO (menor z-index) */
+.visualiza-dio-container {
+  z-index: 1000 !important;
 }
 
-.gojs-dialog-container {
-  z-index: 9999 !important;
-} */
+/* 2. Graphviz-Modal */
+.graphviz-modal-container .mat-mdc-dialog-container {
+  z-index: 2000 !important;
+  position: fixed !important;
+  background: white !important;
+  border: 2px solid #007bff !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3) !important;
+}
 
-/* 🔀 NOVO: Estilos para Modal Splitter - Z-index MUITO alto para aparecer na frente do GoJS */
-.splitter-modal-container .mat-mdc-dialog-container {
-  z-index: 999999 !important;
+.graphviz-modal-container {
+  z-index: 2000 !important;
+}
+
+/* 3. GoJS-Demo (componente direto, não usa MatDialog) */
+app-gojs-demo .modal {
+  z-index: 3000 !important;
+}
+
+/* 4. Graphviz-Splitter-Modal (maior z-index) */
+app-graphviz-splitter-modal .mat-mdc-dialog-container {
+  z-index: 4000 !important;
   position: fixed !important;
   background: white !important;
   border: 2px solid #007bff !important;
@@ -26,21 +42,20 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 }
 
 .splitter-modal-container {
-  z-index: 999999 !important;
+  z-index: 4000 !important;
 }
 
-/* Garantir que o backdrop também tenha z-index alto */
+/* CDK Overlay padrão */
 .cdk-overlay-backdrop {
-  z-index: 999998 !important;
+  z-index: 1999 !important;
 }
 
-/* Forçar z-index alto em todos os elementos do modal */
 .cdk-overlay-container {
-  z-index: 999999 !important;
+  z-index: 2000 !important;
 }
 
 .cdk-overlay-pane {
-  z-index: 999999 !important;
+  z-index: 2000 !important;
 }
 
 /* Remover backdrop quando hasBackdrop: false */

@@ -1,16 +1,13 @@
 /* 🎯 NOVO: Z-index MUITO alto para aparecer na frente do GoJS */
 :host {
-  z-index: 999999 !important;
   position: fixed !important;
 }
 
 .modal-header {
-  z-index: 999999 !important;
   position: relative !important;
 }
 
 .modal-content {
-  z-index: 999999 !important;
   position: relative !important;
 }
 

@@ -384,10 +384,44 @@ export class FiberTraceUnifilarSplitterService {
           `SELECT F${fiber} FROM ${tabela} WHERE IDMETA = {idmeta}`,
           { idmeta: idmeta }
         ).toPromise();
-
-       
-
+        
         const conteudosp = BOCAResponse?.data?.[0]?.[`F${fiber}`] || `F${fiber}`;
+
+        //============================================================= */
+        // 🆕 NOVO: Verificar se a saída não está conectada (=id())
+
+        if (conteudosp === '=id()') {
+          console.log(`🚫 [SPLITTER-SAIDA] Saída F${fiber} não conectada (=id()) - fim do rastreamento`);
+          
+          // Criar step de fim para saída não conectada
+          const currentStep: FiberTraceStep = {
+            idmeta: idmeta,
+            fiber: fiber,
+            tabela: tabela,
+            registro: registro,
+            tipo: 'saida_nao_conectada',
+            status: 'fim'
+          };
+          tracePath.push(currentStep);
+          
+          // 🆕 CORREÇÃO: Finalizar DOT string apenas se solicitado (igual ao código da caixa)
+          if (finalizeDot) {
+            this.dotString += 'size="10"}';
+            console.log(`🎨 [DOT] Diagrama final gerado: ${this.dotString}`);
+          }
+          
+          observer.next({ 
+            success: true, 
+            trace: tracePath, 
+            status: 'fim',
+            dotString: this.dotString
+          });
+          observer.complete();
+          return;
+        }
+        
+        //==caso saida diferente de "=id()" prossegue=========================================================== */
+       
         const match = conteudosp.match(/\.([^_]+)_(\d+)\./);
         let boca = '';
         let fibraNum= 0;
@@ -677,7 +711,7 @@ console.log ('------------------>capacidade:',capacidade)
 const CAMPOS = construirCamposSplitter(capacidade);
 
 
- this.dotStringEntrada = "digraph G {size= 7.9;ranksep=0.5;rankdir=LR;node[label=" + DESTNAME + ",shape=record,width=.1,height=.15,fontsize=8.5];SPLITTERE;node[shape=record,width=.1,height=.1,fontsize=9];SPLITTER[ label= " + CAMPOS + ",height=1.8,fontsize=10];SPLITTERE->SPLITTER[label= " + label_cabo + ",fontsize=9]; "
+ this.dotStringEntrada = "digraph G {size= 7.9;ranksep=0.5;rankdir=LR;node[label=" + DESTNAME + ",shape=record,width=.1,height=.15,fontsize=8.5,color=green,style=filled,fillcolor=aquamarine];SPLITTERE;node[shape=record,width=.1,height=.1,fontsize=9,color=blue,style=filled,fillcolor=Lightblue ];SPLITTER[ label= " + CAMPOS + ",height=1.8,fontsize=12];SPLITTERE->SPLITTER[label= " + label_cabo + ",fontsize=9]; "
 
  //console.log(`------------------>🔍 [ENTRADA] DOT string entrada: ${this.dotStringEntrada}`);
  //return this.dotStringEntrada;
@@ -1560,7 +1594,8 @@ const CAMPOS = construirCamposSplitter(capacidade);
     let popIdmeta = idmeta;
     
     // Formato: =TST714932!PROP.ROW_5.LABEL
-    const matchTST = conteudo.match(/=TST(\d+)!/);
+    //const matchTST = conteudo.match(/=TST(\d+)!/);
+    const matchTST = conteudo.match(/TST(\d+)!/);
     if (matchTST) {
       popIdmeta = parseInt(matchTST[1]);
       console.log(`🏢 [POP] IDMETA do POP extraído: ${popIdmeta}`);
@@ -1586,11 +1621,11 @@ const CAMPOS = construirCamposSplitter(capacidade);
       const novoObjetoAtual = `"${sigla.substring(0, 22)}"`;
       
       // 🆕 CORREÇÃO: Adicionar nó do objeto atual
-      this.dotString += `${novoObjetoAtual}[label=${novoObjetoAtual},color="${this.cor}"];`;
+      this.dotString += `${novoObjetoAtual}[shape=oval,label=${novoObjetoAtual},color=red,style=filled,fillcolor=salmon];`;
       
       // 🆕 CORREÇÃO: Adicionar conexão entre objetos com label da fibra (igual ao VB6 linha 597)
       if (this.Objeto_Anterior) {
-        const labelFibra = this.fibraString || `"${fiber}"`;
+        const labelFibra = `"${fiber}"`//this.fibraString || `"${fiber}"`;
         // 🎨 NOVO: Usar cor específica da fibra se disponível (passada via parâmetros globais)
         const corAtual = (this as any).fibraColorAtual || this.cor;
         const estiloLinha = this.getFiberStyle(corAtual, fiber);
