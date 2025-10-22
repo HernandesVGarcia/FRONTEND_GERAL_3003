@@ -2,18 +2,14 @@ import { AvoidsLinksRouter } from '../utils/AvoidsLinksRouter'
 
 import { Component, 
   OnInit, 
-  Input, 
-  Output, 
-  EventEmitter, 
+  Inject, 
   NgZone, 
   ChangeDetectorRef, 
   ElementRef, 
   ViewChild,
   AfterViewInit, 
-  OnChanges,
-  OnDestroy, 
-  SimpleChanges } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
+  OnDestroy } from '@angular/core';
+import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { firstValueFrom } from 'rxjs';  
 import { CommonModule } from '@angular/common';
 import * as go from 'gojs';
@@ -128,9 +124,7 @@ import { DestinoSigla } from '../modelo/DestinoSigla';
   standalone: true,
   imports: [CommonModule]
 })
-export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
-  @Input() isOpen: boolean = false;
-  @Output() closeModal = new EventEmitter<void>();
+export class GoJSDemoComponent implements OnInit, AfterViewInit {
   @ViewChild('diagramDiv') diagramDiv: ElementRef | null = null;
   
   public diagramInitialized = false;
@@ -290,6 +284,8 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
   private static globalListenerAdded = false;
   
   constructor(
+     public dialogRef: MatDialogRef<GoJSDemoComponent>,
+     @Inject(MAT_DIALOG_DATA) public data: any,
      private ngZone: NgZone,
      private cdr: ChangeDetectorRef,
      private servicoBocas: BocasService,
@@ -369,7 +365,7 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
     // 🏠 NOVO: Carregar numerocx da caixa antes dos dados completos
     await this.carregarNumerocxCaixa();
     
-    this.carregarDadosCompletosAsync();
+    setTimeout(() => {this.carregarDadosCompletosAsync()},100);
     //setTimeout(() => {this.carregarConexoesBocas()},1);
     //setTimeout(() => {this.carregarConexoesSplitters()},3000);
     //setTimeout(() => {this.carregarConexoesBocas9798()},2000);
@@ -544,7 +540,7 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
           }
         });
       }
-    }, 100);
+    }, 10);
 
     setTimeout(() => {this.carregarConexoesSplitters()},10);
     setTimeout(() => {this.carregarConexoesBocas9798()},10)
@@ -972,36 +968,14 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnChanges {
   // 🆕 NOVO: Propriedade para armazenar dados do splitter atual
   private currentSplitterData: any = null;
 
-  ngOnChanges(changes: SimpleChanges): void {
-    console.log('🔀 [DEBUG] ngOnChanges() chamado');
-    console.log('🔀 [DEBUG] changes:', changes);
-    if (changes['isOpen'] && changes['isOpen'].currentValue === true) {
-      console.log('Modal está sendo aberto');
-      if (!this.diagramInitialized || !this.diagram) {
-        // Aguardar a renderização do DOM
-        
-        
-        setTimeout(() => {
-          console.log('Iniciando diagrama após abertura do modal');
-          this.initializeDiagram();
-        }, 2000); // a partir de 200 o tempo, começa a nao dar tempo de ter a capacidade do cabo lida
-      } else {
-        console.log('Diagrama já inicializado, apenas atualizando');
-        this.updateDiagramLayout();
-      }
-    }
-  }
 
   //===============================================================================================================
  
   ngAfterViewInit(): void {
-    console.log('🔀 [DEBUG] ngAfterViewInit() chamado');
-    console.log('🔀 [DEBUG] isOpen:', this.isOpen);
-    if (this.isOpen) {
-      console.log('AfterViewInit: Modal está aberto, inicializando diagrama');
-      this.mostrarCursorEspera();
-      //setTimeout(() => this.initializeDiagram(), 2000);
-    }
+    console.log('🔀 [DEBUG] ngAfterViewInit() chamado - MatDialog');
+    console.log('AfterViewInit: Modal MatDialog aberto, inicializando diagrama');
+    this.mostrarCursorEspera();
+    setTimeout(() => this.initializeDiagram(), 100);
     this.setupDragFunctionality();
 
     }
@@ -1657,20 +1631,27 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
 
   private setupDragFunctionality(): void {
     setTimeout(() => {
-
-      console.log('entrou em setupDragFunctionality');
-      this.modalElement = document.querySelector('.modal') as HTMLElement;
-      this.modalContentElement = document.querySelector('.modal-content') as HTMLElement;
-      this.modalHeaderElement = document.querySelector('.modal-header') as HTMLElement;
+      console.log('entrou em setupDragFunctionality - MatDialog');
       
-      if (this.modalHeaderElement && this.modalContentElement) {
-        console.log('Modal header encontrado para arrastar');
+      // 🆕 NOVO: Procurar pelo container do MatDialog
+      this.modalElement = document.querySelector('.mat-mdc-dialog-container') as HTMLElement;
+      this.modalContentElement = document.querySelector('.gojs-modal-content') as HTMLElement;
+      this.modalHeaderElement = document.querySelector('.modal-header') as HTMLElement;
+
+      console.log('Modal elements encontrados:', {
+        modalElement: !!this.modalElement,
+        modalContentElement: !!this.modalContentElement,
+        modalHeaderElement: !!this.modalHeaderElement
+      });
+
+      if (this.modalHeaderElement && this.modalElement) {
+        console.log('Modal header encontrado para arrastar - MatDialog');
         // Adicionar listener apenas no cabeçalho, não no modal inteiro
         this.modalHeaderElement.addEventListener('mousedown', (e: MouseEvent) => this.dragStart(e));
         document.addEventListener('mousemove', (e: MouseEvent) => this.dragMove(e));
         document.addEventListener('mouseup', (e: MouseEvent) => this.dragEnd(e));
       } else {
-        console.warn('Modal header não encontrado para configurar o arrastar');
+        console.warn('Modal header não encontrado para configurar o arrastar - MatDialog');
       }
     }, 500);
   }
@@ -1688,8 +1669,8 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
       this.initialY = event.clientY - this.currentY;
       this.isDragging = true;
       
-      if (this.modalContentElement) {
-        this.modalContentElement.classList.add('dragging');
+      if (this.modalElement) {
+        this.modalElement.classList.add('dragging');
       }
     }
   }
@@ -1697,15 +1678,15 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
   //==========================permite movimentar o modal========================================================================================================
 
   private dragMove(event: MouseEvent): void {
-
     //console.log('entrou em dragMove');
-    if (this.isDragging && this.modalContentElement) {
+    if (this.isDragging && this.modalElement) {
       event.preventDefault();
       
       this.currentX = event.clientX - this.initialX;
       this.currentY = event.clientY - this.initialY;
 
-      this.setTranslate(this.currentX, this.currentY, this.modalContentElement);
+      // 🆕 NOVO: Aplicar transform no container do MatDialog
+      this.setTranslate(this.currentX, this.currentY, this.modalElement);
     }
   }
 
@@ -1715,8 +1696,8 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
       this.initialY = this.currentY;
       
       this.isDragging = false;
-      if (this.modalContentElement) {
-        this.modalContentElement.classList.remove('dragging');
+      if (this.modalElement) {
+        this.modalElement.classList.remove('dragging');
       }
     }
   }
@@ -2821,7 +2802,7 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
 
          setTimeout(() => {
             this.aplicarCoresEmTodasAsConexoes();
-          }, 2000);
+          }, 2600);
     
 
 
@@ -2831,7 +2812,7 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
 
 
 
-      }, 1); 
+      }, 400); 
 
           
         }, 1);
@@ -3442,7 +3423,7 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
             
             this.gojsDropComponent.adicionarDropsAoDiagrama(this.diagram);
           } 
-          },100);
+          },3500); //estava em 100
 
           
 
@@ -3503,11 +3484,7 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
     }
     
     console.log('Fechando modal GoJS');
-    // Certifique-se de executar a emissão do evento dentro da NgZone
-    this.ngZone.run(() => {
-      this.closeModal.emit();
-    });
-  
+    this.dialogRef.close();
   }
 
 

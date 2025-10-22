@@ -27,6 +27,7 @@ export class GraphvizSplitterModalComponent implements OnInit, AfterViewInit {
   error: string = '';
   isGeneratingPDF: boolean = false;
   splitterInfo: any = null;
+  containerId: string = ''; // 🆕 NOVO: ID único do container baseado no IDMETA
   
   // Variáveis para zoom e pan
   private currentZoom: number = 1;
@@ -56,6 +57,10 @@ export class GraphvizSplitterModalComponent implements OnInit, AfterViewInit {
   ) {}
 
   ngOnInit() {
+    // 🆕 NOVO: Gerar ID único do container baseado no IDMETA
+    this.containerId = `graphviz-splitter-container-${this.data.idmeta}`;
+    console.log('🔍 [SPLITTER-MODAL] Container ID:', this.containerId);
+    
     // 🆕 NOVO: Carregar splitter usando o serviço
     if (this.data && this.data.idmeta) {
       console.log('🔀 [SPLITTER-MODAL] Carregando splitter IDMETA:', this.data.idmeta);
@@ -140,11 +145,10 @@ export class GraphvizSplitterModalComponent implements OnInit, AfterViewInit {
     await new Promise(resolve => setTimeout(resolve, 200));
     
     console.log('🔍 [GRAPHVIZ] ngAfterViewInit - Verificando container...');
-    const container = document.getElementById('graphviz-container');
-    console.log('🔍 [GRAPHVIZ] Container encontrado:', !!container);
+    const container = document.getElementById(this.containerId);
+    console.log('🔍 [GRAPHVIZ] Container encontrado:', !!container, 'ID:', this.containerId);
     
-    // 🆕 NOVO: Adicionar função global para interatividade
-    this.setupInteractivity();
+    // 🆕 CORREÇÃO: Não configurar interatividade aqui - função global já está configurada no graphviz-modal
     
     // 🆕 NOVO: Renderizar quando o splitter for carregado
     if (this.dotContent && !this.isLoading) {
@@ -217,37 +221,8 @@ export class GraphvizSplitterModalComponent implements OnInit, AfterViewInit {
       if (this.modalHeaderElement && this.modalContentElement) {
         console.log('Modal header encontrado para arrastar');
         
-        // Adicionar listener global no documento para capturar todos os mousedown
-        document.addEventListener('mousedown', (e: MouseEvent) => {
-          console.log('🔧 [DRAG] Evento mousedown global capturado');
-          console.log('🔧 [DRAG] Target:', e.target);
-          console.log('🔧 [DRAG] Modal header element:', !!this.modalHeaderElement);
-          
-          // Verificar se clicou no header ou em qualquer elemento dentro dele
-          const target = e.target as HTMLElement;
-          const isInHeader = this.modalHeaderElement && (
-            target === this.modalHeaderElement ||
-            this.modalHeaderElement.contains(target) ||
-            target.closest('.modal-header') === this.modalHeaderElement ||
-            target.classList.contains('modal-header') ||
-            target.closest('.modal-header') !== null
-          );
-          
-          console.log('🔧 [DRAG] Target === ModalHeader:', target === this.modalHeaderElement);
-          console.log('🔧 [DRAG] ModalHeader.contains(Target):', this.modalHeaderElement?.contains(target));
-          console.log('🔧 [DRAG] Target.closest(.modal-header):', target.closest('.modal-header'));
-          console.log('🔧 [DRAG] Target.classList.contains(modal-header):', target.classList.contains('modal-header'));
-          console.log('🔧 [DRAG] isInHeader:', isInHeader);
-          
-          if (isInHeader) {
-            console.log('🔧 [DRAG] Clicou no header - iniciando drag');
-            this.dragStart(e);
-          } else {
-            console.log('🔧 [DRAG] Não clicou no header');
-          }
-        }, true);
-        
-        // Adicionar listeners para mousemove e mouseup
+        // 🆕 CORREÇÃO: Usar a estratégia do visualiza-dio - listener apenas no header específico
+        this.modalHeaderElement.addEventListener('mousedown', (e: MouseEvent) => this.dragStart(e));
         document.addEventListener('mousemove', (e: MouseEvent) => this.dragMove(e));
         document.addEventListener('mouseup', (e: MouseEvent) => this.dragEnd(e));
         
@@ -346,27 +321,9 @@ export class GraphvizSplitterModalComponent implements OnInit, AfterViewInit {
 
 //==================================================================================================
 
-  // 🆕 NOVO: Configurar interatividade do GraphViz
-  private setupInteractivity(): void {
-    // Adicionar função global para clique no splitter
-    (window as any).onSplitterClick = (idmeta: number, capacidade: number, label: string) => {
-      console.log(`🔀 [SPLITTER-CLICK] IDMETA: ${idmeta}, Capacidade: ${capacidade}F, Label: ${label}`);
-      this.handleSplitterClick(idmeta, capacidade, label);
-    };
-  }
+  // 🆕 CORREÇÃO: Método removido - não deve sobrescrever função global onSplitterClick
 
-  // 🆕 NOVO: Manipular clique no splitter
-  private handleSplitterClick(idmeta: number, capacidade: number, label: string): void {
-    // Mostrar informações do splitter
-    const message = `Splitter Clicado!\n\nIDMETA: ${idmeta}\nCapacidade: ${capacidade}F\nLabel: ${label}`;
-    alert(message);
-    
-    // Aqui você pode adicionar outras ações:
-    // - Abrir modal de detalhes
-    // - Navegar para outra página
-    // - Mostrar informações adicionais
-    // - etc.
-  }
+  // 🆕 CORREÇÃO: Método removido - clique no splitter é tratado pelo graphviz-modal.component.ts
 
 
   // 🆕 NOVO: Verificar se o DOT string está completo
@@ -419,9 +376,9 @@ export class GraphvizSplitterModalComponent implements OnInit, AfterViewInit {
       const maxAttempts = 10;
       
       while (!container && attempts < maxAttempts) {
-        container = document.getElementById('graphviz-container');
+        container = document.getElementById(this.containerId);
         if (!container) {
-          console.log(`🔄 [GRAPHVIZ] Tentativa ${attempts + 1}/${maxAttempts} - Container não encontrado, aguardando...`);
+          console.log(`🔄 [GRAPHVIZ] Tentativa ${attempts + 1}/${maxAttempts} - Container não encontrado, aguardando... ID: ${this.containerId}`);
           await new Promise(resolve => setTimeout(resolve, 100));
           attempts++;
         }
@@ -460,7 +417,7 @@ export class GraphvizSplitterModalComponent implements OnInit, AfterViewInit {
 
   // Métodos para zoom e pan
   private applyTransformations(): void {
-    const container = document.getElementById('graphviz-container');
+    const container = document.getElementById(this.containerId);
     if (container) {
       const svg = container.querySelector('svg');
       if (svg) {
@@ -524,9 +481,9 @@ export class GraphvizSplitterModalComponent implements OnInit, AfterViewInit {
       // Aguardar um pouco para garantir que o SVG está renderizado
       await new Promise(resolve => setTimeout(resolve, 500));
 
-      const container = document.getElementById('graphviz-container');
+      const container = document.getElementById(this.containerId);
       if (!container) {
-        throw new Error('Container do diagrama não encontrado');
+        throw new Error(`Container do diagrama não encontrado: ${this.containerId}`);
       }
 
       const svg = container.querySelector('svg');

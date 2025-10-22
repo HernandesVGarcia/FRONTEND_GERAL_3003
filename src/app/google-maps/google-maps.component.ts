@@ -48,7 +48,7 @@ import { GraphvizModalComponent } from '../graphviz-modal/graphviz-modal.compone
   templateUrl: './google-maps.component.html',
   styleUrls: ['./google-maps.component.css'],
   standalone: true,
-  imports: [CommonModule, GoogleMapsModule, GoJSDemoComponent, MapSearchButtonsComponent, MapTracerButtonsComponent, MapContextMenuComponent, MatIconModule, MatButtonModule],
+  imports: [CommonModule, GoogleMapsModule, MapSearchButtonsComponent, MapTracerButtonsComponent, MapContextMenuComponent, MatIconModule, MatButtonModule],
 })
 export class GoogleMapsComponent implements OnInit, OnChanges {
   @Input() destinoCondominios: Condominios[]=[];
@@ -72,7 +72,6 @@ export class GoogleMapsComponent implements OnInit, OnChanges {
   @Input() destinoCabos72f: Cabos72f[] = [];
   @Input() destinoCabos144f: Cabos144f[] = [];
 
-  isGoJSModalOpen = false;
  // private isMapFullyInitialized = false;
  // private isInfoWindowsSetup = false;
 
@@ -380,9 +379,8 @@ export class GoogleMapsComponent implements OnInit, OnChanges {
       // Salvar idmeta no storage (igual ao clique no mapa)
       this.authService.setIDmetaCaixa(idmeta);
       
-      // 🚀 CORREÇÃO: Usar o sistema original que funciona
-      this.isGoJSModalOpen = true;
-      this.cdr.detectChanges();
+      // 🚀 CORREÇÃO: Usar MatDialog
+      this.openGoJSModal();
       
       console.log('🗺️ [GOOGLE-MAPS] GoJS modal aberto com idmeta:', idmeta);
     });
@@ -2973,15 +2971,13 @@ private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = fal
       if (this.destinoCTO[index]) {
         console.log('CTO clicada', this.destinoCTO[index].numero);
         this.authService.setIDmetaCaixa(this.destinoCTO[index].id_meta)//<---escrevo idmeta da cto no storage
-        this.isGoJSModalOpen = true;
-        this.cdr.detectChanges();
+        this.openGoJSModal();
       }
     }else if (isCTOSP) {
           if (this.destinoCTOSP[index]) {
         console.log('CTO SP clicada', this.destinoCTOSP[index].numero);
         this.authService.setIDmetaCaixa(this.destinoCTOSP[index].id_meta)//<---escrevo idmeta da cto no storage
-        this.isGoJSModalOpen = true;
-        this.cdr.detectChanges();
+        this.openGoJSModal();
     }
 
     }else if (isCLI) {
@@ -3016,8 +3012,7 @@ private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = fal
       if (this.destino[index]) {
         console.log('caixa clicada', this.destino[index].numero);
         this.authService.setIDmetaCaixa(this.destino[index].id_meta)//<---escrevo idmeta da caixa no storage
-        this.isGoJSModalOpen = true;
-        this.cdr.detectChanges();
+        this.openGoJSModal();
   }
   }
 }
@@ -3079,11 +3074,15 @@ openVisualizaCaboModal(id_meta: number, tipoFibra?: string) {
 
 // Métodos para controlar o modal GoJS
 openGoJSModal() {
-  this.isGoJSModalOpen = true;
-}
-
-closeGoJSModal() {
-  this.isGoJSModalOpen = false;
+  const dialogRef = this.dialog.open(GoJSDemoComponent, {
+    width: '95vw',
+    height: '95vh',
+    maxWidth: 'none',
+    maxHeight: 'none',
+    disableClose: false,
+    panelClass: 'gojs-modal-container',
+    data: { /* dados necessários se houver */ }
+  });
 }
 
 

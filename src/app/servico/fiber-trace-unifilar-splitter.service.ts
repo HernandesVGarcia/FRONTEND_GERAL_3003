@@ -356,8 +356,8 @@ export class FiberTraceUnifilarSplitterService {
         console.log(`*****------------------>🔍 [ENTRADA] flag_entrada_splitter_processada: ${this.flag_entrada_splitter_processada}`);
 
         //=======================================faz o tracer reverso do splitter entrada======================================= */
-        // entrada splitter
-        if(!this.flag_entrada_splitter_processada){
+        // ******************************************************entrada splitter****************************************************** */
+        if(!this.flag_entrada_splitter_processada ){
           this.flag_entrada_splitter_processada = true; 
                  
           await this.identificarEntradaSplitter(idmetacx,entrada,tipo_splitter);
@@ -622,7 +622,7 @@ export class FiberTraceUnifilarSplitterService {
 
  private async identificarEntradaSplitter(idmetacx: number, entrada: string, tipo_splitter: string) {
 
-
+  if(entrada !=''){
   console.log(`------------------>🔍 [ENTRADA] idmetacx:${idmetacx}, entrada:${entrada}, tipo_splitter:${tipo_splitter}`);
 
   let tabelacx = '';
@@ -698,24 +698,37 @@ console.log(`-------> [entrada splitter] fibraDestino.id_meta:'${fibraDestino.id
     label_cabo = `"${label_cabo} (${fibraNumero})"`;
     console.log(`------------------>🔍 [ENTRADA] Label do cabo: ${label_cabo}`);
   }
+  else{
+    label_cabo = `"${fibraNumero}"`;
+  }
+
+  let capacidade = this.getCapacidadeFromTipo(parseInt(tipo_splitter));
 
   if (fibraDestino) {
   console.log(`------------------>🔍 [ENTRADA] idmeta:${fibraDestino.id_meta}, tipo_objeto:${fibraDestino.tipo_objeto} , fibra:${fibraDestino.fibra}  Origem: ${origemNAME}, Destino: ${DESTNAME}`);
 
+  
+
 DESTNAME= '"' + fibraDestino.tipo_objeto + "__Fibra:" + fibraDestino.fibra  +"___"+  fibraDestino.obs_dio + '"'
 
-const capacidade = this.getCapacidadeFromTipo(parseInt(tipo_splitter));
+//const capacidade = this.getCapacidadeFromTipo(parseInt(tipo_splitter));
 
 console.log ('------------------>capacidade:',capacidade)
 
-const CAMPOS = construirCamposSplitter(capacidade);
+const CAMPOS = construirCamposSplitter(capacidade); 
 
-
+ //se a entrada do splitter nao esta vazia, entao compoe o DOT string da entrada do splitter
  this.dotStringEntrada = "digraph G {size= 7.9;ranksep=0.5;rankdir=LR;node[label=" + DESTNAME + ",shape=record,width=.1,height=.15,fontsize=8.5,color=green,style=filled,fillcolor=aquamarine];SPLITTERE;node[shape=record,width=.1,height=.1,fontsize=9,color=blue,style=filled,fillcolor=Lightblue ];SPLITTER[ label= " + CAMPOS + ",height=1.8,fontsize=12];SPLITTERE->SPLITTER[label= " + label_cabo + ",fontsize=9]; "
-
+  }}
+  else{
+    let capacidade = this.getCapacidadeFromTipo(parseInt(tipo_splitter));
+    const CAMPOS = construirCamposSplitter(capacidade); 
+    const LABEL_DESTINO = "sem_conexão";  
+  this.dotStringEntrada = "digraph G {size= 7.9;ranksep=0.5;rankdir=LR;node[label=" + LABEL_DESTINO + ",shape=record,width=.1,height=.15,fontsize=8.5,color=green,style=filled,fillcolor=white];SPLITTERE;node[shape=record,width=.1,height=.1,fontsize=9,color=blue,style=filled,fillcolor=Lightblue ];SPLITTER[ label= " + CAMPOS + ",height=1.8,fontsize=12];SPLITTERE->SPLITTER[label= "+ LABEL_DESTINO +",fontsize=9]; }"
+}
  //console.log(`------------------>🔍 [ENTRADA] DOT string entrada: ${this.dotStringEntrada}`);
  //return this.dotStringEntrada;
- }
+ 
 
 
 

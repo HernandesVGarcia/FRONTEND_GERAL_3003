@@ -17,7 +17,7 @@
   </div>
 
   <div *ngIf="!isLoading && !error && dotContent" class="graphviz-container">
-    <div id="graphviz-container" 
+    <div [id]="'graphviz-splitter-container-' + data.idmeta" 
          (wheel)="onWheel($event)"
          (mousedown)="onMouseDown($event)"
          (mousemove)="onMouseMove($event)"

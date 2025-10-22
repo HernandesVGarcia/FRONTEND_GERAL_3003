@@ -1,5 +1,5 @@
 import { Component, OnInit, AfterViewInit, Inject, ViewChild, ElementRef, } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogRef, MatDialog } from '@angular/material/dialog';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
@@ -8,6 +8,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Graphviz } from "@hpcc-js/wasm-graphviz";
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
+import { GraphvizSplitterModalComponent } from '../graphviz-splitter-modal/graphviz-splitter-modal.component';
 
 @Component({
   selector: 'app-graphviz-modal',
@@ -45,10 +46,12 @@ export class GraphvizModalComponent implements OnInit, AfterViewInit {
   constructor(
     public dialogRef: MatDialogRef<GraphvizModalComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any,
-    private http: HttpClient
+    private http: HttpClient,
+    private dialog: MatDialog // 🆕 NOVO: Injetar MatDialog para abrir modal de splitter
   ) {}
 
   ngOnInit() {
+    console.log(`🚀 [NGONINIT] GraphvizModalComponent inicializado`);
     // Verificar se recebeu dados do modal
     if (this.data && this.data.dotString) {
       this.dotContent = this.data.dotString;
@@ -74,6 +77,7 @@ export class GraphvizModalComponent implements OnInit, AfterViewInit {
   // ********************************************************************************
 
   async ngAfterViewInit() {
+    console.log(`🚀 [NGAFTERVIEWINIT] GraphvizModalComponent ngAfterViewInit chamado`);
     // Configurar funcionalidade de drag (padrão visualiza-dio)
     this.setupDragFunctionality();
 
@@ -125,37 +129,8 @@ export class GraphvizModalComponent implements OnInit, AfterViewInit {
       if (this.modalHeaderElement && this.modalContentElement) {
         console.log('Modal header encontrado para arrastar');
         
-        // Adicionar listener global no documento para capturar todos os mousedown
-        document.addEventListener('mousedown', (e: MouseEvent) => {
-          console.log('🔧 [DRAG] Evento mousedown global capturado');
-          console.log('🔧 [DRAG] Target:', e.target);
-          console.log('🔧 [DRAG] Modal header element:', !!this.modalHeaderElement);
-          
-          // Verificar se clicou no header ou em qualquer elemento dentro dele
-          const target = e.target as HTMLElement;
-          const isInHeader = this.modalHeaderElement && (
-            target === this.modalHeaderElement ||
-            this.modalHeaderElement.contains(target) ||
-            target.closest('.modal-header') === this.modalHeaderElement ||
-            target.classList.contains('modal-header') ||
-            target.closest('.modal-header') !== null
-          );
-          
-          console.log('🔧 [DRAG] Target === ModalHeader:', target === this.modalHeaderElement);
-          console.log('🔧 [DRAG] ModalHeader.contains(Target):', this.modalHeaderElement?.contains(target));
-          console.log('🔧 [DRAG] Target.closest(.modal-header):', target.closest('.modal-header'));
-          console.log('🔧 [DRAG] Target.classList.contains(modal-header):', target.classList.contains('modal-header'));
-          console.log('🔧 [DRAG] isInHeader:', isInHeader);
-          
-          if (isInHeader) {
-            console.log('🔧 [DRAG] Clicou no header - iniciando drag');
-            this.dragStart(e);
-          } else {
-            console.log('🔧 [DRAG] Não clicou no header');
-          }
-        }, true);
-        
-        // Adicionar listeners para mousemove e mouseup
+        // 🆕 CORREÇÃO: Usar a estratégia do visualiza-dio - listener apenas no header específico
+        this.modalHeaderElement.addEventListener('mousedown', (e: MouseEvent) => this.dragStart(e));
         document.addEventListener('mousemove', (e: MouseEvent) => this.dragMove(e));
         document.addEventListener('mouseup', (e: MouseEvent) => this.dragEnd(e));
         
@@ -185,29 +160,29 @@ export class GraphvizModalComponent implements OnInit, AfterViewInit {
   }
 
   private dragStart(event: MouseEvent): void {
-    console.log('🔧 [DRAG] dragStart chamado');
-    console.log('🔧 [DRAG] Target:', event.target);
-    console.log('🔧 [DRAG] Modal header element:', !!this.modalHeaderElement);
+    // console.log('🔧 [DRAG] dragStart chamado');
+    // console.log('🔧 [DRAG] Target:', event.target);
+    // console.log('🔧 [DRAG] Modal header element:', !!this.modalHeaderElement);
     
     // Prevenir arrastar se clicou em um botão
     if ((event.target as HTMLElement).closest('button')) {
-      console.log('🔧 [DRAG] Clicou em botão, cancelando drag');
+      // console.log('🔧 [DRAG] Clicou em botão, cancelando drag');
       return;
     }
 
-    console.log('🔧 [DRAG] Iniciando arrasto do modal');
+    // console.log('🔧 [DRAG] Iniciando arrasto do modal');
     
     // Simplificar - já sabemos que clicou no header, então iniciar o drag diretamente
     if (this.modalHeaderElement && this.modalContentElement) {
-      console.log('🔧 [DRAG] Drag iniciado com sucesso');
+      // console.log('🔧 [DRAG] Drag iniciado com sucesso');
       this.initialX = event.clientX - this.currentX;
       this.initialY = event.clientY - this.currentY;
       this.isDragging = true;
       
       this.modalContentElement.classList.add('dragging');
-      console.log('🔧 [DRAG] Classe dragging adicionada');
+      // console.log('🔧 [DRAG] Classe dragging adicionada');
     } else {
-      console.log('🔧 [DRAG] Modal header ou content não existe');
+      // console.log('🔧 [DRAG] Modal header ou content não existe');
     }
   }
 
@@ -218,15 +193,15 @@ export class GraphvizModalComponent implements OnInit, AfterViewInit {
       this.currentX = event.clientX - this.initialX;
       this.currentY = event.clientY - this.initialY;
 
-      console.log('🔧 [DRAG] Movendo:', this.currentX, this.currentY);
+      // console.log('🔧 [DRAG] Movendo:', this.currentX, this.currentY);
       this.setTranslate(this.currentX, this.currentY, this.modalContentElement);
     } else {
-      console.log('🔧 [DRAG] dragMove chamado mas não está arrastando. isDragging:', this.isDragging, 'modalContentElement:', !!this.modalContentElement);
+      // console.log('🔧 [DRAG] dragMove chamado mas não está arrastando. isDragging:', this.isDragging, 'modalContentElement:', !!this.modalContentElement);
     }
   }
 
   private dragEnd(event: MouseEvent): void {
-    console.log('🔧 [DRAG] dragEnd chamado. isDragging:', this.isDragging);
+    // console.log('🔧 [DRAG] dragEnd chamado. isDragging:', this.isDragging);
     if (this.isDragging) {
       this.initialX = this.currentX;
       this.initialY = this.currentY;
@@ -234,7 +209,7 @@ export class GraphvizModalComponent implements OnInit, AfterViewInit {
       this.isDragging = false;
       if (this.modalContentElement) {
         this.modalContentElement.classList.remove('dragging');
-        console.log('🔧 [DRAG] Classe dragging removida');
+        // console.log('🔧 [DRAG] Classe dragging removida');
       }
     }
   }
@@ -242,9 +217,9 @@ export class GraphvizModalComponent implements OnInit, AfterViewInit {
   private setTranslate(xPos: number, yPos: number, el: HTMLElement): void {
     if (el) {
       el.style.transform = `translate3d(${xPos}px, ${yPos}px, 0)`;
-      console.log('🔧 [DRAG] Transform aplicado:', `translate3d(${xPos}px, ${yPos}px, 0)`);
+      // console.log('🔧 [DRAG] Transform aplicado:', `translate3d(${xPos}px, ${yPos}px, 0)`);
     } else {
-      console.log('🔧 [DRAG] Elemento não encontrado para aplicar transform');
+      // console.log('🔧 [DRAG] Elemento não encontrado para aplicar transform');
     }
   }
   
@@ -256,24 +231,37 @@ export class GraphvizModalComponent implements OnInit, AfterViewInit {
 
   // 🆕 NOVO: Configurar interatividade do GraphViz
   private setupInteractivity(): void {
-    // Adicionar função global para clique no splitter
-    (window as any).onSplitterClick = (idmeta: number, capacidade: number, label: string) => {
-      console.log(`🔀 [SPLITTER-CLICK] IDMETA: ${idmeta}, Capacidade: ${capacidade}F, Label: ${label}`);
-      this.handleSplitterClick(idmeta, capacidade, label);
-    };
+    console.log(`🔧 [SETUP-INTERACTIVITY] Configurando função onSplitterClick`);
+    // 🆕 CORREÇÃO: Usar bind para garantir que this sempre aponte para a instância atual
+    (window as any).onSplitterClick = this.handleSplitterClick.bind(this);
+    console.log(`🔧 [SETUP-INTERACTIVITY] Função onSplitterClick configurada:`, typeof (window as any).onSplitterClick);
   }
 
   // 🆕 NOVO: Manipular clique no splitter
-  private handleSplitterClick(idmeta: number, capacidade: number, label: string): void {
-    // Mostrar informações do splitter
-    const message = `Splitter Clicado!\n\nIDMETA: ${idmeta}\nCapacidade: ${capacidade}F\nLabel: ${label}`;
-    alert(message);
+  public handleSplitterClick(idmeta: number, capacidade: number, label: string): void {
+    console.log(`🔀 [SPLITTER-CLICK] IDMETA: ${idmeta}, Capacidade: ${capacidade}F, Label: ${label}`);
+    console.log(`🔀 [SPLITTER-CLICK] this.dialog existe:`, !!this.dialog);
+    console.log(`🔀 [SPLITTER-CLICK] this existe:`, !!this);
     
-    // Aqui você pode adicionar outras ações:
-    // - Abrir modal de detalhes
-    // - Navegar para outra página
-    // - Mostrar informações adicionais
-    // - etc.
+    // 🆕 NOVO: Abrir modal de mapeamento do splitter
+    const dialogRef = this.dialog.open(GraphvizSplitterModalComponent, {
+      width: '90vw',
+      height: '90vh',
+      maxWidth: '1200px',
+      maxHeight: '800px',
+      disableClose: false,
+      hasBackdrop: false,
+      panelClass: 'splitter-modal-container',
+      data: { 
+        idmeta: idmeta,
+        title: `Diagrama Splitter - ${label}`,
+        capacidade: capacidade
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      console.log('Modal Splitter fechado:', result);
+    });
   }
 
 
@@ -309,9 +297,9 @@ export class GraphvizModalComponent implements OnInit, AfterViewInit {
 
   private async renderGraphviz() {
     try {
-      console.log('🎨 [GRAPHVIZ] Iniciando renderização...');
-      console.log('🎨 [GRAPHVIZ] DOT Content length:', this.dotContent.length);
-      console.log('🎨 [GRAPHVIZ] DOT Content preview:', this.dotContent.substring(0, 200) + '...');
+      console.log('🎨 [RENDER-GRAPHVIZ] Iniciando renderização...');
+      console.log('🎨 [RENDER-GRAPHVIZ] DOT Content length:', this.dotContent.length);
+      console.log('🎨 [RENDER-GRAPHVIZ] DOT Content preview:', this.dotContent.substring(0, 200) + '...');
       
       // Usar a biblioteca @hpcc-js/wasm-graphviz
       const graphviz = await Graphviz.load();
@@ -339,6 +327,9 @@ export class GraphvizModalComponent implements OnInit, AfterViewInit {
         container.innerHTML = svg;
         console.log('🎨 [GRAPHVIZ] SVG inserido no DOM');
         
+        // 🆕 CORREÇÃO: Reconfigurar interatividade após renderização
+        this.setupInteractivity();
+        
         // Aplicar transformações de zoom e pan
         this.applyTransformations();
         console.log('✅ [GRAPHVIZ] Diagrama GraphViz renderizado com sucesso');
@@ -360,9 +351,12 @@ export class GraphvizModalComponent implements OnInit, AfterViewInit {
   }
 
   onRefresh(): void {
+    console.log(`🔄 [ON-REFRESH] GraphvizModalComponent onRefresh chamado`);
     this.isLoading = true;
     this.error = '';
     this.resetZoom();
+    // 🆕 CORREÇÃO: Reconfigurar interatividade após refresh
+    this.setupInteractivity();
     this.renderGraphviz();
   }
 

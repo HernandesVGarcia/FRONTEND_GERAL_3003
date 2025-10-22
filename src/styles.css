@@ -26,9 +26,33 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   z-index: 2000 !important;
 }
 
-/* 3. GoJS-Demo (componente direto, não usa MatDialog) */
-app-gojs-demo .modal {
+/* 3. GoJS-Demo (agora usa MatDialog) */
+.gojs-modal-container .mat-mdc-dialog-container {
   z-index: 3000 !important;
+  width: 95vw !important;
+  height: 95vh !important;
+  max-width: none !important;
+  max-height: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.gojs-modal-container .mat-mdc-dialog-content {
+  padding: 0 !important;
+  margin: 0 !important;
+  height: 100% !important;
+  overflow: hidden !important;
+}
+
+/* 🆕 NOVO: Estilos para drag do GoJS MatDialog */
+.mat-mdc-dialog-container.dragging {
+  cursor: move !important;
+  user-select: none !important;
+}
+
+.mat-mdc-dialog-container .modal-header {
+  cursor: move !important;
+  user-select: none !important;
 }
 
 /* 4. Graphviz-Splitter-Modal (maior z-index) */

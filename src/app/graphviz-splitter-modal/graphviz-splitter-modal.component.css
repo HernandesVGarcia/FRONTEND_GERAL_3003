@@ -58,13 +58,13 @@
   background-color: #f9f9f9;
 }
 
-#graphviz-container {
+#graphviz-splitter-container {
   width: 100%;
   height: 100%;
   cursor: grab;
 }
 
-#graphviz-container:active {
+#graphviz-splitter-container:active {
   cursor: grabbing;
 }
 
