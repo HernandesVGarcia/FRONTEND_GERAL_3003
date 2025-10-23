@@ -17,8 +17,8 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   z-index: 2000 !important;
   position: fixed !important;
   background: white !important;
-  border: 2px solid #007bff !important;
-  border-radius: 8px !important;
+  border: 2px solid green !important;
+  border-radius: 30px !important;
   box-shadow: 0 4px 20px rgba(0,0,0,0.3) !important;
 }
 
@@ -61,12 +61,22 @@ app-graphviz-splitter-modal .mat-mdc-dialog-container {
   position: fixed !important;
   background: white !important;
   border: 2px solid #007bff !important;
-  border-radius: 8px !important;
+  border-radius: 25px !important;
   box-shadow: 0 4px 20px rgba(0,0,0,0.3) !important;
 }
 
 .splitter-modal-container {
   z-index: 4000 !important;
+}
+
+.splitter-modal-container .mat-mdc-dialog-container {
+  z-index: 4000 !important;
+  position: fixed !important;
+  background: white !important;
+  border: 2px solid lightblue !important; /* Verde para diferenciar do DIO */
+  border-radius: 30px !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3) !important;
+  height: 90vh !important;
 }
 
 /* CDK Overlay padrão */

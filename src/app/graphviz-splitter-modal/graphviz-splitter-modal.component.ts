@@ -3,7 +3,7 @@
 
 
 import { Component, OnInit, AfterViewInit, Inject, ViewChild, ElementRef, } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogRef, MatDialog } from '@angular/material/dialog';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
@@ -13,6 +13,7 @@ import { Graphviz } from "@hpcc-js/wasm-graphviz";
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 import { FiberTraceUnifilarSplitterService } from '../servico/fiber-trace-unifilar-splitter.service';
+import { SplitterModalService } from '../servico/splitter-modal.service';
 
 @Component({
   selector: 'app-graphviz-splitter-modal',
@@ -53,7 +54,9 @@ export class GraphvizSplitterModalComponent implements OnInit, AfterViewInit {
     public dialogRef: MatDialogRef<GraphvizSplitterModalComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any,
     private http: HttpClient,
-    private fiberTraceSplitterService: FiberTraceUnifilarSplitterService
+    private fiberTraceSplitterService: FiberTraceUnifilarSplitterService,
+    private dialog: MatDialog,
+    private splitterModalService: SplitterModalService
   ) {}
 
   ngOnInit() {
@@ -84,6 +87,12 @@ export class GraphvizSplitterModalComponent implements OnInit, AfterViewInit {
       window.dispatchEvent(event);
       
       console.log('🏠 [CAIXA-CLICK] Evento openGoJSModal enviado para o Google Maps');
+    };
+
+    // 🔀 NOVO: Função própria para cliques em splitters dentro deste modal
+    (window as any).onSplitterClick = (idmeta: number, capacidade: number, label: string) => {
+      console.log(`🔀 [SPLITTER-CLICK-SPLITTER-MODAL] IDMETA: ${idmeta}, Capacidade: ${capacidade}F, Label: ${label}`);
+      this.handleSplitterClick(idmeta, capacidade, label);
     };
   }
 
@@ -321,9 +330,13 @@ export class GraphvizSplitterModalComponent implements OnInit, AfterViewInit {
 
 //==================================================================================================
 
-  // 🆕 CORREÇÃO: Método removido - não deve sobrescrever função global onSplitterClick
-
-  // 🆕 CORREÇÃO: Método removido - clique no splitter é tratado pelo graphviz-modal.component.ts
+  // 🔀 NOVO: Manipular clique no splitter dentro deste modal
+  public handleSplitterClick(idmeta: number, capacidade: number, label: string): void {
+    console.log(`🔀 [SPLITTER-CLICK-HANDLER] Abrindo modal para splitter: ${idmeta}`);
+    
+    // Usar o serviço para abrir o modal
+    this.splitterModalService.openSplitterModal(idmeta, capacidade, label);
+  }
 
 
   // 🆕 NOVO: Verificar se o DOT string está completo

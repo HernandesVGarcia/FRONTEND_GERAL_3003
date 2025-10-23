@@ -251,7 +251,7 @@ export class GraphvizModalComponent implements OnInit, AfterViewInit {
       maxHeight: '800px',
       disableClose: false,
       hasBackdrop: false,
-      panelClass: 'splitter-modal-container',
+      panelClass: 'graphviz-modal-container',
       data: { 
         idmeta: idmeta,
         title: `Diagrama Splitter - ${label}`,
