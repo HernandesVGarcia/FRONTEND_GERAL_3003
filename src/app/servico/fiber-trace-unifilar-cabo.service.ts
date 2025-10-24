@@ -910,9 +910,10 @@ export class FiberTraceUnifilarCaboService{
       if (match) {
         const splitterIdmeta = parseInt(match[1]);
         console.log(`🔀 [SPLITTER] IDMETA do splitter extraído: ${splitterIdmeta}`);
+
         
         // 🆕 NOVO: Compor DOT do SPLITTER (igual ao VB6 linha 710)
-        await this.comporSplitterDot(splitterIdmeta, fiber);
+        await this.comporSplitterDot(splitterIdmeta, fiber, 'E');
         
         return {
           idmeta: splitterIdmeta, // Usar o IDMETA do splitter, não o atual
@@ -925,7 +926,7 @@ export class FiberTraceUnifilarCaboService{
     }
 
     // 🆕 NOVO: Compor DOT do SPLITTER (igual ao VB6 linha 710)
-    await this.comporSplitterDot(idmeta, fiber);
+    await this.comporSplitterDot(idmeta, fiber, 'E');
 
     // Splitter complexo - destino final
     console.log(`🏁 [SPLITTER] Fibra chegou no Splitter - DESTINO FINAL`);
@@ -939,7 +940,7 @@ export class FiberTraceUnifilarCaboService{
   }
 
   // 🆕 NOVO: Compor DOT do SPLITTER (igual ao VB6 linha 710)
-  private async comporSplitterDot(idmeta: number, fiber: number): Promise<void> {
+  private async comporSplitterDot(idmeta: number, fiber: number,lado:string): Promise<void> {
     try {
       // Buscar informações do splitter (igual ao VB6 linha 678)
       const splitterResponse = await this.fiberApiService.executeDynamicQuery(
@@ -990,12 +991,25 @@ export class FiberTraceUnifilarCaboService{
       const tooltip = `Splitter ${label} - Capacidade: ${capacidade}F - CX: ${numeroCx}`;
       this.dotString += `${novoObjetoAtual}[label=${textoLimitado},shape=polygon,sides="${sides}",style="${estilo}",ranksep=0.001,fontsize=6.5,GRADIENTANGLE=100,${colorSp},URL="${url}",tooltip="${tooltip}"];`;
       
+
+
+      
+
+        if (this.Objeto_Anterior && lado.includes('E')) {
+          const conexao = `${this.Objeto_Anterior}->${novoObjetoAtual} [label="Entrada",color="${this.cor}",fontsize=9,weight=0.1];`;
+          this.dotString += conexao;
+          console.log(`🔗 [SPLITTER-CONEXÃO] ${this.Objeto_Anterior} -> ${novoObjetoAtual} (Label: "Entrada")`);
+        }
+      
+             
+      
       // 🆕 CORREÇÃO: Adicionar conexão com label "Entrada" (igual ao VB6 linha 710)
-      if (this.Objeto_Anterior) {
-        const conexao = `${this.Objeto_Anterior}->${novoObjetoAtual} [label="Entrada",color="${this.cor}",fontsize=9,weight=0.1];`;
+      if (this.Objeto_Anterior && lado.includes('S')) {
+        const conexao = `${this.Objeto_Anterior}->${novoObjetoAtual} [label="Saida: ${fiber}",color="${this.cor}",fontsize=9,weight=0.1];`;
         this.dotString += conexao;
-        console.log(`🔗 [SPLITTER-CONEXÃO] ${this.Objeto_Anterior} -> ${novoObjetoAtual} (Label: "Entrada")`);
+        console.log(`🔗 [SPLITTER-CONEXÃO] ${this.Objeto_Anterior} -> ${novoObjetoAtual} (Label: "Saida: ${fiber}")`);
       }
+    
       
       this.Objeto_Atual = novoObjetoAtual;
       
@@ -1031,6 +1045,8 @@ export class FiberTraceUnifilarCaboService{
       const saidaNumero = parseInt(match[2]);
       console.log(`🔀 [SPLITTER-SAIDA] IDMETA do splitter: ${splitterIdmeta}, Saída: ${saidaNumero}`);
       
+      await this.comporSplitterDot(splitterIdmeta, fiber, 'S');
+
       return {
         idmeta: splitterIdmeta, // Usar o IDMETA do splitter, não o atual
         fiber: `S${saidaNumero}` as any, // "S1", "S2", etc. para Splitter Saída
@@ -1039,6 +1055,9 @@ export class FiberTraceUnifilarCaboService{
         status: 'fim' // Finaliza o rastreamento como destino final
       };
     }
+
+    // 🆕 NOVO: Compor DOT do SPLITTER (igual ao VB6 linha 710) 24102025
+    await this.comporSplitterDot(idmeta, fiber, 'S');
 
     // Se não conseguiu extrair o IDMETA, usar o atual
     console.log(`🔀 [SPLITTER-SAIDA] Não foi possível extrair IDMETA, usando atual: ${idmeta}`);

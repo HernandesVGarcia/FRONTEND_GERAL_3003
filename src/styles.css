@@ -29,10 +29,10 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 /* 3. GoJS-Demo (agora usa MatDialog) */
 .gojs-modal-container .mat-mdc-dialog-container {
   z-index: 3000 !important;
-  width: 95vw !important;
-  height: 95vh !important;
-  max-width: none !important;
-  max-height: none !important;
+  width: 80vw !important; /* 🎯 AJUSTADO: 80vw deixa 20% nas bordas */
+  height: 80vh !important; /* 🎯 AJUSTADO: 80vh deixa 20% nas bordas */
+  max-width: 1400px !important; /* 🎯 NOVO: Limite para telas grandes */
+  max-height: 900px !important; /* 🎯 NOVO: Limite para telas grandes */
   padding: 0 !important;
   margin: 0 !important;
 }

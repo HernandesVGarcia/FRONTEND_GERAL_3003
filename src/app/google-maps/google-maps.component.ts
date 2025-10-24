@@ -3074,15 +3074,31 @@ openVisualizaCaboModal(id_meta: number, tipoFibra?: string) {
 
 // Métodos para controlar o modal GoJS
 openGoJSModal() {
-  const dialogRef = this.dialog.open(GoJSDemoComponent, {
-    width: '95vw',
-    height: '95vh',
-    maxWidth: 'none',
-    maxHeight: 'none',
-    disableClose: false,
-    panelClass: 'gojs-modal-container',
-    data: { /* dados necessários se houver */ }
-  });
+  // 🆕 NOVO: Abrir GoJS em popup em vez de modal
+  const idmeta = this.authService.getIDmetaCaixa();
+  
+  if (!idmeta) {
+    console.error('❌ [GOOGLE-MAPS] IDMETA não encontrado');
+    return;
+  }
+
+  // Salvar IDMETA no localStorage para o popup acessar
+  localStorage.setItem('idmetaCaixa', idmeta.toString());
+  
+  // Abrir popup
+  const popup = window.open(
+    `/gojs-popup?idmeta=${idmeta}`, // URL com parâmetro
+    'gojs-popup', // Nome da janela
+    'width=1200,height=800,scrollbars=yes,resizable=yes,menubar=no,toolbar=no,location=no,status=no'
+  );
+  
+  if (!popup) {
+    console.error('❌ [GOOGLE-MAPS] Popup bloqueado pelo navegador');
+    alert('Popup bloqueado pelo navegador. Permita popups para este site.');
+    return;
+  }
+  
+  console.log('✅ [GOOGLE-MAPS] Popup GoJS aberto com IDMETA:', idmeta);
 }
 
 

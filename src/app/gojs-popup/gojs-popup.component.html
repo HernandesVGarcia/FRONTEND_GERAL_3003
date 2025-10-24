@@ -1,0 +1,29 @@
+<div class="gojs-popup-container">
+  <div class="popup-header">
+    <h3>Diagrama de Conexões - {{caixaNumerocx}}</h3>
+    <div class="header-buttons">
+      <button class="export-pdf-button" (click)="exportarDiagramaParaPDF()">
+        📄 PDF
+      </button>
+      <button class="redraw-button" (click)="redesenharDiagrama()">
+        🔄 Redraw
+      </button>
+      <button class="espelhar-button" (click)="espelhar()">
+        🔂 Espelhar
+      </button>
+      <button class="close-button" (click)="close()">
+        ✕ Fechar
+      </button>
+    </div>
+  </div>
+  
+  <div class="popup-content">
+    <div class="diagram-container">
+      <div #diagramDiv class="diagram-div"></div>
+    </div>
+    
+    <div class="diagram-error" *ngIf="initializationError">
+      <p>Erro: {{initializationError}}</p>
+    </div>
+  </div>
+</div>
