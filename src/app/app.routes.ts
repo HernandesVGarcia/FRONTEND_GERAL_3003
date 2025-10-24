@@ -7,7 +7,6 @@ import { FiberMapComponent } from './fiber-map/fiber-map.component';
 //import { CaixaInternaSyncComponent } from './caixa-interna-sync/caixa-interna-sync.component';
 ////comentei em 10072025 import { CaixaInternaComponent } from './caixa-interna/caixa-interna.component';
 import {GoJSDemoComponent}from './gojs-demo/gojs-demo.component'
-import {GoJSPopupComponent} from './gojs-popup/gojs-popup.component'
 
 export const routes: Routes =[
 {path:'login', component:LoginComponent},
@@ -15,7 +14,6 @@ export const routes: Routes =[
 {path:'fibermap', component: FiberMapComponent },
 //comentei em 10072025{path:'caixaInterna', component: CaixaInternaComponent },
 //{path:'go',component:GoJSDemoComponent},
-{path:'gojs-popup', component: GoJSPopupComponent}, // 🆕 NOVO: Rota para popup do GoJS
 {path:'', redirectTo:'/login', pathMatch:'full'},
 {path:'**', component:MenusComponent}
 

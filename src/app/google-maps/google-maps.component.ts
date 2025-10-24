@@ -3074,7 +3074,6 @@ openVisualizaCaboModal(id_meta: number, tipoFibra?: string) {
 
 // Métodos para controlar o modal GoJS
 openGoJSModal() {
-  // 🆕 NOVO: Abrir GoJS em popup em vez de modal
   const idmeta = this.authService.getIDmetaCaixa();
   
   if (!idmeta) {
@@ -3082,23 +3081,17 @@ openGoJSModal() {
     return;
   }
 
-  // Salvar IDMETA no localStorage para o popup acessar
-  localStorage.setItem('idmetaCaixa', idmeta.toString());
-  
-  // Abrir popup
-  const popup = window.open(
-    `/gojs-popup?idmeta=${idmeta}`, // URL com parâmetro
-    'gojs-popup', // Nome da janela
-    'width=1200,height=800,scrollbars=yes,resizable=yes,menubar=no,toolbar=no,location=no,status=no'
-  );
-  
-  if (!popup) {
-    console.error('❌ [GOOGLE-MAPS] Popup bloqueado pelo navegador');
-    alert('Popup bloqueado pelo navegador. Permita popups para este site.');
-    return;
-  }
-  
-  console.log('✅ [GOOGLE-MAPS] Popup GoJS aberto com IDMETA:', idmeta);
+  console.log('🔀 [GOOGLE-MAPS] Abrindo modal GoJS para IDMETA:', idmeta);
+
+  this.dialog.open(GoJSDemoComponent, {
+    width: '95vw',
+    height: '95vh',
+    maxWidth: 'none',
+    maxHeight: 'none',
+    disableClose: false,
+    hasBackdrop: false, // Sem backdrop para permitir interação com o mapa
+    panelClass: 'gojs-modal-container'
+  });
 }
 
 
