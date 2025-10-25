@@ -365,7 +365,7 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit {
     // 🏠 NOVO: Carregar numerocx da caixa antes dos dados completos
     await this.carregarNumerocxCaixa();
     
-    setTimeout(() => {this.carregarDadosCompletosAsync()},100);
+    setTimeout(() => {this.carregarDadosCompletosAsync()},500); //estava em 100 coloquei 500 pois tipos de cabos esrava vindo rrado no redraw
     //setTimeout(() => {this.carregarConexoesBocas()},1);
     //setTimeout(() => {this.carregarConexoesSplitters()},3000);
     //setTimeout(() => {this.carregarConexoesBocas9798()},2000);
@@ -542,7 +542,7 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit {
       }
     }, 10);
 
-    setTimeout(() => {this.carregarConexoesSplitters()},10);
+    setTimeout(() => {this.carregarConexoesSplitters()},200); // estava 10 aumentei para 200 pois as conexoes nao estavam ficando coloridas
     setTimeout(() => {this.carregarConexoesBocas9798()},10)
 
     //this.diagram.commitTransaction();
@@ -2802,7 +2802,7 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
 
          setTimeout(() => {
             this.aplicarCoresEmTodasAsConexoes();
-          }, 2600);
+          }, 3000);
     
 
 
