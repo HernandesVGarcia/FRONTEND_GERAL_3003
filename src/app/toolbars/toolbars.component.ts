@@ -137,6 +137,13 @@ export class ToolbarsComponent {
         window.location.reload();
       }
 
+  onExportKML(): void {
+    console.log('🗺️ [TOOLBAR] Botão Exportar KML clicado');
+    // Dispara evento customizado que será capturado pelo GoogleMapsComponent
+    const event = new CustomEvent('exportKML');
+    window.dispatchEvent(event);
+  }
+
 
       /* Métodos GPS
   getCurrentLocation(): void {

@@ -13,8 +13,13 @@
 
 
    <div class="toolbar-buttons">
-  <button mat-icon-button class="example-icon" aria-label="Menu" matTooltip="Menu" matTooltipPosition="below">
-    <mat-icon>menu</mat-icon>
+  <button mat-icon-button 
+          class="example-icon" 
+          aria-label="Exportar para KML" 
+          matTooltip="Exportar para Google Earth (KML)" 
+          matTooltipPosition="below"
+          (click)="onExportKML()">
+    <mat-icon>download</mat-icon>
   </button>
   <button mat-icon-button class="example-icon favorite-icon" aria-label="Cancelar" matTooltip="Cancelar" matTooltipPosition="below">
     <mat-icon class="text-lg sm:text-xl">cancel</mat-icon>

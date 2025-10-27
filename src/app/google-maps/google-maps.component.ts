@@ -32,6 +32,7 @@ import { MapSearchButtonsComponent } from '../map-search-buttons/map-search-butt
 import { MapTracerButtonsComponent } from '../map-tracer-buttons/map-tracer-buttons.component';
 import { MapContextMenuComponent } from '../map-context-menu/map-context-menu.component';
 import { CompartilhamentoService, CaixaData, ClienteData } from '../servico/compartilhamento.service';
+import { KmlExportService } from '../servico/kml-export.service';
 import { Subject, takeUntil } from 'rxjs';
 
 import { MatDialog } from '@angular/material/dialog';
@@ -79,6 +80,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges {
      private cdr: ChangeDetectorRef,
      private authService : AuthService,
      private compartilhamentoService: CompartilhamentoService,
+     private kmlExportService: KmlExportService,
      private dialog: MatDialog) {
   
     
@@ -887,6 +889,12 @@ polylineOptions144f: google.maps.PolylineOptions = {
     
     // 🏠 NOVO: Escutar eventos para abrir GoJS modal a partir do GraphViz
     this.setupGoJSModalListener();
+    
+    // 🗺️ NOVO: Listener para exportar KML a partir da toolbar
+    window.addEventListener('exportKML', () => {
+      console.log('🗺️ [GOOGLE-MAPS] Recebendo evento de exportar KML da toolbar');
+      this.exportMapToKML();
+    });
     
     
     //const lat= this.authService.getLat
@@ -3387,6 +3395,36 @@ openGoJSModal() {
       console.log(`Mapa centralizado na caixa ${clienteData.SIGLA} - Coordenadas: ${clienteData.LAT}, ${clienteData.LNG}`);
     } 
     
+  }
+
+  /**
+   * 📤 EXPORT: Exporta o mapa para KML
+   */
+  exportMapToKML(): void {
+    console.log('🗺️ [GOOGLE-MAPS] Iniciando exportação de mapa para KML...');
+    
+    this.kmlExportService.exportMapToKML({
+      caixas: this.destino,
+      ctos: this.destinoCTO,
+      ctosSP: this.destinoCTOSP,
+      clientes: this.destinoPopsCli,
+      clientesAtivados: this.destinoPopsCliAtv,
+      clientesDesativados: this.destinoPopsCliDes,
+      estacoes: this.destinoPopsEst,
+      condominios: this.destinoCondominios,
+      dios: this.destinoDios,
+      cabos1f: this.destinoCabos1f,
+      cabos2f: this.destinoCabos2f,
+      cabos4f: this.destinoCabos4f,
+      cabos6f: this.destinoCabos6f,
+      cabos8f: this.destinoCabos8f,
+      cabos12f: this.destinoCabos12f,
+      cabos24f: this.destinoCabos24f,
+      cabos36f: this.destinoCabos36f,
+      cabos48f: this.destinoCabos48f,
+      cabos72f: this.destinoCabos72f,
+      cabos144f: this.destinoCabos144f
+    });
   }
 
 
