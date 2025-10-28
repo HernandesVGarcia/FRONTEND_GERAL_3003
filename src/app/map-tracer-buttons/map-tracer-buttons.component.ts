@@ -34,9 +34,13 @@ export class MapTracerButtonsComponent implements OnInit {
   onLimpaTracer(): void {
     console.log('🗺️ [TRACER-BUTTONS] Limpa Tracer clicado');
     
-    // Disparar evento customizado para o Google Maps component
+    // Disparar evento customizado para limpar highlights
     const event = new CustomEvent('clearCabosHighlight');
     window.dispatchEvent(event);
+    
+    // Disparar evento para cancelar desenho de cabo se houver
+    const cancelEvent = new CustomEvent('cancelarDesenhoCabo');
+    window.dispatchEvent(cancelEvent);
     
     console.log('🗺️ [TRACER-BUTTONS] Evento clearCabosHighlight disparado');
   }
@@ -47,8 +51,11 @@ export class MapTracerButtonsComponent implements OnInit {
   onDesenhaCabo(): void {
     console.log('🗺️ [TRACER-BUTTONS] Desenha Cabo clicado');
     
-    // TODO: Implementar modo de desenho de cabo
-    alert('Funcionalidade de desenho de cabo será implementada em breve!');
+    // Disparar evento customizado para o Google Maps component
+    const event = new CustomEvent('startDesenhoCabo');
+    window.dispatchEvent(event);
+    
+    console.log('🗺️ [TRACER-BUTTONS] Evento startDesenhoCabo disparado');
   }
 
   /**
@@ -57,8 +64,11 @@ export class MapTracerButtonsComponent implements OnInit {
   onFinalizaCabo(): void {
     console.log('🗺️ [TRACER-BUTTONS] Finaliza Cabo clicado');
     
-    // TODO: Implementar finalização de cabo
-    alert('Funcionalidade de finalização de cabo será implementada em breve!');
+    // Disparar evento customizado para o Google Maps component
+    const event = new CustomEvent('finalizarDesenhoCabo');
+    window.dispatchEvent(event);
+    
+    console.log('🗺️ [TRACER-BUTTONS] Evento finalizarDesenhoCabo disparado');
   }
 
   /**

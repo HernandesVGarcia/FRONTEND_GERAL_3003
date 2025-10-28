@@ -182,7 +182,22 @@ export class GoogleMapsComponent implements OnInit, OnChanges {
   // 🎯 Propriedades para context menu
   contextMenuVisible = false;
   contextMenuPosition = { x: 0, y: 0 };
+  contextMenuType: 'map' | 'cabo' = 'map'; // 🆕 Tipo de contexto do menu
   private contextMenuListenerAdded = false; // Flag para evitar listeners duplicados
+  private clickedCaboData: any = null; // 🆕 Armazena dados do cabo clicado
+  private clickedPolyline: google.maps.Polyline | null = null; // 🆕 Armazena a polyline clicada
+  private isCaboClicked = false; // 🆕 Flag para saber se foi clique em cabo
+  private isEditingCabo: boolean = false; // 🆕 Flag para saber se está editando um cabo
+  private clickedPolylineOriginalColor: string = ''; // 🆕 Para restaurar a cor original
+  private listenerMapaFinalizarEdicao: google.maps.MapsEventListener | null = null; // 🆕 Listener para finalizar edição
+
+  // 🗺️ Propriedades para desenho de cabo =============================================
+  isDesenhandoCabo = false;
+  caboEmDesenho: google.maps.Polyline | null = null;
+  pontosCaboEmDesenho: google.maps.LatLng[] = [];
+  caboDesenhado: google.maps.Polyline | null = null;
+  listenerMapaDesenho: google.maps.MapsEventListener | null = null;
+  listenerRightClickDesenho: google.maps.MapsEventListener | null = null;
 
   /**
    * 🎯 Configura o listener do context menu no mapa
@@ -222,6 +237,14 @@ export class GoogleMapsComponent implements OnInit, OnChanges {
 
     // 🎯 Listener alternativo usando DOM nativo (apenas uma vez)
     document.addEventListener('contextmenu', (event: MouseEvent) => {
+      // 🔴 Se foi um cabo clicado, prevenir menu padrão mas NÃO processar aqui (deixar o listener da polyline processar)
+      if (this.isCaboClicked) {
+        console.log('🔴 Context menu de cabo será processado pela polyline, ignorando listener global');
+        event.preventDefault(); // 🆕 IMPORTANTE: Prevenir o menu padrão do navegador
+        this.isCaboClicked = false; // Reset flag
+        return;
+      }
+      
       const target = event.target as HTMLElement;
       
       // Verificar se o clique foi no mapa
@@ -237,10 +260,13 @@ export class GoogleMapsComponent implements OnInit, OnChanges {
                            target.closest('.diagram-div') !== null ||
                            target.closest('#gojsDiagram') !== null;
       
-      // 🔀 NOVO: Verificar se é um splitter clicado (simplificado)
+      // 🔀 Verificar se é um splitter clicado (simplificado)
       const isSplitterClick = target.closest('.splitter-context-menu') !== null;
       
       if (isMapClick && !isInGoJSModal) {
+        // Resetar para tipo 'map'
+        this.contextMenuType = 'map';
+        console.log('🗺️ Context menu do MAPA será mostrado');
         event.preventDefault(); // Previne o menu padrão do navegador
         this.showContextMenu(event.clientX, event.clientY);
       } else if (isInGoJSModal && !isSplitterClick) {
@@ -257,8 +283,11 @@ export class GoogleMapsComponent implements OnInit, OnChanges {
    * 🎯 Mostra o context menu na posição especificada
    */
   private showContextMenu(x: number, y: number): void {
+    console.log('🎯 showContextMenu chamado:', { x, y, contextType: this.contextMenuType });
     this.contextMenuPosition = { x, y };
     this.contextMenuVisible = true;
+    
+    console.log('🎯 Context menu definido como visível:', this.contextMenuVisible);
     
     // 🎯 Forçar detecção de mudanças
     this.cdr.detectChanges();
@@ -269,6 +298,15 @@ export class GoogleMapsComponent implements OnInit, OnChanges {
    */
   public hideContextMenu(): void {
     this.contextMenuVisible = false;
+    this.contextMenuType = 'map'; // 🔄 Reseta para tipo 'map'
+    
+    // 🆕 Não limpar se estiver em modo de edição (deixar editar)
+    if (!this.isEditingCabo) {
+      this.clickedCaboData = null;
+      this.clickedPolyline = null; // 🔄 Reseta a polyline clicada
+    }
+    
+    this.isCaboClicked = false; // 🔄 Reseta flag
     
     // 🎯 Forçar detecção de mudanças
     this.cdr.detectChanges();
@@ -301,6 +339,16 @@ export class GoogleMapsComponent implements OnInit, OnChanges {
         break;
       case 'cria-sobra':
         this.criarSobra();
+        break;
+      // 🆕 Ações para CABOS
+      case 'editar-cabo':
+        this.editarCabo();
+        break;
+      case 'liberar-cabo':
+        this.liberarCabo();
+        break;
+      case 'excluir-cabo':
+        this.excluirCabo();
         break;
       default:
         console.warn('🗺️ [CONTEXT-MENU] Ação não reconhecida:', action);
@@ -341,6 +389,114 @@ export class GoogleMapsComponent implements OnInit, OnChanges {
   private criarSobra(): void {
     console.log('🗺️ [CONTEXT-MENU] Criando sobra...');
     alert('Funcionalidade de criar sobra será implementada em breve!');
+  }
+
+  // 🆕 Métodos para ações do cabo
+  private editarCabo(): void {
+    console.log('🔴 [CONTEXT-MENU] Editando cabo...', this.clickedCaboData);
+    
+    if (this.clickedPolyline) {
+      console.log('Dados do cabo clicado:', this.clickedCaboData);
+      
+      // Salvar a cor original
+      this.clickedPolylineOriginalColor = this.clickedPolyline.get('strokeColor') || '#808080';
+      
+      // Tornar a polyline editável
+      this.clickedPolyline.setOptions({
+        editable: true,
+        draggable: true
+      });
+      
+      // Destacar visualmente que está em modo de edição
+      this.clickedPolyline.setOptions({
+        strokeColor: '#FF0000', // Vermelho para indicar edição
+        strokeWeight: 5,
+        strokeOpacity: 1.0
+      });
+      
+      // 🆕 Marcar que está em modo de edição
+      this.isEditingCabo = true;
+      
+      console.log('✅ Cabo agora está editável!');
+      
+      // Mostrar instruções ao usuário
+     // alert('✅ Cabo em modo de edição!\n\n📝 Clique e arraste os pontos vermelhos para mover\n🗺️ Clique no mapa para finalizar');
+      
+      // Fechar o context menu
+      this.hideContextMenu();
+      
+      // 🆕 Adicionar listener para finalizar quando clicar no mapa
+      this.setupFinishEditingListener();
+    } else {
+      alert('❌ Não foi possível editar o cabo. Polyline não encontrada.');
+    }
+  }
+
+  // 🆕 Método para configurar listener que finaliza a edição
+  private setupFinishEditingListener(): void {
+    // Remover listener anterior se existir
+    if (this.listenerMapaFinalizarEdicao) {
+      google.maps.event.removeListener(this.listenerMapaFinalizarEdicao);
+    }
+    
+    // Adicionar novo listener
+    if (this.map) {
+      this.listenerMapaFinalizarEdicao = this.map.addListener('click', (event: google.maps.MapMouseEvent) => {
+        if (this.isEditingCabo && this.clickedPolyline) {
+          console.log('🗺️ Click no mapa detectado - finalizando edição');
+          this.finalizarEdicaoCabo();
+        }
+      });
+    }
+  }
+
+  // 🆕 Método para finalizar a edição
+  private finalizarEdicaoCabo(): void {
+    if (this.clickedPolyline) {
+      // Remover modo de edição
+      this.clickedPolyline.setOptions({
+        editable: false,
+        draggable: false,
+        strokeColor: this.clickedPolylineOriginalColor, // Restaurar cor original
+        strokeWeight: 4, // Restaurar largura
+        strokeOpacity: 0.9
+      });
+      
+      console.log('✅ Edição finalizada!');
+      alert('✅ Edição salva com sucesso!');
+      
+      // Limpar flags
+      this.isEditingCabo = false;
+      this.clickedPolyline = null;
+      this.clickedCaboData = null;
+      
+      // Remover listener
+      if (this.listenerMapaFinalizarEdicao) {
+        google.maps.event.removeListener(this.listenerMapaFinalizarEdicao);
+        this.listenerMapaFinalizarEdicao = null;
+      }
+    }
+  }
+
+  private liberarCabo(): void {
+    console.log('🔴 [CONTEXT-MENU] Liberando cabo...', this.clickedCaboData);
+    if (this.clickedCaboData) {
+      console.log('Dados do cabo clicado:', this.clickedCaboData);
+      // TODO: Implementar lógica de liberação do cabo
+      alert(`Funcionalidade de liberar cabo será implementada em breve!`);
+    }
+  }
+
+  private excluirCabo(): void {
+    console.log('🔴 [CONTEXT-MENU] Excluindo cabo...', this.clickedCaboData);
+    if (this.clickedCaboData) {
+      console.log('Dados do cabo clicado:', this.clickedCaboData);
+      // TODO: Implementar lógica de exclusão do cabo
+      const confirmacao = confirm(`Tem certeza que deseja excluir este cabo?`);
+      if (confirmacao) {
+        alert(`Funcionalidade de excluir cabo será implementada em breve!`);
+      }
+    }
   }
 
   /**
@@ -894,6 +1050,22 @@ polylineOptions144f: google.maps.PolylineOptions = {
     window.addEventListener('exportKML', () => {
       console.log('🗺️ [GOOGLE-MAPS] Recebendo evento de exportar KML da toolbar');
       this.exportMapToKML();
+    });
+
+    // 🗺️ NOVO: Listeners para desenho de cabo
+    window.addEventListener('startDesenhoCabo', () => {
+      console.log('🗺️ [GOOGLE-MAPS] Iniciando desenho de cabo');
+      this.startDesenhoCabo();
+    });
+
+    window.addEventListener('finalizarDesenhoCabo', () => {
+      console.log('🗺️ [GOOGLE-MAPS] Finalizando desenho de cabo');
+      this.finalizarDesenhoCabo();
+    });
+
+    window.addEventListener('cancelarDesenhoCabo', () => {
+      console.log('🗺️ [GOOGLE-MAPS] Cancelando desenho de cabo');
+      this.cancelarDesenhoCabo();
     });
     
     
@@ -3288,10 +3460,51 @@ openGoJSModal() {
           this.openVisualizaCaboModal(cabo.id_meta, tipoFibra);
         });
 
+        // 🆕 Adicionar evento de right-click (botão direito) nos cabos
+        polyline.addListener('rightclick', (event: google.maps.MapMouseEvent) => {
+          console.log('🔴 RIGHT-CLICK no cabo:', cabo.id_meta, tipoFibra);
+          
+          // 🛑 IMPORTANTE: Prevenir menu padrão do navegador PRIMEIRO
+          if (event.domEvent) {
+            event.domEvent.preventDefault();
+            event.domEvent.stopPropagation();
+          }
+          
+          // Marcar flag ANTES do preventDefault
+          this.isCaboClicked = true;
+          
+          // Parar propagação do evento do Google Maps
+          event.stop();
+          
+          // Fechar InfoWindow se estiver aberto
+          infoWindow.close();
+          
+          // Armazenar dados do cabo clicado
+          this.clickedCaboData = cabo;
+          // 🆕 Armazenar a polyline clicada para poder editá-la
+          this.clickedPolyline = polyline;
+          
+          // Definir tipo de contexto como 'cabo'
+          this.contextMenuType = 'cabo';
+          
+          // Mostrar context menu na posição do clique
+          if (event.domEvent) {
+            const mouseEvent = event.domEvent as MouseEvent;
+            console.log('🔴 Mostrando context menu para cabo em:', mouseEvent.clientX, mouseEvent.clientY);
+            this.showContextMenu(mouseEvent.clientX, mouseEvent.clientY);
+          }
+        });
+
         // Adicionar evento para fechar InfoWindow quando clicar fora
-        this.map?.addListener('click', () => {
+        const clickListener = this.map?.addListener('click', () => {
+          console.log('🔧 [POLYLINE] Clique detectado - fechando InfoWindow');
           infoWindow.close();
         });
+        
+        // Guardar listener para poder removê-lo depois se necessário
+        if (clickListener) {
+          polyline.set('infoWindowClickListener', clickListener);
+        }
 
         polylinesArray.push(polyline);
         infoWindowsArray.push(infoWindow);
@@ -3427,6 +3640,253 @@ openGoJSModal() {
     });
   }
 
+  /***********************************************************************************************************
+   * 🗺️ DESENHO CABO: Inicia o modo de desenho de cabo
+   **********************************************************************************************************/
+  startDesenhoCabo(): void {
+    console.log('🗺️ [DESENHO-CABO] Iniciando modo de desenho...');
+    
+    // Cancelar desenho anterior se existir
+    if (this.isDesenhandoCabo) {
+      this.cancelarDesenhoCabo();
+    }
+
+    this.isDesenhandoCabo = true;
+    this.pontosCaboEmDesenho = [];
+    this.caboEmDesenho = null;
+    this.caboDesenhado = null;
+
+    if (!this.map) {
+      console.error('🗺️ [DESENHO-CABO] Mapa não está inicializado');
+      this.isDesenhandoCabo = false;
+      return;
+    }
+
+    // Mudar cursor do mapa
+    this.map.setOptions({ 
+      draggableCursor: 'crosshair',
+      clickableIcons: false 
+    });
+
+    // Adicionar listener de clique no mapa
+    this.listenerMapaDesenho = this.map.addListener('click', (event: google.maps.MapMouseEvent) => {
+      this.addPontoCabo(event);
+    });
+
+    // Adicionar listener de clique direito para cancelar
+    this.listenerRightClickDesenho = this.map.addListener('rightclick', (event: google.maps.MapMouseEvent) => {
+      this.cancelarDesenhoCabo();
+    });
+
+    //alert('🗺️ Modo de desenho ativado:\n• Clique no mapa para adicionar pontos\n• Clique com botão direito para cancelar\n• Pressione "Finaliza Cabo" quando terminar');
+  }
+
+  /**
+   * 🗺️ DESENHO CABO: Adiciona um ponto ao cabo em desenho
+   */
+  addPontoCabo(event: google.maps.MapMouseEvent): void {
+    if (!this.isDesenhandoCabo || !event.latLng) {
+      return;
+    }
+
+    console.log('🗺️ [DESENHO-CABO] Adicionando ponto:', event.latLng);
+    this.pontosCaboEmDesenho.push(event.latLng);
+
+    // Remover polyline anterior se existir
+    if (this.caboEmDesenho) {
+      this.caboEmDesenho.setMap(null);
+    }
+
+    // Criar/atualizar a polyline temporária
+    if (this.pontosCaboEmDesenho.length > 1) {
+      this.caboEmDesenho = new google.maps.Polyline({
+        path: this.pontosCaboEmDesenho,
+        map: this.map,
+        strokeColor: '#808080', // Cinza
+        strokeWeight: 3,
+        strokeOpacity: 0.8,
+        zIndex: 1000,
+        clickable: false,
+        geodesic: true
+      });
+    } else if (this.pontosCaboEmDesenho.length === 1) {
+      // Marcar o primeiro ponto com um marcador pequeno
+      new google.maps.Marker({
+        position: event.latLng,
+        map: this.map,
+        icon: {
+          path: google.maps.SymbolPath.CIRCLE,
+          scale: 4,
+          fillColor: '#808080',
+          fillOpacity: 1,
+          strokeColor: '#ffffff',
+          strokeWeight: 2
+        },
+        title: 'Início do cabo'
+      });
+    }
+  }
+
+  /**
+   * 🗺️ DESENHO CABO: Finaliza o desenho do cabo
+   */
+  finalizarDesenhoCabo(): void {
+    console.log('🗺️ [DESENHO-CABO] Finalizando desenho...');
+    
+    if (!this.isDesenhandoCabo || this.pontosCaboEmDesenho.length < 2) {
+      alert('❌ Desenhe pelo menos 2 pontos antes de finalizar!');
+      return;
+    }
+
+    const totalPontos = this.pontosCaboEmDesenho.length;
+    console.log('🗺️ [DESENHO-CABO] Total de pontos coletados:', totalPontos);
+    console.log('🗺️ [DESENHO-CABO] Pontos:', this.pontosCaboEmDesenho);
+
+    // Remover listeners
+    if (this.listenerMapaDesenho) {
+      google.maps.event.removeListener(this.listenerMapaDesenho);
+      this.listenerMapaDesenho = null;
+    }
+
+    if (this.listenerRightClickDesenho) {
+      google.maps.event.removeListener(this.listenerRightClickDesenho);
+      this.listenerRightClickDesenho = null;
+    }
+
+    // Remover polyline temporária
+    if (this.caboEmDesenho) {
+      this.caboEmDesenho.setMap(null);
+    }
+
+    // Criar polyline final editável
+    if (this.map) {
+      // Fazer cópia dos pontos antes de limpar
+      const pontosFinais = [...this.pontosCaboEmDesenho];
+      
+      console.log('🗺️ [DESENHO-CABO] Criando polyline final com pontos:', pontosFinais);
+      
+      this.caboDesenhado = new google.maps.Polyline({
+        path: pontosFinais,
+        map: this.map,
+        strokeColor: '#808080', // Cinza
+        strokeWeight: 4,
+        strokeOpacity: 0.9,
+        zIndex: 1001,
+        clickable: true,
+        geodesic: true,
+        editable: false // Não editável após finalizar
+      });
+      
+      console.log('🗺️ [DESENHO-CABO] Polyline criada (não editável):', this.caboDesenhado);
+      
+      // 🆕 ADICIONAR LISTENER DE RIGHT-CLICK NO CABO DESENHADO
+      this.caboDesenhado.addListener('rightclick', (event: google.maps.MapMouseEvent) => {
+        console.log('🔴 RIGHT-CLICK no CABO DESENHADO');
+        
+        // 🛑 Prevenir menu padrão do navegador PRIMEIRO
+        if (event.domEvent) {
+          event.domEvent.preventDefault();
+          event.domEvent.stopPropagation();
+        }
+        
+        // Marcar flag
+        this.isCaboClicked = true;
+        
+        // Parar propagação do evento do Google Maps
+        event.stop();
+        
+        // Armazenar dados do cabo desenhado
+        // Como é um cabo desenhado, não temos dados completos do banco
+        this.clickedCaboData = {
+          id_meta: 'DESENHADO_' + Date.now(),
+          tipo: 'CABO_DESENHADO',
+          Label_cabo: 'Cabo Desenhado'
+        };
+        // 🆕 Armazenar a polyline clicada para poder editá-la
+        this.clickedPolyline = this.caboDesenhado;
+        
+        // Definir tipo de contexto como 'cabo'
+        this.contextMenuType = 'cabo';
+        
+        // Mostrar context menu na posição do clique
+        if (event.domEvent) {
+          const mouseEvent = event.domEvent as MouseEvent;
+          console.log('🔴 Mostrando context menu para cabo desenhado em:', mouseEvent.clientX, mouseEvent.clientY);
+          this.showContextMenu(mouseEvent.clientX, mouseEvent.clientY);
+        }
+      });
+      
+      // Verificar se a polyline foi adicionada ao mapa
+      console.log('🗺️ [DESENHO-CABO] Polyline adicionada ao mapa com sucesso');
+    } else {
+      console.error('🗺️ [DESENHO-CABO] Mapa não está disponível!');
+    }
+
+    // Restaurar cursor
+    if (this.map) {
+      this.map.setOptions({ 
+        draggableCursor: null,
+        clickableIcons: true 
+      });
+    }
+
+    this.isDesenhandoCabo = false;
+    
+    // Limpar array DEPOIS de criar a polyline
+    this.pontosCaboEmDesenho = [];
+
+    alert(`✅ Cabo desenhado com sucesso!\n📊 Total de pontos: ${totalPontos}`);
+    
+    console.log('🗺️ [DESENHO-CABO] Desenho finalizado. Estado final:', {
+      caboDesenhado: this.caboDesenhado,
+      map: this.map,
+      isDesenhandoCabo: this.isDesenhandoCabo
+    });
+  }
+
+  /**
+   * 🗺️ DESENHO CABO: Cancela o desenho atual
+   */
+  cancelarDesenhoCabo(): void {
+    console.log('🗺️ [DESENHO-CABO] Cancelando desenho...');
+
+    // Remover listeners
+    if (this.listenerMapaDesenho) {
+      google.maps.event.removeListener(this.listenerMapaDesenho);
+      this.listenerMapaDesenho = null;
+    }
+
+    if (this.listenerRightClickDesenho) {
+      google.maps.event.removeListener(this.listenerRightClickDesenho);
+      this.listenerRightClickDesenho = null;
+    }
+
+    // Remover polyline temporária
+    if (this.caboEmDesenho) {
+      this.caboEmDesenho.setMap(null);
+      this.caboEmDesenho = null;
+    }
+
+    // Remover cabo finalizado se existir
+    if (this.caboDesenhado) {
+      this.caboDesenhado.setMap(null);
+      this.caboDesenhado = null;
+    }
+
+    // Restaurar cursor
+    if (this.map) {
+      this.map.setOptions({ 
+        draggableCursor: null,
+        clickableIcons: true 
+      });
+    }
+
+    this.isDesenhandoCabo = false;
+    this.pontosCaboEmDesenho = [];
+
+    alert('❌ Desenho cancelado');
+  }
+ /***********************************************************************************************************/
 
 
 

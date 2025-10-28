@@ -6,66 +6,89 @@
        [style.top.px]="getAdjustedPosition().y"
        (click)="$event.stopPropagation()">
     
-    <!-- Cria Caixa -->
-    <div class="menu-item" (click)="onAction('cria-caixa')">
-      <mat-icon>inventory_2</mat-icon>
-      <span>Cria Caixa</span>
-    </div>
-
-    <!-- Cria DIO -->
-    <div class="menu-item" (click)="onAction('cria-dio')">
-      <mat-icon>router</mat-icon>
-      <span>Cria DIO</span>
-    </div>
-
-    <!-- Cria Ponto (com submenu) -->
-    <div class="menu-item has-submenu" 
-         (click)="toggleSubmenu('ponto')"
-         [class.active]="isSubmenuActive('ponto')">
-      <mat-icon>place</mat-icon>
-      <span>Cria Ponto</span>
-      <mat-icon class="arrow">keyboard_arrow_right</mat-icon>
-    </div>
+    <!-- 🆕 Menu específico para CABOS -->
+    <ng-container *ngIf="contextType === 'cabo'">
+      <div class="menu-item" (click)="onAction('editar-cabo')">
+        <mat-icon>edit</mat-icon>
+        <span>Editar Cabo</span>
+      </div>
+      
+      <div class="menu-item" (click)="onAction('liberar-cabo')">
+        <mat-icon>lock_open</mat-icon>
+        <span>Liberar Cabo</span>
+      </div>
+      
+      <div class="menu-divider"></div>
+      
+      <div class="menu-item" (click)="onAction('excluir-cabo')">
+        <mat-icon>delete</mat-icon>
+        <span>Excluir Cabo</span>
+      </div>
+    </ng-container>
     
-    <!-- Submenu Cria Ponto -->
-    <div class="submenu" *ngIf="isSubmenuActive('ponto')">
-      <div class="submenu-item" (click)="onAction('cria-cliente')">
-        <mat-icon>person</mat-icon>
-        <span>Cria Cliente</span>
+    <!-- Menu para MAPA (quando não há cabos) -->
+    <ng-container *ngIf="contextType === 'map'">
+      <!-- Cria Caixa -->
+      <div class="menu-item" (click)="onAction('cria-caixa')">
+        <mat-icon>inventory_2</mat-icon>
+        <span>Cria Caixa</span>
       </div>
-      <div class="submenu-item" (click)="onAction('cria-estacao')">
-        <mat-icon>business</mat-icon>
-        <span>Cria Estação</span>
-      </div>
-      <div class="submenu-item" (click)="onAction('cria-condominio')">
-        <mat-icon>apartment</mat-icon>
-        <span>Cria Condomínio</span>
-      </div>
-    </div>
 
-    <!-- Separador -->
-    <div class="menu-divider"></div>
+      <!-- Cria DIO -->
+      <div class="menu-item" (click)="onAction('cria-dio')">
+        <mat-icon>router</mat-icon>
+        <span>Cria DIO</span>
+      </div>
 
-    <!-- Cria Marcação (com submenu) -->
-    <div class="menu-item has-submenu" 
-         (click)="toggleSubmenu('marcacao')"
-         [class.active]="isSubmenuActive('marcacao')">
-      <mat-icon>bookmark</mat-icon>
-      <span>Cria Marcação</span>
-      <mat-icon class="arrow">keyboard_arrow_right</mat-icon>
-    </div>
-    
-    <!-- Submenu Cria Marcação -->
-    <div class="submenu" *ngIf="isSubmenuActive('marcacao')">
-      <div class="submenu-item" (click)="onAction('cria-anotacao')">
-        <mat-icon>note</mat-icon>
-        <span>Anotação</span>
+      <!-- Cria Ponto (com submenu) -->
+      <div class="menu-item has-submenu" 
+           (click)="toggleSubmenu('ponto')"
+           [class.active]="isSubmenuActive('ponto')">
+        <mat-icon>place</mat-icon>
+        <span>Cria Ponto</span>
+        <mat-icon class="arrow">keyboard_arrow_right</mat-icon>
       </div>
-      <div class="submenu-item" (click)="onAction('cria-sobra')">
-        <mat-icon>content_cut</mat-icon>
-        <span>Sobra</span>
+      
+      <!-- Submenu Cria Ponto -->
+      <div class="submenu" *ngIf="isSubmenuActive('ponto')">
+        <div class="submenu-item" (click)="onAction('cria-cliente')">
+          <mat-icon>person</mat-icon>
+          <span>Cria Cliente</span>
+        </div>
+        <div class="submenu-item" (click)="onAction('cria-estacao')">
+          <mat-icon>business</mat-icon>
+          <span>Cria Estação</span>
+        </div>
+        <div class="submenu-item" (click)="onAction('cria-condominio')">
+          <mat-icon>apartment</mat-icon>
+          <span>Cria Condomínio</span>
+        </div>
       </div>
-    </div>
+
+      <!-- Separador -->
+      <div class="menu-divider"></div>
+
+      <!-- Cria Marcação (com submenu) -->
+      <div class="menu-item has-submenu" 
+           (click)="toggleSubmenu('marcacao')"
+           [class.active]="isSubmenuActive('marcacao')">
+        <mat-icon>bookmark</mat-icon>
+        <span>Cria Marcação</span>
+        <mat-icon class="arrow">keyboard_arrow_right</mat-icon>
+      </div>
+      
+      <!-- Submenu Cria Marcação -->
+      <div class="submenu" *ngIf="isSubmenuActive('marcacao')">
+        <div class="submenu-item" (click)="onAction('cria-anotacao')">
+          <mat-icon>note</mat-icon>
+          <span>Anotação</span>
+        </div>
+        <div class="submenu-item" (click)="onAction('cria-sobra')">
+          <mat-icon>content_cut</mat-icon>
+          <span>Sobra</span>
+        </div>
+      </div>
+    </ng-container>
 
   </div>
 </div>
