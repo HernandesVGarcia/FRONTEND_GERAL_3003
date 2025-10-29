@@ -31,6 +31,7 @@ import { animate, animation } from '@angular/animations';
 import { MapSearchButtonsComponent } from '../map-search-buttons/map-search-buttons.component';
 import { MapTracerButtonsComponent } from '../map-tracer-buttons/map-tracer-buttons.component';
 import { MapContextMenuComponent } from '../map-context-menu/map-context-menu.component';
+import { TipagemCabosModalComponent, TipagemCabosData } from '../tipagem-cabos-modal/tipagem-cabos-modal.component';
 import { CompartilhamentoService, CaixaData, ClienteData } from '../servico/compartilhamento.service';
 import { KmlExportService } from '../servico/kml-export.service';
 import { Subject, takeUntil } from 'rxjs';
@@ -49,7 +50,7 @@ import { GraphvizModalComponent } from '../graphviz-modal/graphviz-modal.compone
   templateUrl: './google-maps.component.html',
   styleUrls: ['./google-maps.component.css'],
   standalone: true,
-  imports: [CommonModule, GoogleMapsModule, MapSearchButtonsComponent, MapTracerButtonsComponent, MapContextMenuComponent, MatIconModule, MatButtonModule],
+  imports: [CommonModule, GoogleMapsModule, MapSearchButtonsComponent, MapTracerButtonsComponent, MapContextMenuComponent, TipagemCabosModalComponent, MatIconModule, MatButtonModule],
 })
 export class GoogleMapsComponent implements OnInit, OnChanges {
   @Input() destinoCondominios: Condominios[]=[];
@@ -198,6 +199,10 @@ export class GoogleMapsComponent implements OnInit, OnChanges {
   caboDesenhado: google.maps.Polyline | null = null;
   listenerMapaDesenho: google.maps.MapsEventListener | null = null;
   listenerRightClickDesenho: google.maps.MapsEventListener | null = null;
+  
+  // 🆕 Propriedades para modal de tipagem
+  tipagemCabosModalVisible = false;
+  pontosCaboAguardandoTipagem: google.maps.LatLng[] = []; // Guarda pontos enquanto modal está aberto
 
   /**
    * 🎯 Configura o listener do context menu no mapa
@@ -3728,7 +3733,7 @@ openGoJSModal() {
   }
 
   /**
-   * 🗺️ DESENHO CABO: Finaliza o desenho do cabo
+   * 🗺️ DESENHO CABO: Finaliza o desenho do cabo e abre modal de tipagem
    */
   finalizarDesenhoCabo(): void {
     console.log('🗺️ [DESENHO-CABO] Finalizando desenho...');
@@ -3758,70 +3763,19 @@ openGoJSModal() {
       this.caboEmDesenho.setMap(null);
     }
 
-    // Criar polyline final editável
-    if (this.map) {
-      // Fazer cópia dos pontos antes de limpar
-      const pontosFinais = [...this.pontosCaboEmDesenho];
-      
-      console.log('🗺️ [DESENHO-CABO] Criando polyline final com pontos:', pontosFinais);
-      
-      this.caboDesenhado = new google.maps.Polyline({
-        path: pontosFinais,
-        map: this.map,
-        strokeColor: '#808080', // Cinza
-        strokeWeight: 4,
-        strokeOpacity: 0.9,
-        zIndex: 1001,
-        clickable: true,
-        geodesic: true,
-        editable: false // Não editável após finalizar
-      });
-      
-      console.log('🗺️ [DESENHO-CABO] Polyline criada (não editável):', this.caboDesenhado);
-      
-      // 🆕 ADICIONAR LISTENER DE RIGHT-CLICK NO CABO DESENHADO
-      this.caboDesenhado.addListener('rightclick', (event: google.maps.MapMouseEvent) => {
-        console.log('🔴 RIGHT-CLICK no CABO DESENHADO');
-        
-        // 🛑 Prevenir menu padrão do navegador PRIMEIRO
-        if (event.domEvent) {
-          event.domEvent.preventDefault();
-          event.domEvent.stopPropagation();
-        }
-        
-        // Marcar flag
-        this.isCaboClicked = true;
-        
-        // Parar propagação do evento do Google Maps
-        event.stop();
-        
-        // Armazenar dados do cabo desenhado
-        // Como é um cabo desenhado, não temos dados completos do banco
-        this.clickedCaboData = {
-          id_meta: 'DESENHADO_' + Date.now(),
-          tipo: 'CABO_DESENHADO',
-          Label_cabo: 'Cabo Desenhado'
-        };
-        // 🆕 Armazenar a polyline clicada para poder editá-la
-        this.clickedPolyline = this.caboDesenhado;
-        
-        // Definir tipo de contexto como 'cabo'
-        this.contextMenuType = 'cabo';
-        
-        // Mostrar context menu na posição do clique
-        if (event.domEvent) {
-          const mouseEvent = event.domEvent as MouseEvent;
-          console.log('🔴 Mostrando context menu para cabo desenhado em:', mouseEvent.clientX, mouseEvent.clientY);
-          this.showContextMenu(mouseEvent.clientX, mouseEvent.clientY);
-        }
-      });
-      
-      // Verificar se a polyline foi adicionada ao mapa
-      console.log('🗺️ [DESENHO-CABO] Polyline adicionada ao mapa com sucesso');
-    } else {
-      console.error('🗺️ [DESENHO-CABO] Mapa não está disponível!');
-    }
-
+    // 🆕 Guardar pontos antes de limpar e abrir modal de tipagem
+    this.pontosCaboAguardandoTipagem = [...this.pontosCaboEmDesenho];
+    
+    // Parar modo de desenho
+    this.isDesenhandoCabo = false;
+    
+    // Limpar array de pontos (será usado depois no criarCaboComTipagem)
+    this.pontosCaboEmDesenho = [];
+    
+    // 🆕 Abrir modal de tipagem
+    this.tipagemCabosModalVisible = true;
+    console.log('🗺️ [DESENHO-CABO] Modal de tipagem aberto. Aguardando seleção do tipo de cabo...');
+    
     // Restaurar cursor
     if (this.map) {
       this.map.setOptions({ 
@@ -3829,19 +3783,133 @@ openGoJSModal() {
         clickableIcons: true 
       });
     }
+  }
 
-    this.isDesenhandoCabo = false;
+  /**
+   * 🆕 Método auxiliar: Cria o cabo final com os dados de tipagem
+   */
+  private criarCaboComTipagem(tipagemData: TipagemCabosData): void {
+    console.log('🗺️ [TIPAGEM] Criando cabo com tipagem:', tipagemData);
     
-    // Limpar array DEPOIS de criar a polyline
-    this.pontosCaboEmDesenho = [];
+    if (!this.map || this.pontosCaboAguardandoTipagem.length < 2) {
+      console.error('🗺️ [TIPAGEM] Erro: Mapa ou pontos não disponíveis');
+      return;
+    }
 
-    alert(`✅ Cabo desenhado com sucesso!\n📊 Total de pontos: ${totalPontos}`);
+    // Fazer cópia dos pontos que foram guardados
+    const pontosFinais = this.pontosCaboAguardandoTipagem.map(p => ({
+      lat: p.lat(),
+      lng: p.lng()
+    }));
+
+    console.log('🗺️ [TIPAGEM] Criando polyline final com pontos:', pontosFinais);
     
-    console.log('🗺️ [DESENHO-CABO] Desenho finalizado. Estado final:', {
+    // Gerar ID temporário
+    const idMetaTemp = `TEMP_${Date.now()}`;
+    
+    // Criar objeto com dados completos do cabo (igual aos outros cabos)
+    const caboData = {
+      id_meta: idMetaTemp,
+      capacidade: tipagemData.capacidade,
+      tipo: 'CABO_DESENHADO',
+      Label_cabo: tipagemData.label,
+      fibrasPorTubo: tipagemData.fibrasPorTubo,
+      codigoCores: tipagemData.codigoCores,
+      GOOGLE_LATLNG: pontosFinais.map(p => `${p.lat},${p.lng}`).join(' ')
+    };
+    
+    // Criar polyline final
+    this.caboDesenhado = new google.maps.Polyline({
+      path: pontosFinais,
+      map: this.map,
+      strokeColor: '#808080', // Cinza
+      strokeWeight: 4,
+      strokeOpacity: 0.9,
+      zIndex: 1001,
+      clickable: true,
+      geodesic: true,
+      editable: false // Não editável após finalizar
+    });
+    
+    // 🆕 Salvar atributos na polyline (igual aos outros cabos)
+    this.caboDesenhado.set('id_meta', idMetaTemp);
+    this.caboDesenhado.set('capacidade', tipagemData.capacidade);
+    this.caboDesenhado.set('tipo', 'CABO_DESENHADO');
+    this.caboDesenhado.set('label', tipagemData.label);
+    this.caboDesenhado.set('fibrasPorTubo', tipagemData.fibrasPorTubo);
+    this.caboDesenhado.set('codigoCores', tipagemData.codigoCores);
+    this.caboDesenhado.set('cabo_data', caboData); // Dados completos do cabo
+    
+    console.log('🗺️ [TIPAGEM] Polyline criada com atributos:', {
+      id_meta: idMetaTemp,
+      capacidade: tipagemData.capacidade,
+      label: tipagemData.label,
+      fibrasPorTubo: tipagemData.fibrasPorTubo,
+      codigoCores: tipagemData.codigoCores
+    });
+    
+    // 🆕 ADICIONAR LISTENER DE RIGHT-CLICK NO CABO DESENHADO
+    this.caboDesenhado.addListener('rightclick', (event: google.maps.MapMouseEvent) => {
+      console.log('🔴 RIGHT-CLICK no CABO DESENHADO');
+      
+      // 🛑 Prevenir menu padrão do navegador PRIMEIRO
+      if (event.domEvent) {
+        event.domEvent.preventDefault();
+        event.domEvent.stopPropagation();
+      }
+      
+      // Marcar flag
+      this.isCaboClicked = true;
+      
+      // Parar propagação do evento do Google Maps
+      event.stop();
+      
+      // Armazenar dados do cabo desenhado
+      this.clickedCaboData = caboData;
+      // 🆕 Armazenar a polyline clicada para poder editá-la
+      this.clickedPolyline = this.caboDesenhado;
+      
+      // Definir tipo de contexto como 'cabo'
+      this.contextMenuType = 'cabo';
+      
+      // Mostrar context menu na posição do clique
+      if (event.domEvent) {
+        const mouseEvent = event.domEvent as MouseEvent;
+        console.log('🔴 Mostrando context menu para cabo desenhado em:', mouseEvent.clientX, mouseEvent.clientY);
+        this.showContextMenu(mouseEvent.clientX, mouseEvent.clientY);
+      }
+    });
+    
+    // Limpar pontos aguardando tipagem
+    this.pontosCaboAguardandoTipagem = [];
+    
+    const totalPontos = pontosFinais.length;
+    alert(`✅ Cabo desenhado com sucesso!\n📊 Total de pontos: ${totalPontos}\n📋 Capacidade: ${tipagemData.capacidade}\n🏷️ Label: ${tipagemData.label}`);
+    
+    console.log('🗺️ [TIPAGEM] Desenho finalizado. Estado final:', {
       caboDesenhado: this.caboDesenhado,
       map: this.map,
       isDesenhandoCabo: this.isDesenhandoCabo
     });
+  }
+
+  /**
+   * 🆕 Handler quando tipagem é confirmada pelo modal
+   */
+  onCaboTypeConfirmed(tipagemData: TipagemCabosData): void {
+    console.log('🗺️ [TIPAGEM] Tipagem confirmada:', tipagemData);
+    this.tipagemCabosModalVisible = false;
+    this.criarCaboComTipagem(tipagemData);
+  }
+
+  /**
+   * 🆕 Handler quando modal de tipagem é fechado sem confirmar
+   */
+  fecharTipagemCabosModal(): void {
+    console.log('🗺️ [TIPAGEM] Modal fechado sem confirmar');
+    this.tipagemCabosModalVisible = false;
+    // Limpar pontos se cancelar
+    this.pontosCaboAguardandoTipagem = [];
   }
 
   /**

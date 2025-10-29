@@ -1,0 +1,63 @@
+<div class="modal-overlay" *ngIf="visible" (click)="fecharModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h1>Tipagem de Cabos</h1>
+    </div>
+    
+    <div class="modal-body">
+      <form>
+        <!-- Capacidade -->
+        <mat-form-field class="full-width">
+          <mat-label>Capacidade *</mat-label>
+          <mat-select [(ngModel)]="selectedCapacidade" name="capacidade" required>
+            <mat-option *ngFor="let cap of capacidades" [value]="cap">
+              {{ cap }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <!-- Fibras por Tubo -->
+        <mat-form-field class="full-width">
+          <mat-label>Fibras por Tubo *</mat-label>
+          <mat-select [(ngModel)]="selectedFibrasPorTubo" name="fibrasPorTubo" required>
+            <mat-option *ngFor="let fibra of fibrasPorTubo" [value]="fibra">
+              {{ fibra }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <!-- Código de Cores -->
+        <div class="radio-group">
+          <label class="radio-label">Código de Cores *</label>
+          <mat-radio-group [(ngModel)]="selectedCodigoCores" name="codigoCores" required>
+            <mat-radio-button *ngFor="let codigo of codigosCores" [value]="codigo" class="radio-button">
+              {{ codigo }}
+            </mat-radio-button>
+          </mat-radio-group>
+        </div>
+
+        <!-- Label do Cabo -->
+        <mat-form-field class="full-width">
+          <mat-label>Label do Cabo</mat-label>
+          <input matInput 
+                 type="text" 
+                 [(ngModel)]="labelCabo" 
+                 name="labelCabo"
+                 placeholder="Ex: Cabo Principal - Rua A">
+          <mat-hint>Opcional - se vazio, será gerado automaticamente</mat-hint>
+        </mat-form-field>
+      </form>
+    </div>
+    
+    <div class="modal-footer">
+      <button mat-button (click)="fecharModal()">Cancelar</button>
+      <button mat-raised-button 
+              color="primary" 
+              (click)="confirmarTipagem()" 
+              [disabled]="!selectedCapacidade || !selectedFibrasPorTubo || !selectedCodigoCores">
+        Confirmar
+      </button>
+    </div>
+  </div>
+</div>
+

@@ -45,4 +45,11 @@
   (close)="hideContextMenu()">
 </app-map-context-menu>
 
+<!-- 🆕 Modal de Tipagem de Cabos -->
+<app-tipagem-cabos-modal
+  [visible]="tipagemCabosModalVisible"
+  (caboTypeConfirmed)="onCaboTypeConfirmed($event)"
+  (modalClosed)="fecharTipagemCabosModal()">
+</app-tipagem-cabos-modal>
+
   
