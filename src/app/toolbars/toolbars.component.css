@@ -28,6 +28,16 @@
 }
 
 
+.kml-btn {
+  height: 30px;           /* igual ao ícone/cancel */
+  line-height: 25px;
+  padding: 0 10px;        /* ajuste horizontal */
+  min-width: 30px;        /* tamanho mínimo legível */
+  font-weight: 600;
+  color:rgb(2, 129, 2);
+}
+
+
 
 .example-form {
   /*min-width: 2500px;

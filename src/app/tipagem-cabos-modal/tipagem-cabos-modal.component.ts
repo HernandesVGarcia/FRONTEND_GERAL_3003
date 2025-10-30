@@ -1,4 +1,4 @@
-import { Component, OnInit, Output, EventEmitter, Input } from '@angular/core';
+import { Component, OnInit, Output, EventEmitter, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -29,7 +29,7 @@ export interface TipagemCabosData {
   templateUrl: './tipagem-cabos-modal.component.html',
   styleUrls: ['./tipagem-cabos-modal.component.css']
 })
-export class TipagemCabosModalComponent implements OnInit {
+export class TipagemCabosModalComponent implements OnInit, OnChanges {
   @Input() visible: boolean = false;
   @Output() caboTypeConfirmed = new EventEmitter<TipagemCabosData>();
   @Output() modalClosed = new EventEmitter<void>();
@@ -49,8 +49,40 @@ export class TipagemCabosModalComponent implements OnInit {
   selectedCodigoCores: 'TIA/EIA 598' | 'Telebras' = 'TIA/EIA 598';
   labelCabo: string = '';
 
+  // Persistência local das últimas seleções
+  private storagePrefix = 'tipagemCabos.last.';
+
   ngOnInit(): void {
     // Inicializar valores padrão se necessário
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['visible'] && this.visible) {
+      this.loadLastSelections();
+    }
+  }
+
+  private saveLastSelections(): void {
+    try {
+      localStorage.setItem(this.storagePrefix + 'capacidade', this.selectedCapacidade || '');
+      localStorage.setItem(this.storagePrefix + 'fibrasPorTubo', this.selectedFibrasPorTubo || '');
+      localStorage.setItem(this.storagePrefix + 'codigoCores', this.selectedCodigoCores || 'TIA/EIA 598');
+      localStorage.setItem(this.storagePrefix + 'label', this.labelCabo || '');
+    } catch {}
+  }
+
+  private loadLastSelections(): void {
+    try {
+      const cap = localStorage.getItem(this.storagePrefix + 'capacidade');
+      const fpt = localStorage.getItem(this.storagePrefix + 'fibrasPorTubo');
+      const cc = localStorage.getItem(this.storagePrefix + 'codigoCores') as ('TIA/EIA 598' | 'Telebras') | null;
+      const label = localStorage.getItem(this.storagePrefix + 'label');
+
+      if (cap) this.selectedCapacidade = cap;
+      if (fpt) this.selectedFibrasPorTubo = fpt;
+      if (cc === 'TIA/EIA 598' || cc === 'Telebras') this.selectedCodigoCores = cc;
+      if (label !== null) this.labelCabo = label;
+    } catch {}
   }
 
   confirmarTipagem(): void {
@@ -68,14 +100,15 @@ export class TipagemCabosModalComponent implements OnInit {
     };
 
     console.log('✅ Tipagem confirmada:', tipagemData);
+    // Salvar escolhas para a próxima abertura
+    this.saveLastSelections();
     this.caboTypeConfirmed.emit(tipagemData);
-    this.limparFormulario();
   }
 
   fecharModal(): void {
     console.log('❌ Fechando modal de tipagem');
     this.modalClosed.emit();
-    this.limparFormulario();
+    // Mantém seleções para agilizar próxima criação
   }
 
   private limparFormulario(): void {
