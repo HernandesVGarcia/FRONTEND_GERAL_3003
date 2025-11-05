@@ -1,0 +1,150 @@
+const express = require('express');
+const router = express.Router();
+const mysql = require('../mysql').pool;
+const login = require('../middleware/login');
+
+router.post('/', login, (req, res, next) => {
+    console.log('🗺️ Atualizando geometria do cabo...');
+    
+    const {
+        id_meta,
+        length,
+        GOOGLE_LATLNG
+    } = req.body;
+
+    // Validar dados obrigatórios
+    if (!id_meta) {
+        return res.status(400).send({ 
+            error: 'id_meta é obrigatório',
+            message: 'Informe o id_meta do cabo a ser atualizado'
+        });
+    }
+
+    if (!GOOGLE_LATLNG || !Array.isArray(GOOGLE_LATLNG) || GOOGLE_LATLNG.length < 2) {
+        return res.status(400).send({ 
+            error: 'GOOGLE_LATLNG inválido',
+            message: 'Informe pelo menos 2 pontos de coordenadas'
+        });
+    }
+
+    // 🆕 Converter array para JSON string
+    const googleLatLngString = JSON.stringify(GOOGLE_LATLNG);
+
+    // 🆕 Converter para formato MapWinGIS (para o campo GEOMETRIA_LAT_LONG)
+    const geometriaMapWinGIS = converterParaMapWinGIS(GOOGLE_LATLNG);
+    
+    console.log('📊 Dados para atualização:', {
+        id_meta,
+        length,
+        totalPontos: GOOGLE_LATLNG.length
+    });
+    
+    mysql.getConnection((error, conn) => {
+        if (error) { 
+            console.error('❌ Erro ao obter conexão:', error);
+            return res.status(500).send({ error: error });
+        }
+
+        // 🆕 Iniciar transação
+        conn.beginTransaction((err) => {
+            if (err) {
+                conn.release();
+                console.error('❌ Erro ao iniciar transação:', err);
+                return res.status(500).send({ error: err });
+            }
+
+            // 1️⃣ UPDATE na tabela cabopa (ponta A)
+            const queryCabopa = `UPDATE tstmeta.cabopa 
+                SET GOOGLE_LATLNG = ?, 
+                    GEOMETRIA_LAT_LONG = ?, 
+                    length = ? 
+                WHERE id_meta = ?`;
+            
+            conn.query(
+                queryCabopa,
+                [googleLatLngString, geometriaMapWinGIS, length, id_meta],
+                (error, resultadoCabopa) => {
+                    if (error) {
+                        return conn.rollback(() => {
+                            conn.release();
+                            console.error('❌ Erro ao atualizar cabopa:', error);
+                            return res.status(500).send({ 
+                                error: error,
+                                message: 'Erro ao atualizar geometria do cabo'
+                            });
+                        });
+                    }
+
+                    // Verificar se algum registro foi atualizado
+                    if (resultadoCabopa.affectedRows === 0) {
+                        return conn.rollback(() => {
+                            conn.release();
+                            console.warn('⚠️ Nenhum cabo encontrado com id_meta:', id_meta);
+                            return res.status(404).send({ 
+                                error: 'Cabo não encontrado',
+                                message: `Nenhum cabo encontrado com id_meta ${id_meta}`
+                            });
+                        });
+                    }
+
+                    // ✅ Fazer COMMIT da transação
+                    conn.commit((err) => {
+                        if (err) {
+                            return conn.rollback(() => {
+                                conn.release();
+                                console.error('❌ Erro ao fazer commit:', err);
+                                return res.status(500).send({ 
+                                    error: err,
+                                    message: 'Erro ao confirmar atualização'
+                                });
+                            });
+                        }
+                        
+                        // Liberar conexão
+                        conn.release();
+                        
+                        console.log(`✅ Cabo ${id_meta} atualizado com sucesso!`);
+                        console.log(`   - Registros atualizados: ${resultadoCabopa.affectedRows}`);
+                        console.log(`   - Novo comprimento: ${length}m`);
+                        console.log(`   - Total de pontos: ${GOOGLE_LATLNG.length}`);
+                        
+                        return res.status(200).send({ 
+                            success: true,
+                            id_meta: id_meta,
+                            message: `Cabo id_meta ${id_meta} editado com sucesso`,
+                            affectedRows: resultadoCabopa.affectedRows,
+                            length: length,
+                            totalPontos: GOOGLE_LATLNG.length
+                        });
+                    });
+                }
+            );
+        });
+    });
+});
+
+/**
+ * 🗺️ Converte coordenadas do Google Maps para formato MapWinGIS
+ * Formato MapWinGIS para polyline: 23;0;lng|lat|0.000000|0.000000|...
+ * 
+ * @param {Array} coordenadas - Array de objetos {lng, lat} do Google Maps
+ * @returns {string} String no formato MapWinGIS ou null se inválido
+ */
+function converterParaMapWinGIS(coordenadas) {
+    if (!coordenadas || !Array.isArray(coordenadas) || coordenadas.length === 0) {
+        return null;
+    }
+    
+    // Prefixo MapWinGIS para polyline
+    const prefixoMapWinGIS = '23;0;';
+    
+    // Converter cada coordenada para o formato: lng|lat|0.000000|0.000000
+    const coordenadasFormatadas = coordenadas
+        .map(coord => `${coord.lng}|${coord.lat}|0.000000|0.000000`)
+        .join('|');
+    
+    // Retornar string completa com prefixo e sufixo |
+    return `${prefixoMapWinGIS}${coordenadasFormatadas}|`;
+}
+
+module.exports = router;

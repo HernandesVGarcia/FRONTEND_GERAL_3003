@@ -1,0 +1,86 @@
+═══════════════════════════════════════════════════════════════
+  📝 INSTRUÇÕES - UPDATE_GEOMETRIA_CABO.TS
+═══════════════════════════════════════════════════════════════
+
+🎯 ROTA DA API:
+  POST https://www.fiberworks-api.com:3001/update_geometria_cabo
+
+📋 BODY (JSON):
+{
+  "id_meta": 755673,
+  "length": 123.45,
+  "GOOGLE_LATLNG": [
+    {"lng": -51.945968, "lat": -23.400325},
+    {"lng": -51.943215, "lat": -23.400584},
+    {"lng": -51.942437, "lat": -23.400846}
+  ]
+}
+
+📌 CAMPOS:
+  - id_meta: ID do cabo a ser atualizado (obrigatório)
+  - length: Comprimento em metros (obrigatório)
+  - GOOGLE_LATLNG: Array de coordenadas (mínimo 2 pontos)
+
+✅ RESPOSTAS:
+
+  SUCESSO (200):
+  {
+    "success": true,
+    "id_meta": 755673,
+    "message": "Cabo id_meta 755673 editado com sucesso",
+    "affectedRows": 1,
+    "length": 123.45,
+    "totalPontos": 3
+  }
+
+  ERRO - Cabo não encontrado (404):
+  {
+    "error": "Cabo não encontrado",
+    "message": "Nenhum cabo encontrado com id_meta 755673"
+  }
+
+  ERRO - Dados inválidos (400):
+  {
+    "error": "id_meta é obrigatório",
+    "message": "Informe o id_meta do cabo a ser atualizado"
+  }
+
+  ERRO - Servidor (500):
+  {
+    "error": {...},
+    "message": "Erro ao atualizar geometria do cabo"
+  }
+
+🔧 CORREÇÕES APLICADAS:
+  ✅ Estrutura de callbacks corrigida
+  ✅ Commit da transação implementado
+  ✅ Liberação de conexão adicionada
+  ✅ Validação de dados obrigatórios
+  ✅ Verificação se cabo existe (affectedRows)
+  ✅ Logs informativos
+  ✅ Tratamento de erros completo
+
+📦 INSTALAÇÃO NO SERVIDOR:
+  1. Copie o arquivo update_geometria_cabo.ts para a pasta routes/
+  2. No arquivo principal (app.js ou server.js), adicione:
+     
+     const updateGeometriaCabo = require('./routes/update_geometria_cabo');
+     app.use('/update_geometria_cabo', updateGeometriaCabo);
+
+  3. Reinicie o servidor
+
+🧪 TESTE COM CURL:
+curl -X POST https://www.fiberworks-api.com:3001/update_geometria_cabo \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer SEU_TOKEN" \
+  -d '{
+    "id_meta": 755673,
+    "length": 123.45,
+    "GOOGLE_LATLNG": [
+      {"lng": -51.945968, "lat": -23.400325},
+      {"lng": -51.943215, "lat": -23.400584}
+    ]
+  }'
+
+═══════════════════════════════════════════════════════════════
+
