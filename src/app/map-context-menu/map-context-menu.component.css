@@ -6,6 +6,7 @@
   height: 100%;
   z-index: 2000; /* Acima de outros elementos */
   background-color: transparent;
+  pointer-events: none; /* 🆕 Permite que eventos de mouse passem através do overlay */
 }
 
 .context-menu {
@@ -20,6 +21,7 @@
   font-family: 'Roboto', sans-serif;
   font-size: 14px;
   user-select: none;
+  pointer-events: auto; /* 🆕 O menu em si ainda recebe eventos de mouse */
 }
 
 .menu-item {

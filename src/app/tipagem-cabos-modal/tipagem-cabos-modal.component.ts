@@ -35,7 +35,7 @@ export class TipagemCabosModalComponent implements OnInit, OnChanges {
   @Output() modalClosed = new EventEmitter<void>();
 
   // Opções de Capacidade
-  capacidades: string[] = ['1F', '2F', '4F', '8F', '12F', '18F', '24F', '36F', '48F', '72F', '144F'];
+  capacidades: string[] = ['1F', '2F', '4F', '6F','8F', '12F', '18F', '24F', '36F', '48F', '72F', '144F'];
   
   // Opções de Fibras por Tubo
   fibrasPorTubo: string[] = ['2F', '6F', '8F', '12F', '24F'];
