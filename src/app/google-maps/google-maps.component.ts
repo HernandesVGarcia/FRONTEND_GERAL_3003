@@ -43,9 +43,90 @@ import { PopInfoModalComponent } from '../pop-info-modal/pop-info-modal.componen
 import { VisualizaDioComponent } from '../visualiza-dio/visualiza-dio.component';
 import { VisualizaCaboComponent } from '../visualiza-cabo/visualiza-cabo.component';
 import { GraphvizModalComponent } from '../graphviz-modal/graphviz-modal.component';
+import { ConexaoCaboCaixaEmendaComponent, ConexaoCaboCaixaEmendaData } from '../conexao-cabo-caixa-emenda/conexao-cabo-caixa-emenda.component';
 
 //import { Cto_SP } from '../modelo/Cto_SP';
 //import { GoogleInfoWindowComponent } from '../google-infowindow/google-infowindow.component';
+
+/**
+ * ============================================================================
+ * ÍNDICE DE SEÇÕES DO COMPONENTE GOOGLE MAPS
+ * ============================================================================
+ * 
+ * PROPRIEDADES:
+ * - Linha ~59:  @Input() - Dados de entrada (destinos, cabos, caixas, etc)
+ * - Linha ~95:  Propriedades do Mapa (center, zoom, title, etc)
+ * - Linha ~109: Marcadores (markerCaixas, markerCtos, markerPopsCli, etc)
+ * - Linha ~142: Paths de Polylines (polylinePaths1f, polylinePaths2f, etc)
+ * - Linha ~159: Polylines (polylines1f, polylines2f, etc)
+ * - Linha ~171: InfoWindows (infoWindows1f, infoWindows2f, etc)
+ * - Linha ~184: Controle de Destaque de Cabos
+ * - Linha ~188: Context Menu
+ * - Linha ~192: EDIÇÃO DE CABOS (clickedPolyline, isEditingCabo, pontasOriginais, etc)
+ * - Linha ~214: DESENHO DE CABOS (isDesenhandoCabo, caboEmDesenho, etc)
+ * - Linha ~222: Modal de Tipagem
+ * 
+ * MÉTODOS:
+ * - Linha ~226: CONTEXT MENU
+ *   - setupContextMenuListener()
+ *   - showContextMenu()
+ *   - hideContextMenu()
+ *   - onContextMenuAction()
+ * 
+ * - Linha ~354: AÇÕES DO CONTEXT MENU (criarCaixa, criarDIO, etc)
+ * 
+ * - Linha ~390: EDIÇÃO DE CABOS
+ *   - editarCabo()
+ *   - verificarConexoesPontas()
+ *   - iniciarEdicaoCabo()
+ *   - finalizarEdicaoCabo()
+ *   - cancelarEdicaoCabo()
+ *   - adicionarListenerProtecaoPontas()
+ *   - adicionarListenerRemoverVertice()
+ * 
+ * - Linha ~977: DETECÇÃO DE CONEXÃO CABO-CAIXA
+ *   - verificarConexaoPontasComCaixas()
+ *   - abrirModalConexao()
+ *   - encontrarCaixaProxima()
+ * 
+ * - Linha ~1085: GESTÃO DE EVENTOS DE CABOS
+ *   - processarRightClickCabo()
+ *   - recriarListenerRightClick()
+ *   - recriarListenerRightClickMapa()
+ * 
+ * - Linha ~1362: AÇÕES DE CABOS (liberarCabo, excluirCabo)
+ * 
+ * - Linha ~1386: DESTAQUE DE CABOS
+ *   - setupCabosHighlightListeners()
+ *   - highlightCabos()
+ *   - highlightCabosInArray()
+ *   - clearCabosHighlight()
+ * 
+ * - Linha ~2237: GESTÃO DE MARCADORES
+ *   - updateMarkers()
+ *   - updateMarkersCTO()
+ *   - updateMarkersCTOSP()
+ *   - updateMarkersDios()
+ *   - updateMarkersCondominios()
+ *   - updateMarkersPopsCli()
+ *   - etc...
+ * 
+ * - Linha ~2861: GESTÃO DE POLYLINES
+ *   - updatePolylinesCabos1f()
+ *   - updatePolylinesCabos2f()
+ *   - etc...
+ * 
+ * - Linha ~4186: CRIAÇÃO DE POLYLINES
+ *   - createCaboPolylines()
+ *   - createCabo1fPolylines()
+ *   - etc...
+ * 
+ * - Linha ~4810: CRIAÇÃO DE CABOS
+ *   - criarCaboComTipagem()
+ *   - criarCaboComTipagemEIdMeta()
+ * 
+ * ============================================================================
+ */
 
 @Component({
   selector: 'app-google-maps',
@@ -55,6 +136,10 @@ import { GraphvizModalComponent } from '../graphviz-modal/graphviz-modal.compone
   imports: [CommonModule, GoogleMapsModule, MapSearchButtonsComponent, MapTracerButtonsComponent, MapContextMenuComponent, TipagemCabosModalComponent, MatIconModule, MatButtonModule],
 })
 export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy {
+  
+  // ============================================================================
+  // 📥 SEÇÃO: INPUTS - Dados de entrada do componente
+  // ============================================================================
   @Input() destinoCondominios: Condominios[]=[];
   @Input() destinoDios: Dios[] = [];
   @Input() destinoPopsCli: PopsCli[] = [];
@@ -76,35 +161,22 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
   @Input() destinoCabos72f: Cabos72f[] = [];
   @Input() destinoCabos144f: Cabos144f[] = [];
 
- // private isMapFullyInitialized = false;
- // private isInfoWindowsSetup = false;
-
-  constructor(
-     private cdr: ChangeDetectorRef,
-     private authService : AuthService,
-     private compartilhamentoService: CompartilhamentoService,
-     private kmlExportService: KmlExportService,
-     private insertCaboService: InsertCaboService,
-     private updateCaboService: UpdateCaboService,
-     private dialog: MatDialog) {
-  
-    
-  };
-  
-
-  caixaSelecionada: string | null = null;
-
-  
-
+  // ============================================================================
+  // 🗺️ SEÇÃO: PROPRIEDADES DO MAPA
+  // ============================================================================
   title: string = "Fiberworks";
   center: google.maps.LatLngLiteral = { lat: -23.326803, lng: -52.114882 };
-  //center: google.maps.LatLngLiteral = { lat: authService.getLat, lng: this.authService.lng };
   zoom = 13;
-
   mapOptions: google.maps.MapOptions = {
-  mapId : "My Project Angular",};
+    mapId : "My Project Angular",
+  };
+  @ViewChild('mapContainer', { read: ElementRef }) mapContainerRef!: ElementRef;
+  caixaSelecionada: string | null = null;
 
 
+  // ============================================================================
+  // 📍 SEÇÃO: MARCADORES (MARKERS)
+  // ============================================================================
   // Marcador da posição atual do usuário
   currentLocationMarker: google.maps.LatLngLiteral | null = null;
   currentLocationMarkerOptions: any = {
@@ -116,15 +188,12 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
       strokeColor: '#4285f4',
       strokeWeight: 3,
       strokeOpacity: 0.3,
-      
     },
-    
     title: 'Sua localização atual',
     animation: google.maps.Animation.BOUNCE,
-    
-    
-    
   };
+
+  // Arrays de marcadores
   markerDios: google.maps.Marker[] = [];
   markerCondominios: google.maps.Marker[] = [];
   markerPopsCli: google.maps.Marker[] = [];
@@ -132,9 +201,10 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
   markerPopsCliDes: google.maps.Marker[] = [];
   markerPopsEst: google.maps.Marker[] = [];
   markerCaixas: google.maps.Marker[] = [];
-  markerCtos:google.maps.Marker[]=[];
-  markerCtosSP:google.maps.Marker[]=[];
-  //markerCtos: google.maps.LatLngLiteral[] = [];
+  markerCtos: google.maps.Marker[] = [];
+  markerCtosSP: google.maps.Marker[] = [];
+  
+  // Opções de marcadores
   markerOptions: google.maps.MarkerOptions[] = [];
   markerOptionsCTO: google.maps.MarkerOptions[] = [];
   markerOptionsCTOSP: google.maps.MarkerOptions[] = [];
@@ -208,7 +278,6 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
     pontaB: boolean
   } = { pontaA: false, pontaB: false };
   private pathOriginal: google.maps.LatLng[] | null = null; // 💾 Armazena path original para restaurar se cancelar
-  @ViewChild('mapContainer', { read: ElementRef }) mapContainerRef!: ElementRef; // 🗺️ Referência ao container do mapa
 
   // 🗺️ Propriedades para desenho de cabo =============================================
   isDesenhandoCabo = false;
@@ -222,6 +291,23 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
   tipagemCabosModalVisible = false;
   pontosCaboAguardandoTipagem: google.maps.LatLng[] = []; // Guarda pontos enquanto modal está aberto
 
+  // ============================================================================
+  // 🏗️ CONSTRUCTOR
+  // ============================================================================
+  constructor(
+    private cdr: ChangeDetectorRef,
+    private authService : AuthService,
+    private compartilhamentoService: CompartilhamentoService,
+    private kmlExportService: KmlExportService,
+    private insertCaboService: InsertCaboService,
+    private updateCaboService: UpdateCaboService,
+    private dialog: MatDialog
+  ) {}
+
+  // ============================================================================
+  // 🎯 SEÇÃO: CONTEXT MENU
+  // ============================================================================
+  
   /**
    * 🎯 Configura o listener do context menu no mapa
    */
@@ -386,7 +472,10 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
     alert('Funcionalidade de criar sobra será implementada em breve!');
   }
 
-  // 🆕 Métodos para ações do cabo
+  // ============================================================================
+  // 🔧 SEÇÃO: EDIÇÃO DE CABOS
+  // ============================================================================
+  
   private editarCabo(): void {
     console.log('🔴 [CONTEXT-MENU] Editando cabo...', this.clickedCaboData);
     
@@ -527,7 +616,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
     });
   }
 
-  /**
+  /************************************************************************
    * 🎯 Inicia a edição do cabo após verificar conexões
    */
   private iniciarEdicaoCabo(): void {
@@ -579,13 +668,11 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
     // 🆕 Adicionar listener customizado para remover vértices
     this.adicionarListenerRemoverVertice();
     
-    // 🛡️ Adicionar listener para detectar movimento de vértices e proteger pontas A e B (se conectadas)
-    if (this.pontasProtegidas.pontaA || this.pontasProtegidas.pontaB) {
-      console.log('🛡️ [PROTEÇÃO] Aplicando proteção nas pontas:', this.pontasProtegidas);
-      this.adicionarListenerProtecaoPontas();
-    } else {
-      console.log('✅ [PROTEÇÃO] Nenhuma ponta conectada - edição livre');
-    }
+    // 🛡️ Adicionar listener para detectar movimento de vértices
+    // Sempre adicionar o listener para detectar quando pontas são soltas sobre caixas
+    // e também para proteger pontas A e B (se conectadas)
+    console.log('🛡️ [PROTEÇÃO] Adicionando listener de detecção de conexão e proteção de pontas');
+    this.adicionarListenerProtecaoPontas();
     
     console.log('✅ Cabo agora está editável!');
     console.log('🚫 Cliques desabilitados durante edição');
@@ -683,6 +770,32 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
       const isPontaA = index === 0;
       const isPontaB = index === totalPontos - 1;
       
+      // 🔍 NOVO: Verificar se ponta A ou B foi solta sobre uma caixa
+      // MAS: só verificar se a ponta NÃO estiver protegida (já conectada)
+      // Se estiver protegida, estamos apenas restaurando a posição, não conectando
+      if ((isPontaA || isPontaB) && 
+          !(isPontaA && this.pontasProtegidas.pontaA) && 
+          !(isPontaB && this.pontasProtegidas.pontaB)) {
+        const pontoAtual = path.getAt(index);
+        const qualPonta = isPontaA ? 'A' : 'B';
+        
+        console.log(`🔍 [CONEXÃO] Verificando se Ponta ${qualPonta} está sobre uma caixa...`, {
+          lat: pontoAtual.lat(),
+          lng: pontoAtual.lng()
+        });
+        
+        const caixaProxima = this.encontrarCaixaProxima(pontoAtual);
+        
+        if (caixaProxima) {
+          console.log(`🔌 [CONEXÃO] Ponta ${qualPonta} solta sobre a caixa ${caixaProxima.numero}`);
+          // Abrir modal de conexão
+          this.abrirModalConexao(qualPonta as 'A' | 'B', caixaProxima);
+          return; // Não continuar com a proteção se detectou conexão
+        } else {
+          console.log(`❌ [CONEXÃO] Ponta ${qualPonta} não está sobre nenhuma caixa próxima`);
+        }
+      }
+      
       // Só proteger se a ponta estiver conectada
       if ((isPontaA && this.pontasProtegidas.pontaA) || (isPontaB && this.pontasProtegidas.pontaB)) {
         // Obter a posição atual do vértice movido
@@ -747,7 +860,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
 
   /*******************************************************************************************************/
 
-  // 🆕 Método para configurar listener que finaliza a edição
+  // 🆕 Método para configurar listener que finaliza a edição do cabo
   private setupFinishEditingListener(): void {
     // Remover listener anterior se existir
     if (this.listenerMapaFinalizarEdicao) {
@@ -781,6 +894,9 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
         this.listenerPathSetAt = null;
         console.log('🛡️ [PROTEÇÃO-PONTAS] Listener de proteção removido');
       }
+      
+      // ❌ REMOVIDO: this.verificarConexaoPontasComCaixas(); 
+      // A verificação agora é feita no listener set_at quando a ponta é movida e solta sobre uma caixa
       
       // Extrair coordenadas atualizadas
       const coordenadasAtualizadas = this.updateCaboService.extrairCoordenadasPolyline(this.clickedPolyline);
@@ -940,6 +1056,119 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
         }
       });
     }
+  }
+
+  /**
+   * 🔍 Verifica se as pontas A ou B do cabo foram soltas sobre uma caixa
+   * Abre modal de conexão quando detecta conexão
+   */
+  private verificarConexaoPontasComCaixas(): void {
+    if (!this.clickedPolyline || !this.map) {
+      return;
+    }
+
+    const path = this.clickedPolyline.getPath();
+    if (!path || path.getLength() < 2) {
+      return;
+    }
+
+    // Obter coordenadas das pontas A e B
+    const pontaA = path.getAt(0);
+    const pontaB = path.getAt(path.getLength() - 1);
+
+    // Verificar ponta A
+    const caixaPontaA = this.encontrarCaixaProxima(pontaA);
+    if (caixaPontaA) {
+      console.log(`🔌 [CONEXÃO] Ponta A conectada na caixa ${caixaPontaA.numero}`);
+      this.abrirModalConexao('A', caixaPontaA);
+      return; // Só processa uma ponta por vez
+    }
+
+    // Verificar ponta B
+    const caixaPontaB = this.encontrarCaixaProxima(pontaB);
+    if (caixaPontaB) {
+      console.log(`🔌 [CONEXÃO] Ponta B conectada na caixa ${caixaPontaB.numero}`);
+      this.abrirModalConexao('B', caixaPontaB);
+    }
+  }
+
+  // ============================================================================
+  // 🔌 SEÇÃO: DETECÇÃO DE CONEXÃO CABO-CAIXA
+  // ============================================================================
+  
+  /**
+   * 🔌 Abre o modal de conexão cabo-caixa-emenda
+   */
+  private abrirModalConexao(ponta: 'A' | 'B', caixa: Caixa): void {
+    const dialogData: ConexaoCaboCaixaEmendaData = {
+      ponta: ponta,
+      numeroCaixa: caixa.numero || 'N/A',
+      idMetaCaixa: caixa.id_meta
+    };
+
+    const dialogRef = this.dialog.open(ConexaoCaboCaixaEmendaComponent, {
+      width: '450px',
+      maxWidth: '90vw',
+      disableClose: false,
+      data: dialogData
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result && result.confirmado) {
+        console.log('✅ [CONEXÃO] Conexão confirmada:', result);
+        // TODO: Implementar lógica de conexão aqui
+        // result contém: ponta, numeroCaixa, idMetaCaixa, boca
+      } else {
+        console.log('❌ [CONEXÃO] Conexão cancelada');
+      }
+    });
+  }
+
+  /**
+   * 📍 Encontra a caixa mais próxima de uma coordenada usando distância real do Google Maps
+   * @param ponto - Coordenada da ponta do cabo
+   * @returns Caixa mais próxima se estiver dentro do threshold, null caso contrário
+   */
+  private encontrarCaixaProxima(ponto: google.maps.LatLng): Caixa | null {
+    if (!this.destino || this.destino.length === 0) {
+      console.warn('⚠️ [CONEXÃO] Array destino está vazio ou não existe');
+      return null;
+    }
+
+    console.log(`🔍 [CONEXÃO] Verificando ${this.destino.length} caixas...`);
+
+    const THRESHOLD_DISTANCIA_METROS = 5; // 5 metros
+    let caixaMaisProxima: Caixa | null = null;
+    let menorDistancia = Infinity;
+
+    this.destino.forEach((caixa, index) => {
+      if (!caixa.LAT || !caixa.LONGI) {
+        return;
+      }
+
+      const latCaixa = typeof caixa.LAT === 'number' ? caixa.LAT : Number(caixa.LAT);
+      const lngCaixa = typeof caixa.LONGI === 'number' ? caixa.LONGI : Number(caixa.LONGI);
+      
+      const posicaoCaixa = new google.maps.LatLng(latCaixa, lngCaixa);
+      
+      // Usar função do Google Maps para calcular distância real em metros
+      const distancia = google.maps.geometry.spherical.computeDistanceBetween(
+        ponto,
+        posicaoCaixa
+      );
+
+      if (distancia < THRESHOLD_DISTANCIA_METROS && distancia < menorDistancia) {
+        menorDistancia = distancia;
+        caixaMaisProxima = caixa;
+        console.log(`✅ [CONEXÃO] Caixa ${caixa.numero} encontrada a ${distancia.toFixed(2)}m`);
+      }
+    });
+
+    if (!caixaMaisProxima) {
+      console.log(`❌ [CONEXÃO] Nenhuma caixa encontrada dentro de ${THRESHOLD_DISTANCIA_METROS}m`);
+    }
+
+    return caixaMaisProxima;
   }
   
   /**

@@ -1,0 +1,99 @@
+<div class="modal-container">
+  <!-- Header -->
+  <div class="modal-header">
+    <h2 mat-dialog-title class="modal-title">
+      <mat-icon>link</mat-icon>
+      Conexão Cabo - Caixa
+    </h2>
+    <button mat-icon-button class="close-button" (click)="cancelarConexao()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <!-- Content -->
+  <div class="modal-content">
+    <!-- Informação da conexão -->
+    <div class="info-section">
+      <p class="info-text">
+        <strong>Ponta {{ data.ponta }}</strong> conectada na caixa <strong>{{ data.numeroCaixa }}</strong>
+      </p>
+    </div>
+
+    <!-- Campo de boca -->
+    <div class="boca-input-section">
+      <label class="boca-label">CABO SERA CONECTADO NA BOCA:</label>
+      <mat-form-field class="boca-input-field">
+        <input 
+          matInput 
+          [(ngModel)]="bocaSelecionada" 
+          name="bocaSelecionada"
+          placeholder="00"
+          maxlength="2"
+          pattern="[0-9]{2}"
+          class="boca-input">
+      </mat-form-field>
+    </div>
+
+    <!-- Botões de ação principais -->
+    <div class="action-buttons">
+      <button 
+        mat-raised-button 
+        color="primary" 
+        class="confirm-button"
+        (click)="confirmarConexao()">
+        Confirmar Conexão
+      </button>
+      <button 
+        mat-button 
+        class="cancel-button"
+        (click)="cancelarConexao()">
+        Cancelar Conexão
+      </button>
+    </div>
+
+    <!-- Frame de seleção de bocas -->
+    <div class="boca-selection-frame">
+      <label class="frame-label">ALTERAR BOCA:</label>
+      
+      <!-- Primeira fileira: 1-6 -->
+      <div class="boca-row">
+        <button 
+          *ngFor="let boca of bocas.slice(0, 6)" 
+          mat-raised-button
+          class="boca-button"
+          [class.selected]="bocaSelecionada === boca.toString().padStart(2, '0')"
+          [disabled]="!isBocaLivre(boca)"
+          (click)="selecionarBoca(boca)">
+          {{ boca.toString().padStart(2, '0') }}
+        </button>
+      </div>
+
+      <!-- Segunda fileira: 7-12 -->
+      <div class="boca-row">
+        <button 
+          *ngFor="let boca of bocas.slice(6, 12)" 
+          mat-raised-button
+          class="boca-button"
+          [class.selected]="bocaSelecionada === boca.toString().padStart(2, '0')"
+          [disabled]="!isBocaLivre(boca)"
+          (click)="selecionarBoca(boca)">
+          {{ boca.toString().padStart(2, '0') }}
+        </button>
+      </div>
+
+      <!-- Terceira fileira: 13-18 -->
+      <div class="boca-row">
+        <button 
+          *ngFor="let boca of bocas.slice(12, 18)" 
+          mat-raised-button
+          class="boca-button"
+          [class.selected]="bocaSelecionada === boca.toString().padStart(2, '0')"
+          [disabled]="!isBocaLivre(boca)"
+          (click)="selecionarBoca(boca)">
+          {{ boca.toString().padStart(2, '0') }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
