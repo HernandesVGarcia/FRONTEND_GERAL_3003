@@ -307,22 +307,31 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
   // ============================================================================
   // 🎯 SEÇÃO: CONTEXT MENU
   // ============================================================================
-  
+
   /**
    * 🎯 Configura o listener do context menu no mapa
    */
   private setupContextMenuListener(): void {
     // Verificar se já foi adicionado
     if (this.contextMenuListenerAdded) {
+      console.log('🗺️ [CONTEXT-MENU] Listener já foi adicionado, retornando...');
       return;
     }
     
     if (this.map) {
+      console.log('🗺️ [CONTEXT-MENU] Adicionando listener de rightclick no mapa...');
       // Listener para clique com botão direito no mapa (não nos elementos)
       this.listenerMapaRightClick = this.map.addListener('rightclick', (event: google.maps.MapMouseEvent) => {
+        console.log('🗺️ [CONTEXT-MENU] ⚡ Right-click detectado no mapa!', event);
+        
         // Verificar se o clique foi no mapa mesmo (não em elementos)
         if (event.domEvent && event.domEvent.target) {
           const target = event.domEvent.target as HTMLElement;
+          console.log('🗺️ [CONTEXT-MENU] Target:', {
+            tagName: target.tagName,
+            className: target.className,
+            id: target.id
+          });
           
           // Verificar se o clique foi no mapa (mais amplo)
           const isMapClick = target.tagName === 'CANVAS' || 
@@ -330,13 +339,18 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
                            target.closest('.gm-style') !== null ||
                            target.closest('google-map') !== null;
           
+          console.log('🗺️ [CONTEXT-MENU] isMapClick:', isMapClick);
+          
           // 🚫 Bloquear context menu no GoJS-demo
           const isInGoJSModal = target.closest('.gojs-container') !== null ||
                                target.closest('.diagram-container') !== null ||
                                target.closest('.diagram-div') !== null ||
                                target.closest('#gojsDiagram') !== null;
           
+          console.log('🗺️ [CONTEXT-MENU] isInGoJSModal:', isInGoJSModal);
+          
           if (isMapClick && !isInGoJSModal) {
+            console.log('🗺️ [CONTEXT-MENU] ✅ Condições atendidas, mostrando menu...');
             // 🛡️ Verificar se há edição em andamento e cancelar
             if (this.isEditingCabo || this.isIniciandoEdicao) {
               console.log('⚠️ [EDITAR-CABO] Context menu do mapa detectado durante edição. Cancelando edição...');
@@ -349,14 +363,25 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
             mouseEvent.preventDefault();
             mouseEvent.stopPropagation();
             
+            // 🔧 CORREÇÃO: Garantir que o tipo seja 'map'
+            this.contextMenuType = 'map';
+            console.log('🗺️ [CONTEXT-MENU] Chamando showContextMenu com tipo "map"');
             this.showContextMenu(mouseEvent.clientX, mouseEvent.clientY);
+          } else {
+            console.log('🗺️ [CONTEXT-MENU] ❌ Condições não atendidas - isMapClick:', isMapClick, 'isInGoJSModal:', isInGoJSModal);
           }
+        } else {
+          console.log('🗺️ [CONTEXT-MENU] ⚠️ Evento sem domEvent ou target');
         }
       });
+      console.log('🗺️ [CONTEXT-MENU] Listener adicionado com sucesso!');
+    } else {
+      console.log('🗺️ [CONTEXT-MENU] ⚠️ Map não está disponível ainda');
     }
 
     // Marcar como adicionado
     this.contextMenuListenerAdded = true;
+    console.log('🗺️ [CONTEXT-MENU] Flag contextMenuListenerAdded definida como true');
   }
 
 
@@ -672,7 +697,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
     // Sempre adicionar o listener para detectar quando pontas são soltas sobre caixas
     // e também para proteger pontas A e B (se conectadas)
     console.log('🛡️ [PROTEÇÃO] Adicionando listener de detecção de conexão e proteção de pontas');
-    this.adicionarListenerProtecaoPontas();
+      this.adicionarListenerProtecaoPontas();
     
     console.log('✅ Cabo agora está editável!');
     console.log('🚫 Cliques desabilitados durante edição');
@@ -1100,11 +1125,42 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
    * 🔌 Abre o modal de conexão cabo-caixa-emenda
    */
   private abrirModalConexao(ponta: 'A' | 'B', caixa: Caixa): void {
+    // ✅ Obter id_meta do cabo (já está disponível)
+    const idMetaCabo = this.clickedPolyline?.get('id_meta') || this.clickedCaboData?.id_meta;
+    
+    // ✅ Obter capacidade e extrair número da string (ex: "48f" → 48)
+    const capacidadeStr = this.clickedPolyline?.get('capacidade') || this.clickedCaboData?.capacidade;
+    let capacidadeNum: number;
+    
+    if (typeof capacidadeStr === 'string') {
+      // Extrair número de "48f" → 48
+      const match = capacidadeStr.match(/(\d+)/);
+      capacidadeNum = match ? parseInt(match[1], 10) : 12; // fallback para 12 se não encontrar
+    } else if (typeof capacidadeStr === 'number') {
+      capacidadeNum = capacidadeStr;
+    } else {
+      console.warn('⚠️ [CONEXÃO] Capacidade não encontrada, usando fallback 12');
+      capacidadeNum = 12; // fallback
+    }
+
+    if (!idMetaCabo) {
+      console.error('❌ [CONEXÃO] ID do cabo não encontrado:', {
+        clickedPolyline: this.clickedPolyline,
+        clickedCaboData: this.clickedCaboData
+      });
+      alert('Erro: Não foi possível obter o ID do cabo. Tente novamente.');
+      return;
+    }
+
     const dialogData: ConexaoCaboCaixaEmendaData = {
       ponta: ponta,
       numeroCaixa: caixa.numero || 'N/A',
-      idMetaCaixa: caixa.id_meta
+      idMetaCaixa: caixa.id_meta,
+      idMetaCabo: idMetaCabo,           // ✅ Já disponível
+      CapacidadeCabo: capacidadeNum      // ✅ Extraído da string
     };
+
+    console.log('🔌 [CONEXÃO] Abrindo modal com dados:', dialogData);
 
     const dialogRef = this.dialog.open(ConexaoCaboCaixaEmendaComponent, {
       width: '450px',
@@ -1115,11 +1171,98 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result && result.confirmado) {
-        console.log('✅ [CONEXÃO] Conexão confirmada:', result);
-        // TODO: Implementar lógica de conexão aqui
-        // result contém: ponta, numeroCaixa, idMetaCaixa, boca
+        console.log('✅ [CONEXÃO] Conexão confirmada e salva:', result);
+        
+        // 🔧 NOVO: Mover ponta do cabo para coordenadas da caixa e salvar
+        this.moverPontaParaCaixaEPersistir(ponta, caixa);
       } else {
         console.log('❌ [CONEXÃO] Conexão cancelada');
+      }
+    });
+  }
+
+  /**
+   * 🔧 NOVO: Move a ponta do cabo para as coordenadas da caixa e salva no banco
+   */
+  private moverPontaParaCaixaEPersistir(ponta: 'A' | 'B', caixa: Caixa): void {
+    if (!this.clickedPolyline || !caixa.LAT || !caixa.LONGI) {
+      console.error('❌ [CONEXÃO] Dados insuficientes para mover ponta:', {
+        clickedPolyline: this.clickedPolyline,
+        caixa: caixa
+      });
+      return;
+    }
+
+    const path = this.clickedPolyline.getPath();
+    if (!path || path.getLength() < 2) {
+      console.error('❌ [CONEXÃO] Path inválido');
+      return;
+    }
+
+    // Obter coordenadas da caixa
+    const latCaixa = typeof caixa.LAT === 'number' ? caixa.LAT : Number(caixa.LAT);
+    const lngCaixa = typeof caixa.LONGI === 'number' ? caixa.LONGI : Number(caixa.LONGI);
+    
+    const coordenadaCaixa = new google.maps.LatLng(latCaixa, lngCaixa);
+    
+    console.log(`🔧 [CONEXÃO] Movendo Ponta ${ponta} para coordenadas da caixa:`, {
+      lat: latCaixa,
+      lng: lngCaixa
+    });
+
+    // 🔧 CORREÇÃO: Marcar ponta como conectada (protegida) ANTES de mover
+    // Isso evita que o listener set_at tente detectar conexão novamente
+    if (ponta === 'A') {
+      this.pontasProtegidas.pontaA = true;
+      this.pontasOriginais.pontaA = { lat: latCaixa, lng: lngCaixa };
+    } else {
+      this.pontasProtegidas.pontaB = true;
+      this.pontasOriginais.pontaB = { lat: latCaixa, lng: lngCaixa };
+    }
+
+    console.log(`🛡️ [CONEXÃO] Ponta ${ponta} marcada como conectada e protegida ANTES de mover`);
+
+    // Determinar índice da ponta (0 = A, último = B)
+    const indexPonta = ponta === 'A' ? 0 : path.getLength() - 1;
+    
+    // Mover a ponta para as coordenadas da caixa
+    // Agora quando o evento set_at for disparado, a ponta já estará marcada como protegida
+    path.setAt(indexPonta, coordenadaCaixa);
+    
+    console.log(`✅ [CONEXÃO] Ponta ${ponta} movida para coordenadas da caixa`);
+
+    // Extrair coordenadas atualizadas da polyline
+    const coordenadasAtualizadas = this.updateCaboService.extrairCoordenadasPolyline(this.clickedPolyline);
+    
+    // Calcular novo comprimento
+    const novoComprimento = this.updateCaboService.calcularComprimentoPolyline(this.clickedPolyline);
+    
+    // Obter id_meta do cabo
+    const idMetaCabo = this.clickedPolyline.get('id_meta') || this.clickedCaboData?.id_meta;
+    
+    if (!idMetaCabo) {
+      console.error('❌ [CONEXÃO] ID do cabo não encontrado para salvar');
+      return;
+    }
+
+    // Preparar dados para atualização
+    const caboData = {
+      id_meta: idMetaCabo,
+      length: novoComprimento,
+      GOOGLE_LATLNG: coordenadasAtualizadas
+    };
+
+    console.log('💾 [CONEXÃO] Salvando coordenadas atualizadas no banco...', caboData);
+
+    // Salvar no banco
+    this.updateCaboService.atualizarCabo(caboData).subscribe({
+      next: (response) => {
+        console.log('✅ [CONEXÃO] Coordenadas salvas com sucesso:', response);
+        alert(`✅ Conexão realizada e coordenadas atualizadas!\n\nPonta ${ponta} agora está conectada à caixa ${caixa.numero}`);
+      },
+      error: (error) => {
+        console.error('❌ [CONEXÃO] Erro ao salvar coordenadas:', error);
+        alert(`⚠️ Conexão realizada, mas houve erro ao salvar coordenadas:\n\n${error.message || error}`);
       }
     });
   }
@@ -3446,6 +3589,10 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
     console.log('🗺️ [MAP-INIT] ===== MAPA INICIALIZADO =====');
     console.log('🗺️ [MAP-INIT] Map object:', map);
 
+    // 🔧 CORREÇÃO: Atribuir this.map ANTES de configurar o context menu
+    this.map = map;
+    console.log('🗺️ [MAP-INIT] this.map atribuído:', this.map);
+
     //==========================================================para mobile
     if (window.innerWidth < 768) {
     map.setOptions({
@@ -3478,7 +3625,7 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
   //=========================================================== 
 
     console.log('===================================>Map initialized successfully');
-    this.map=map;
+    // 🔧 CORREÇÃO: this.map já foi atribuído acima, removendo duplicação
     let lati:  string | null ;
     let lngi:  string | null ;
     

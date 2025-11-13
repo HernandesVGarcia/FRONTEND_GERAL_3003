@@ -6,8 +6,10 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { BocasService } from '../servico/bocas.service';
 import { AuthService } from '../servico/auth.service';
+import { ConexaoBocaService } from '../servico/conexao-boca.service';
 import { Bocas } from '../modelo/Bocas';
 import { firstValueFrom } from 'rxjs';
 
@@ -15,6 +17,8 @@ export interface ConexaoCaboCaixaEmendaData {
   ponta: 'A' | 'B';
   numeroCaixa: string;
   idMetaCaixa?: number;
+  idMetaCabo?: number;
+  CapacidadeCabo?: number;
 }
 
 @Component({
@@ -27,7 +31,8 @@ export interface ConexaoCaboCaixaEmendaData {
     MatButtonModule,
     MatInputModule,
     MatFormFieldModule,
-    MatIconModule
+    MatIconModule,
+    MatProgressSpinnerModule
   ],
   templateUrl: './conexao-cabo-caixa-emenda.component.html',
   styleUrls: ['./conexao-cabo-caixa-emenda.component.css']
@@ -36,12 +41,14 @@ export class ConexaoCaboCaixaEmendaComponent implements OnInit {
   bocaSelecionada: string = '';
   bocas: number[] = [];
   bocasEstado: boolean[] = []; // Array de 18 posições: true = livre, false = ocupada
+  isLoading: boolean = false; // Flag para loading
 
   constructor(
     public dialogRef: MatDialogRef<ConexaoCaboCaixaEmendaComponent>,
     @Inject(MAT_DIALOG_DATA) public data: ConexaoCaboCaixaEmendaData,
     private bocasService: BocasService,
-    private authService: AuthService
+    private authService: AuthService,
+    private conexaoBocaService: ConexaoBocaService
   ) {
     // Gerar array de bocas de 1 a 18
     this.bocas = Array.from({ length: 18 }, (_, i) => i + 1);
@@ -130,9 +137,9 @@ export class ConexaoCaboCaixaEmendaComponent implements OnInit {
   }
 
   /**
-   * Confirma a conexão e fecha o modal retornando os dados
+   * Confirma a conexão e chama a API
    */
-  confirmarConexao(): void {
+  async confirmarConexao(): Promise<void> {
     if (!this.bocaSelecionada || this.bocaSelecionada.length !== 2) {
       alert('Por favor, selecione uma boca válida (01-18)');
       return;
@@ -145,16 +152,57 @@ export class ConexaoCaboCaixaEmendaComponent implements OnInit {
       return;
     }
 
-    const resultado = {
-      ponta: this.data.ponta,
-      numeroCaixa: this.data.numeroCaixa,
-      idMetaCaixa: this.data.idMetaCaixa,
-      boca: bocaNumero,
-      confirmado: true
+    // Validar dados obrigatórios
+    if (!this.data.idMetaCaixa || !this.data.idMetaCabo || !this.data.CapacidadeCabo) {
+      alert('Erro: Dados do cabo ou caixa não encontrados. Não é possível conectar.');
+      console.error('❌ [CONEXÃO-MODAL] Dados faltando:', {
+        idMetaCaixa: this.data.idMetaCaixa,
+        idMetaCabo: this.data.idMetaCabo,
+        CapacidadeCabo: this.data.CapacidadeCabo
+      });
+      return;
+    }
+
+    // Preparar requisição
+    const request = {
+      numero_boca: `boca${bocaNumero}`,
+      idmeta_caixa: this.data.idMetaCaixa,
+      idmeta_cabo: this.data.idMetaCabo,
+      Ponta_cabo: this.data.ponta,
+      Capacidade_cabo: this.data.CapacidadeCabo
     };
 
-    console.log('✅ [CONEXÃO-MODAL] Conexão confirmada:', resultado);
-    this.dialogRef.close(resultado);
+    console.log('🔌 [CONEXÃO-MODAL] Enviando requisição de conexão:', request);
+
+    // Ativar loading
+    this.isLoading = true;
+
+    try {
+      const response = await firstValueFrom(this.conexaoBocaService.conectar(request));
+      
+      console.log('✅ [CONEXÃO-MODAL] Conexão realizada com sucesso:', response);
+      
+      // Fechar modal com sucesso
+      const resultado = {
+        ponta: this.data.ponta,
+        numeroCaixa: this.data.numeroCaixa,
+        idMetaCaixa: this.data.idMetaCaixa,
+        boca: bocaNumero,
+        confirmado: true,
+        response: response
+      };
+
+      this.dialogRef.close(resultado);
+      
+      // Mostrar mensagem de sucesso
+      alert(`✅ Conexão realizada com sucesso!\n\n${response.message}`);
+      
+    } catch (error: any) {
+      console.error('❌ [CONEXÃO-MODAL] Erro ao conectar:', error);
+      alert(`❌ Erro ao conectar o cabo:\n\n${error.message || error}`);
+    } finally {
+      this.isLoading = false;
+    }
   }
 
   /**
