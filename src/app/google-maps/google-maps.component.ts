@@ -272,6 +272,13 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
   private caixaEmEdicaoOriginalIcon: google.maps.Icon | null = null; // Ícone original para restaurar
   private listenerMapaSalvarCaixa: google.maps.MapsEventListener | null = null; // Listener para salvar ao clicar no mapa
   private listenerEscCancelarCaixa: any = null; // Listener para cancelar com ESC
+  // 🔧 Propriedades para detectar long press (mobile)
+  private touchStartTime: number = 0;
+  private touchStartPosition: { x: number, y: number } | null = null;
+  private longPressTimer: any = null;
+  private readonly LONG_PRESS_DURATION = 500; // 500ms para considerar long press
+  private longPressMarker: google.maps.Marker | null = null; // Marcador em long press
+  private longPressPolyline: google.maps.Polyline | null = null; // Polyline em long press
   private isCaboClicked = false; // 🆕 Flag para saber se foi clique em cabo
   private isEditingCabo: boolean = false; // 🆕 Flag para saber se está editando um cabo
   private isIniciandoEdicao: boolean = false; // 🆕 Flag para saber se está iniciando edição (protege clickedPolyline)
@@ -385,6 +392,76 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
           console.log('🗺️ [CONTEXT-MENU] ⚠️ Evento sem domEvent ou target');
         }
       });
+      
+      // 🔧 NOVO: Adicionar touch events para mobile (long press = right-click) no mapa
+      this.map.addListener('touchstart', (event: google.maps.MapMouseEvent) => {
+        if (event.domEvent) {
+          const touchEvent = event.domEvent as TouchEvent;
+          if (touchEvent.touches && touchEvent.touches.length > 0) {
+            const touch = touchEvent.touches[0];
+            this.touchStartTime = Date.now();
+            this.touchStartPosition = { x: touch.clientX, y: touch.clientY };
+
+            this.longPressTimer = setTimeout(() => {
+              console.log('📱 [MOBILE] Long press no mapa - simulando right-click');
+              
+              // Verificar se o toque foi no mapa mesmo
+              if (event.domEvent && event.domEvent.target) {
+                const target = event.domEvent.target as HTMLElement;
+                const isMapClick = target.tagName === 'CANVAS' || 
+                                 target.classList.contains('gm-style') ||
+                                 target.closest('.gm-style') !== null ||
+                                 target.closest('google-map') !== null;
+                const isInGoJSModal = target.closest('.gojs-container') !== null ||
+                                   target.closest('.diagram-container') !== null ||
+                                   target.closest('.diagram-div') !== null ||
+                                   target.closest('#gojsDiagram') !== null;
+
+                if (isMapClick && !isInGoJSModal) {
+                  // 🛡️ Verificar se há edição em andamento e cancelar
+                  if (this.isEditingCabo || this.isIniciandoEdicao) {
+                    console.log('⚠️ [EDITAR-CABO] Context menu do mapa detectado durante edição. Cancelando edição...');
+                    this.cancelarEdicaoCabo();
+                    return;
+                  }
+                  
+                  const simulatedEvent = {
+                    ...event,
+                    domEvent: {
+                      ...event.domEvent,
+                      clientX: touch.clientX,
+                      clientY: touch.clientY,
+                      preventDefault: () => {},
+                      stopPropagation: () => {}
+                    } as any
+                  } as google.maps.MapMouseEvent;
+                  
+                  // Chamar handler de right-click do mapa
+                  this.contextMenuType = 'map';
+                  this.showContextMenu(touch.clientX, touch.clientY);
+                }
+              }
+            }, this.LONG_PRESS_DURATION);
+          }
+        }
+      });
+
+      this.map.addListener('touchend', () => {
+        if (this.longPressTimer) {
+          clearTimeout(this.longPressTimer);
+          this.longPressTimer = null;
+        }
+        this.touchStartTime = 0;
+        this.touchStartPosition = null;
+      });
+
+      this.map.addListener('touchmove', () => {
+        if (this.longPressTimer) {
+          clearTimeout(this.longPressTimer);
+          this.longPressTimer = null;
+        }
+      });
+      
       console.log('🗺️ [CONTEXT-MENU] Listener adicionado com sucesso!');
     } else {
       console.log('🗺️ [CONTEXT-MENU] ⚠️ Map não está disponível ainda');
@@ -4444,10 +4521,135 @@ private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = fal
     }
   });
 
+  // 🔧 NOVO: Adicionar suporte a touch events para mobile (long press = right-click) nos markers
+  marker.addListener('touchstart', (event: google.maps.MapMouseEvent) => {
+    if (event.domEvent) {
+      const touchEvent = event.domEvent as TouchEvent;
+      if (touchEvent.touches && touchEvent.touches.length > 0) {
+        const touch = touchEvent.touches[0];
+        this.touchStartTime = Date.now();
+        this.touchStartPosition = {
+          x: touch.clientX,
+          y: touch.clientY
+        };
+        this.longPressMarker = marker;
+
+        // Iniciar timer para long press
+        this.longPressTimer = setTimeout(() => {
+          // Long press detectado - simular right-click
+          console.log('📱 [MOBILE] Long press detectado no marcador - simulando right-click');
+          
+          // Criar evento de mouse simulado
+          const simulatedEvent = {
+            ...event,
+            domEvent: {
+              ...event.domEvent,
+              clientX: touch.clientX,
+              clientY: touch.clientY,
+              preventDefault: () => {},
+              stopPropagation: () => {}
+            } as any
+          } as google.maps.MapMouseEvent;
+
+          // Chamar o handler de right-click
+          this.handleRightClickOnMarker(simulatedEvent, marker, isCTO, isCTOSP, isCLI, isCLIAT, isCLIDES);
+        }, this.LONG_PRESS_DURATION);
+      }
+    }
+  });
+
+  marker.addListener('touchend', (event: google.maps.MapMouseEvent) => {
+    // Cancelar long press se o toque terminou antes do tempo
+    if (this.longPressTimer && this.longPressMarker === marker) {
+      clearTimeout(this.longPressTimer);
+      this.longPressTimer = null;
+      this.longPressMarker = null;
+    }
+    this.touchStartTime = 0;
+    this.touchStartPosition = null;
+  });
+
+  marker.addListener('touchmove', (event: google.maps.MapMouseEvent) => {
+    // Cancelar long press se o usuário moveu o dedo
+    if (this.longPressTimer && this.longPressMarker === marker) {
+      clearTimeout(this.longPressTimer);
+      this.longPressTimer = null;
+      this.longPressMarker = null;
+    }
+  });
+
   
 }
 
+  /**
+   * 🔧 NOVO: Método auxiliar para tratar right-click em markers (reutilizável para desktop e mobile)
+   */
+  private handleRightClickOnMarker(
+    event: google.maps.MapMouseEvent, 
+    marker: google.maps.Marker,
+    isCTO: boolean,
+    isCTOSP: boolean,
+    isCLI: boolean,
+    isCLIAT: boolean,
+    isCLIDES: boolean
+  ): void {
+    console.log('🔴 [CONTEXT-MENU] Right-click detectado no marcador (desktop ou mobile)');
+    
+    // Prevenir menu padrão do navegador
+    if (event.domEvent) {
+      event.domEvent.preventDefault();
+      event.domEvent.stopPropagation();
+    }  
 
+    // Verificar se é uma CTO
+    if (isCTO) {
+      const index = this.markerCtos.indexOf(marker);
+      if (index !== -1) {
+        const cto = this.destinoCTO[index];
+        this.clickedCTOData = cto;
+        this.clickedCaixaData = null;
+        this.clickedCTOSPData = null;
+        this.contextMenuType = 'caixa';
+        
+        if (event.domEvent) {
+          const mouseEvent = event.domEvent as any;
+          this.showContextMenu(mouseEvent.clientX, mouseEvent.clientY);
+        }
+      }
+    }
+    // Verificar se é uma CTO_SP
+    else if (isCTOSP) {
+      const index = this.markerCtosSP.indexOf(marker);
+      if (index !== -1) {
+        const ctosp = this.destinoCTOSP[index];
+        this.clickedCTOSPData = ctosp;
+        this.clickedCaixaData = null;
+        this.clickedCTOData = null;
+        this.contextMenuType = 'caixa';
+        
+        if (event.domEvent) {
+          const mouseEvent = event.domEvent as any;
+          this.showContextMenu(mouseEvent.clientX, mouseEvent.clientY);
+        }
+      }
+    }
+    // Verificar se é uma caixa
+    else if (!isCLI && !isCLIAT && !isCLIDES) {
+      const index = this.markerCaixas.indexOf(marker);
+      if (index !== -1) {
+        const caixa = this.destino[index];
+        this.clickedCaixaData = caixa;
+        this.clickedCTOData = null;
+        this.clickedCTOSPData = null;
+        this.contextMenuType = 'caixa';
+        
+        if (event.domEvent) {
+          const mouseEvent = event.domEvent as any;
+          this.showContextMenu(mouseEvent.clientX, mouseEvent.clientY);
+        }
+      }
+    }
+  }
 
   private checkGoogleMapsAPI() {
     if ((window as any).google && (window as any).google.maps) {
@@ -5225,6 +5427,73 @@ openGoJSModal() {
           this.processarRightClickCabo(event, polyline, cabo, infoWindow);
         });
 
+        // 🔧 NOVO: Adicionar suporte a touch events para mobile (long press = right-click) nas polylines
+        polyline.addListener('touchstart', (event: google.maps.MapMouseEvent) => {
+          if (event.domEvent) {
+            const touchEvent = event.domEvent as TouchEvent;
+            if (touchEvent.touches && touchEvent.touches.length > 0) {
+              const touch = touchEvent.touches[0];
+              this.touchStartTime = Date.now();
+              this.touchStartPosition = {
+                x: touch.clientX,
+                y: touch.clientY
+              };
+              this.longPressPolyline = polyline;
+
+              // Iniciar timer para long press
+              this.longPressTimer = setTimeout(() => {
+                // Long press detectado - simular right-click
+                console.log('📱 [MOBILE] Long press detectado no cabo - simulando right-click');
+                
+                // Criar evento de mouse simulado
+                const simulatedEvent = {
+                  ...event,
+                  domEvent: {
+                    ...event.domEvent,
+                    clientX: touch.clientX,
+                    clientY: touch.clientY,
+                    preventDefault: () => {},
+                    stopPropagation: () => {}
+                  } as any
+                } as google.maps.MapMouseEvent;
+
+                // Obter dados do cabo
+                const caboData = {
+                  id_meta: polyline.get('id_meta'),
+                  capacidade: polyline.get('capacidade'),
+                  tipo: polyline.get('tipo'),
+                  Label_cabo: polyline.get('label') || polyline.get('Label_cabo'),
+                  GOOGLE_LATLNG: polyline.get('GOOGLE_LATLNG'),
+                  cabo_data: polyline.get('cabo_data')
+                };
+
+                // Chamar o handler de right-click
+                this.processarRightClickCabo(simulatedEvent, polyline, caboData, infoWindow);
+              }, this.LONG_PRESS_DURATION);
+            }
+          }
+        });
+
+        polyline.addListener('touchend', (event: google.maps.MapMouseEvent) => {
+          // Cancelar long press se o toque terminou antes do tempo
+          if (this.longPressTimer && this.longPressPolyline === polyline) {
+            clearTimeout(this.longPressTimer);
+            this.longPressTimer = null;
+            this.longPressPolyline = null;
+          }
+          this.touchStartTime = 0;
+          this.touchStartPosition = null;
+        });
+
+        polyline.addListener('touchmove', (event: google.maps.MapMouseEvent) => {
+          // Cancelar long press se o usuário moveu o dedo
+          if (this.longPressTimer && this.longPressPolyline === polyline) {
+            clearTimeout(this.longPressTimer);
+            this.longPressTimer = null;
+            this.longPressPolyline = null;
+          }
+        });
+
         // Adicionar evento para fechar InfoWindow quando clicar fora
         const clickListener = this.map?.addListener('click', () => {
           console.log('🔧 [POLYLINE] Clique detectado - fechando InfoWindow');
@@ -5752,6 +6021,77 @@ openGoJSModal() {
         this.processarRightClickCabo(event, this.caboDesenhado, caboData);
       }
     });
+
+    // 🔧 NOVO: Adicionar suporte a touch events para mobile (long press = right-click) no cabo desenhado
+    if (this.caboDesenhado) {
+      this.caboDesenhado.addListener('touchstart', (event: google.maps.MapMouseEvent) => {
+        if (event.domEvent) {
+          const touchEvent = event.domEvent as TouchEvent;
+          if (touchEvent.touches && touchEvent.touches.length > 0) {
+            const touch = touchEvent.touches[0];
+            this.touchStartTime = Date.now();
+            this.touchStartPosition = {
+              x: touch.clientX,
+              y: touch.clientY
+            };
+            this.longPressPolyline = this.caboDesenhado;
+
+            // Iniciar timer para long press
+            this.longPressTimer = setTimeout(() => {
+              // Long press detectado - simular right-click
+              console.log('📱 [MOBILE] Long press detectado no cabo desenhado - simulando right-click');
+              
+              // Criar evento de mouse simulado
+              const simulatedEvent = {
+                ...event,
+                domEvent: {
+                  ...event.domEvent,
+                  clientX: touch.clientX,
+                  clientY: touch.clientY,
+                  preventDefault: () => {},
+                  stopPropagation: () => {}
+                } as any
+              } as google.maps.MapMouseEvent;
+
+              // Obter dados do cabo
+              if (this.caboDesenhado) {
+                const caboDataTemp = {
+                  id_meta: this.caboDesenhado.get('id_meta'),
+                  capacidade: this.caboDesenhado.get('capacidade'),
+                  tipo: this.caboDesenhado.get('tipo'),
+                  Label_cabo: this.caboDesenhado.get('label') || this.caboDesenhado.get('Label_cabo'),
+                  GOOGLE_LATLNG: this.caboDesenhado.get('GOOGLE_LATLNG'),
+                  cabo_data: this.caboDesenhado.get('cabo_data')
+                };
+
+                // Chamar o handler de right-click
+                this.processarRightClickCabo(simulatedEvent, this.caboDesenhado, caboDataTemp);
+              }
+            }, this.LONG_PRESS_DURATION);
+          }
+        }
+      });
+
+      this.caboDesenhado.addListener('touchend', (event: google.maps.MapMouseEvent) => {
+        // Cancelar long press se o toque terminou antes do tempo
+        if (this.longPressTimer && this.longPressPolyline === this.caboDesenhado) {
+          clearTimeout(this.longPressTimer);
+          this.longPressTimer = null;
+          this.longPressPolyline = null;
+        }
+        this.touchStartTime = 0;
+        this.touchStartPosition = null;
+      });
+
+      this.caboDesenhado.addListener('touchmove', (event: google.maps.MapMouseEvent) => {
+        // Cancelar long press se o usuário moveu o dedo
+        if (this.longPressTimer && this.longPressPolyline === this.caboDesenhado) {
+          clearTimeout(this.longPressTimer);
+          this.longPressTimer = null;
+          this.longPressPolyline = null;
+        }
+      });
+    }
     
     // Limpar pontos aguardando tipagem
     this.pontosCaboAguardandoTipagem = [];
@@ -5962,6 +6302,77 @@ openGoJSModal() {
         this.processarRightClickCabo(event, this.caboDesenhado, caboData);
       }
     });
+
+    // 🔧 NOVO: Adicionar suporte a touch events para mobile (long press = right-click) no cabo desenhado (segunda ocorrência)
+    if (this.caboDesenhado) {
+      this.caboDesenhado.addListener('touchstart', (event: google.maps.MapMouseEvent) => {
+        if (event.domEvent) {
+          const touchEvent = event.domEvent as TouchEvent;
+          if (touchEvent.touches && touchEvent.touches.length > 0) {
+            const touch = touchEvent.touches[0];
+            this.touchStartTime = Date.now();
+            this.touchStartPosition = {
+              x: touch.clientX,
+              y: touch.clientY
+            };
+            this.longPressPolyline = this.caboDesenhado;
+
+            // Iniciar timer para long press
+            this.longPressTimer = setTimeout(() => {
+              // Long press detectado - simular right-click
+              console.log('📱 [MOBILE] Long press detectado no cabo desenhado (segunda ocorrência) - simulando right-click');
+              
+              // Criar evento de mouse simulado
+              const simulatedEvent = {
+                ...event,
+                domEvent: {
+                  ...event.domEvent,
+                  clientX: touch.clientX,
+                  clientY: touch.clientY,
+                  preventDefault: () => {},
+                  stopPropagation: () => {}
+                } as any
+              } as google.maps.MapMouseEvent;
+
+              // Obter dados do cabo
+              if (this.caboDesenhado) {
+                const caboDataTemp = {
+                  id_meta: this.caboDesenhado.get('id_meta'),
+                  capacidade: this.caboDesenhado.get('capacidade'),
+                  tipo: this.caboDesenhado.get('tipo'),
+                  Label_cabo: this.caboDesenhado.get('label') || this.caboDesenhado.get('Label_cabo'),
+                  GOOGLE_LATLNG: this.caboDesenhado.get('GOOGLE_LATLNG'),
+                  cabo_data: this.caboDesenhado.get('cabo_data')
+                };
+
+                // Chamar o handler de right-click
+                this.processarRightClickCabo(simulatedEvent, this.caboDesenhado, caboDataTemp);
+              }
+            }, this.LONG_PRESS_DURATION);
+          }
+        }
+      });
+
+      this.caboDesenhado.addListener('touchend', (event: google.maps.MapMouseEvent) => {
+        // Cancelar long press se o toque terminou antes do tempo
+        if (this.longPressTimer && this.longPressPolyline === this.caboDesenhado) {
+          clearTimeout(this.longPressTimer);
+          this.longPressTimer = null;
+          this.longPressPolyline = null;
+        }
+        this.touchStartTime = 0;
+        this.touchStartPosition = null;
+      });
+
+      this.caboDesenhado.addListener('touchmove', (event: google.maps.MapMouseEvent) => {
+        // Cancelar long press se o usuário moveu o dedo
+        if (this.longPressTimer && this.longPressPolyline === this.caboDesenhado) {
+          clearTimeout(this.longPressTimer);
+          this.longPressTimer = null;
+          this.longPressPolyline = null;
+        }
+      });
+    }
     
     // Limpar pontos aguardando tipagem
     this.pontosCaboAguardandoTipagem = [];
