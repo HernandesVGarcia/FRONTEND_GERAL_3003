@@ -404,46 +404,85 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
             this.touchStartTime = Date.now();
             this.touchStartPosition = { x: touch.clientX, y: touch.clientY };
 
-            this.longPressTimer = setTimeout(() => {
-              console.log('📱 [MOBILE] Long press no mapa - simulando right-click');
+            // 🔧 NOVO: Verificar se o toque foi próximo a uma caixa
+            let markerTocado: google.maps.Marker | null = null;
+            if (event.latLng) {
+              const touchLatLng = event.latLng;
               
-              // Verificar se o toque foi no mapa mesmo
-              if (event.domEvent && event.domEvent.target) {
-                const target = event.domEvent.target as HTMLElement;
-                const isMapClick = target.tagName === 'CANVAS' || 
-                                 target.classList.contains('gm-style') ||
-                                 target.closest('.gm-style') !== null ||
-                                 target.closest('google-map') !== null;
-                const isInGoJSModal = target.closest('.gojs-container') !== null ||
-                                   target.closest('.diagram-container') !== null ||
-                                   target.closest('.diagram-div') !== null ||
-                                   target.closest('#gojsDiagram') !== null;
-
-                if (isMapClick && !isInGoJSModal) {
-                  // 🛡️ Verificar se há edição em andamento e cancelar
-                  if (this.isEditingCabo || this.isIniciandoEdicao) {
-                    console.log('⚠️ [EDITAR-CABO] Context menu do mapa detectado durante edição. Cancelando edição...');
-                    this.cancelarEdicaoCabo();
-                    return;
+              // Verificar cada marker de caixa
+              for (let i = 0; i < this.markerCaixas.length; i++) {
+                const m = this.markerCaixas[i];
+                const markerPos = m.getPosition();
+                if (markerPos) {
+                  const distancia = google.maps.geometry.spherical.computeDistanceBetween(
+                    touchLatLng,
+                    markerPos
+                  );
+                  // Se estiver dentro de 30 metros, considerar tocado (raio aproximado de um marker)
+                  if (distancia < 30) {
+                    markerTocado = m;
+                    console.log('📱 [MOBILE] Touch detectado próximo à caixa, distância:', distancia.toFixed(2), 'm');
+                    break;
                   }
-                  
-                  const simulatedEvent = {
-                    ...event,
-                    domEvent: {
-                      ...event.domEvent,
-                      clientX: touch.clientX,
-                      clientY: touch.clientY,
-                      preventDefault: () => {},
-                      stopPropagation: () => {}
-                    } as any
-                  } as google.maps.MapMouseEvent;
-                  
-                  // Chamar handler de right-click do mapa
-                  this.contextMenuType = 'map';
-                  this.showContextMenu(touch.clientX, touch.clientY);
                 }
               }
-            }, this.LONG_PRESS_DURATION);
+            }
+
+            if (markerTocado) {
+              // Toque foi em uma caixa
+              this.longPressMarker = markerTocado;
+              this.isTouchInProgress = true;
+              this.wasLongPress = false;
+
+              this.longPressTimer = setTimeout(() => {
+                console.log('📱 [MOBILE] Long press detectado em caixa - simulando right-click');
+                this.wasLongPress = true;
+
+                const index = this.markerCaixas.indexOf(markerTocado!);
+                if (index !== -1) {
+                  const caixa = this.destino[index];
+                  this.clickedCaixaData = caixa;
+                  this.clickedCTOData = null;
+                  this.clickedCTOSPData = null;
+                  this.contextMenuType = 'caixa';
+
+                  // Mostrar context menu na posição do toque
+                  this.showContextMenu(touch.clientX, touch.clientY);
+                  console.log('📱 [MOBILE] Context menu mostrado em:', touch.clientX, touch.clientY);
+                }
+              }, this.LONG_PRESS_DURATION);
+            } else {
+              // Toque foi no mapa (não em uma caixa)
+              this.longPressTimer = setTimeout(() => {
+                console.log('📱 [MOBILE] Long press no mapa - simulando right-click');
+                
+                // Verificar se o toque foi no mapa mesmo
+                if (event.domEvent && event.domEvent.target) {
+                  const target = event.domEvent.target as HTMLElement;
+                  const isMapClick = target.tagName === 'CANVAS' || 
+                                   target.classList.contains('gm-style') ||
+                                   target.closest('.gm-style') !== null ||
+                                   target.closest('google-map') !== null;
+                  const isInGoJSModal = target.closest('.gojs-container') !== null ||
+                                     target.closest('.diagram-container') !== null ||
+                                     target.closest('.diagram-div') !== null ||
+                                     target.closest('#gojsDiagram') !== null;
+
+                  if (isMapClick && !isInGoJSModal) {
+                    // 🛡️ Verificar se há edição em andamento e cancelar
+                    if (this.isEditingCabo || this.isIniciandoEdicao) {
+                      console.log('⚠️ [EDITAR-CABO] Context menu do mapa detectado durante edição. Cancelando edição...');
+                      this.cancelarEdicaoCabo();
+                      return;
+                    }
+                    
+                    // Chamar handler de right-click do mapa
+                    this.contextMenuType = 'map';
+                    this.showContextMenu(touch.clientX, touch.clientY);
+                  }
+                }
+              }, this.LONG_PRESS_DURATION);
+            }
           }
         }
       });
@@ -453,8 +492,22 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
           clearTimeout(this.longPressTimer);
           this.longPressTimer = null;
         }
+        
+        // 🔧 NOVO: Se foi long press, prevenir click
+        if (this.wasLongPress) {
+          setTimeout(() => {
+            this.isTouchInProgress = false;
+            this.wasLongPress = false;
+          }, 200);
+        } else {
+          setTimeout(() => {
+            this.isTouchInProgress = false;
+          }, 100);
+        }
+        
         this.touchStartTime = 0;
         this.touchStartPosition = null;
+        this.longPressMarker = null;
       });
 
       this.map.addListener('touchmove', () => {
@@ -4529,89 +4582,8 @@ private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = fal
     }
   });
 
-  // 🔧 NOVO: Adicionar suporte a touch events para mobile (long press = right-click) nos markers (APENAS PARA CAIXAS)
-  // Aplicar apenas para caixas (não CTO, CTO_SP, CLI, etc)
-  if (!isCTO && !isCTOSP && !isCLI && !isCLIAT && !isCLIDES) {
-    marker.addListener('touchstart', (event: google.maps.MapMouseEvent) => {
-      if (event.domEvent) {
-        const touchEvent = event.domEvent as TouchEvent;
-        if (touchEvent.touches && touchEvent.touches.length > 0) {
-          const touch = touchEvent.touches[0];
-          this.touchStartTime = Date.now();
-          this.touchStartPosition = {
-            x: touch.clientX,
-            y: touch.clientY
-          };
-          this.longPressMarker = marker;
-          this.isTouchInProgress = true; // 🔧 NOVO: Marcar que touch está em andamento
-          this.wasLongPress = false; // 🔧 NOVO: Resetar flag de long press
-
-          // Prevenir eventos de click durante o touch
-          if (event.domEvent) {
-            event.domEvent.preventDefault();
-            event.domEvent.stopPropagation();
-          }
-
-          // Iniciar timer para long press
-          this.longPressTimer = setTimeout(() => {
-            // Long press detectado - simular right-click
-            console.log('📱 [MOBILE] Long press detectado no marcador (caixa) - simulando right-click');
-            this.wasLongPress = true; // 🔧 NOVO: Marcar que foi long press
-            
-            // Criar evento de mouse simulado
-            const simulatedEvent = {
-              ...event,
-              domEvent: {
-                ...event.domEvent,
-                clientX: touch.clientX,
-                clientY: touch.clientY,
-                preventDefault: () => {},
-                stopPropagation: () => {}
-              } as any
-            } as google.maps.MapMouseEvent;
-
-            // Chamar o handler de right-click
-            this.handleRightClickOnMarker(simulatedEvent, marker, isCTO, isCTOSP, isCLI, isCLIAT, isCLIDES);
-          }, this.LONG_PRESS_DURATION);
-        }
-      }
-    });
-
-    marker.addListener('touchend', (event: google.maps.MapMouseEvent) => {
-      // Cancelar long press se o toque terminou antes do tempo
-      if (this.longPressTimer && this.longPressMarker === marker) {
-        clearTimeout(this.longPressTimer);
-        this.longPressTimer = null;
-        this.longPressMarker = null;
-      }
-      
-      // 🔧 NOVO: Se foi long press, prevenir click
-      if (this.wasLongPress) {
-        // Prevenir click que pode vir depois
-        setTimeout(() => {
-          this.isTouchInProgress = false;
-          this.wasLongPress = false;
-        }, 200);
-      } else {
-        // Não foi long press, permitir click normal após um pequeno delay
-        setTimeout(() => {
-          this.isTouchInProgress = false;
-        }, 100);
-      }
-      
-      this.touchStartTime = 0;
-      this.touchStartPosition = null;
-    });
-
-    marker.addListener('touchmove', (event: google.maps.MapMouseEvent) => {
-      // Cancelar long press se o usuário moveu o dedo
-      if (this.longPressTimer && this.longPressMarker === marker) {
-        clearTimeout(this.longPressTimer);
-        this.longPressTimer = null;
-        this.longPressMarker = null;
-      }
-    });
-  }
+  // 🔧 NOTA: Touch events para caixas são tratados no listener global do mapa (setupContextMenuListener)
+  // Isso permite detectar toques próximos a caixas usando coordenadas geográficas
 
   
 }
