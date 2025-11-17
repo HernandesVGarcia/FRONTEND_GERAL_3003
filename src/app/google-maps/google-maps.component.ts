@@ -257,10 +257,21 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
   // 🎯 Propriedades para context menu
   contextMenuVisible = false;
   contextMenuPosition = { x: 0, y: 0 };
-  contextMenuType: 'map' | 'cabo' = 'map'; // 🆕 Tipo de contexto do menu
+  contextMenuType: 'caixa' |'map' | 'cabo' = 'map'; // 🆕 Tipo de contexto do menu
   private contextMenuListenerAdded = false; // Flag para evitar listeners duplicados
   private clickedCaboData: any = null; // 🆕 Armazena dados do cabo clicado
+  private clickedCaixaData: any = null; // 🆕 Armazena dados da caixa clicada
+  private clickedCTOData: any = null; // 🆕 Armazena dados da CTO clicada
+  private clickedCTOSPData: any = null; // 🆕 Armazena dados da CTO_SP clicada
   private clickedPolyline: google.maps.Polyline | null = null; // 🆕 Armazena a polyline clicada
+  // 🔧 Propriedades para edição de caixa/CTO/CTO_SP
+  private caixaEmEdicao: google.maps.Marker | null = null; // Marcador em edição (caixa, CTO ou CTO_SP)
+  private caixaEmEdicaoIndex: number | null = null; // Índice do item em edição
+  private caixaEmEdicaoTipo: 'caixa' | 'cto' | 'ctosp' | null = null; // Tipo do item em edição
+  private caixaEmEdicaoOriginalPosition: { lat: number, lng: number } | null = null; // Posição original para cancelar
+  private caixaEmEdicaoOriginalIcon: google.maps.Icon | null = null; // Ícone original para restaurar
+  private listenerMapaSalvarCaixa: google.maps.MapsEventListener | null = null; // Listener para salvar ao clicar no mapa
+  private listenerEscCancelarCaixa: any = null; // Listener para cancelar com ESC
   private isCaboClicked = false; // 🆕 Flag para saber se foi clique em cabo
   private isEditingCabo: boolean = false; // 🆕 Flag para saber se está editando um cabo
   private isIniciandoEdicao: boolean = false; // 🆕 Flag para saber se está iniciando edição (protege clickedPolyline)
@@ -410,9 +421,14 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
     if (!this.isEditingCabo && !this.isIniciandoEdicao) {
       this.clickedCaboData = null;
       this.clickedPolyline = null; // 🔄 Reseta a polyline clicada
+      this.clickedCaixaData = null;
+      this.clickedCTOData = null; // 🔧 NOVO: Limpar dados de CTO
+      this.clickedCTOSPData = null; // 🔧 NOVO: Limpar dados de CTO_SP
     }
     
     this.isCaboClicked = false; // 🔄 Reseta flag
+
+    
     
     // 🎯 Forçar detecção de mudanças
     this.cdr.detectChanges();
@@ -456,6 +472,42 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
       case 'excluir-cabo':
         this.excluirCabo();
         break;
+        case 'visualizar-caixa':
+          // 🔧 NOVO: Abrir gojs-demo quando selecionar "Visualizar Conectividade"
+          // Pode ser caixa, CTO ou CTO_SP
+          let idMeta: number | undefined;
+          let tipoObjeto: string = '';
+          
+          if (this.clickedCaixaData && this.clickedCaixaData.id_meta) {
+            idMeta = this.clickedCaixaData.id_meta;
+            tipoObjeto = 'caixa';
+          } else if (this.clickedCTOData && this.clickedCTOData.id_meta) {
+            idMeta = this.clickedCTOData.id_meta;
+            tipoObjeto = 'CTO';
+          } else if (this.clickedCTOSPData && this.clickedCTOSPData.id_meta) {
+            idMeta = this.clickedCTOSPData.id_meta;
+            tipoObjeto = 'CTO_SP';
+          }
+          
+          if (idMeta) {
+            console.log(`🔴 [CONTEXT-MENU] Abrindo gojs-demo para ${tipoObjeto} com id_meta:`, idMeta);
+            this.authService.setIDmetaCaixa(idMeta);
+            this.openGoJSModal();
+          } else {
+            console.error('❌ [CONTEXT-MENU] Dados não disponíveis');
+            alert('Erro: Dados não disponíveis');
+          }
+        break;
+        case 'editar-caixa':
+      //this.editarCaixa();
+        break;
+        case 'excluir-caixa':
+      //this.excluirCaixa();
+        break;
+
+
+
+
       default:
         console.warn('🗺️ [CONTEXT-MENU] Ação não reconhecida:', action);
     }
@@ -495,6 +547,33 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
   private criarSobra(): void {
     console.log('🗺️ [CONTEXT-MENU] Criando sobra...');
     alert('Funcionalidade de criar sobra será implementada em breve!');
+  }
+
+  private visualizarCaixa(): void {
+    if (!this.clickedCaixaData) {
+      console.warn('🗺️ [CONTEXT-MENU] Nenhuma caixa selecionada');
+      return;
+    }
+    console.log('🗺️ [CONTEXT-MENU] Visualizando caixa:', this.clickedCaixaData);
+    // Implementar lógica de visualização
+  }
+  
+  private editarCaixa(): void {
+    if (!this.clickedCaixaData) {
+      console.warn('🗺️ [CONTEXT-MENU] Nenhuma caixa selecionada');
+      return;
+    }
+    console.log('🗺️ [CONTEXT-MENU] Editando caixa:', this.clickedCaixaData);
+    // Implementar lógica de edição
+  }
+  
+  private excluirCaixa(): void {
+    if (!this.clickedCaixaData) {
+      console.warn('🗺️ [CONTEXT-MENU] Nenhuma caixa selecionada');
+      return;
+    }
+    console.log('🗺️ [CONTEXT-MENU] Excluindo caixa:', this.clickedCaixaData);
+    // Implementar lógica de exclusão
   }
 
   // ============================================================================
@@ -2937,6 +3016,19 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
       const newLng = event.latLng.lng();
       console.log(`Marcador movido para: Lat ${newLat}, Lng ${newLng}`);
       
+      // 🔧 NOVO: Se for um item em edição, apenas atualizar visualmente (salvar será no clique no mapa)
+      if (this.caixaEmEdicao && this.caixaEmEdicaoIndex === index) {
+        if (this.caixaEmEdicaoTipo === 'cto') {
+          console.log('📍 [EDITAR-CTO] CTO arrastada para nova posição');
+        } else if (this.caixaEmEdicaoTipo === 'ctosp') {
+          console.log('📍 [EDITAR-CTOSP] CTO_SP arrastada para nova posição');
+        } else if (this.caixaEmEdicaoTipo === 'caixa') {
+          console.log('📍 [EDITAR-CAIXA] Caixa arrastada para nova posição');
+        }
+        // A posição já foi atualizada pelo Google Maps, não precisa fazer nada aqui
+        return;
+      }
+      
       if (isCTO) {
         this.markerCtos[index].setPosition({ lat: newLat, lng: newLng });
       } else {
@@ -4123,6 +4215,9 @@ private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = fal
       clickTimeout = null;
     }
 
+
+
+
     // Definir timeout para clique simples (debounce de 300ms)
     clickTimeout = setTimeout(() => {
       let tipo = '';
@@ -4258,6 +4353,97 @@ private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = fal
     }
   });
 
+  // 🔧 CORREÇÃO: Listener de right-click para caixas, CTOs e CTOs_SP (no mesmo nível dos outros listeners)
+  marker.addListener('rightclick', (event: google.maps.MapMouseEvent) => {
+    console.log('🔴 [CONTEXT-MENU] Right-click detectado no marcador');
+    
+    // Prevenir menu padrão do navegador
+    if (event.domEvent) {
+      event.domEvent.preventDefault();
+      event.domEvent.stopPropagation();
+    }  
+
+    // Verificar se é uma CTO
+    if (isCTO) {
+      const index = this.markerCtos.indexOf(marker);
+      if (index !== -1) {
+        const cto = this.destinoCTO[index];
+        
+        console.log('🔴 [CONTEXT-MENU] CTO encontrada no índice:', index);
+        console.log('🔴 [CONTEXT-MENU] Dados da CTO:', cto);
+        
+        // Armazenar dados da CTO clicada
+        this.clickedCTOData = cto;
+        this.clickedCaixaData = null; // Limpar dados de caixa
+        this.clickedCTOSPData = null; // Limpar dados de CTO_SP
+        
+        // Definir tipo de contexto como 'caixa' (mesmo menu)
+        this.contextMenuType = 'caixa';
+        
+        // Mostrar context menu na posição do clique
+        if (event.domEvent) {
+          const mouseEvent = event.domEvent as MouseEvent;
+          console.log('🔴 [CONTEXT-MENU] Mostrando context menu para CTO em:', mouseEvent.clientX, mouseEvent.clientY);
+          this.showContextMenu(mouseEvent.clientX, mouseEvent.clientY);
+        }
+      }
+    }
+    // Verificar se é uma CTO_SP
+    else if (isCTOSP) {
+      const index = this.markerCtosSP.indexOf(marker);
+      if (index !== -1) {
+        const ctosp = this.destinoCTOSP[index];
+        
+        console.log('🔴 [CONTEXT-MENU] CTO_SP encontrada no índice:', index);
+        console.log('🔴 [CONTEXT-MENU] Dados da CTO_SP:', ctosp);
+        
+        // Armazenar dados da CTO_SP clicada
+        this.clickedCTOSPData = ctosp;
+        this.clickedCaixaData = null; // Limpar dados de caixa
+        this.clickedCTOData = null; // Limpar dados de CTO
+        
+        // Definir tipo de contexto como 'caixa' (mesmo menu)
+        this.contextMenuType = 'caixa';
+        
+        // Mostrar context menu na posição do clique
+        if (event.domEvent) {
+          const mouseEvent = event.domEvent as MouseEvent;
+          console.log('🔴 [CONTEXT-MENU] Mostrando context menu para CTO_SP em:', mouseEvent.clientX, mouseEvent.clientY);
+          this.showContextMenu(mouseEvent.clientX, mouseEvent.clientY);
+        }
+      }
+    }
+    // Verificar se é uma caixa (não CTO, CTO_SP, CLI, etc)
+    else if (!isCLI && !isCLIAT && !isCLIDES) {
+      const index = this.markerCaixas.indexOf(marker);
+      if (index !== -1) {
+        const caixa = this.destino[index];
+        
+        console.log('🔴 [CONTEXT-MENU] Caixa encontrada no índice:', index);
+        console.log('🔴 [CONTEXT-MENU] Dados da caixa:', caixa);
+        
+        // Armazenar dados da caixa clicada
+        this.clickedCaixaData = caixa;
+        this.clickedCTOData = null; // Limpar dados de CTO
+        this.clickedCTOSPData = null; // Limpar dados de CTO_SP
+        
+        // Definir tipo de contexto como 'caixa'
+        this.contextMenuType = 'caixa';
+        
+        // Mostrar context menu na posição do clique
+        if (event.domEvent) {
+          const mouseEvent = event.domEvent as MouseEvent;
+          console.log('🔴 [CONTEXT-MENU] Mostrando context menu para caixa em:', mouseEvent.clientX, mouseEvent.clientY);
+          this.showContextMenu(mouseEvent.clientX, mouseEvent.clientY);
+        }
+      } else {
+        console.log('🔴 [CONTEXT-MENU] Marcador não encontrado em markerCaixas');
+      }
+    } else {
+      console.log('🔴 [CONTEXT-MENU] Não é uma caixa/CTO, é:', { isCTO, isCTOSP, isCLI, isCLIAT, isCLIDES });
+    }
+  });
+
   
 }
 
@@ -4276,14 +4462,14 @@ private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = fal
     if (isCTO) {
       if (this.destinoCTO[index]) {
         console.log('CTO clicada', this.destinoCTO[index].numero);
-        this.authService.setIDmetaCaixa(this.destinoCTO[index].id_meta)//<---escrevo idmeta da cto no storage
-        this.openGoJSModal();
+        // 🔧 NOVO: Habilitar edição da CTO (tornar arrastável)
+        this.habilitarEdicaoCTO(index);
       }
     }else if (isCTOSP) {
           if (this.destinoCTOSP[index]) {
         console.log('CTO SP clicada', this.destinoCTOSP[index].numero);
-        this.authService.setIDmetaCaixa(this.destinoCTOSP[index].id_meta)//<---escrevo idmeta da cto no storage
-        this.openGoJSModal();
+        // 🔧 NOVO: Habilitar edição da CTO_SP (tornar arrastável)
+        this.habilitarEdicaoCTOSP(index);
     }
 
     }else if (isCLI) {
@@ -4317,11 +4503,336 @@ private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = fal
   } else {
       if (this.destino[index]) {
         console.log('caixa clicada', this.destino[index].numero);
-        this.authService.setIDmetaCaixa(this.destino[index].id_meta)//<---escrevo idmeta da caixa no storage
-        this.openGoJSModal();
+        // 🔧 NOVO: Habilitar edição da caixa (tornar arrastável)
+        this.habilitarEdicaoCaixa(index);
   }
   }
 }
+
+  /**
+   * 🔧 NOVO: Habilita a edição de uma caixa (torna arrastável)
+   */
+  private habilitarEdicaoCaixa(index: number): void {
+    if (index < 0 || index >= this.markerCaixas.length) {
+      console.error('❌ [EDITAR-CAIXA] Índice inválido:', index);
+      return;
+    }
+
+    const marker = this.markerCaixas[index];
+    const caixa = this.destino[index];
+
+    if (!marker || !caixa) {
+      console.error('❌ [EDITAR-CAIXA] Marcador ou caixa não encontrados');
+      return;
+    }
+
+    // Se já há uma caixa em edição, desabilitar a anterior
+    if (this.caixaEmEdicao) {
+      this.desabilitarEdicaoCaixa();
+    }
+
+    // Salvar posição original para poder cancelar
+    const position = marker.getPosition();
+    if (position) {
+      this.caixaEmEdicaoOriginalPosition = {
+        lat: position.lat(),
+        lng: position.lng()
+      };
+    }
+
+    // 🔧 CORREÇÃO: Salvar ícone original ANTES de modificar
+    this.caixaEmEdicaoOriginalIcon = marker.getIcon() as google.maps.Icon;
+
+    // Tornar marcador arrastável
+    marker.setDraggable(true);
+    
+    // Mudar aparência visual para indicar modo de edição
+    marker.setOpacity(0.7);
+    marker.setIcon({
+      url: '/assets/fosc ama.png',
+      labelOrigin: new google.maps.Point(70, 10),
+      scaledSize: new google.maps.Size(25, 45) // Ligeiramente maior
+    });
+
+    // Armazenar referências
+    this.caixaEmEdicao = marker;
+    this.caixaEmEdicaoIndex = index;
+    this.caixaEmEdicaoTipo = 'caixa';
+
+    console.log('✅ [EDITAR-CAIXA] Edição habilitada para caixa:', caixa.numero);
+    //alert(`✅ Modo de edição ativado!\n\nCaixa: ${caixa.numero}\n\nArraste a caixa para mover.\nClique no mapa para salvar ou pressione ESC para cancelar.`);
+
+    // Adicionar listener para salvar ao clicar no mapa
+    if (this.map && !this.listenerMapaSalvarCaixa) {
+      this.listenerMapaSalvarCaixa = this.map.addListener('click', () => {
+        if (this.caixaEmEdicao) {
+          this.salvarEdicaoCaixa();
+        }
+      });
+    }
+
+    // Adicionar listener para cancelar com ESC
+    if (!this.listenerEscCancelarCaixa) {
+      this.listenerEscCancelarCaixa = (event: KeyboardEvent) => {
+        if (event.key === 'Escape' && this.caixaEmEdicao) {
+          this.cancelarEdicaoCaixa();
+        }
+      };
+      document.addEventListener('keydown', this.listenerEscCancelarCaixa);
+    }
+  }
+
+  /**
+   * 🔧 NOVO: Habilita a edição de uma CTO (torna arrastável)
+   */
+  private habilitarEdicaoCTO(index: number): void {
+    if (index < 0 || index >= this.markerCtos.length) {
+      console.error('❌ [EDITAR-CTO] Índice inválido:', index);
+      return;
+    }
+
+    const marker = this.markerCtos[index];
+    const cto = this.destinoCTO[index];
+
+    if (!marker || !cto) {
+      console.error('❌ [EDITAR-CTO] Marcador ou CTO não encontrados');
+      return;
+    }
+
+    // Se já há um item em edição, desabilitar o anterior
+    if (this.caixaEmEdicao) {
+      this.desabilitarEdicaoCaixa();
+    }
+
+    // Salvar posição original para poder cancelar
+    const position = marker.getPosition();
+    if (position) {
+      this.caixaEmEdicaoOriginalPosition = {
+        lat: position.lat(),
+        lng: position.lng()
+      };
+    }
+
+    // 🔧 CORREÇÃO: Salvar ícone original ANTES de modificar
+    this.caixaEmEdicaoOriginalIcon = marker.getIcon() as google.maps.Icon;
+
+    // Tornar marcador arrastável
+    marker.setDraggable(true);
+    
+    // Mudar aparência visual para indicar modo de edição
+    marker.setOpacity(0.7);
+    marker.setIcon({
+      url: '/assets/CTO80.png',
+      labelOrigin: new google.maps.Point(50, 10),
+      scaledSize: new google.maps.Size(22, 26) // Ligeiramente maior
+    });
+
+    // Armazenar referências
+    this.caixaEmEdicao = marker;
+    this.caixaEmEdicaoIndex = index;
+    this.caixaEmEdicaoTipo = 'cto';
+
+    console.log('✅ [EDITAR-CTO] Edição habilitada para CTO:', cto.numero);
+    alert(`✅ Modo de edição ativado!\n\nCTO: ${cto.numero}\n\nArraste a CTO para mover.\nClique no mapa para salvar ou pressione ESC para cancelar.`);
+
+    // Adicionar listener para salvar ao clicar no mapa
+    if (this.map && !this.listenerMapaSalvarCaixa) {
+      this.listenerMapaSalvarCaixa = this.map.addListener('click', () => {
+        if (this.caixaEmEdicao) {
+          this.salvarEdicaoCaixa();
+        }
+      });
+    }
+
+    // Adicionar listener para cancelar com ESC
+    if (!this.listenerEscCancelarCaixa) {
+      this.listenerEscCancelarCaixa = (event: KeyboardEvent) => {
+        if (event.key === 'Escape' && this.caixaEmEdicao) {
+          this.cancelarEdicaoCaixa();
+        }
+      };
+      document.addEventListener('keydown', this.listenerEscCancelarCaixa);
+    }
+  }
+
+  /**
+   * 🔧 NOVO: Habilita a edição de uma CTO_SP (torna arrastável)
+   */
+  private habilitarEdicaoCTOSP(index: number): void {
+    if (index < 0 || index >= this.markerCtosSP.length) {
+      console.error('❌ [EDITAR-CTOSP] Índice inválido:', index);
+      return;
+    }
+
+    const marker = this.markerCtosSP[index];
+    const ctosp = this.destinoCTOSP[index];
+
+    if (!marker || !ctosp) {
+      console.error('❌ [EDITAR-CTOSP] Marcador ou CTO_SP não encontrados');
+      return;
+    }
+
+    // Se já há um item em edição, desabilitar o anterior
+    if (this.caixaEmEdicao) {
+      this.desabilitarEdicaoCaixa();
+    }
+
+    // Salvar posição original para poder cancelar
+    const position = marker.getPosition();
+    if (position) {
+      this.caixaEmEdicaoOriginalPosition = {
+        lat: position.lat(),
+        lng: position.lng()
+      };
+    }
+
+    // 🔧 CORREÇÃO: Salvar ícone original ANTES de modificar
+    this.caixaEmEdicaoOriginalIcon = marker.getIcon() as google.maps.Icon;
+
+    // Tornar marcador arrastável
+    marker.setDraggable(true);
+    
+    // Mudar aparência visual para indicar modo de edição
+    marker.setOpacity(0.7);
+    marker.setIcon({
+      url: '/assets/CTOSP.png',
+      labelOrigin: new google.maps.Point(50, 10),
+      scaledSize: new google.maps.Size(22, 26) // Ligeiramente maior
+    });
+
+    // Armazenar referências
+    this.caixaEmEdicao = marker;
+    this.caixaEmEdicaoIndex = index;
+    this.caixaEmEdicaoTipo = 'ctosp';
+
+    console.log('✅ [EDITAR-CTOSP] Edição habilitada para CTO_SP:', ctosp.numero);
+    alert(`✅ Modo de edição ativado!\n\nCTO_SP: ${ctosp.numero}\n\nArraste a CTO_SP para mover.\nClique no mapa para salvar ou pressione ESC para cancelar.`);
+
+    // Adicionar listener para salvar ao clicar no mapa
+    if (this.map && !this.listenerMapaSalvarCaixa) {
+      this.listenerMapaSalvarCaixa = this.map.addListener('click', () => {
+        if (this.caixaEmEdicao) {
+          this.salvarEdicaoCaixa();
+        }
+      });
+    }
+
+    // Adicionar listener para cancelar com ESC
+    if (!this.listenerEscCancelarCaixa) {
+      this.listenerEscCancelarCaixa = (event: KeyboardEvent) => {
+        if (event.key === 'Escape' && this.caixaEmEdicao) {
+          this.cancelarEdicaoCaixa();
+        }
+      };
+      document.addEventListener('keydown', this.listenerEscCancelarCaixa);
+    }
+  }
+
+  /**
+   * 🔧 NOVO: Desabilita a edição (genérico para caixa, CTO ou CTO_SP)
+   */
+  private desabilitarEdicaoCaixa(): void {
+    if (this.caixaEmEdicao) {
+      this.caixaEmEdicao.setDraggable(false);
+      this.caixaEmEdicao.setOpacity(1.0);
+      
+      // Restaurar ícone original
+      if (this.caixaEmEdicaoOriginalIcon) {
+        this.caixaEmEdicao.setIcon(this.caixaEmEdicaoOriginalIcon);
+      }
+    }
+
+    // Remover listeners
+    if (this.listenerMapaSalvarCaixa) {
+      google.maps.event.removeListener(this.listenerMapaSalvarCaixa);
+      this.listenerMapaSalvarCaixa = null;
+    }
+
+    if (this.listenerEscCancelarCaixa) {
+      document.removeEventListener('keydown', this.listenerEscCancelarCaixa);
+      this.listenerEscCancelarCaixa = null;
+    }
+
+    this.caixaEmEdicao = null;
+    this.caixaEmEdicaoIndex = null;
+    this.caixaEmEdicaoTipo = null;
+    this.caixaEmEdicaoOriginalPosition = null;
+    this.caixaEmEdicaoOriginalIcon = null;
+  }
+
+  /**
+   * 🔧 NOVO: Salva a edição (genérico para caixa, CTO ou CTO_SP)
+   */
+  private salvarEdicaoCaixa(): void {
+    if (!this.caixaEmEdicao || this.caixaEmEdicaoIndex === null || !this.caixaEmEdicaoTipo) {
+      return;
+    }
+
+    const position = this.caixaEmEdicao.getPosition();
+    if (!position) {
+      console.error('❌ [EDITAR] Posição não disponível');
+      return;
+    }
+
+    const newLat = position.lat();
+    const newLng = position.lng();
+
+    console.log(`💾 [EDITAR-${this.caixaEmEdicaoTipo.toUpperCase()}] Salvando nova posição:`, { lat: newLat, lng: newLng });
+
+    // Atualizar baseado no tipo
+    if (this.caixaEmEdicaoTipo === 'caixa') {
+      const caixa = this.destino[this.caixaEmEdicaoIndex];
+      caixa.LAT = newLat as any;
+      caixa.LONGI = newLng as any;
+      
+      // TODO: Chamar serviço para atualizar coordenadas no banco
+      // Exemplo: this.caixaService.atualizarCoordenadas(caixa.id_meta, newLat, newLng)
+      
+      //alert(`✅ Posição da caixa ${caixa.numero} atualizada!\n\nLat: ${newLat.toFixed(6)}\nLng: ${newLng.toFixed(6)}`);
+    } else if (this.caixaEmEdicaoTipo === 'cto') {
+      const cto = this.destinoCTO[this.caixaEmEdicaoIndex];
+      cto.LAT = newLat as any;
+      cto.LONGI = newLng as any;
+      
+      // TODO: Chamar serviço para atualizar coordenadas no banco
+      // Exemplo: this.ctoService.atualizarCoordenadas(cto.id_meta, newLat, newLng)
+      
+      //alert(`✅ Posição da CTO ${cto.numero} atualizada!\n\nLat: ${newLat.toFixed(6)}\nLng: ${newLng.toFixed(6)}`);
+    } else if (this.caixaEmEdicaoTipo === 'ctosp') {
+      const ctosp = this.destinoCTOSP[this.caixaEmEdicaoIndex];
+      ctosp.LAT = newLat as any;
+      ctosp.LONGI = newLng as any;
+      
+      // TODO: Chamar serviço para atualizar coordenadas no banco
+      // Exemplo: this.ctospService.atualizarCoordenadas(ctosp.id_meta, newLat, newLng)
+      
+      //alert(`✅ Posição da CTO_SP ${ctosp.numero} atualizada!\n\nLat: ${newLat.toFixed(6)}\nLng: ${newLng.toFixed(6)}`);
+    }
+
+    // Desabilitar edição
+    this.desabilitarEdicaoCaixa();
+  }
+
+  /**
+   * 🔧 NOVO: Cancela a edição da caixa (restaura posição original)
+   */
+  private cancelarEdicaoCaixa(): void {
+    if (!this.caixaEmEdicao || !this.caixaEmEdicaoOriginalPosition) {
+      return;
+    }
+
+    // Restaurar posição original
+    this.caixaEmEdicao.setPosition({
+      lat: this.caixaEmEdicaoOriginalPosition.lat,
+      lng: this.caixaEmEdicaoOriginalPosition.lng
+    });
+
+    // Desabilitar edição
+    this.desabilitarEdicaoCaixa();
+
+    console.log('❌ [EDITAR-CAIXA] Edição cancelada, posição restaurada');
+    alert('Edição cancelada. Posição original restaurada.');
+  }
   
 
 
