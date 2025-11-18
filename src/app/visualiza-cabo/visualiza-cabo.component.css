@@ -558,7 +558,15 @@
   .visualiza-cabo-container {
     max-width: 98vw;
     max-height: 95vh;
+    height: auto; /* Mudar de altura fixa para auto */
+    min-height: 60vh; /* Altura mínima para garantir espaço */
     padding: 8px;
+    overflow: auto; /* Mudar de hidden para auto para permitir scroll */
+  }
+  
+  .modal-content {
+    overflow: auto; /* Garantir que o conteúdo seja scrollável */
+    max-height: calc(95vh - 80px); /* Altura máxima menos header */
   }
   
   .modal-header {
@@ -571,6 +579,7 @@
     align-items: center;
     gap: 8px;
     max-width: 95vw;
+    overflow: visible; /* Garantir visibilidade */
   }
   
   .buttons-container {
@@ -602,6 +611,10 @@
   .cabo-flex-grid {
     order: 3;
     max-width: 95vw;
+    width: 100%; /* Garantir largura total */
+    min-width: 0; /* Permitir que encolha se necessário */
+    overflow-x: auto; /* Permitir scroll horizontal se necessário */
+    display: block; /* Garantir que seja exibido */
   }
   
   .grid-row {
@@ -645,7 +658,15 @@
   .visualiza-cabo-container {
     max-width: 100vw;
     max-height: 100vh;
+    height: auto; /* Mudar de altura fixa para auto */
+    min-height: 60vh; /* Altura mínima para garantir espaço */
     padding: 4px;
+    overflow: auto; /* Mudar de hidden para auto para permitir scroll */
+  }
+  
+  .modal-content {
+    overflow: auto; /* Garantir que o conteúdo seja scrollável */
+    max-height: calc(100vh - 80px); /* Altura máxima menos header */
   }
   
   .modal-header {
@@ -656,6 +677,7 @@
   .main-container {
     gap: 5px;
     max-width: 100vw;
+    overflow: visible; /* Garantir visibilidade */
   }
   
   .buttons-container {
@@ -680,6 +702,10 @@
   
   .cabo-flex-grid {
     max-width: 100vw;
+    width: 100%; /* Garantir largura total */
+    min-width: 0; /* Permitir que encolha se necessário */
+    overflow-x: auto; /* Permitir scroll horizontal se necessário */
+    display: block; /* Garantir que seja exibido */
   }
   
   .grid-row {
@@ -713,13 +739,22 @@
 @media (max-width: 768px) and (orientation: landscape) {
   .visualiza-cabo-container {
     max-height: 100vh;
+    height: auto; /* Mudar de altura fixa para auto */
+    min-height: 60vh; /* Altura mínima para garantir espaço */
     padding: 2px;
+    overflow: auto; /* Mudar de hidden para auto para permitir scroll */
+  }
+  
+  .modal-content {
+    overflow: auto; /* Garantir que o conteúdo seja scrollável */
+    max-height: calc(100vh - 60px); /* Altura máxima menos header */
   }
   
   .main-container {
     flex-direction: row;
     flex-wrap: wrap;
     gap: 3px;
+    overflow: visible; /* Garantir visibilidade */
   }
   
   .buttons-container {
@@ -736,6 +771,10 @@
     order: 3;
     flex: 1;
     min-width: 200px;
+    width: 100%; /* Garantir largura total */
+    min-width: 0; /* Permitir que encolha se necessário */
+    overflow-x: auto; /* Permitir scroll horizontal se necessário */
+    display: block; /* Garantir que seja exibido */
   }
   
   .options-panel-right {
@@ -769,12 +808,24 @@
 /* Telas muito pequenas (até 320px) */
 @media (max-width: 320px) {
   .visualiza-cabo-container {
+    height: auto; /* Mudar de altura fixa para auto */
+    min-height: 60vh; /* Altura mínima para garantir espaço */
     padding: 2px;
+    overflow: auto; /* Mudar de hidden para auto para permitir scroll */
+  }
+  
+  .modal-content {
+    overflow: auto; /* Garantir que o conteúdo seja scrollável */
+    max-height: calc(100vh - 60px); /* Altura máxima menos header */
   }
   
   .modal-header {
     padding: 4px 6px;
     font-size: 0.7rem;
+  }
+  
+  .main-container {
+    overflow: visible; /* Garantir visibilidade */
   }
   
   .fiber-button {
@@ -786,6 +837,13 @@
     width: 120px;
     font-size: 0.6rem;
     padding: 1px;
+  }
+  
+  .cabo-flex-grid {
+    width: 100%; /* Garantir largura total */
+    min-width: 0; /* Permitir que encolha se necessário */
+    overflow-x: auto; /* Permitir scroll horizontal se necessário */
+    display: block; /* Garantir que seja exibido */
   }
   
   .grid-row {
