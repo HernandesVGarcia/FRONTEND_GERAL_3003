@@ -602,16 +602,27 @@
   }
   
   .fiber-button {
-    width: 18px;
-    height: 18px;
+    width: 40px; /* Manter tamanho original para manter proporções */
+    height: 14px; /* Manter proporção */
   }
   
   .pontas-header {
-    max-width: 95vw;
+    max-width: 100%; /* Remover max-width ou aumentar */
+    width: 100%;
     height: 25px;
+    position: relative;
   }
   
-  .ponta-a, .ponta-b {
+  .ponta-a {
+    left: 84px; /* Posicionar após os botões da esquerda */
+    width: 180px;
+    font-size: 0.8rem;
+    padding: 3px;
+  }
+  
+  .ponta-b {
+    right: 84px; /* Posicionar antes dos botões da direita */
+    left: auto; /* Garantir que não use left */
     width: 180px;
     font-size: 0.8rem;
     padding: 3px;
@@ -619,7 +630,7 @@
   
   .cabo-flex-grid {
     flex: 1; /* Ocupar espaço restante proporcionalmente */
-    min-width: 250px; /* Largura mínima menor no mobile */
+    min-width: 600px; /* Aumentar para manter proporções das células */
     max-width: none; /* Remover max-width no mobile para permitir expansão */
     overflow-x: auto; /* Permitir scroll horizontal se necessário */
     display: block; /* Garantir que seja exibido */
@@ -630,6 +641,9 @@
     height: 12px;
     line-height: 12px;
     font-size: 0.7rem;
+    /* Manter grid-template-columns igual ao desktop */
+    grid-template-columns: 
+      0.5fr 0.25fr 1.6fr 60px 1.6fr 0.25fr 0.5fr; /* Mesmo do desktop */
   }
   
   .options-panel-right {
@@ -703,16 +717,27 @@
   }
   
   .fiber-button {
-    width: 16px;
-    height: 16px;
+    width: 40px; /* Manter tamanho original para manter proporções */
+    height: 14px; /* Manter proporção */
   }
   
   .pontas-header {
-    max-width: 100vw;
+    max-width: 100%; /* Remover max-width ou aumentar */
+    width: 100%;
     height: 22px;
+    position: relative;
   }
   
-  .ponta-a, .ponta-b {
+  .ponta-a {
+    left: 84px; /* Posicionar após os botões da esquerda */
+    width: 150px;
+    font-size: 0.7rem;
+    padding: 2px;
+  }
+  
+  .ponta-b {
+    right: 84px; /* Posicionar antes dos botões da direita */
+    left: auto; /* Garantir que não use left */
     width: 150px;
     font-size: 0.7rem;
     padding: 2px;
@@ -720,7 +745,7 @@
   
   .cabo-flex-grid {
     flex: 1; /* Ocupar espaço restante proporcionalmente */
-    min-width: 200px; /* Largura mínima ainda menor */
+    min-width: 600px; /* Aumentar para manter proporções das células */
     max-width: none; /* Remover max-width no mobile para permitir expansão */
     overflow-x: auto; /* Permitir scroll horizontal se necessário */
     display: block; /* Garantir que seja exibido */
@@ -731,6 +756,9 @@
     height: 10px;
     line-height: 10px;
     font-size: 0.6rem;
+    /* Manter grid-template-columns igual ao desktop */
+    grid-template-columns: 
+      0.5fr 0.25fr 1.6fr 60px 1.6fr 0.25fr 0.5fr; /* Mesmo do desktop */
   }
   
   .options-panel-right {
@@ -805,11 +833,17 @@
   
   .cabo-flex-grid {
     flex: 1; /* Ocupar espaço restante proporcionalmente */
-    min-width: 200px;
+    min-width: 600px; /* Aumentar para manter proporções das células */
     max-width: none; /* Remover max-width no mobile para permitir expansão */
     overflow-x: auto; /* Permitir scroll horizontal se necessário */
     display: block; /* Garantir que seja exibido */
     order: 0; /* Remover order - manter ordem natural */
+  }
+  
+  .grid-row {
+    /* Manter grid-template-columns igual ao desktop */
+    grid-template-columns: 
+      0.5fr 0.25fr 1.6fr 60px 1.6fr 0.25fr 0.5fr; /* Mesmo do desktop */
   }
   
   .options-panel-right {
@@ -879,11 +913,27 @@
   }
   
   .fiber-button {
-    width: 14px;
-    height: 14px;
+    width: 40px; /* Manter tamanho original para manter proporções */
+    height: 14px; /* Manter proporção */
   }
   
-  .ponta-a, .ponta-b {
+  .pontas-header {
+    max-width: 100%; /* Remover max-width ou aumentar */
+    width: 100%;
+    height: 22px;
+    position: relative;
+  }
+  
+  .ponta-a {
+    left: 84px; /* Posicionar após os botões da esquerda */
+    width: 120px;
+    font-size: 0.6rem;
+    padding: 1px;
+  }
+  
+  .ponta-b {
+    right: 84px; /* Posicionar antes dos botões da direita */
+    left: auto; /* Garantir que não use left */
     width: 120px;
     font-size: 0.6rem;
     padding: 1px;
@@ -891,7 +941,7 @@
   
   .cabo-flex-grid {
     flex: 1; /* Ocupar espaço restante proporcionalmente */
-    min-width: 150px; /* Largura mínima para telas muito pequenas */
+    min-width: 600px; /* Aumentar para manter proporções das células */
     max-width: none; /* Remover max-width no mobile para permitir expansão */
     overflow-x: auto; /* Permitir scroll horizontal se necessário */
     display: block; /* Garantir que seja exibido */
@@ -902,6 +952,9 @@
     height: 8px;
     line-height: 8px;
     font-size: 0.5rem;
+    /* Manter grid-template-columns igual ao desktop */
+    grid-template-columns: 
+      0.5fr 0.25fr 1.6fr 60px 1.6fr 0.25fr 0.5fr; /* Mesmo do desktop */
   }
   
   .options-panel-right {
