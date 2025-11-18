@@ -157,4 +157,13 @@ export class MapTracerButtonsComponent implements OnInit {
     this.showCityModal = false;
     window.location.reload();
   }
+
+  /**
+   * 🔧 Método helper para detectar se está em dispositivo mobile
+   */
+  isMobile(): boolean {
+    return 'ontouchstart' in window || 
+           navigator.maxTouchPoints > 0 || 
+           window.innerWidth <= 768;
+  }
 }

@@ -51,7 +51,7 @@
 </app-city-select-modal>
 
 <!-- Desenha Cabo -->
-<div class="group">
+<div class="group" *ngIf="!isMobile()">
     <button 
       class="map-tracer-button desenha-cabo"
       (click)="onDesenhaCabo()"
@@ -62,7 +62,7 @@
   </div>
 
   <!-- Finaliza Cabo -->
-  <div class="group">
+  <div class="group" *ngIf="!isMobile()">
     <button 
       class="map-tracer-button finaliza-cabo"
       (click)="onFinalizaCabo()"
@@ -73,7 +73,7 @@
   </div>
 
   <!-- Desenha Polígono -->
-  <div class="group">
+  <div class="group" *ngIf="!isMobile()">
     <button 
       class="map-tracer-button desenha-poligono"
       (click)="onDesenhaPoligono()"
@@ -84,7 +84,7 @@
   </div>
 
   <!-- Finaliza Polígono -->
-  <div class="group">
+  <div class="group" *ngIf="!isMobile()">
     <button 
       class="map-tracer-button finaliza-poligono"
       (click)="onFinalizaPoligono()"

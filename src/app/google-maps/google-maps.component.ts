@@ -403,7 +403,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
             this.touchStartPosition = { x: touch.clientX, y: touch.clientY };
 
             this.longPressTimer = setTimeout(() => {
-              console.log('📱 [MOBILE] Long press no mapa - simulando right-click');
+              console.log('📱 [MOBILE] Long press no mapa detectado - context menu desabilitado no mobile');
               
               // Verificar se o toque foi no mapa mesmo
               if (event.domEvent && event.domEvent.target) {
@@ -420,14 +420,14 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
                 if (isMapClick && !isInGoJSModal) {
                   // 🛡️ Verificar se há edição em andamento e cancelar
                   if (this.isEditingCabo || this.isIniciandoEdicao) {
-                    console.log('⚠️ [EDITAR-CABO] Context menu do mapa detectado durante edição. Cancelando edição...');
+                    console.log('⚠️ [EDITAR-CABO] Long press no mapa durante edição. Cancelando edição...');
                     this.cancelarEdicaoCabo();
                     return;
                   }
                   
-                  // Chamar handler de right-click do mapa
-                  this.contextMenuType = 'map';
-                  this.showContextMenu(touch.clientX, touch.clientY);
+                  // 🔧 Context menu do mapa desabilitado no mobile - não abrir
+                  // this.contextMenuType = 'map';
+                  // this.showContextMenu(touch.clientX, touch.clientY);
                 }
               }
             }, this.LONG_PRESS_DURATION);
@@ -4342,14 +4342,46 @@ private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = fal
     if (isCTO) {
       const index = this.markerCtos.indexOf(marker);
       if (index !== -1) {
-        this.onMarkerClick(event, index,true,false,false,false,false);        
-      }}
-
-      else if (isCTOSP) {      
+        // 🔧 NOVO: Em mobile, abrir context menu em vez da ação padrão
+        if (this.isMobile()) {
+          console.log('📱 [MOBILE] Double tap em CTO - abrindo context menu');
+          const cto = this.destinoCTO[index];
+          this.clickedCTOData = cto;
+          this.clickedCaixaData = null;
+          this.clickedCTOSPData = null;
+          this.contextMenuType = 'caixa'; // CTOs usam o mesmo menu de caixa
+          
+          if (event.domEvent) {
+            const mouseEvent = event.domEvent as MouseEvent;
+            this.showContextMenu(mouseEvent.clientX, mouseEvent.clientY);
+          }
+        } else {
+          // Desktop: comportamento padrão
+          this.onMarkerClick(event, index, true, false, false, false, false);
+        }
+      }
+    } else if (isCTOSP) {
       const index = this.markerCtosSP.indexOf(marker);
       if (index !== -1) {
-        this.onMarkerClick(event, index,false,true,false,false,false);
-      }}
+        // 🔧 NOVO: Em mobile, abrir context menu em vez da ação padrão
+        if (this.isMobile()) {
+          console.log('📱 [MOBILE] Double tap em CTO_SP - abrindo context menu');
+          const ctosp = this.destinoCTOSP[index];
+          this.clickedCTOSPData = ctosp;
+          this.clickedCaixaData = null;
+          this.clickedCTOData = null;
+          this.contextMenuType = 'caixa'; // CTOs_SP usam o mesmo menu de caixa
+          
+          if (event.domEvent) {
+            const mouseEvent = event.domEvent as MouseEvent;
+            this.showContextMenu(mouseEvent.clientX, mouseEvent.clientY);
+          }
+        } else {
+          // Desktop: comportamento padrão
+          this.onMarkerClick(event, index, false, true, false, false, false);
+        }
+      }
+    }
       
       else if (isCLI) {      
         const index = this.markerPopsCli.indexOf(marker);
@@ -5272,6 +5304,28 @@ openGoJSModal() {
           // Fechar InfoWindow se estiver aberto
           infoWindow.close();
           
+          // 🔧 NOVO: Em mobile, abrir context menu em vez de editar
+          if (this.isMobile()) {
+            console.log('📱 [MOBILE] Double tap no cabo - abrindo context menu');
+            this.contextMenuType = 'cabo';
+            this.clickedPolyline = polyline;
+            this.clickedCaboData = {
+              id_meta: cabo.id_meta,
+              capacidade: cabo.capacidade || polyline.get('capacidade'),
+              tipo: cabo.tipo || polyline.get('tipo') || tipoFibra,
+              Label_cabo: cabo.Label_cabo || polyline.get('label') || polyline.get('Label_cabo'),
+              GOOGLE_LATLNG: cabo.GOOGLE_LATLNG || polyline.get('GOOGLE_LATLNG'),
+              cabo_data: cabo.cabo_data || polyline.get('cabo_data')
+            };
+            
+            if (event.domEvent) {
+              const mouseEvent = event.domEvent as MouseEvent;
+              this.showContextMenu(mouseEvent.clientX, mouseEvent.clientY);
+            }
+            return;
+          }
+          
+          // Desktop: comportamento padrão (editar cabo)
           // 🛡️ Verificar se já existe uma edição em andamento
           if (this.isEditingCabo || this.isIniciandoEdicao) {
             console.log('⚠️ [EDITAR-CABO] Edição em andamento detectada no dblclick. Finalizando edição anterior...');
@@ -5877,6 +5931,21 @@ openGoJSModal() {
         clickTimeout = null;
       }
       
+      // 🔧 NOVO: Em mobile, abrir context menu em vez de editar
+      if (this.isMobile()) {
+        console.log('📱 [MOBILE] Double tap no cabo desenhado (temp) - abrindo context menu');
+        this.contextMenuType = 'cabo';
+        this.clickedPolyline = this.caboDesenhado;
+        this.clickedCaboData = caboData;
+        
+        if (event.domEvent) {
+          const mouseEvent = event.domEvent as MouseEvent;
+          this.showContextMenu(mouseEvent.clientX, mouseEvent.clientY);
+        }
+        return;
+      }
+      
+      // Desktop: comportamento padrão (editar cabo)
       // 🛡️ Verificar se já existe uma edição em andamento
       if (this.isEditingCabo || this.isIniciandoEdicao) {
         console.log('⚠️ [EDITAR-CABO] Edição em andamento detectada no dblclick. Finalizando edição anterior...');
@@ -6158,6 +6227,21 @@ openGoJSModal() {
         clickTimeout = null;
       }
       
+      // 🔧 NOVO: Em mobile, abrir context menu em vez de editar
+      if (this.isMobile()) {
+        console.log('📱 [MOBILE] Double tap no cabo desenhado - abrindo context menu');
+        this.contextMenuType = 'cabo';
+        this.clickedPolyline = this.caboDesenhado;
+        this.clickedCaboData = caboData;
+        
+        if (event.domEvent) {
+          const mouseEvent = event.domEvent as MouseEvent;
+          this.showContextMenu(mouseEvent.clientX, mouseEvent.clientY);
+        }
+        return;
+      }
+      
+      // Desktop: comportamento padrão (editar cabo)
       // 🛡️ Verificar se já existe uma edição em andamento
       if (this.isEditingCabo || this.isIniciandoEdicao) {
         console.log('⚠️ [EDITAR-CABO] Edição em andamento detectada no dblclick. Finalizando edição anterior...');
