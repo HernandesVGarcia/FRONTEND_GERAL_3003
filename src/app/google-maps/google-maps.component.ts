@@ -4370,9 +4370,28 @@ private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = fal
             }}        
 
       else {
+      // É uma caixa
       const index = this.markerCaixas.indexOf(marker);
       if (index !== -1) {
-        this.onMarkerClick(event, index,false,false,false,false,false);} }
+        // 🔧 NOVO: Em mobile, abrir context menu em vez da ação padrão
+        if (this.isMobile()) {
+          console.log('📱 [MOBILE] Double tap em caixa - abrindo context menu');
+          const caixa = this.destino[index];
+          this.clickedCaixaData = caixa;
+          this.clickedCTOData = null;
+          this.clickedCTOSPData = null;
+          this.contextMenuType = 'caixa';
+          
+          if (event.domEvent) {
+            const mouseEvent = event.domEvent as MouseEvent;
+            this.showContextMenu(mouseEvent.clientX, mouseEvent.clientY);
+          }
+        } else {
+          // Desktop: comportamento padrão
+          this.onMarkerClick(event, index, false, false, false, false, false);
+        }
+      }
+    }
 
         
     });
@@ -4509,9 +4528,16 @@ private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = fal
 
   // 🔧 NOTA: Touch events para caixas são tratados no listener global do mapa (setupContextMenuListener)
   // Isso permite detectar toques próximos a caixas usando coordenadas geográficas
-
-  
 }
+
+  /**
+   * 🔧 Método helper para detectar se está em dispositivo mobile
+   */
+  private isMobile(): boolean {
+    return 'ontouchstart' in window || 
+           navigator.maxTouchPoints > 0 || 
+           window.innerWidth <= 768;
+  }
 
   /**
    * 🔧 NOVO: Método auxiliar para tratar right-click em markers (reutilizável para desktop e mobile)
