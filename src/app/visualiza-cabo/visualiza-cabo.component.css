@@ -140,6 +140,9 @@
   flex-direction: row;
   gap: 2px;
   flex-shrink: 0;
+  width: 84px; /* Largura fixa: 2 colunas de 40px cada + gap de 2px */
+  min-width: 84px; /* Garantir largura mínima */
+  max-width: 84px; /* Garantir largura máxima */
 }
 
 /* Coluna de botões */
@@ -339,8 +342,9 @@
   border: 1.5px solid #000;
   border-radius: 2px;
   overflow: visible; /* Permitir tooltips saírem do container */
-  width: 100%;
-  max-width: 800px; /* Reduzido para corresponder às pontas */
+  flex: 1; /* Ocupar espaço restante proporcionalmente */
+  min-width: 300px; /* Largura mínima */
+  max-width: 800px; /* Largura máxima */
 }
 
 /* Grid Rows - 12 linhas sem cabeçalho, altura reduzida */
@@ -586,6 +590,9 @@
   
   .buttons-container {
     flex-shrink: 0; /* Não encolher */
+    width: 84px; /* Manter largura fixa */
+    min-width: 84px;
+    max-width: 84px;
     order: 0; /* Remover order - manter ordem natural */
     gap: 1px;
   }
@@ -611,10 +618,9 @@
   }
   
   .cabo-flex-grid {
-    flex-shrink: 1; /* Pode encolher um pouco */
-    min-width: 300px; /* Largura mínima */
-    max-width: 95vw;
-    width: 100%; /* Garantir largura total */
+    flex: 1; /* Ocupar espaço restante proporcionalmente */
+    min-width: 250px; /* Largura mínima menor no mobile */
+    max-width: none; /* Remover max-width no mobile para permitir expansão */
     overflow-x: auto; /* Permitir scroll horizontal se necessário */
     display: block; /* Garantir que seja exibido */
     order: 0; /* Remover order - manter ordem natural */
@@ -689,6 +695,9 @@
   
   .buttons-container {
     flex-shrink: 0; /* Não encolher */
+    width: 84px; /* Manter largura fixa */
+    min-width: 84px;
+    max-width: 84px;
     order: 0; /* Remover order - manter ordem natural */
     gap: 0px;
   }
@@ -710,10 +719,9 @@
   }
   
   .cabo-flex-grid {
-    flex-shrink: 1; /* Pode encolher um pouco */
-    min-width: 250px; /* Largura mínima menor */
-    max-width: 100vw;
-    width: 100%; /* Garantir largura total */
+    flex: 1; /* Ocupar espaço restante proporcionalmente */
+    min-width: 200px; /* Largura mínima ainda menor */
+    max-width: none; /* Remover max-width no mobile para permitir expansão */
     overflow-x: auto; /* Permitir scroll horizontal se necessário */
     display: block; /* Garantir que seja exibido */
     order: 0; /* Remover order - manter ordem natural */
@@ -783,6 +791,9 @@
   
   .buttons-container {
     flex-shrink: 0; /* Não encolher */
+    width: 84px; /* Manter largura fixa */
+    min-width: 84px;
+    max-width: 84px;
     order: 0; /* Remover order - manter ordem natural */
   }
   
@@ -793,9 +804,9 @@
   }
   
   .cabo-flex-grid {
-    flex-shrink: 1; /* Pode encolher um pouco */
+    flex: 1; /* Ocupar espaço restante proporcionalmente */
     min-width: 200px;
-    width: 100%; /* Garantir largura total */
+    max-width: none; /* Remover max-width no mobile para permitir expansão */
     overflow-x: auto; /* Permitir scroll horizontal se necessário */
     display: block; /* Garantir que seja exibido */
     order: 0; /* Remover order - manter ordem natural */
@@ -861,6 +872,9 @@
   
   .buttons-container {
     flex-shrink: 0; /* Não encolher */
+    width: 84px; /* Manter largura fixa */
+    min-width: 84px;
+    max-width: 84px;
     order: 0; /* Remover order - manter ordem natural */
   }
   
@@ -876,9 +890,9 @@
   }
   
   .cabo-flex-grid {
-    flex-shrink: 1; /* Pode encolher um pouco */
-    min-width: 200px; /* Largura mínima */
-    width: 100%; /* Garantir largura total */
+    flex: 1; /* Ocupar espaço restante proporcionalmente */
+    min-width: 150px; /* Largura mínima para telas muito pequenas */
+    max-width: none; /* Remover max-width no mobile para permitir expansão */
     overflow-x: auto; /* Permitir scroll horizontal se necessário */
     display: block; /* Garantir que seja exibido */
     order: 0; /* Remover order - manter ordem natural */
