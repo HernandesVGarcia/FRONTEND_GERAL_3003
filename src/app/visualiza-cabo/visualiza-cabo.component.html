@@ -30,16 +30,18 @@
 
   <!-- Content -->
   <div *ngIf="!isLoading && !errorMessage" class="modal-content">
-    <!-- Títulos das pontas -->
-    <div class="pontas-header">
-      <div class="ponta-a">PONTA A</div>
-      <div class="ponta-b">PONTA B</div>
-    </div>
-    
     <!-- Container principal com botões e grid -->
     <div class="main-container">
-      <!-- Colunas de botões à esquerda -->
-      <div class="buttons-container">
+      <!-- Títulos das pontas (movido para dentro do main-container para scroll sincronizado) -->
+      <div class="pontas-header">
+        <div class="ponta-a">PONTA A</div>
+        <div class="ponta-b">PONTA B</div>
+      </div>
+      
+      <!-- Container interno para botões e grid (linha horizontal) -->
+      <div class="main-container-inner">
+        <!-- Colunas de botões à esquerda -->
+        <div class="buttons-container">
         <!-- Primeira coluna - FIBRA_ESM -->
         <div class="button-column">
           <button 
