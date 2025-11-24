@@ -36,6 +36,7 @@ import { CompartilhamentoService, CaixaData, ClienteData } from '../servico/comp
 import { KmlExportService } from '../servico/kml-export.service';
 import { InsertCaboService } from '../servico/insert-cabo.service';
 import { UpdateCaboService } from '../servico/update-cabo.service';
+import { UpdateCaixaService } from '../servico/update-caixa.service';
 import { Subject, takeUntil } from 'rxjs';
 
 import { MatDialog } from '@angular/material/dialog';
@@ -44,6 +45,9 @@ import { VisualizaDioComponent } from '../visualiza-dio/visualiza-dio.component'
 import { VisualizaCaboComponent } from '../visualiza-cabo/visualiza-cabo.component';
 import { GraphvizModalComponent } from '../graphviz-modal/graphviz-modal.component';
 import { ConexaoCaboCaixaEmendaComponent, ConexaoCaboCaixaEmendaData } from '../conexao-cabo-caixa-emenda/conexao-cabo-caixa-emenda.component';
+import { BocasService } from '../servico/bocas.service';
+import { Bocas } from '../modelo/Bocas';
+import { firstValueFrom } from 'rxjs';
 
 //import { Cto_SP } from '../modelo/Cto_SP';
 //import { GoogleInfoWindowComponent } from '../google-infowindow/google-infowindow.component';
@@ -319,6 +323,8 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
     private kmlExportService: KmlExportService,
     private insertCaboService: InsertCaboService,
     private updateCaboService: UpdateCaboService,
+    private updateCaixaService: UpdateCaixaService,
+    private bocasService: BocasService,
     private dialog: MatDialog
   ) {}
 
@@ -4751,6 +4757,12 @@ private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = fal
     this.caixaEmEdicaoIndex = index;
     this.caixaEmEdicaoTipo = 'caixa';
 
+    // 🆕 Salvar id_meta da caixa no authService para buscar cabos conectados
+    if (caixa.id_meta) {
+      this.authService.setIDmetaCaixa(caixa.id_meta);
+      console.log('💾 [EDITAR-CAIXA] ID_META salvo no authService:', caixa.id_meta);
+    }
+
     console.log('✅ [EDITAR-CAIXA] Edição habilitada para caixa:', caixa.numero);
     //alert(`✅ Modo de edição ativado!\n\nCaixa: ${caixa.numero}\n\nArraste a caixa para mover.\nClique no mapa para salvar ou pressione ESC para cancelar.`);
 
@@ -4824,8 +4836,14 @@ private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = fal
     this.caixaEmEdicaoIndex = index;
     this.caixaEmEdicaoTipo = 'cto';
 
+    // 🆕 Salvar id_meta da CTO no authService para buscar cabos conectados
+    if (cto.id_meta) {
+      this.authService.setIDmetaCaixa(cto.id_meta);
+      console.log('💾 [EDITAR-CTO] ID_META salvo no authService:', cto.id_meta);
+    }
+
     console.log('✅ [EDITAR-CTO] Edição habilitada para CTO:', cto.numero);
-    alert(`✅ Modo de edição ativado!\n\nCTO: ${cto.numero}\n\nArraste a CTO para mover.\nClique no mapa para salvar ou pressione ESC para cancelar.`);
+    //alert(`✅ Modo de edição ativado!\n\nCTO: ${cto.numero}\n\nArraste a CTO para mover.\nClique no mapa para salvar ou pressione ESC para cancelar.`);
 
     // Adicionar listener para salvar ao clicar no mapa
     if (this.map && !this.listenerMapaSalvarCaixa) {
@@ -4897,8 +4915,14 @@ private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = fal
     this.caixaEmEdicaoIndex = index;
     this.caixaEmEdicaoTipo = 'ctosp';
 
+    // 🆕 Salvar id_meta da CTO_SP no authService para buscar cabos conectados
+    if (ctosp.id_meta) {
+      this.authService.setIDmetaCaixa(ctosp.id_meta);
+      console.log('💾 [EDITAR-CTOSP] ID_META salvo no authService:', ctosp.id_meta);
+    }
+
     console.log('✅ [EDITAR-CTOSP] Edição habilitada para CTO_SP:', ctosp.numero);
-    alert(`✅ Modo de edição ativado!\n\nCTO_SP: ${ctosp.numero}\n\nArraste a CTO_SP para mover.\nClique no mapa para salvar ou pressione ESC para cancelar.`);
+    //alert(`✅ Modo de edição ativado!\n\nCTO_SP: ${ctosp.numero}\n\nArraste a CTO_SP para mover.\nClique no mapa para salvar ou pressione ESC para cancelar.`);
 
     // Adicionar listener para salvar ao clicar no mapa
     if (this.map && !this.listenerMapaSalvarCaixa) {
@@ -4974,35 +4998,377 @@ private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = fal
     // Atualizar baseado no tipo
     if (this.caixaEmEdicaoTipo === 'caixa') {
       const caixa = this.destino[this.caixaEmEdicaoIndex];
+            
+      // Verificar se tem id_meta
+      if (!caixa.id_meta) {
+        console.error('❌ [EDITAR-CAIXA] ID_META não encontrado na caixa');
+        alert('❌ Erro: ID_META da caixa não encontrado!');
+        return;
+      }
+
+      // Atualizar coordenadas localmente
       caixa.LAT = newLat as any;
       caixa.LONGI = newLng as any;
       
-      // TODO: Chamar serviço para atualizar coordenadas no banco
-      // Exemplo: this.caixaService.atualizarCoordenadas(caixa.id_meta, newLat, newLng)
-      
-      //alert(`✅ Posição da caixa ${caixa.numero} atualizada!\n\nLat: ${newLat.toFixed(6)}\nLng: ${newLng.toFixed(6)}`);
+    // Chamar serviço para atualizar coordenadas no banco
+    this.updateCaixaService.atualizarCoordenadas({
+      ID_META: caixa.id_meta,
+      lat: newLat,
+      lng: newLng
+    }).subscribe({
+      next: (response) => {
+        console.log('✅ [EDITAR-CAIXA] Coordenadas atualizadas com sucesso:', response);
+        
+        // 🆕 Atualizar cabos conectados à caixa (apenas se tiver id_meta)
+        if (caixa.id_meta) {
+          const novaCoordenada = new google.maps.LatLng(newLat, newLng);
+          this.atualizarCabosConectadosACaixa(caixa.id_meta, novaCoordenada)
+            .then(() => {
+              console.log('✅ [EDITAR-CAIXA] Cabos conectados atualizados');
+            })
+            .catch((error) => {
+              console.error('❌ [EDITAR-CAIXA] Erro ao atualizar cabos:', error);
+            });
+        }
+        
+        // Mostrar alerta com id_meta quando a caixa for movimentada
+       // alert(`📦 Caixa movimentada!\n\n🆔 ID_META: ${caixa.id_meta}\n\n✅ ${response.message}`);
+        // Desabilitar edição após sucesso
+        this.desabilitarEdicaoCaixa();
+      },
+      error: (error) => {
+        console.error('❌ [EDITAR-CAIXA] Erro ao atualizar coordenadas:', error);
+        // Reverter coordenadas em caso de erro
+        if (this.caixaEmEdicao) {
+          const originalPos = this.caixaEmEdicaoOriginalPosition;
+          if (originalPos) {
+            this.caixaEmEdicao.setPosition({
+              lat: originalPos.lat,
+              lng: originalPos.lng
+            });
+            caixa.LAT = originalPos.lat as any;
+            caixa.LONGI = originalPos.lng as any;
+          }
+        }
+        alert(`❌ Erro ao atualizar coordenadas da caixa!\n\n🆔 ID_META: ${caixa.id_meta}\n\nErro: ${error.message}`);
+        // Desabilitar edição mesmo em caso de erro (para não ficar travado)
+        this.desabilitarEdicaoCaixa();
+      }
+    });
+    
+    // Retornar aqui para não desabilitar edição antes da requisição terminar
+    return;
     } else if (this.caixaEmEdicaoTipo === 'cto') {
       const cto = this.destinoCTO[this.caixaEmEdicaoIndex];
+      
+      // Verificar se tem id_meta
+      if (!cto.id_meta) {
+        console.error('❌ [EDITAR-CTO] ID_META não encontrado na CTO');
+        alert('❌ Erro: ID_META da CTO não encontrado!');
+        return;
+      }
+
+      // Atualizar coordenadas localmente
       cto.LAT = newLat as any;
       cto.LONGI = newLng as any;
       
-      // TODO: Chamar serviço para atualizar coordenadas no banco
-      // Exemplo: this.ctoService.atualizarCoordenadas(cto.id_meta, newLat, newLng)
+      // Chamar serviço para atualizar coordenadas no banco
+      this.updateCaixaService.atualizarCoordenadas({
+        ID_META: cto.id_meta,
+        lat: newLat,
+        lng: newLng
+      }).subscribe({
+        next: (response) => {
+          console.log('✅ [EDITAR-CTO] Coordenadas atualizadas com sucesso:', response);
+          
+          // 🆕 Atualizar cabos conectados à CTO (apenas se tiver id_meta)
+          if (cto.id_meta) {
+            const novaCoordenada = new google.maps.LatLng(newLat, newLng);
+            this.atualizarCabosConectadosACaixa(cto.id_meta, novaCoordenada)
+              .then(() => {
+                console.log('✅ [EDITAR-CTO] Cabos conectados atualizados');
+              })
+              .catch((error) => {
+                console.error('❌ [EDITAR-CTO] Erro ao atualizar cabos:', error);
+              });
+          }
+          
+          // Mostrar alerta com id_meta quando a CTO for movimentada
+          // alert(`📦 CTO movimentada!\n\n🆔 ID_META: ${cto.id_meta}\n\n✅ ${response.message}`);
+          // Desabilitar edição após sucesso
+          this.desabilitarEdicaoCaixa();
+        },
+        error: (error) => {
+          console.error('❌ [EDITAR-CTO] Erro ao atualizar coordenadas:', error);
+          // Reverter coordenadas em caso de erro
+          if (this.caixaEmEdicao) {
+            const originalPos = this.caixaEmEdicaoOriginalPosition;
+            if (originalPos) {
+              this.caixaEmEdicao.setPosition({
+                lat: originalPos.lat,
+                lng: originalPos.lng
+              });
+              cto.LAT = originalPos.lat as any;
+              cto.LONGI = originalPos.lng as any;
+            }
+          }
+          alert(`❌ Erro ao atualizar coordenadas da CTO!\n\n🆔 ID_META: ${cto.id_meta}\n\nErro: ${error.message}`);
+          // Desabilitar edição mesmo em caso de erro (para não ficar travado)
+          this.desabilitarEdicaoCaixa();
+        }
+      });
       
-      //alert(`✅ Posição da CTO ${cto.numero} atualizada!\n\nLat: ${newLat.toFixed(6)}\nLng: ${newLng.toFixed(6)}`);
+      // Retornar aqui para não desabilitar edição antes da requisição terminar
+      return;
     } else if (this.caixaEmEdicaoTipo === 'ctosp') {
       const ctosp = this.destinoCTOSP[this.caixaEmEdicaoIndex];
+      
+      // Verificar se tem id_meta
+      if (!ctosp.id_meta) {
+        console.error('❌ [EDITAR-CTOSP] ID_META não encontrado na CTO_SP');
+        alert('❌ Erro: ID_META da CTO_SP não encontrado!');
+        return;
+      }
+
+      // Atualizar coordenadas localmente
       ctosp.LAT = newLat as any;
       ctosp.LONGI = newLng as any;
       
-      // TODO: Chamar serviço para atualizar coordenadas no banco
-      // Exemplo: this.ctospService.atualizarCoordenadas(ctosp.id_meta, newLat, newLng)
+      // Chamar serviço para atualizar coordenadas no banco
+      this.updateCaixaService.atualizarCoordenadas({
+        ID_META: ctosp.id_meta,
+        lat: newLat,
+        lng: newLng
+      }).subscribe({
+        next: (response) => {
+          console.log('✅ [EDITAR-CTOSP] Coordenadas atualizadas com sucesso:', response);
+          
+          // 🆕 Atualizar cabos conectados à CTO_SP (apenas se tiver id_meta)
+          if (ctosp.id_meta) {
+            const novaCoordenada = new google.maps.LatLng(newLat, newLng);
+            this.atualizarCabosConectadosACaixa(ctosp.id_meta, novaCoordenada)
+              .then(() => {
+                console.log('✅ [EDITAR-CTOSP] Cabos conectados atualizados');
+              })
+              .catch((error) => {
+                console.error('❌ [EDITAR-CTOSP] Erro ao atualizar cabos:', error);
+              });
+          }
+          
+          // Mostrar alerta com id_meta quando a CTO_SP for movimentada
+          // alert(`📦 CTO_SP movimentada!\n\n🆔 ID_META: ${ctosp.id_meta}\n\n✅ ${response.message}`);
+          // Desabilitar edição após sucesso
+          this.desabilitarEdicaoCaixa();
+        },
+        error: (error) => {
+          console.error('❌ [EDITAR-CTOSP] Erro ao atualizar coordenadas:', error);
+          // Reverter coordenadas em caso de erro
+          if (this.caixaEmEdicao) {
+            const originalPos = this.caixaEmEdicaoOriginalPosition;
+            if (originalPos) {
+              this.caixaEmEdicao.setPosition({
+                lat: originalPos.lat,
+                lng: originalPos.lng
+              });
+              ctosp.LAT = originalPos.lat as any;
+              ctosp.LONGI = originalPos.lng as any;
+            }
+          }
+          alert(`❌ Erro ao atualizar coordenadas da CTO_SP!\n\n🆔 ID_META: ${ctosp.id_meta}\n\nErro: ${error.message}`);
+          // Desabilitar edição mesmo em caso de erro (para não ficar travado)
+          this.desabilitarEdicaoCaixa();
+        }
+      });
       
-      //alert(`✅ Posição da CTO_SP ${ctosp.numero} atualizada!\n\nLat: ${newLat.toFixed(6)}\nLng: ${newLng.toFixed(6)}`);
+      // Retornar aqui para não desabilitar edição antes da requisição terminar
+      return;
     }
 
-    // Desabilitar edição
+    // Desabilitar edição (caso não entre em nenhum dos ifs acima)
     this.desabilitarEdicaoCaixa();
+  }
+
+  /**
+   * 🔍 Encontra uma polyline pelo id_meta em todos os arrays de cabos
+   * @param idMeta - ID do cabo a ser encontrado
+   * @returns Polyline encontrada ou null
+   */
+  private encontrarPolylinePorIdMeta(idMeta: number): google.maps.Polyline | null {
+    // Buscar em todos os arrays de polylines
+    const todosArraysPolylines = [
+      this.polylines1f,
+      this.polylines2f,
+      this.polylines4f,
+      this.polylines6f,
+      this.polylines8f,
+      this.polylines12f,
+      this.polylines24f,
+      this.polylines36f,
+      this.polylines48f,
+      this.polylines72f,
+      this.polylines144f
+    ];
+
+    console.log(`🔍 [BUSCAR-CABO] Procurando cabo com id_meta: ${idMeta}`);
+
+    for (const arrayPolylines of todosArraysPolylines) {
+      for (const polyline of arrayPolylines) {
+        const idMetaPolyline = polyline.get('id_meta');
+        // Comparar como número ou string
+        if (idMetaPolyline === idMeta || 
+            idMetaPolyline === idMeta.toString() || 
+            Number(idMetaPolyline) === idMeta) {
+          console.log(`✅ [BUSCAR-CABO] Cabo encontrado! id_meta: ${idMeta}`);
+          return polyline;
+        }
+      }
+    }
+    
+    console.warn(`⚠️ [BUSCAR-CABO] Cabo não encontrado com id_meta: ${idMeta}`);
+    return null;
+  }
+
+  /**
+   * 🔧 Atualiza a ponta (A ou B) de um cabo para uma nova coordenada
+   * @param polyline - Polyline do cabo
+   * @param ponta - 'A' (primeiro ponto) ou 'B' (último ponto)
+   * @param novaCoordenada - Nova coordenada da ponta
+   */
+  private atualizarPontaCabo(
+    polyline: google.maps.Polyline, 
+    ponta: 'A' | 'B', 
+    novaCoordenada: google.maps.LatLng
+  ): void {
+    const path = polyline.getPath();
+    if (!path || path.getLength() < 2) {
+      console.error('❌ [ATUALIZAR-PONTA] Path inválido');
+      return;
+    }
+
+    // Determinar índice da ponta (0 = A, último = B)
+    const indexPonta = ponta === 'A' ? 0 : path.getLength() - 1;
+    
+    // Atualizar a ponta
+    path.setAt(indexPonta, novaCoordenada);
+    
+    console.log(`✅ [ATUALIZAR-PONTA] Ponta ${ponta} atualizada para:`, {
+      lat: novaCoordenada.lat(),
+      lng: novaCoordenada.lng()
+    });
+  }
+
+  /**
+   * 🔌 Busca e atualiza todas as pontas dos cabos conectados à caixa
+   * @param idMetaCaixa - ID da caixa
+   * @param novaCoordenada - Nova coordenada da caixa
+   */
+  private async atualizarCabosConectadosACaixa(
+    idMetaCaixa: number, 
+    novaCoordenada: google.maps.LatLng
+  ): Promise<void> {
+    try {
+      console.log(`🔌 [CABOS-CONECTADOS] Buscando cabos conectados à caixa ${idMetaCaixa}`);
+      
+      // Buscar bocas da caixa
+      const retorno = await firstValueFrom(this.bocasService.selecionar());
+      
+      // Processar resposta (pode vir como {response: Bocas[]} ou Bocas[] direto)
+      let bocasData: Bocas | null = null;
+      if ('response' in retorno && Array.isArray((retorno as any).response)) {
+        bocasData = (retorno as any).response[0];
+      } else if (Array.isArray(retorno) && retorno.length > 0) {
+        bocasData = retorno[0];
+      } else {
+        bocasData = retorno as any;
+      }
+
+      if (!bocasData) {
+        console.warn('⚠️ [CABOS-CONECTADOS] Nenhum dado de boca retornado');
+        return;
+      }
+
+      console.log('📋 [CABOS-CONECTADOS] Dados das bocas:', bocasData);
+
+      // Processar cada boca (BOCA1 a BOCA18)
+      const promessasSalvamento: Promise<void>[] = [];
+      
+      for (let i = 1; i <= 18; i++) {
+        const bocaKey = `BOCA${i}` as keyof Bocas;
+        const valorBoca = bocasData[bocaKey];
+        
+        // Verificar se a boca tem cabo conectado (não está vazia)
+        if (!valorBoca || valorBoca.trim() === '' || valorBoca.trim() === ' ') {
+          continue; // Boca vazia, pular
+        }
+
+        // Extrair id_meta e ponta do formato "cabo387414B"
+        // Formato: "cabo" + número (id_meta) + letra (A ou B)
+        const match = valorBoca.match(/^cabo(\d+)([AB])$/i);
+        
+        if (!match) {
+          console.warn(`⚠️ [CABOS-CONECTADOS] Formato inválido na BOCA${i}: ${valorBoca}`);
+          continue;
+        }
+
+        const idMetaCabo = parseInt(match[1], 10);
+        const ponta = match[2].toUpperCase() as 'A' | 'B';
+
+        console.log(`🔍 [CABOS-CONECTADOS] BOCA${i}: cabo ${idMetaCabo}, ponta ${ponta}`);
+
+        // Encontrar a polyline do cabo
+        const polyline = this.encontrarPolylinePorIdMeta(idMetaCabo);
+        
+        if (!polyline) {
+          console.warn(`⚠️ [CABOS-CONECTADOS] Polyline não encontrada para cabo ${idMetaCabo}`);
+          continue;
+        }
+
+        // Atualizar a ponta do cabo visualmente
+        this.atualizarPontaCabo(polyline, ponta, novaCoordenada);
+        
+        // 🆕 Salvar no banco após atualizar visualmente
+        const promessaSalvamento = new Promise<void>((resolve) => {
+          // Extrair coordenadas atualizadas da polyline
+          const coordenadasAtualizadas = this.updateCaboService.extrairCoordenadasPolyline(polyline);
+          
+          // Calcular novo comprimento
+          const novoComprimento = this.updateCaboService.calcularComprimentoPolyline(polyline);
+          
+          // Preparar dados para atualização
+          const caboData = {
+            id_meta: idMetaCabo,
+            length: novoComprimento,
+            GOOGLE_LATLNG: coordenadasAtualizadas
+          };
+
+          console.log(`💾 [CABOS-CONECTADOS] Salvando cabo ${idMetaCabo} no banco...`, caboData);
+
+          // Salvar no banco
+          this.updateCaboService.atualizarCabo(caboData).subscribe({
+            next: (response) => {
+              console.log(`✅ [CABOS-CONECTADOS] Cabo ${idMetaCabo} salvo com sucesso:`, response);
+              resolve();
+            },
+            error: (error) => {
+              console.error(`❌ [CABOS-CONECTADOS] Erro ao salvar cabo ${idMetaCabo}:`, error);
+              // Resolve mesmo com erro para não bloquear outros cabos
+              resolve();
+            }
+          });
+        });
+
+        promessasSalvamento.push(promessaSalvamento);
+      }
+
+      // Aguardar todos os salvamentos (mas não bloquear se algum falhar)
+      await Promise.allSettled(promessasSalvamento);
+      
+      console.log(`✅ [CABOS-CONECTADOS] Processamento concluído. ${promessasSalvamento.length} cabo(s) processado(s)`);
+      
+    } catch (error) {
+      console.error('❌ [CABOS-CONECTADOS] Erro ao atualizar cabos conectados:', error);
+      // Não mostrar alerta para não interromper o fluxo de edição
+    }
   }
 
   /**
