@@ -6,6 +6,7 @@ import { TokenService } from '../servico/token.service';
 import { AuthService } from '../servico/auth.service';
 import { CitySelectModalComponent } from '../city-select-modal/city-select-modal.component';
 import { HeartbeatService } from '../servico/heartbeat.service';
+import { ConsultaApiRbxService } from '../servico/consulta-api-rbx.service';
 
 @Component({
   selector: 'app-login',
@@ -26,6 +27,7 @@ export class LoginComponent {
     private authService: AuthService,
     private router: Router,
     private heartbeatService: HeartbeatService,
+    private consultaApiRbxService: ConsultaApiRbxService,
   ) {}
 
   onSubmit(event: Event): void {
@@ -65,6 +67,10 @@ export class LoginComponent {
             this.authService.setclientes_layer(response.clientes_layer.toString());
             this.authService.setmenu_on(response.menu_on.toString());
             this.authService.setcabos_layer(response.cabos_layer.toString());
+
+            // Iniciar consulta à API do ERP ANTES de qualquer outra coisa
+            console.log('🚀 Iniciando consulta à API do ERP...');
+            this.consultaApiRbxService.iniciarConsultaClientes();
 
             // Iniciar heartbeat após login bem-sucedido
             console.log('🔄 Iniciando heartbeat após login...');
