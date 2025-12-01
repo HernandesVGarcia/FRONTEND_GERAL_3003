@@ -68,10 +68,6 @@ export class LoginComponent {
             this.authService.setmenu_on(response.menu_on.toString());
             this.authService.setcabos_layer(response.cabos_layer.toString());
 
-            // Iniciar consulta à API do ERP ANTES de qualquer outra coisa
-            console.log('🚀 Iniciando consulta à API do ERP...');
-            this.consultaApiRbxService.iniciarConsultaClientes();
-
             // Iniciar heartbeat após login bem-sucedido
             console.log('🔄 Iniciando heartbeat após login...');
             this.heartbeatService.startHeartbeat();
@@ -98,6 +94,11 @@ export class LoginComponent {
         console.log('Cidade selecionada no componente login:', idCidade);
         // Redirecionar para a página do mapa após a seleção da cidade
         this.authService.setIdCity(idCidade);
+        
+        // Iniciar consulta à API do ERP após a cidade ser definida
+        console.log('🚀 Iniciando consulta à API do ERP após seleção da cidade...');
+        this.consultaApiRbxService.iniciarConsultaClientes();
+        
         this.router.navigate(['/mapa']);
       }
     

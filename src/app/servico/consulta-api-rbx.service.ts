@@ -4,6 +4,7 @@ import { Observable, throwError, firstValueFrom } from 'rxjs';
 import { timeout, catchError } from 'rxjs/operators';
 import { AuthService } from './auth.service';
 import { FiberApiService } from './fiber-api.service';
+import { InserirClienteRBXService, ClienteApiTerceiros } from './inserir-cliente-RBX.service';
 import { environment } from '../environments/environment';
 
 export interface ConsultaClientesRequest {
@@ -21,6 +22,12 @@ export interface ConsultaClientesResponse {
   error?: string;
 }
 
+export interface UltimoClienteResponse {
+  success: boolean;
+  CONTRATO_GPON?: number;
+  error?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -31,8 +38,87 @@ export class ConsultaApiRbxService {
   constructor(
     private http: HttpClient,
     private authService: AuthService,
-    private fiberApiService: FiberApiService
+    private fiberApiService: FiberApiService,
+    private inserirClienteRBXService: InserirClienteRBXService
   ) {}
+
+  /**
+   * Busca o último CONTRATO_GPON salvo no banco de dados
+   */
+  private async buscarUltimoContratoGpon(): Promise<number | null> {
+    try {
+      // 1. Obter idCIDADES do authService
+      const idCity = this.authService.getIdCity();
+      
+      if (!idCity) {
+        console.error('❌ [RBX] ID da cidade não encontrado no authService');
+        return null;
+      }
+
+      const token = this.authService.getToken();
+      const headers = new HttpHeaders()
+        .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer ${token}`);
+
+      const url = `${this.baseUrl}/clientes-buscar-ultimo`;
+      
+      // 2. Preparar body com idCIDADES
+      const body = {
+        idCIDADES: idCity
+      };
+
+      console.log('🔍 [RBX] Buscando último CONTRATO_GPON com body:', body);
+
+      // 3. Mudar de GET para POST
+      const response = await firstValueFrom(
+        this.http.post<any>(url, body, { headers }).pipe(
+          timeout(this.TIMEOUT),
+          catchError(this.handleError)
+        )
+      );
+
+      console.log('🔍 [RBX] Resposta completa da API:', response); // DEBUG
+
+      // A API retorna: { "response": [{ "CONTRATO_GPON": "5498", ... }] }
+      if (response.response && Array.isArray(response.response) && response.response.length > 0) {
+        const contratoGpon = response.response[0].CONTRATO_GPON;
+        
+        if (contratoGpon !== undefined && contratoGpon !== null && contratoGpon !== '') {
+          // Converter string para número
+          const ultimoContrato = typeof contratoGpon === 'string' 
+            ? parseInt(contratoGpon, 10) 
+            : Number(contratoGpon);
+          
+          // Validar se a conversão foi bem-sucedida
+          if (!isNaN(ultimoContrato) && ultimoContrato > 0) {
+            console.log('✅ [RBX] Último CONTRATO_GPON encontrado:', ultimoContrato);
+            return ultimoContrato;
+          } else {
+            console.log('⚠️ [RBX] CONTRATO_GPON inválido ou zero:', contratoGpon);
+            return null;
+          }
+        }
+      }
+      
+      // Também verificar formato alternativo (caso mude no futuro)
+      if (response.success && response.CONTRATO_GPON !== undefined && response.CONTRATO_GPON !== null) {
+        const ultimoContrato = typeof response.CONTRATO_GPON === 'string' 
+          ? parseInt(response.CONTRATO_GPON, 10) 
+          : Number(response.CONTRATO_GPON);
+        
+        if (!isNaN(ultimoContrato) && ultimoContrato > 0) {
+          console.log('✅ [RBX] Último CONTRATO_GPON encontrado (formato alternativo):', ultimoContrato);
+          return ultimoContrato;
+        }
+      }
+
+      console.log('ℹ️ [RBX] Nenhum cliente encontrado na resposta');
+      return null;
+    } catch (error: any) {
+      console.error('❌ [RBX] Erro ao buscar último CONTRATO_GPON:', error);
+      return null;
+    }
+  }
 
   /**
    * Consulta os dados do polo na tabela tst.polos
@@ -173,28 +259,115 @@ export class ConsultaApiRbxService {
   }
 
   /**
-   * Inicia a consulta de clientes após o login
+   * Inicia a consulta sequencial de clientes após o login
    * Deve ser chamado logo após o login bem-sucedido
    * Só executa se ID_ERP === 1
+   * 
+   * Lógica:
+   * 1. Busca o último CONTRATO_GPON salvo
+   * 2. Consulta a API de terceiros a partir do próximo número
+   * 3. Se não encontrar, verifica mais 6 registros antes de parar
+   * 4. Se encontrar, continua pesquisando e salvando
+   * 5. Acumula todos os clientes em um array e envia para inserção
    */
-  iniciarConsultaClientes(): void {
-    console.log('🚀 [RBX] Iniciando consulta de clientes após login...');
-    
-    this.consultarClientes('1').then(result => {
-      if (result.success) {
-        console.log('✅ [RBX] Consulta de clientes concluída com sucesso');
-        console.log('📊 [RBX] Dados recebidos:', result.data);
-      } else {
-        // Se ID_ERP não for 1, não é um erro crítico, apenas informativo
-        if (result.error && result.error.includes('ID_ERP')) {
-          console.log('ℹ️ [RBX]', result.error);
+  async iniciarConsultaClientes(): Promise<void> {
+    console.log('🚀 [RBX] Iniciando consulta sequencial de clientes após login...');
+
+    try {
+      // 1. Buscar o último CONTRATO_GPON salvo
+      const ultimoContrato = await this.buscarUltimoContratoGpon();
+      console.log('🔍 [RBX] Último contrato retornado:', ultimoContrato, 'Tipo:', typeof ultimoContrato);
+      
+      // Garantir que é número válido
+      const codigoInicial = (ultimoContrato !== null && !isNaN(ultimoContrato) && ultimoContrato > 0) 
+        ? ultimoContrato + 1 
+        : 1;
+      
+      console.log(`🔍 [RBX] Iniciando consultas a partir do código: ${codigoInicial}`);
+
+      // 2. Array para acumular clientes encontrados
+      const clientesEncontrados: ClienteApiTerceiros[] = [];
+      
+      // 3. Variáveis de controle
+      let codigoAtual = codigoInicial;
+      let registrosVaziosConsecutivos = 0;
+      const maxRegistrosVazios = 6; // Verificar mais 6 registros antes de parar
+
+      // 4. Loop para consultar sequencialmente
+      while (registrosVaziosConsecutivos <= maxRegistrosVazios) {
+        console.log(`🔍 [RBX] Consultando cliente código: ${codigoAtual}`);
+
+        const resultado = await this.consultarClientes(codigoAtual.toString());
+
+        if (resultado.success && resultado.data) {
+          // Verificar se retornou algum cliente
+          let clienteEncontrado: ClienteApiTerceiros | null = null;
+
+          // Extrair cliente da resposta (mesma lógica do processarEInserirCliente)
+          if (resultado.data.result && Array.isArray(resultado.data.result) && resultado.data.result.length > 0) {
+            clienteEncontrado = resultado.data.result[0];
+          } else if (Array.isArray(resultado.data) && resultado.data.length > 0) {
+            clienteEncontrado = resultado.data[0];
+          } else if (resultado.data.ConsultaClientes || resultado.data.data) {
+            const dados = resultado.data.ConsultaClientes || resultado.data.data;
+            if (Array.isArray(dados) && dados.length > 0) {
+              clienteEncontrado = dados[0];
+            } else if (typeof dados === 'object' && dados.Codigo) {
+              clienteEncontrado = dados;
+            }
+          } else if (resultado.data.Codigo) {
+            clienteEncontrado = resultado.data;
+          }
+
+          if (clienteEncontrado && clienteEncontrado.Codigo) {
+            console.log(`✅ [RBX] Cliente encontrado (código ${codigoAtual}):`, clienteEncontrado);
+            clientesEncontrados.push(clienteEncontrado);
+            registrosVaziosConsecutivos = 0; // Resetar contador
+          } else {
+            console.log(`⚠️ [RBX] Nenhum cliente encontrado para código ${codigoAtual}`);
+            registrosVaziosConsecutivos++;
+          }
         } else {
-          console.error('❌ [RBX] Falha na consulta de clientes:', result.error);
+          console.log(`⚠️ [RBX] Erro ou sem dados para código ${codigoAtual}:`, resultado.error);
+          registrosVaziosConsecutivos++;
         }
+
+        // Incrementar código para próxima consulta
+        codigoAtual++;
+
+        // Pequeno delay para não sobrecarregar a API
+        await new Promise(resolve => setTimeout(resolve, 500));
       }
-    }).catch(error => {
-      console.error('❌ [RBX] Erro ao executar consulta de clientes:', error);
-    });
+
+      // 5. Processar todos os clientes encontrados
+      if (clientesEncontrados.length > 0) {
+        console.log(`📦 [RBX] Total de ${clientesEncontrados.length} cliente(s) encontrado(s). Inserindo no banco...`);
+
+        // Inserir cada cliente sequencialmente
+        for (let i = 0; i < clientesEncontrados.length; i++) {
+          const cliente = clientesEncontrados[i];
+          console.log(`💾 [RBX] Inserindo cliente ${i + 1}/${clientesEncontrados.length} (código: ${cliente.Codigo})`);
+
+          const insertResult = await this.inserirClienteRBXService.inserirCliente(cliente);
+          
+          if (insertResult.success) {
+            console.log(`✅ [RBX] Cliente ${cliente.Codigo} inserido com sucesso! ID_META: ${insertResult.id_meta}`);
+          } else {
+            console.error(`❌ [RBX] Erro ao inserir cliente ${cliente.Codigo}:`, insertResult.error);
+          }
+
+          // Pequeno delay entre inserções
+          await new Promise(resolve => setTimeout(resolve, 300));
+        }
+
+        console.log(`✅ [RBX] Processo concluído! ${clientesEncontrados.length} cliente(s) processado(s).`);
+      } else {
+        console.log('ℹ️ [RBX] Nenhum cliente novo encontrado para inserir.');
+      }
+
+    } catch (error: any) {
+      console.error('❌ [RBX] Erro ao executar consulta sequencial de clientes:', error);
+    }
   }
 
   private handleError(error: HttpErrorResponse) {

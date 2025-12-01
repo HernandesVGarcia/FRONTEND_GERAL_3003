@@ -5614,12 +5614,12 @@ openGoJSModal() {
         polyline.set('label', cabo.Label_cabo || '');
         polyline.set('cabo_data', cabo); // Dados completos do cabo
         
-        console.log(`🗺️ [POLYLINE-DATA] Armazenando dados na polyline ${tipoFibra}:`, {
+        /*console.log(`🗺️ [POLYLINE-DATA] Armazenando dados na polyline ${tipoFibra}:`, {
           id_meta: cabo.id_meta,
           capacidade: tipoFibra,
           tipo: cabo.tipo,
           label: cabo.Label_cabo
-        });
+        });*/
         
         // Criar InfoWindow para este cabo
         const infoWindow = new google.maps.InfoWindow({
