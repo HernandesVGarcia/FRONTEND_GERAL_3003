@@ -11,6 +11,7 @@ import { map, startWith } from 'rxjs/operators';
 import { CidadesService } from '../servico/cidades.service';
 import { Cidades } from '../modelo/Cidades';
 import { AuthService } from '../servico/auth.service';
+import { InsertLogService } from '../servico/insert-log.service';
 
 @Component({
   selector: 'app-city-select-modal',
@@ -41,7 +42,8 @@ export class CitySelectModalComponent implements OnInit {
 
   constructor(
     private cidadesService: CidadesService,
-    private authService: AuthService
+    private authService: AuthService,
+    private insertLogService: InsertLogService
   ) {}
 
   ngOnInit() {
@@ -97,10 +99,36 @@ export class CitySelectModalComponent implements OnInit {
        
         console.log('Confirmando seleção da cidade:', this.cidadeSelecionada.CIDADE, 'ID:', this.cidadeSelecionada.IDCIDADES);
         this.citySelected.emit(this.cidadeSelecionada.IDCIDADES);
+
+        // Inserir log de seleção de cidade com id_evento 27
+        const idUsuario = this.authService.getIdUser();
+        if (idUsuario) {
+          console.log('🔄 Inserindo log de seleção de cidade...');
+          this.insertLogService.inserirLog({
+            id_usuario: idUsuario,
+            id_evento: 27,
+            id_city: this.cidadeSelecionada.IDCIDADES,
+            id_meta_objeto: 0,
+            descricao: 'Carrega cidade bem-sucedida',
+            VERSION: 'Fiberworks WEB 1.0.0'
+          }).subscribe({
+            next: (logResponse) => {
+              console.log('✅ Log de seleção de cidade inserido com sucesso:', logResponse);
+            },
+            error: (error) => {
+              console.error('❌ Erro ao inserir log de seleção de cidade:', error);
+              // Não bloquear o fluxo da seleção de cidade se o log falhar
+            }
+          });
+        } else {
+          console.warn('⚠️ ID do usuário não encontrado, log de seleção de cidade não será inserido');
+        }
       }
     } else {
       console.warn('Tentativa de confirmar seleção sem cidade válida');
     }
+
+    
   }
 
   fecharModal() {

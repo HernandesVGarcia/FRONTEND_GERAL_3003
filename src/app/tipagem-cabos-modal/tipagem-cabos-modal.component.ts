@@ -100,6 +100,7 @@ export class TipagemCabosModalComponent implements OnInit, OnChanges {
     };
 
     console.log('✅ Tipagem confirmada:', tipagemData);
+    
     // Salvar escolhas para a próxima abertura
     this.saveLastSelections();
     this.caboTypeConfirmed.emit(tipagemData);

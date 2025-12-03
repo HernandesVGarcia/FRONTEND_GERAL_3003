@@ -37,6 +37,7 @@ import { KmlExportService } from '../servico/kml-export.service';
 import { InsertCaboService } from '../servico/insert-cabo.service';
 import { UpdateCaboService } from '../servico/update-cabo.service';
 import { UpdateCaixaService } from '../servico/update-caixa.service';
+import { InsertLogService } from '../servico/insert-log.service';
 import { Subject, takeUntil } from 'rxjs';
 
 import { MatDialog } from '@angular/material/dialog';
@@ -325,7 +326,8 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
     private updateCaboService: UpdateCaboService,
     private updateCaixaService: UpdateCaixaService,
     private bocasService: BocasService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private insertLogService: InsertLogService
   ) {}
 
   // ============================================================================
@@ -6838,6 +6840,28 @@ openGoJSModal() {
         // Criar cabo no mapa com o id_meta real
         const idMetaReal = response.id_meta;
         this.criarCaboComTipagemEIdMeta(tipagemData, idMetaReal, comprimento);
+        
+        // Inserir log de tipagem de cabo com id_meta
+        const idUsuario = this.authService.getIdUser();
+        const idCity = this.authService.getIdCity();
+        if (idUsuario && idCity) {
+          console.log('🔄 Inserindo log de tipagem de cabo...');
+          this.insertLogService.inserirLog({
+            id_usuario: idUsuario,
+            id_evento: 3,
+            id_city: idCity,
+            id_meta_objeto: idMetaReal,
+            descricao: `Plotagem de Cabo: ${tipagemData.capacidade}, ${tipagemData.fibrasPorTubo} por tubo, codigo de cores: ${tipagemData.codigoCores}`,
+            VERSION: 'Fiberworks WEB 1.0.0'
+          }).subscribe({
+            next: (logResponse) => {
+              console.log('✅ Log de tipagem de cabo inserido com sucesso:', logResponse);
+            },
+            error: (error) => {
+              console.error('❌ Erro ao inserir log de tipagem de cabo:', error);
+            }
+          });
+        }
         
         alert(`✅ Cabo inserido com sucesso!\n🆔 ID: ${idMetaReal}\n📏 Comprimento: ${comprimento.toFixed(2)}m\n📊 Capacidade: ${tipagemData.capacidade}\n🏷️ Label: ${tipagemData.label}`);
       },

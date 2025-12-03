@@ -13,6 +13,7 @@ export class AuthService {
   private readonly IDCIDADE_KEY = 'auth_idcidade';
   private readonly IDMETACX = 'auth_idmetacx'
   private readonly USUARIO = 'auth_user'
+  private readonly IDUSER = 'auth_iduser'
 
   private readonly LAT_PERFIL = 'auth_perfil_lat'
   private readonly LNG_PERFIL = 'auth_perfil_lng'
@@ -91,6 +92,19 @@ export class AuthService {
     //  auth_polo: localStorage.getItem('auth_polo')
     //});
     return usuario;
+  }
+
+  setIdUser(idUser: number | null): void {
+    if (idUser) {
+      localStorage.setItem(this.IDUSER, idUser.toString());
+    } else {
+      localStorage.removeItem(this.IDUSER);
+    }
+  }
+
+  getIdUser(): number | null {
+    const idUserStr = localStorage.getItem(this.IDUSER);
+    return idUserStr ? Number(idUserStr) : null;
   }
 
 

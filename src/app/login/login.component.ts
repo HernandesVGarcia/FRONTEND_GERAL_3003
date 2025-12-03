@@ -7,6 +7,7 @@ import { AuthService } from '../servico/auth.service';
 import { CitySelectModalComponent } from '../city-select-modal/city-select-modal.component';
 import { HeartbeatService } from '../servico/heartbeat.service';
 import { ConsultaApiRbxService } from '../servico/consulta-api-rbx.service';
+import { InsertLogService } from '../servico/insert-log.service';
 
 @Component({
   selector: 'app-login',
@@ -28,6 +29,7 @@ export class LoginComponent {
     private router: Router,
     private heartbeatService: HeartbeatService,
     private consultaApiRbxService: ConsultaApiRbxService,
+    private insertLogService: InsertLogService,
   ) {}
 
   onSubmit(event: Event): void {
@@ -58,6 +60,7 @@ export class LoginComponent {
             //console.log('🔧 SALVANDO USUÁRIO - Chave é válida?', this.chave && this.chave.trim() !== '');
 
             this.authService.setUsuario(this.chave);
+            this.authService.setIdUser(response.IDUSER);
             this.authService.setPolo(response.polo);
             this.authService.setLat(response.lat);
             this.authService.setLng(response.lng);
@@ -71,6 +74,27 @@ export class LoginComponent {
             // Iniciar heartbeat após login bem-sucedido
             console.log('🔄 Iniciando heartbeat após login...');
             this.heartbeatService.startHeartbeat();
+
+
+            // Inserir log de login
+            console.log('🔄 Inserindo log de login...');
+            this.insertLogService.inserirLog({
+              id_usuario: response.IDUSER,
+              id_evento: 1,
+              id_city: response.id_city,
+              id_meta_objeto: 0,
+              descricao: 'Login bem-sucedido',
+              VERSION: 'Fiberworks WEB 1.0.0'
+            }).subscribe({
+              next: (logResponse) => {
+                console.log('✅ Log de login inserido com sucesso:', logResponse);
+              },
+              error: (error) => {
+                console.error('❌ Erro ao inserir log de login:', error);
+                // Não bloquear o fluxo do login se o log falhar
+              }
+            });
+
 
 
             //this.router.navigate(['/mapa']);
