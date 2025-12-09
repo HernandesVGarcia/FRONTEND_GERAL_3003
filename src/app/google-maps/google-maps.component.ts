@@ -90,9 +90,9 @@ import { firstValueFrom } from 'rxjs';
  *   - adicionarListenerRemoverVertice()
  * 
  * - Linha ~977: DETECÇÃO DE CONEXÃO CABO-CAIXA
- *   - verificarConexaoPontasComCaixas()
  *   - abrirModalConexao()
  *   - encontrarCaixaProxima()
+ *   - (A verificação de conexão é feita no listener set_at em tempo real)
  * 
  * - Linha ~1085: GESTÃO DE EVENTOS DE CABOS
  *   - processarRightClickCabo()
@@ -127,7 +127,6 @@ import { firstValueFrom } from 'rxjs';
  *   - etc...
  * 
  * - Linha ~4810: CRIAÇÃO DE CABOS
- *   - criarCaboComTipagem()
  *   - criarCaboComTipagemEIdMeta()
  * 
  * ============================================================================
@@ -1073,9 +1072,6 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
         console.log('🛡️ [PROTEÇÃO-PONTAS] Listener de proteção removido');
       }
       
-      // ❌ REMOVIDO: this.verificarConexaoPontasComCaixas(); 
-      // A verificação agora é feita no listener set_at quando a ponta é movida e solta sobre uma caixa
-      
       // Extrair coordenadas atualizadas
       const coordenadasAtualizadas = this.updateCaboService.extrairCoordenadasPolyline(this.clickedPolyline);
       
@@ -1112,6 +1108,28 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
       this.updateCaboService.atualizarCabo(caboData).subscribe({
         next: (response) => {
           console.log('✅ [EDITAR-CABO] Cabo atualizado com sucesso na API!', response);
+
+          // Inserir log de atualização de cabo com id_evento 31
+          const idUsuario = this.authService.getIdUser();
+          const idCity = this.authService.getIdCity();
+          if (idUsuario && idCity) {
+            console.log('🔄 Inserindo log de atualização de cabo...');
+            this.insertLogService.inserirLog({
+              id_usuario: idUsuario,
+              id_evento: 31,
+              id_city: idCity,
+              id_meta_objeto: idMetaNumero,
+              descricao: `Move Cabo idmeta: ${idMetaNumero}`,
+              VERSION: 'Fiberworks WEB 1.0.0'
+            }).subscribe({
+              next: (logResponse) => {
+                console.log('✅ Log de atualização de cabo inserido com sucesso:', logResponse);
+              },
+              error: (error) => {
+                console.error('❌ Erro ao inserir log de atualização de cabo:', error);
+              }
+            });
+          }
           
           // Remover modo de edição e reabilitar clickable
           this.clickedPolyline!.setOptions({
@@ -1236,40 +1254,6 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
     }
   }
 
-  /**
-   * 🔍 Verifica se as pontas A ou B do cabo foram soltas sobre uma caixa
-   * Abre modal de conexão quando detecta conexão
-   */
-  private verificarConexaoPontasComCaixas(): void {
-    if (!this.clickedPolyline || !this.map) {
-      return;
-    }
-
-    const path = this.clickedPolyline.getPath();
-    if (!path || path.getLength() < 2) {
-      return;
-    }
-
-    // Obter coordenadas das pontas A e B
-    const pontaA = path.getAt(0);
-    const pontaB = path.getAt(path.getLength() - 1);
-
-    // Verificar ponta A
-    const caixaPontaA = this.encontrarCaixaProxima(pontaA);
-    if (caixaPontaA) {
-      console.log(`🔌 [CONEXÃO] Ponta A conectada na caixa ${caixaPontaA.numero}`);
-      this.abrirModalConexao('A', caixaPontaA);
-      return; // Só processa uma ponta por vez
-    }
-
-    // Verificar ponta B
-    const caixaPontaB = this.encontrarCaixaProxima(pontaB);
-    if (caixaPontaB) {
-      console.log(`🔌 [CONEXÃO] Ponta B conectada na caixa ${caixaPontaB.numero}`);
-      this.abrirModalConexao('B', caixaPontaB);
-    }
-  }
-
   // ============================================================================
   // 🔌 SEÇÃO: DETECÇÃO DE CONEXÃO CABO-CAIXA
   // ============================================================================
@@ -1328,6 +1312,30 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
         
         // 🔧 NOVO: Mover ponta do cabo para coordenadas da caixa e salvar
         this.moverPontaParaCaixaEPersistir(ponta, caixa);
+
+        // Inserir log de conexão de cabo na caixa evento 15
+        const idUsuario = this.authService.getIdUser();
+        const idCity = this.authService.getIdCity();
+        if (idUsuario && idCity && idMetaCabo) {
+          console.log('🔄 Inserindo log de conexão de cabo na caixa...');
+          this.insertLogService.inserirLog({
+            id_usuario: idUsuario,
+            id_evento: 15, // ID do evento para conexão cabo-caixa 
+            id_city: idCity,
+            id_meta_objeto: idMetaCabo,
+            descricao: `Conexão de cabo : Ponta ${ponta}, Caixa ${caixa.numero || 'N/A'}, Boca ${result.boca || 'N/A'}, ID Caixa: ${caixa.id_meta}`,
+            VERSION: 'Fiberworks WEB 1.0.0'
+          }).subscribe({
+            next: (logResponse) => {
+              console.log('✅ Log de conexão de cabo na caixa inserido com sucesso:', logResponse);
+            },
+            error: (error) => {
+              console.error('❌ Erro ao inserir log de conexão de cabo na caixa:', error);
+            }
+          });
+        }
+
+
       } else {
         console.log('❌ [CONEXÃO] Conexão cancelada');
       }
@@ -5057,6 +5065,28 @@ private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = fal
         this.desabilitarEdicaoCaixa();
       }
     });
+
+      // Inserir log de atualização de caixa com id_evento 31
+      const idUsuario = this.authService.getIdUser();
+      const idCity = this.authService.getIdCity();
+      if (idUsuario && idCity) {
+        console.log('🔄 Inserindo log de move de caixa...');
+        this.insertLogService.inserirLog({
+          id_usuario: idUsuario,
+          id_evento: 31,
+          id_city: idCity,
+          id_meta_objeto: caixa.id_meta,
+          descricao: `Move Caixa numero: ${caixa.numero}  idmeta: ${caixa.id_meta} `,
+          VERSION: 'Fiberworks WEB 1.0.0'
+        }).subscribe({
+        next: (logResponse) => {
+          console.log('✅ Log de move de caixa:', logResponse);
+        },
+        error: (error) => {
+          console.error('❌ Erro ao inserir log de move de caixa:', error);
+        }
+      });
+      }
     
     // Retornar aqui para não desabilitar edição antes da requisição terminar
     return;
@@ -5119,6 +5149,28 @@ private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = fal
           this.desabilitarEdicaoCaixa();
         }
       });
+
+        // Inserir log de atualização de caixa com id_evento 31
+    const idUsuario = this.authService.getIdUser();
+    const idCity = this.authService.getIdCity();
+    if (idUsuario && idCity) {
+      console.log('🔄 Inserindo log de move de caixa...');
+      this.insertLogService.inserirLog({
+        id_usuario: idUsuario,
+        id_evento: 31,
+        id_city: idCity,
+        id_meta_objeto: cto.id_meta,
+        descricao: `Move Caixa CTO numero: ${cto.numero}  idmeta: ${cto.id_meta} `,
+        VERSION: 'Fiberworks WEB 1.0.0'
+      }).subscribe({
+      next: (logResponse) => {
+        console.log('✅ Log de move de caixa:', logResponse);
+      },
+      error: (error) => {
+        console.error('❌ Erro ao inserir log de move de caixa:', error);
+      }
+    });
+    }
       
       // Retornar aqui para não desabilitar edição antes da requisição terminar
       return;
@@ -5181,6 +5233,32 @@ private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = fal
           this.desabilitarEdicaoCaixa();
         }
       });
+
+
+
+       // Inserir log de atualização de caixa com id_evento 31
+    const idUsuario = this.authService.getIdUser();
+    const idCity = this.authService.getIdCity();
+    if (idUsuario && idCity) {
+      console.log('🔄 Inserindo log de move de caixa...');
+      this.insertLogService.inserirLog({
+        id_usuario: idUsuario,
+        id_evento: 31,
+        id_city: idCity,
+        id_meta_objeto: ctosp.id_meta,
+        descricao: `Move Caixa CTO numero: ${ctosp.numero}  idmeta: ${ctosp.id_meta} `,
+        VERSION: 'Fiberworks WEB 1.0.0'
+      }).subscribe({
+      next: (logResponse) => {
+        console.log('✅ Log de move de caixa:', logResponse);
+      },
+      error: (error) => {
+        console.error('❌ Erro ao inserir log de move de caixa:', error);
+      }
+    });
+    }
+
+    
       
       // Retornar aqui para não desabilitar edição antes da requisição terminar
       return;
@@ -5188,6 +5266,9 @@ private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = fal
 
     // Desabilitar edição (caso não entre em nenhum dos ifs acima)
     this.desabilitarEdicaoCaixa();
+
+
+    
   }
 
   /**
@@ -6143,7 +6224,7 @@ openGoJSModal() {
     // Parar modo de desenho
     this.isDesenhandoCabo = false;
     
-    // Limpar array de pontos (será usado depois no criarCaboComTipagem)
+    // Limpar array de pontos (será usado depois no criarCaboComTipagemEIdMeta)
     this.pontosCaboEmDesenho = [];
     
     // 🆕 Abrir modal de tipagem
@@ -6204,301 +6285,39 @@ openGoJSModal() {
   }
 
   /**
-   * 🆕 Método auxiliar: Cria o cabo final com os dados de tipagem
+   * 🆕 Retorna o array de polylines correto baseado na capacidade do cabo
    */
-  private criarCaboComTipagem(tipagemData: TipagemCabosData): void {
-    console.log('🗺️ [TIPAGEM] Criando cabo com tipagem:', tipagemData);
+  private getPolylinesArrayPorCapacidade(capacidadeStr: string): google.maps.Polyline[] {
+    const capacidade = InsertCaboService.converterCapacidadeParaNumero(capacidadeStr);
     
-    if (!this.map || this.pontosCaboAguardandoTipagem.length < 2) {
-      console.error('🗺️ [TIPAGEM] Erro: Mapa ou pontos não disponíveis');
-      return;
+    switch(capacidade) {
+      case 1:
+        return this.polylines1f;
+      case 2:
+        return this.polylines2f;
+      case 4:
+        return this.polylines4f;
+      case 6:
+        return this.polylines6f;
+      case 8:
+        return this.polylines8f;
+      case 12:
+        return this.polylines12f;
+      case 24:
+        return this.polylines24f;
+      case 36:
+        return this.polylines36f;
+      case 48:
+        return this.polylines48f;
+      case 72:
+        return this.polylines72f;
+      case 144:
+        return this.polylines144f;
+      default:
+        // Fallback para polylines1f se capacidade não reconhecida
+        console.warn(`⚠️ [CABO] Capacidade ${capacidadeStr} não reconhecida, usando array padrão (1f)`);
+        return this.polylines1f;
     }
-
-    // Fazer cópia dos pontos que foram guardados
-    const pontosFinais = this.pontosCaboAguardandoTipagem.map(p => ({
-      lat: p.lat(),
-      lng: p.lng()
-    }));
-
-    console.log('🗺️ [TIPAGEM] Criando polyline final com pontos:', pontosFinais);
-    
-    // Gerar ID temporário
-    const idMetaTemp = `TEMP_${Date.now()}`;
-    
-    // Criar objeto com dados completos do cabo (igual aos outros cabos)
-    const caboData = {
-      id_meta: idMetaTemp,
-      capacidade: tipagemData.capacidade,
-      tipo: 'CABO_DESENHADO',
-      Label_cabo: tipagemData.label,
-      fibrasPorTubo: tipagemData.fibrasPorTubo,
-      codigoCores: tipagemData.codigoCores,
-      GOOGLE_LATLNG: pontosFinais.map(p => `${p.lat},${p.lng}`).join(' ')
-    };
-    
-    //********************************************************************************************
-    // cria cabos no mapa 03112025 *********************************************************
-    // 🎨 Obter opções de polyline baseadas na capacidade  
-    const polylineOptions = this.getPolylineOptionsPorCapacidade(tipagemData.capacidade);
-    
-    // Criar polyline final com as opções corretas da capacidade
-    this.caboDesenhado = new google.maps.Polyline({
-      ...polylineOptions,  // 🎨 Usar as opções da capacidade
-      path: pontosFinais,
-      map: this.map,
-      geodesic: true,
-      clickable: true,
-      editable: false // Não editável após finalizar
-    });
-    
-    // 🆕 Salvar atributos na polyline (igual aos outros cabos)
-    this.caboDesenhado.set('id_meta', idMetaTemp);
-    this.caboDesenhado.set('capacidade', tipagemData.capacidade);
-    this.caboDesenhado.set('tipo', 'CABO_DESENHADO');
-    this.caboDesenhado.set('label', tipagemData.label);
-    this.caboDesenhado.set('fibrasPorTubo', tipagemData.fibrasPorTubo);
-    this.caboDesenhado.set('codigoCores', tipagemData.codigoCores);
-    this.caboDesenhado.set('cabo_data', caboData); // Dados completos do cabo
-    
-    console.log('🗺️ [TIPAGEM] Polyline criada com atributos:', {
-      id_meta: idMetaTemp,
-      capacidade: tipagemData.capacidade,
-      label: tipagemData.label,
-      fibrasPorTubo: tipagemData.fibrasPorTubo,
-      codigoCores: tipagemData.codigoCores,
-      cor: polylineOptions.strokeColor  // 🎨 Mostrar a cor usada
-    });
-    
-    // 🆕 ADICIONAR LISTENERS IGUAIS AOS CABOS CARREGADOS DO BANCO
-    
-    // Listener de click simples (para InfoWindow)
-    let clickTimeout: ReturnType<typeof setTimeout> | null = null;
-    this.caboDesenhado.addListener('click', (event: google.maps.MapMouseEvent) => {
-      console.log(`🔵 Clique simples detectado no cabo desenhado (temp):`, idMetaTemp);
-      
-      // Cancelar timeout anterior se existir
-      if (clickTimeout) {
-        clearTimeout(clickTimeout);
-        clickTimeout = null;
-      }
-      
-      // Definir timeout para clique simples (InfoWindow será mostrado se não houver dblclick)
-      clickTimeout = setTimeout(() => {
-        console.log(`Clique simples confirmado no cabo desenhado (temp):`, idMetaTemp);
-        // InfoWindow pode ser adicionado aqui se necessário
-      }, 300);
-    });
-    
-    // Listener de duplo clique (para editar diretamente)
-    this.caboDesenhado.addListener('dblclick', (event: google.maps.MapMouseEvent) => {
-      console.log(`🔴 CABO DOUBLE-CLICK - Editando cabo desenhado (temp):`, idMetaTemp);
-      
-      // Cancelar clique simples se estiver pendente
-      if (clickTimeout) {
-        clearTimeout(clickTimeout);
-        clickTimeout = null;
-      }
-      
-      // 🔧 NOVO: Em mobile, abrir context menu em vez de editar
-      if (this.isMobile()) {
-        console.log('📱 [MOBILE] Double tap no cabo desenhado (temp) - abrindo context menu');
-        this.contextMenuType = 'cabo';
-        this.clickedPolyline = this.caboDesenhado;
-        this.clickedCaboData = caboData;
-        
-        if (event.domEvent) {
-          const mouseEvent = event.domEvent as MouseEvent;
-          this.showContextMenu(mouseEvent.clientX, mouseEvent.clientY);
-        }
-        return;
-      }
-      
-      // Desktop: comportamento padrão (editar cabo)
-      // 🛡️ Verificar se já existe uma edição em andamento
-      if (this.isEditingCabo || this.isIniciandoEdicao) {
-        console.log('⚠️ [EDITAR-CABO] Edição em andamento detectada no dblclick. Finalizando edição anterior...');
-        
-        // Se o cabo clicado é diferente do que está sendo editado, finalizar edição anterior
-        const caboEmEdicaoId = this.clickedPolyline?.get('id_meta');
-        const novoCaboId = idMetaTemp;
-        
-        if (caboEmEdicaoId !== novoCaboId) {
-          console.log('🔄 [EDITAR-CABO] Novo cabo clicado durante edição (dblclick). Finalizando edição anterior...');
-          
-          // Finalizar edição do cabo anterior (salvar automaticamente)
-          this.finalizarEdicaoCabo();
-          
-          // Aguardar um pouco para garantir que a finalização foi processada
-          setTimeout(() => {
-            // 🛡️ Limpar flag de finalização
-            this.isFinalizandoEdicao = false;
-            
-            // 🆕 Setar dados do novo cabo para edição
-            this.clickedPolyline = this.caboDesenhado;
-            this.clickedCaboData = caboData;
-            
-            // 🆕 Chamar editarCabo() para o novo cabo
-            this.editarCabo();
-          }, 100);
-          return;
-        } else {
-          // Mesmo cabo - apenas continuar edição
-          console.log('✅ [EDITAR-CABO] Mesmo cabo clicado durante edição (dblclick) - continuando edição');
-          return;
-        }
-      }
-      
-      // 🆕 Setar dados do cabo para edição
-      this.clickedPolyline = this.caboDesenhado;
-      this.clickedCaboData = caboData;
-      
-      // 🆕 Chamar editarCabo() diretamente
-      this.editarCabo();
-    });
-    
-    // Listener de right-click (para menu de contexto)
-    this.caboDesenhado.addListener('rightclick', (event: google.maps.MapMouseEvent) => {
-      console.log('🔴 RIGHT-CLICK no CABO DESENHADO');
-      
-      // 🛑 IMPORTANTE: Prevenir menu padrão do navegador PRIMEIRO
-      if (event.domEvent) {
-        event.domEvent.preventDefault();
-        event.domEvent.stopPropagation();
-      }
-      
-      // 🛡️ Verificar se já existe uma edição em andamento
-      if (this.isEditingCabo || this.isIniciandoEdicao) {
-        console.log('⚠️ [EDITAR-CABO] Edição em andamento detectada. Finalizando edição anterior...');
-        
-        // Se o cabo clicado é diferente do que está sendo editado, finalizar edição anterior
-        const caboEmEdicaoId = this.clickedPolyline?.get('id_meta');
-        const novoCaboId = idMetaTemp;
-        
-        if (caboEmEdicaoId !== novoCaboId) {
-          console.log('🔄 [EDITAR-CABO] Novo cabo clicado durante edição. Finalizando edição anterior...');
-          
-          // 🛡️ CRÍTICO: Prevenir menu ANTES de QUALQUER processamento assíncrono
-          if (event.domEvent) {
-            const domEvent = event.domEvent as MouseEvent;
-            domEvent.preventDefault();
-            domEvent.stopPropagation();
-            domEvent.stopImmediatePropagation();
-            
-            // 🆕 BACKUP: Prevenir também no próximo tick (caso o preventDefault não tenha funcionado)
-            requestAnimationFrame(() => {
-              if (!domEvent.defaultPrevented) {
-                domEvent.preventDefault();
-                domEvent.stopPropagation();
-                domEvent.stopImmediatePropagation();
-              }
-            });
-          }
-          
-          // Finalizar edição do cabo anterior (salvar automaticamente)
-          this.finalizarEdicaoCabo();
-          // Aguardar um pouco para garantir que a finalização foi processada
-          setTimeout(() => {
-            // 🛡️ Limpar flag de finalização após o timeout
-            this.isFinalizandoEdicao = false;
-            
-            if (this.caboDesenhado) {
-              this.processarRightClickCabo(event, this.caboDesenhado, caboData);
-            }
-          }, 100);
-          return;
-        } else {
-          // Mesmo cabo - apenas mostrar menu
-          console.log('✅ [EDITAR-CABO] Mesmo cabo clicado durante edição');
-        }
-      }
-      
-      if (this.caboDesenhado) {
-        this.processarRightClickCabo(event, this.caboDesenhado, caboData);
-      }
-    });
-
-    // 🔧 NOVO: Adicionar suporte a touch events para mobile (long press = right-click) no cabo desenhado
-    if (this.caboDesenhado) {
-      this.caboDesenhado.addListener('touchstart', (event: google.maps.MapMouseEvent) => {
-        if (event.domEvent) {
-          const touchEvent = event.domEvent as TouchEvent;
-          if (touchEvent.touches && touchEvent.touches.length > 0) {
-            const touch = touchEvent.touches[0];
-            this.touchStartTime = Date.now();
-            this.touchStartPosition = {
-              x: touch.clientX,
-              y: touch.clientY
-            };
-            this.longPressPolyline = this.caboDesenhado;
-
-            // Iniciar timer para long press
-            this.longPressTimer = setTimeout(() => {
-              // Long press detectado - simular right-click
-              console.log('📱 [MOBILE] Long press detectado no cabo desenhado - simulando right-click');
-              
-              // Criar evento de mouse simulado
-              const simulatedEvent = {
-                ...event,
-                domEvent: {
-                  ...event.domEvent,
-                  clientX: touch.clientX,
-                  clientY: touch.clientY,
-                  preventDefault: () => {},
-                  stopPropagation: () => {}
-                } as any
-              } as google.maps.MapMouseEvent;
-
-              // Obter dados do cabo
-              if (this.caboDesenhado) {
-                const caboDataTemp = {
-                  id_meta: this.caboDesenhado.get('id_meta'),
-                  capacidade: this.caboDesenhado.get('capacidade'),
-                  tipo: this.caboDesenhado.get('tipo'),
-                  Label_cabo: this.caboDesenhado.get('label') || this.caboDesenhado.get('Label_cabo'),
-                  GOOGLE_LATLNG: this.caboDesenhado.get('GOOGLE_LATLNG'),
-                  cabo_data: this.caboDesenhado.get('cabo_data')
-                };
-
-                // Chamar o handler de right-click
-                this.processarRightClickCabo(simulatedEvent, this.caboDesenhado, caboDataTemp);
-              }
-            }, this.LONG_PRESS_DURATION);
-          }
-        }
-      });
-
-      this.caboDesenhado.addListener('touchend', (event: google.maps.MapMouseEvent) => {
-        // Cancelar long press se o toque terminou antes do tempo
-        if (this.longPressTimer && this.longPressPolyline === this.caboDesenhado) {
-          clearTimeout(this.longPressTimer);
-          this.longPressTimer = null;
-          this.longPressPolyline = null;
-        }
-        this.touchStartTime = 0;
-        this.touchStartPosition = null;
-      });
-
-      this.caboDesenhado.addListener('touchmove', (event: google.maps.MapMouseEvent) => {
-        // Cancelar long press se o usuário moveu o dedo
-        if (this.longPressTimer && this.longPressPolyline === this.caboDesenhado) {
-          clearTimeout(this.longPressTimer);
-          this.longPressTimer = null;
-          this.longPressPolyline = null;
-        }
-      });
-    }
-    
-    // Limpar pontos aguardando tipagem
-    this.pontosCaboAguardandoTipagem = [];
-    
-    const totalPontos = pontosFinais.length;
-    alert(`✅ Cabo desenhado com sucesso!\n📊 Total de pontos: ${totalPontos}\n📋 Capacidade: ${tipagemData.capacidade}\n🏷️ Label: ${tipagemData.label}`);
-    
-    console.log('🗺️ [TIPAGEM] Desenho finalizado. Estado final:', {
-      caboDesenhado: this.caboDesenhado,
-      map: this.map,
-      isDesenhandoCabo: this.isDesenhandoCabo
-    });
   }
 
   /**
@@ -6545,6 +6364,10 @@ openGoJSModal() {
       editable: false // Não editável após finalizar
     });
     
+    // 🆕 Criar variável local para capturar no closure (igual aos cabos do banco)
+    // Isso garante que cada cabo tenha sua própria referência, mesmo quando this.caboDesenhado é sobrescrito
+    const polylineAtual = this.caboDesenhado;
+    
     // 🆕 Salvar atributos na polyline (igual aos outros cabos)
     this.caboDesenhado.set('id_meta', idMeta);
     this.caboDesenhado.set('capacidade', tipagemData.capacidade);
@@ -6554,6 +6377,11 @@ openGoJSModal() {
     this.caboDesenhado.set('codigoCores', tipagemData.codigoCores);
     this.caboDesenhado.set('comprimento', comprimento);
     this.caboDesenhado.set('cabo_data', caboData); // Dados completos do cabo
+    
+    // 🆕 Adicionar cabo ao array correto baseado na capacidade
+    const arrayPolylines = this.getPolylinesArrayPorCapacidade(tipagemData.capacidade);
+    arrayPolylines.push(this.caboDesenhado);
+    console.log(`✅ [TIPAGEM] Cabo adicionado ao array de polylines (${tipagemData.capacidade})`);
     
     console.log('🗺️ [TIPAGEM] Polyline criada com atributos:', {
       id_meta: idMeta,
@@ -6569,7 +6397,7 @@ openGoJSModal() {
     
     // Listener de click simples (para InfoWindow)
     let clickTimeout: ReturnType<typeof setTimeout> | null = null;
-    this.caboDesenhado.addListener('click', (event: google.maps.MapMouseEvent) => {
+    polylineAtual.addListener('click', (event: google.maps.MapMouseEvent) => {
       console.log(`🔵 Clique simples detectado no cabo desenhado:`, idMeta);
       
       // Cancelar timeout anterior se existir
@@ -6586,7 +6414,7 @@ openGoJSModal() {
     });
     
     // Listener de duplo clique (para editar diretamente)
-    this.caboDesenhado.addListener('dblclick', (event: google.maps.MapMouseEvent) => {
+    polylineAtual.addListener('dblclick', (event: google.maps.MapMouseEvent) => {
       console.log(`🔴 CABO DOUBLE-CLICK - Editando cabo desenhado:`, idMeta);
       
       // Cancelar clique simples se estiver pendente
@@ -6599,7 +6427,7 @@ openGoJSModal() {
       if (this.isMobile()) {
         console.log('📱 [MOBILE] Double tap no cabo desenhado - abrindo context menu');
         this.contextMenuType = 'cabo';
-        this.clickedPolyline = this.caboDesenhado;
+        this.clickedPolyline = polylineAtual;
         this.clickedCaboData = caboData;
         
         if (event.domEvent) {
@@ -6630,7 +6458,7 @@ openGoJSModal() {
             this.isFinalizandoEdicao = false;
             
             // 🆕 Setar dados do novo cabo para edição
-            this.clickedPolyline = this.caboDesenhado;
+            this.clickedPolyline = polylineAtual;
             this.clickedCaboData = caboData;
             
             // 🆕 Chamar editarCabo() para o novo cabo
@@ -6645,7 +6473,7 @@ openGoJSModal() {
       }
       
       // 🆕 Setar dados do cabo para edição
-      this.clickedPolyline = this.caboDesenhado;
+      this.clickedPolyline = polylineAtual;
       this.clickedCaboData = caboData;
       
       // 🆕 Chamar editarCabo() diretamente
@@ -6653,7 +6481,7 @@ openGoJSModal() {
     });
     
     // Listener de right-click (para menu de contexto)
-    this.caboDesenhado.addListener('rightclick', (event: google.maps.MapMouseEvent) => {
+    polylineAtual.addListener('rightclick', (event: google.maps.MapMouseEvent) => {
       console.log('🔴 RIGHT-CLICK no CABO DESENHADO');
       
       // 🛑 IMPORTANTE: Prevenir menu padrão do navegador PRIMEIRO
@@ -6697,9 +6525,7 @@ openGoJSModal() {
             // 🛡️ Limpar flag de finalização imediatamente após processar o novo cabo
             this.isFinalizandoEdicao = false;
             
-            if (this.caboDesenhado) {
-              this.processarRightClickCabo(event, this.caboDesenhado, caboData);
-            }
+            this.processarRightClickCabo(event, polylineAtual, caboData);
           }, 100);
           return;
         } else {
@@ -6708,14 +6534,13 @@ openGoJSModal() {
         }
       }
       
-      if (this.caboDesenhado) {
-        this.processarRightClickCabo(event, this.caboDesenhado, caboData);
+      if (polylineAtual) {
+        this.processarRightClickCabo(event, polylineAtual, caboData);
       }
     });
 
-    // 🔧 NOVO: Adicionar suporte a touch events para mobile (long press = right-click) no cabo desenhado (segunda ocorrência)
-    if (this.caboDesenhado) {
-      this.caboDesenhado.addListener('touchstart', (event: google.maps.MapMouseEvent) => {
+    // 🔧 NOVO: Adicionar suporte a touch events para mobile (long press = right-click) no cabo desenhado
+    polylineAtual.addListener('touchstart', (event: google.maps.MapMouseEvent) => {
         if (event.domEvent) {
           const touchEvent = event.domEvent as TouchEvent;
           if (touchEvent.touches && touchEvent.touches.length > 0) {
@@ -6725,12 +6550,12 @@ openGoJSModal() {
               x: touch.clientX,
               y: touch.clientY
             };
-            this.longPressPolyline = this.caboDesenhado;
+            this.longPressPolyline = polylineAtual;
 
             // Iniciar timer para long press
             this.longPressTimer = setTimeout(() => {
               // Long press detectado - simular right-click
-              console.log('📱 [MOBILE] Long press detectado no cabo desenhado (segunda ocorrência) - simulando right-click');
+              console.log('📱 [MOBILE] Long press detectado no cabo desenhado - simulando right-click');
               
               // Criar evento de mouse simulado
               const simulatedEvent = {
@@ -6745,27 +6570,25 @@ openGoJSModal() {
               } as google.maps.MapMouseEvent;
 
               // Obter dados do cabo
-              if (this.caboDesenhado) {
-                const caboDataTemp = {
-                  id_meta: this.caboDesenhado.get('id_meta'),
-                  capacidade: this.caboDesenhado.get('capacidade'),
-                  tipo: this.caboDesenhado.get('tipo'),
-                  Label_cabo: this.caboDesenhado.get('label') || this.caboDesenhado.get('Label_cabo'),
-                  GOOGLE_LATLNG: this.caboDesenhado.get('GOOGLE_LATLNG'),
-                  cabo_data: this.caboDesenhado.get('cabo_data')
-                };
+              const caboDataTemp = {
+                id_meta: polylineAtual.get('id_meta'),
+                capacidade: polylineAtual.get('capacidade'),
+                tipo: polylineAtual.get('tipo'),
+                Label_cabo: polylineAtual.get('label') || polylineAtual.get('Label_cabo'),
+                GOOGLE_LATLNG: polylineAtual.get('GOOGLE_LATLNG'),
+                cabo_data: polylineAtual.get('cabo_data')
+              };
 
-                // Chamar o handler de right-click
-                this.processarRightClickCabo(simulatedEvent, this.caboDesenhado, caboDataTemp);
-              }
+              // Chamar o handler de right-click
+              this.processarRightClickCabo(simulatedEvent, polylineAtual, caboDataTemp);
             }, this.LONG_PRESS_DURATION);
           }
         }
       });
 
-      this.caboDesenhado.addListener('touchend', (event: google.maps.MapMouseEvent) => {
+      polylineAtual.addListener('touchend', (event: google.maps.MapMouseEvent) => {
         // Cancelar long press se o toque terminou antes do tempo
-        if (this.longPressTimer && this.longPressPolyline === this.caboDesenhado) {
+        if (this.longPressTimer && this.longPressPolyline === polylineAtual) {
           clearTimeout(this.longPressTimer);
           this.longPressTimer = null;
           this.longPressPolyline = null;
@@ -6774,15 +6597,14 @@ openGoJSModal() {
         this.touchStartPosition = null;
       });
 
-      this.caboDesenhado.addListener('touchmove', (event: google.maps.MapMouseEvent) => {
+      polylineAtual.addListener('touchmove', (event: google.maps.MapMouseEvent) => {
         // Cancelar long press se o usuário moveu o dedo
-        if (this.longPressTimer && this.longPressPolyline === this.caboDesenhado) {
+        if (this.longPressTimer && this.longPressPolyline === polylineAtual) {
           clearTimeout(this.longPressTimer);
           this.longPressTimer = null;
           this.longPressPolyline = null;
         }
       });
-    }
     
     // Limpar pontos aguardando tipagem
     this.pontosCaboAguardandoTipagem = [];
@@ -6867,10 +6689,10 @@ openGoJSModal() {
       },
       error: (error) => {
         console.error('❌ [TIPAGEM] Erro ao inserir cabo:', error);
-        alert(`❌ Erro ao inserir cabo na base de dados:\n${error.message}\n\nO cabo será criado no mapa apenas localmente.`);
+        alert(`❌ Erro ao inserir cabo na base de dados:\n${error.message}\n\nO cabo não foi criado. Por favor, tente novamente.`);
         
-        // Ainda assim criar o cabo no mapa com ID temporário
-        this.criarCaboComTipagem(tipagemData);
+        // Não criar cabo se não houver ID real
+        // O usuário precisará tentar novamente
       }
     });
   }
