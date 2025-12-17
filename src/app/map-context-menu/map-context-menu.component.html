@@ -46,6 +46,21 @@
   </div>
 </ng-container>
 
+<!-- Menu para DIO -->
+<ng-container *ngIf="contextType === 'dio'">
+  <div class="menu-item" (click)="onAction('visualizar-dio')">
+    <mat-icon>visibility</mat-icon>
+    <span>Visualizar DIO</span>
+  </div>
+  
+  <div class="menu-divider"></div>
+  
+  <div class="menu-item" (click)="onAction('excluir-dio')">
+    <mat-icon>delete</mat-icon>
+    <span>Excluir DIO</span>
+  </div>
+</ng-container>
+
     
     <!-- Menu para MAPA (quando não há cabos) -->
     <ng-container *ngIf="contextType === 'map'">

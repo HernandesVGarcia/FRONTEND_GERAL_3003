@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagrama de Fluxo - Liberar Cabo</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            max-width: 1400px;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .instructions {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        
+        .instructions h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        
+        .instructions ol {
+            margin-left: 20px;
+            color: #555;
+            line-height: 1.8;
+        }
+        
+        .instructions li {
+            margin-bottom: 5px;
+        }
+        
+        .mermaid-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            min-height: 600px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+        
+        .mermaid {
+            background: white;
+        }
+        
+        .loading {
+            text-align: center;
+            color: #667eea;
+            font-size: 18px;
+            padding: 40px;
+        }
+        
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            
+            .container {
+                box-shadow: none;
+                padding: 20px;
+            }
+            
+            .instructions {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Diagrama de Fluxo - Liberar Cabo</h1>
+        <p class="subtitle">Fluxo de comunicação entre Google Maps, Serviços Angular e API Backend</p>
+        
+        <div class="instructions">
+            <h3>📸 Como exportar como JPG:</h3>
+            <ol>
+                <li>Aguarde o diagrama renderizar completamente abaixo</li>
+                <li>Use a ferramenta de captura de tela do Windows (Win + Shift + S) ou Print Screen</li>
+                <li>Selecione apenas a área do diagrama (sem as instruções)</li>
+                <li>Salve a imagem como <strong>fluxo-liberar-cabo.jpg</strong> na pasta <code>angular-google-maps/src/assets/</code></li>
+                <li>Ou use a função de impressão do navegador (Ctrl + P) e salve como PDF/imagem</li>
+            </ol>
+        </div>
+        
+        <div class="mermaid-container">
+            <div id="mermaid-diagram" class="mermaid">
+sequenceDiagram
+    participant User as Usuário
+    participant GM as GoogleMapsComponent
+    participant BOCP as BuscaObjetoConexPontaService
+    participant BS as BocasService
+    participant DBS as DesconexaoBocaService
+    participant API as API Backend
+
+    User->>GM: Clica no cabo (context menu)
+    User->>GM: Seleciona "Liberar Cabo"
+    
+    GM->>GM: Identifica ponta clicada (A ou B)
+    GM->>GM: Obtém idMetaCabo e capacidade
+    
+    Note over GM: Passo 1: Buscar objeto conectado
+    GM->>BOCP: buscarObjetoConectado(idMetaCabo, pontaCabo)
+    
+    BOCP->>API: POST /verificar_ponta<br/>{ponta: "A", IDMETA: 762991}
+    API-->>BOCP: {response: [{fibra_1label: "=TST130171!PROP.BOCA1_1.VALUE"}], ...}
+    
+    BOCP->>BOCP: extrairObjetoConectado(fibra_1label)
+    Note over BOCP: Extrai: tipo="CAIXA", idMeta=130171, numeroConexao=1
+    
+    BOCP->>API: POST /tipo_objeto<br/>{idmeta: 130171}
+    API-->>BOCP: {idmeta: 130171, tipo_objeto: "CAIXA", id_city: 210, ...}
+    
+    BOCP->>BOCP: validarCaixa(objeto)
+    BOCP->>API: POST /tipo_objeto<br/>{idmeta: 130171}
+    API-->>BOCP: {tipo_objeto: "CAIXA", ...}
+    
+    BOCP-->>GM: ObjetoConectado {tipo: "CAIXA", idMeta: 130171, numeroConexao: 1}
+    
+    alt Objeto não encontrado na ponta identificada
+        GM->>BOCP: buscarObjetoConectado(idMetaCabo, outraPonta)
+        BOCP->>API: POST /verificar_ponta<br/>{ponta: "B", IDMETA: 762991}
+        API-->>BOCP: Response com fibra_1label
+        BOCP-->>GM: ObjetoConectado ou null
+    end
+    
+    Note over GM: Passo 2: Validar conexão na boca
+    GM->>GM: Busca caixa no array destino
+    GM->>GM: authService.setIDmetaCaixa(idMetaCaixa)
+    
+    GM->>BS: selecionar()
+    BS->>API: POST /bocas<br/>{idcidades: 210, idmeta: 130171}
+    API-->>BS: Bocas[] com dados das 18 bocas
+    BS-->>GM: Bocas[] (ex: BOCA1 contém "cabo762991A")
+    
+    GM->>GM: Valida que cabo está na boca encontrada
+    Note over GM: Verifica se BOCA1 contém "cabo762991A"
+    
+    Note over GM: Passo 3: Desconectar cabo
+    GM->>DBS: desconectar(request)
+    Note over GM: request = {<br/>  numero_boca: "boca1",<br/>  idmeta_caixa: 130171,<br/>  idmeta_cabo: 762991,<br/>  Ponta_cabo: "A",<br/>  Capacidade_cabo: 12<br/>}
+    
+    DBS->>API: POST /desconexao_boca<br/>{numero_boca, idmeta_caixa, idmeta_cabo, Ponta_cabo, Capacidade_cabo}
+    API-->>DBS: {success: true, message: "...", ja_desconectado: false}
+    DBS-->>GM: DesconexaoBocaResponse
+    
+    GM->>User: Exibe alerta de sucesso
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Inicializar Mermaid
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'default',
+            themeVariables: {
+                primaryColor: '#667eea',
+                primaryTextColor: '#fff',
+                primaryBorderColor: '#764ba2',
+                lineColor: '#667eea',
+                secondaryColor: '#f8f9fa',
+                tertiaryColor: '#fff',
+                noteBkgColor: '#fff5e6',
+                noteTextColor: '#333',
+                noteBorderColor: '#ffa500',
+                actorBorder: '#667eea',
+                actorBkg: '#e8eaf6',
+                actorTextColor: '#333',
+                actorLineColor: '#667eea',
+                signalColor: '#333',
+                signalTextColor: '#333',
+                labelBoxBkgColor: '#e8eaf6',
+                labelBoxBorderColor: '#667eea',
+                labelTextColor: '#333',
+                loopTextColor: '#333',
+                activationBorderColor: '#667eea',
+                activationBkgColor: '#e8eaf6',
+                sequenceNumberColor: '#fff'
+            },
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true,
+                curve: 'basis'
+            },
+            sequence: {
+                diagramMarginX: 50,
+                diagramMarginY: 10,
+                actorMargin: 50,
+                width: 150,
+                height: 65,
+                boxMargin: 10,
+                boxTextMargin: 5,
+                noteMargin: 10,
+                messageMargin: 35,
+                mirrorActors: true,
+                bottomMarginAdj: 1,
+                useMaxWidth: true,
+                rightAngles: false,
+                showSequenceNumbers: false
+            }
+        });
+
+        // Aguardar renderização
+        window.addEventListener('load', function() {
+            const diagram = document.getElementById('mermaid-diagram');
+            if (diagram) {
+                console.log('Diagrama Mermaid carregado com sucesso!');
+            }
+        });
+    </script>
+</body>
+</html>
+

@@ -99,6 +99,19 @@
   background-color: #7c3aed;
 }
 
+.map-tracer-button.medir-distancia {
+  background-color: #ec9d0b; /* Laranja */
+}
+
+.map-tracer-button.medir-distancia:hover {
+  background-color: #b91c1c;
+}
+
+.map-tracer-button.medir-distancia.ativo {
+  background-color: #f59e0b; /* Laranja mais claro quando ativo */
+  box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.3);
+}
+
 
 
 /* Tooltip styles */
@@ -108,7 +121,8 @@
 .tooltip-desenha-poligono,
 .tooltip-finaliza-poligono,
 .tooltip-minha-localizacao,
-.tooltip-selecionar-cidades {
+.tooltip-selecionar-cidades,
+.tooltip-medir-distancia {
   position: absolute;
   top: calc(100% + 12px);
   left: 50%;
@@ -133,7 +147,8 @@
 .group:hover .tooltip-desenha-poligono,
 .group:hover .tooltip-finaliza-poligono,
 .group:hover .tooltip-minha-localizacao,
-.group:hover .tooltip-selecionar-cidades {
+.group:hover .tooltip-selecionar-cidades,
+.group:hover .tooltip-medir-distancia {
   opacity: 1;
   visibility: visible;
 }
@@ -145,7 +160,8 @@
 .tooltip-desenha-poligono::after,
 .tooltip-finaliza-poligono::after,
 .tooltip-minha-localizacao::after,
-.tooltip-selecionar-cidades::after {
+.tooltip-selecionar-cidades::after,
+.tooltip-medir-distancia::after {
   content: '';
   position: absolute;
   bottom: 100%;
@@ -188,7 +204,8 @@
   .tooltip-desenha-poligono,
   .tooltip-finaliza-poligono,
   .tooltip-minha-localizacao,
-  .tooltip-selecionar-cidades {
+  .tooltip-selecionar-cidades,
+  .tooltip-medir-distancia {
     font-size: 12px;
     padding: 6px 8px;
   }

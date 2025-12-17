@@ -10,7 +10,17 @@
     <div class="tooltip-limpa">Limpa Tracer</div>
   </div>
 
-  
+  <!-- Régua -->
+  <div class="group">
+    <button 
+      class="map-tracer-button medir-distancia"
+      [class.ativo]="modoMedicaoAtivo"
+      (click)="onMedirDistancia()"
+      aria-label="Régua">
+      <mat-icon>straighten</mat-icon>
+    </button>
+    <div class="tooltip-medir-distancia">Régua</div>
+  </div>
 
   <!-- Minha Localização -->
   <div class="group">

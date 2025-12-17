@@ -19,6 +19,7 @@ export class MapTracerButtonsComponent implements OnInit {
   @ViewChild('gpsComponent') gpsComponent!: GoogleGpsComponent;
 
   showCityModal = false;
+  modoMedicaoAtivo = false;
 
   constructor(
     private authService: AuthService,
@@ -26,6 +27,10 @@ export class MapTracerButtonsComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
+    // Escutar evento de desativação da medição (via ESC ou outros)
+    window.addEventListener('medicaoDesativada', () => {
+      this.modoMedicaoAtivo = false;
+    });
   }
 
   /**
@@ -156,6 +161,27 @@ export class MapTracerButtonsComponent implements OnInit {
     console.log('🗺️ [TRACER-BUTTONS] Modal fechado sem seleção');
     this.showCityModal = false;
     window.location.reload();
+  }
+
+  /**
+   * 📏 Ativa/Desativa modo de medição de distância (Régua)
+   */
+  onMedirDistancia(): void {
+    console.log('🗺️ [TRACER-BUTTONS] Régua clicado');
+    
+    this.modoMedicaoAtivo = !this.modoMedicaoAtivo;
+    
+    if (this.modoMedicaoAtivo) {
+      // Disparar evento para ativar modo de medição
+      const event = new CustomEvent('startModoMedicao');
+      window.dispatchEvent(event);
+      console.log('🗺️ [TRACER-BUTTONS] Evento startModoMedicao disparado');
+    } else {
+      // Disparar evento para desativar modo de medição
+      const event = new CustomEvent('stopModoMedicao');
+      window.dispatchEvent(event);
+      console.log('🗺️ [TRACER-BUTTONS] Evento stopModoMedicao disparado');
+    }
   }
 
   /**

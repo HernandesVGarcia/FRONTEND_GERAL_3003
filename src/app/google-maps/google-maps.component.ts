@@ -37,7 +37,9 @@ import { KmlExportService } from '../servico/kml-export.service';
 import { InsertCaboService } from '../servico/insert-cabo.service';
 import { UpdateCaboService } from '../servico/update-cabo.service';
 import { UpdateCaixaService } from '../servico/update-caixa.service';
+import { UpdateDioService, UpdateDioData, UpdateDioResponse } from '../servico/update-dio.service';
 import { InsertLogService } from '../servico/insert-log.service';
+import { ExcluiCaboService } from '../servico/exclui-cabo.service';
 import { Subject, takeUntil } from 'rxjs';
 
 import { MatDialog } from '@angular/material/dialog';
@@ -48,7 +50,10 @@ import { GraphvizModalComponent } from '../graphviz-modal/graphviz-modal.compone
 import { ConexaoCaboCaixaEmendaComponent, ConexaoCaboCaixaEmendaData } from '../conexao-cabo-caixa-emenda/conexao-cabo-caixa-emenda.component';
 import { BocasService } from '../servico/bocas.service';
 import { Bocas } from '../modelo/Bocas';
+import { BandejasService } from '../servico/bandejas.service';
+import { Bandejas } from '../modelo/Bandejas';
 import { firstValueFrom } from 'rxjs';
+import { BuscaObjetoConexPontaService, ObjetoConectado } from '../servico/busca-objeto-conex-ponta.service';
 
 //import { Cto_SP } from '../modelo/Cto_SP';
 //import { GoogleInfoWindowComponent } from '../google-infowindow/google-infowindow.component';
@@ -261,13 +266,15 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
   // 🎯 Propriedades para context menu
   contextMenuVisible = false;
   contextMenuPosition = { x: 0, y: 0 };
-  contextMenuType: 'caixa' |'map' | 'cabo' = 'map'; // 🆕 Tipo de contexto do menu
+  contextMenuType: 'caixa' | 'map' | 'cabo' | 'dio' = 'map'; // 🆕 Tipo de contexto do menu
   private contextMenuListenerAdded = false; // Flag para evitar listeners duplicados
   private clickedCaboData: any = null; // 🆕 Armazena dados do cabo clicado
   private clickedCaixaData: any = null; // 🆕 Armazena dados da caixa clicada
   private clickedCTOData: any = null; // 🆕 Armazena dados da CTO clicada
   private clickedCTOSPData: any = null; // 🆕 Armazena dados da CTO_SP clicada
+  private clickedDioData: any = null; // 🆕 Armazena dados do DIO clicado
   private clickedPolyline: google.maps.Polyline | null = null; // 🆕 Armazena a polyline clicada
+  private ultimaCoordenadaClique: google.maps.LatLng | null = null; // 🆕 Armazena coordenada do último clique para identificar ponta
   // 🔧 Propriedades para edição de caixa/CTO/CTO_SP
   private caixaEmEdicao: google.maps.Marker | null = null; // Marcador em edição (caixa, CTO ou CTO_SP)
   private caixaEmEdicaoIndex: number | null = null; // Índice do item em edição
@@ -276,6 +283,13 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
   private caixaEmEdicaoOriginalIcon: google.maps.Icon | null = null; // Ícone original para restaurar
   private listenerMapaSalvarCaixa: google.maps.MapsEventListener | null = null; // Listener para salvar ao clicar no mapa
   private listenerEscCancelarCaixa: any = null; // Listener para cancelar com ESC
+  // 🔧 Propriedades para edição de DIO
+  private dioEmEdicao: google.maps.Marker | null = null; // Marcador DIO em edição
+  private dioEmEdicaoIndex: number | null = null; // Índice do DIO em edição
+  private dioEmEdicaoOriginalPosition: { lat: number, lng: number } | null = null; // Posição original para cancelar
+  private dioEmEdicaoOriginalIcon: google.maps.Icon | null = null; // Ícone original para restaurar
+  private listenerMapaSalvarDio: google.maps.MapsEventListener | null = null; // Listener para salvar ao clicar no mapa
+  private listenerEscCancelarDio: any = null; // Listener para cancelar com ESC
   // 🔧 Propriedades para detectar long press (mobile)
   private touchStartTime: number = 0;
   private touchStartPosition: { x: number, y: number } | null = null;
@@ -314,6 +328,16 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
   pontosCaboAguardandoTipagem: google.maps.LatLng[] = []; // Guarda pontos enquanto modal está aberto
 
   // ============================================================================
+  // 📏 SEÇÃO: PROPRIEDADES PARA MEDIÇÃO DE DISTÂNCIA (RÉGUA)
+  // ============================================================================
+  modoMedicao = false;
+  pontosMedicao: google.maps.LatLng[] = [];
+  linhaMedicao: google.maps.Polyline | null = null;
+  marcadoresMedicao: google.maps.Marker[] = [];
+  labelsMedicao: google.maps.Marker[] = [];
+  listenerMapaMedicao: google.maps.MapsEventListener | null = null;
+
+  // ============================================================================
   // 🏗️ CONSTRUCTOR
   // ============================================================================
   constructor(
@@ -324,9 +348,13 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
     private insertCaboService: InsertCaboService,
     private updateCaboService: UpdateCaboService,
     private updateCaixaService: UpdateCaixaService,
+    private updateDioService: UpdateDioService,
     private bocasService: BocasService,
+    private bandejasService: BandejasService,
     private dialog: MatDialog,
-    private insertLogService: InsertLogService
+    private insertLogService: InsertLogService,
+    private excluiCaboService: ExcluiCaboService,
+    private buscaObjetoConexPontaService: BuscaObjetoConexPontaService
   ) {}
 
   // ============================================================================
@@ -497,6 +525,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
       this.clickedCaixaData = null;
       this.clickedCTOData = null; // 🔧 NOVO: Limpar dados de CTO
       this.clickedCTOSPData = null; // 🔧 NOVO: Limpar dados de CTO_SP
+      this.clickedDioData = null; // 🆕 Limpar dados do DIO
     }
     
     this.isCaboClicked = false; // 🔄 Reseta flag
@@ -578,8 +607,13 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
       //this.excluirCaixa();
         break;
 
-
-
+      // 🆕 Ações para DIO
+      case 'visualizar-dio':
+        this.visualizarDio();
+        break;
+      case 'excluir-dio':
+        this.excluirDio();
+        break;
 
       default:
         console.warn('🗺️ [CONTEXT-MENU] Ação não reconhecida:', action);
@@ -1419,7 +1453,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
     this.updateCaboService.atualizarCabo(caboData).subscribe({
       next: (response) => {
         console.log('✅ [CONEXÃO] Coordenadas salvas com sucesso:', response);
-        alert(`✅ Conexão realizada e coordenadas atualizadas!\n\nPonta ${ponta} agora está conectada à caixa ${caixa.numero}`);
+        //20251210 alert(`✅ Conexão realizada e coordenadas atualizadas!\n\nPonta ${ponta} agora está conectada à caixa ${caixa.numero}`);
       },
       error: (error) => {
         console.error('❌ [CONEXÃO] Erro ao salvar coordenadas:', error);
@@ -1441,7 +1475,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
 
     console.log(`🔍 [CONEXÃO] Verificando ${this.destino.length} caixas...`);
 
-    const THRESHOLD_DISTANCIA_METROS = 5; // 5 metros
+    const THRESHOLD_DISTANCIA_METROS = 1; // 5 metros
     let caixaMaisProxima: Caixa | null = null;
     let menorDistancia = Infinity;
 
@@ -1473,6 +1507,75 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
     }
 
     return caixaMaisProxima;
+  }
+
+  /**
+   * 📍 Identifica qual ponta do cabo foi clicada baseado na posição do clique
+   * Calcula o tamanho total do cabo, divide ao meio, e verifica se o clique
+   * está mais próximo da ponta A (início) ou da ponta B (fim)
+   * 
+   * @param path - Path da polyline do cabo
+   * @param pontoClique - Coordenada do ponto clicado
+   * @returns 'A' se mais próximo da ponta A, 'B' se mais próximo da ponta B
+   */
+  private identificarPontaClicada(
+    path: google.maps.MVCArray<google.maps.LatLng>,
+    pontoClique: google.maps.LatLng
+  ): 'A' | 'B' {
+    if (path.getLength() < 2) {
+      console.warn('⚠️ [IDENTIFICAR-PONTA] Path muito curto, usando ponta A como padrão');
+      return 'A';
+    }
+
+    // 1. Calcular o tamanho total do cabo (soma das distâncias entre todos os pontos)
+    let tamanhoTotal = 0;
+    const distancias: number[] = [0]; // Primeira distância é 0 (início)
+    
+    for (let i = 0; i < path.getLength() - 1; i++) {
+      const pontoAtual = path.getAt(i);
+      const proximoPonto = path.getAt(i + 1);
+      const distancia = google.maps.geometry.spherical.computeDistanceBetween(
+        pontoAtual,
+        proximoPonto
+      );
+      tamanhoTotal += distancia;
+      distancias.push(tamanhoTotal); // Distância acumulada até este ponto
+    }
+
+    console.log(`📏 [IDENTIFICAR-PONTA] Tamanho total do cabo: ${tamanhoTotal.toFixed(2)}m`);
+
+    // 2. Encontrar o ponto do path mais próximo do clique
+    let pontoMaisProximoIndex = 0;
+    let menorDistanciaAoClique = Infinity;
+
+    for (let i = 0; i < path.getLength(); i++) {
+      const pontoPath = path.getAt(i);
+      const distanciaAoClique = google.maps.geometry.spherical.computeDistanceBetween(
+        pontoPath,
+        pontoClique
+      );
+      
+      if (distanciaAoClique < menorDistanciaAoClique) {
+        menorDistanciaAoClique = distanciaAoClique;
+        pontoMaisProximoIndex = i;
+      }
+    }
+
+    // 3. Calcular a distância acumulada até o ponto mais próximo do clique
+    const distanciaAcumuladaAteClique = distancias[pontoMaisProximoIndex];
+    
+    // 4. Dividir o tamanho total ao meio
+    const metadeTamanho = tamanhoTotal / 2;
+
+    console.log(`📍 [IDENTIFICAR-PONTA] Distância acumulada até clique: ${distanciaAcumuladaAteClique.toFixed(2)}m`);
+    console.log(`📍 [IDENTIFICAR-PONTA] Metade do tamanho: ${metadeTamanho.toFixed(2)}m`);
+
+    // 5. Se a distância acumulada for menor que metade → ponta A, senão → ponta B
+    const ponta = distanciaAcumuladaAteClique < metadeTamanho ? 'A' : 'B';
+    
+    console.log(`✅ [IDENTIFICAR-PONTA] Ponta identificada: ${ponta}`);
+    
+    return ponta;
   }
   
   /**
@@ -1517,6 +1620,12 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
     this.clickedCaboData = cabo;
     // 🆕 Armazenar a polyline clicada para poder editá-la
     this.clickedPolyline = polyline;
+    
+    // 🆕 Armazenar coordenada do clique para identificar ponta depois
+    if (event.latLng) {
+      this.ultimaCoordenadaClique = event.latLng;
+      console.log('📍 [RIGHT-CLICK-CABO] Coordenada do clique armazenada:', event.latLng.lat(), event.latLng.lng());
+    }
     
     // Definir tipo de contexto como 'cabo'
     this.contextMenuType = 'cabo';
@@ -1755,23 +1864,282 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
     console.log('✅ [EDITAR-CABO] Edição cancelada e estado restaurado');
   }
 
-  private liberarCabo(): void {
+
+  //********************************************************************************** */
+  //liberar cabo do context MENU
+  //********************************************************************************** */
+  private async liberarCabo(): Promise<void> {
     console.log('🔴 [CONTEXT-MENU] Liberando cabo...', this.clickedCaboData);
-    if (this.clickedCaboData) {
-      console.log('Dados do cabo clicado:', this.clickedCaboData);
-      // TODO: Implementar lógica de liberação do cabo
-      alert(`Funcionalidade de liberar cabo será implementada em breve!`);
+    
+    if (!this.clickedCaboData && !this.clickedPolyline) {
+      console.warn('⚠️ [LIBERAR-CABO] Nenhum cabo selecionado');
+      alert('Erro: Nenhum cabo selecionado.');
+      return;
     }
+
+    // Obter dados do cabo
+    const idMetaCabo = this.clickedPolyline?.get('id_meta') || this.clickedCaboData?.id_meta;
+    const capacidadeStr = this.clickedPolyline?.get('capacidade') || this.clickedCaboData?.capacidade;
+    
+    // Extrair capacidade numérica
+    let capacidadeNum: number;
+    if (typeof capacidadeStr === 'string') {
+      const match = capacidadeStr.match(/(\d+)/);
+      capacidadeNum = match ? parseInt(match[1], 10) : 12;
+    } else if (typeof capacidadeStr === 'number') {
+      capacidadeNum = capacidadeStr;
+    } else {
+      console.warn('⚠️ [LIBERAR-CABO] Capacidade não encontrada, usando fallback 12');
+      capacidadeNum = 12;
+    }
+
+    if (!idMetaCabo) {
+      console.error('❌ [LIBERAR-CABO] ID do cabo não encontrado');
+      alert('Erro: Não foi possível obter o ID do cabo.');
+      return;
+    }
+
+    // Obter coordenadas das pontas do cabo
+    const path = this.clickedPolyline?.getPath();
+    if (!path || path.getLength() < 2) {
+      console.error('❌ [LIBERAR-CABO] Path do cabo inválido');
+      alert('Erro: Não foi possível obter as coordenadas do cabo.');
+      return;
+    }
+
+    const pontaA = path.getAt(0);
+    const pontaB = path.getAt(path.getLength() - 1);
+
+    // 🆕 NOVO: Identificar qual ponta foi clicada baseado na posição do clique
+    let pontaCabo: 'A' | 'B' = 'A';
+    
+    if (this.ultimaCoordenadaClique) {
+      // Usar a lógica de identificação baseada na distância acumulada
+      pontaCabo = this.identificarPontaClicada(path, this.ultimaCoordenadaClique);
+      console.log(`✅ [LIBERAR-CABO] Ponta identificada pelo clique: ${pontaCabo}`);
+    } else {
+      // Fallback: tentar pela ponta A primeiro
+      console.warn('⚠️ [LIBERAR-CABO] Coordenada do clique não disponível, tentando ponta A primeiro');
+    }
+
+    // 🆕 NOVO: Buscar objeto conectado usando o serviço (substitui busca por proximidade)
+    let objetoConectado: ObjetoConectado | null = null;
+    
+    try {
+      objetoConectado = await firstValueFrom(
+        this.buscaObjetoConexPontaService.buscarObjetoConectado(idMetaCabo, pontaCabo)
+      );
+    } catch (error) {
+      console.error('❌ [LIBERAR-CABO] Erro ao buscar objeto conectado:', error);
+    }
+
+    // Validar se encontrou um objeto conectado suportado (CAIXA ou DIO) na ponta clicada
+    if (!objetoConectado || (objetoConectado.tipo !== 'CAIXA' && objetoConectado.tipo !== 'DIO')) {
+      console.error(`❌ [LIBERAR-CABO] Nenhum objeto conectado encontrado na ponta ${pontaCabo}`);
+      alert(`A ponta ${pontaCabo} do cabo não esta conectada. Verifique se clicou próximo à conexão.`);
+      return;
+    }
+
+    console.log(`✅ [LIBERAR-CABO] Objeto encontrado: ${objetoConectado.tipo} (ID: ${objetoConectado.idMeta}), Ponta: ${pontaCabo}`);
+
+    // 🆕 Chamar método unificado de desconexão (suporta CAIXA e DIO)
+    // A validação de bocas para CAIXA é feita internamente no serviço busca-objeto-conex-ponta.service.ts
+    console.log('🔌 [LIBERAR-CABO] Enviando requisição de desconexão...');
+
+    this.buscaObjetoConexPontaService.desconectarCabo(
+      objetoConectado,
+      idMetaCabo,
+      pontaCabo,
+      capacidadeNum
+    ).subscribe({
+      next: (response) => {
+        console.log('✅ [LIBERAR-CABO] Desconexão realizada com sucesso:', response);
+        
+        if (response.ja_desconectado) {
+          alert(`O cabo já estava desconectado. ${response.message}`);
+        } else {
+          alert(`Cabo desconectado com sucesso! ${response.message}`);
+          
+          // Recarregar o mapa ou atualizar as conexões
+          // Você pode adicionar lógica aqui para atualizar o mapa
+        }
+      },
+      error: (error) => {
+        console.error('❌ [LIBERAR-CABO] Erro ao desconectar:', error);
+        alert(`Erro ao desconectar o cabo: ${error}`);
+      }
+    });
   }
 
   private excluirCabo(): void {
     console.log('🔴 [CONTEXT-MENU] Excluindo cabo...', this.clickedCaboData);
-    if (this.clickedCaboData) {
-      console.log('Dados do cabo clicado:', this.clickedCaboData);
-      // TODO: Implementar lógica de exclusão do cabo
-      const confirmacao = confirm(`Tem certeza que deseja excluir este cabo?`);
-      if (confirmacao) {
-        alert(`Funcionalidade de excluir cabo será implementada em breve!`);
+    
+    if (!this.clickedCaboData) {
+      console.warn('⚠️ [EXCLUI-CABO] Nenhum cabo selecionado');
+      return;
+    }
+
+    // Obter dados do cabo
+    const idMeta = this.clickedPolyline?.get('id_meta') || this.clickedCaboData.id_meta;
+    const idCity = this.authService.getIdCity();
+    
+    if (!idMeta) {
+      alert('Erro: ID do cabo não encontrado');
+      return;
+    }
+
+    if (!idCity) {
+      alert('Erro: ID da cidade não encontrado');
+      return;
+    }
+
+    // id_condominio padrão é 0 (fora de condomínio)
+    const idCondominio = this.clickedCaboData.id_condominio || 0;
+
+    // Confirmação antes de excluir
+    const confirmacao = confirm(`Tem certeza que deseja excluir este cabo?\n\n🆔 ID: ${idMeta}`);
+    
+    if (!confirmacao) {
+      return;
+    }
+
+    // Preparar requisição
+    const request = {
+      id_meta: idMeta,
+      id_city: idCity,
+      id_condominio: idCondominio
+    };
+
+    // Fazer a requisição usando o serviço
+    this.excluiCaboService.excluirCabo(request).subscribe({
+      next: (response) => {
+        console.log('✅ [EXCLUI-CABO] Resposta da API:', response);
+        
+        if (response.success) {
+          console.log('🗑️ [EXCLUI-CABO] Iniciando remoção da polyline do mapa...');
+          console.log('🗑️ [EXCLUI-CABO] clickedPolyline existe?', !!this.clickedPolyline);
+          console.log('🗑️ [EXCLUI-CABO] id_meta:', idMeta);
+          
+          // Se clickedPolyline estiver null, buscar pelos arrays usando id_meta
+          let polylineParaRemover = this.clickedPolyline;
+          
+          if (!polylineParaRemover) {
+            console.log('🔍 [EXCLUI-CABO] clickedPolyline é null, buscando pelos arrays...');
+            polylineParaRemover = this.buscarPolylinePorIdMeta(idMeta);
+            console.log('🔍 [EXCLUI-CABO] Polyline encontrada?', !!polylineParaRemover);
+          }
+          
+          // Remover a polyline do mapa
+          if (polylineParaRemover) {
+            console.log('🗑️ [EXCLUI-CABO] Chamando setMap(null)...');
+            polylineParaRemover.setMap(null);
+            console.log('🗑️ [EXCLUI-CABO] setMap(null) executado');
+            
+            // Verificar se ainda está no mapa
+            const map = polylineParaRemover.getMap();
+            console.log('🗑️ [EXCLUI-CABO] Polyline ainda está no mapa?', map !== null);
+            
+            // Remover também dos arrays de polylines
+            this.removerPolylineDosArrays(polylineParaRemover);
+          } else {
+            console.warn('⚠️ [EXCLUI-CABO] Não foi possível encontrar a polyline para remover!');
+          }
+
+          // Limpar dados do cabo
+          this.clickedPolyline = null;
+          this.clickedCaboData = null;
+          
+          // Fechar context menu
+          this.hideContextMenu();
+
+      // Inserir log de exclusao de cabo com id_evento 19
+      const idUsuario = this.authService.getIdUser();
+      const idCity = this.authService.getIdCity();
+      if (idUsuario && idCity) {
+        console.log('🔄 Inserindo log de exclusão de cabo...');
+        this.insertLogService.inserirLog({
+          id_usuario: idUsuario,
+          id_evento: 19,
+          id_city: idCity,
+          id_meta_objeto: request.id_meta,
+          descricao: `Exclusão de Cabo: ${request.id_meta} `,
+          VERSION: 'Fiberworks WEB 1.0.0'
+        }).subscribe({
+        next: (logResponse) => {
+          console.log('✅ Log de move de caixa:', logResponse);
+        },
+        error: (error) => {
+          console.error('❌ Erro ao inserir log exclusao de cabo:', error);
+        }
+      });
+      }
+
+
+
+
+          
+          //alert(`✅ Cabo excluído com sucesso!\n\n🆔 ID: ${idMeta}`);
+        } else {
+          alert(`❌ Erro ao excluir cabo: ${response.error || 'Erro desconhecido'}`);
+        }
+      },
+      error: (error: string) => {
+        console.error('❌ [EXCLUI-CABO] Erro na requisição:', error);
+        
+        // Verificar se é erro de cabo conectado
+        if (error.includes('Cabo Conectado') || error.includes('conectado')) {
+          alert(`⚠️ ${error}`);
+        } else {
+          alert(`❌ Erro ao excluir cabo: ${error}`);
+        }
+      }
+    });
+  }
+
+  /**
+   * 🔍 Busca uma polyline pelos arrays usando id_meta
+   */
+  private buscarPolylinePorIdMeta(idMeta: number): google.maps.Polyline | null {
+    const arrays = [
+      this.polylines1f, this.polylines2f, this.polylines4f, 
+      this.polylines6f, this.polylines8f, this.polylines12f,
+      this.polylines24f, this.polylines36f, this.polylines48f,
+      this.polylines72f, this.polylines144f
+    ];
+
+    for (const array of arrays) {
+      const polyline = array.find((p: google.maps.Polyline) => {
+        const polylineIdMeta = p.get('id_meta');
+        return polylineIdMeta === idMeta;
+      });
+      
+      if (polyline) {
+        console.log('✅ [EXCLUI-CABO] Polyline encontrada no array');
+        return polyline;
+      }
+    }
+    
+    console.warn('⚠️ [EXCLUI-CABO] Polyline não encontrada em nenhum array');
+    return null;
+  }
+
+  /**
+   * 🗑️ Remove a polyline dos arrays de controle
+   */
+  private removerPolylineDosArrays(polyline: google.maps.Polyline): void {
+    const arrays = [
+      this.polylines1f, this.polylines2f, this.polylines4f, 
+      this.polylines6f, this.polylines8f, this.polylines12f,
+      this.polylines24f, this.polylines36f, this.polylines48f,
+      this.polylines72f, this.polylines144f
+    ];
+
+    for (const array of arrays) {
+      const index = array.indexOf(polyline);
+      if (index > -1) {
+        array.splice(index, 1);
+        console.log('🗑️ [EXCLUI-CABO] Polyline removida do array');
+        break;
       }
     }
   }
@@ -2349,6 +2717,17 @@ polylineOptions144f: google.maps.PolylineOptions = {
       console.log('🗺️ [GOOGLE-MAPS] Cancelando desenho de cabo');
       this.cancelarDesenhoCabo();
     });
+
+    // 📏 NOVO: Listeners para medição de distância (régua)
+    window.addEventListener('startModoMedicao', () => {
+      console.log('📏 [GOOGLE-MAPS] Ativando modo de medição');
+      this.ativarModoMedicao();
+    });
+
+    window.addEventListener('stopModoMedicao', () => {
+      console.log('📏 [GOOGLE-MAPS] Desativando modo de medição');
+      this.desativarModoMedicao();
+    });
     
     
     //const lat= this.authService.getLat
@@ -2666,11 +3045,24 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
         marker.setMap(this.map);
       }
       
-      // Adicionar listener de duplo clique para abrir o modal Visualiza DIO
+      // Adicionar listener de duplo clique para EDITAR DIO (movimentar)
       marker.addListener('dblclick', () => {
-        console.log('DIO clicado duas vezes:', location);
-        if (location.id_meta) {
-          this.openVisualizaDioModal(location.id_meta, location.CAPACIDADE);
+        console.log('🖱️ [DIO] Double-click no DIO:', location);
+        const index = this.markerDios.indexOf(marker);
+        if (index !== -1) {
+          this.habilitarEdicaoDio(index);
+        }
+      });
+
+      // 🆕 Adicionar listener de rightclick para context menu do DIO
+      marker.addListener('rightclick', (event: google.maps.MapMouseEvent) => {
+        console.log('🔴 [DIO] Right-click no DIO:', location);
+        this.clickedDioData = location;
+        this.contextMenuType = 'dio';
+        
+        if (event.domEvent) {
+          const mouseEvent = event.domEvent as MouseEvent;
+          this.showContextMenu(mouseEvent.clientX, mouseEvent.clientY);
         }
       });
       
@@ -5066,27 +5458,7 @@ private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = fal
       }
     });
 
-      // Inserir log de atualização de caixa com id_evento 31
-      const idUsuario = this.authService.getIdUser();
-      const idCity = this.authService.getIdCity();
-      if (idUsuario && idCity) {
-        console.log('🔄 Inserindo log de move de caixa...');
-        this.insertLogService.inserirLog({
-          id_usuario: idUsuario,
-          id_evento: 31,
-          id_city: idCity,
-          id_meta_objeto: caixa.id_meta,
-          descricao: `Move Caixa numero: ${caixa.numero}  idmeta: ${caixa.id_meta} `,
-          VERSION: 'Fiberworks WEB 1.0.0'
-        }).subscribe({
-        next: (logResponse) => {
-          console.log('✅ Log de move de caixa:', logResponse);
-        },
-        error: (error) => {
-          console.error('❌ Erro ao inserir log de move de caixa:', error);
-        }
-      });
-      }
+      
     
     // Retornar aqui para não desabilitar edição antes da requisição terminar
     return;
@@ -5455,6 +5827,125 @@ private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = fal
   }
 
   /**
+   * 🔌 Busca e atualiza todas as pontas dos cabos conectados ao DIO
+   * @param idMetaDio - ID do DIO
+   * @param novaCoordenada - Nova coordenada do DIO
+   */
+  private async atualizarCabosConectadosADio(
+    idMetaDio: number, 
+    novaCoordenada: google.maps.LatLng
+  ): Promise<void> {
+    try {
+      console.log(`🔌 [CABOS-CONECTADOS-DIO] Buscando cabos conectados ao DIO ${idMetaDio}`);
+      
+      // Buscar bandejas do DIO
+      const retorno = await firstValueFrom(this.bandejasService.selecionar());
+      
+      // Processar resposta (pode vir como {response: Bandejas[]} ou Bandejas[] direto)
+      let bandejasData: Bandejas | null = null;
+      if ('response' in retorno && Array.isArray((retorno as any).response)) {
+        bandejasData = (retorno as any).response[0];
+      } else if (Array.isArray(retorno) && retorno.length > 0) {
+        bandejasData = retorno[0];
+      } else {
+        bandejasData = retorno as any;
+      }
+
+      if (!bandejasData) {
+        console.warn('⚠️ [CABOS-CONECTADOS-DIO] Nenhum dado de bandeja retornado');
+        return;
+      }
+
+      console.log('📋 [CABOS-CONECTADOS-DIO] Dados das bandejas:', bandejasData);
+
+      // Processar cada bandeja (C1 a C6)
+      const promessasSalvamento: Promise<void>[] = [];
+      
+      for (let i = 1; i <= 6; i++) {
+        const bandejaKey = `C${i}` as keyof Bandejas;
+        const valorBandeja = bandejasData[bandejaKey];
+        
+        // Verificar se a bandeja tem cabo conectado (não está vazia ou 'ZERO')
+        if (!valorBandeja) {
+          continue; // Bandeja vazia, pular
+        }
+        
+        const valorBandejaLimpo = valorBandeja.trim().toUpperCase();
+        if (valorBandejaLimpo === '' || valorBandejaLimpo === 'ZERO') {
+          continue; // Bandeja sem cabo, pular
+        }
+
+        // Extrair id_meta e ponta do formato "cabo387414B"
+        // Formato: "cabo" + número (id_meta) + letra (A ou B)
+        const match = valorBandeja.match(/^cabo(\d+)([AB])$/i);
+        
+        if (!match) {
+          console.warn(`⚠️ [CABOS-CONECTADOS-DIO] Formato inválido na C${i}: ${valorBandeja}`);
+          continue;
+        }
+
+        const idMetaCabo = parseInt(match[1], 10);
+        const ponta = match[2].toUpperCase() as 'A' | 'B';
+
+        console.log(`🔍 [CABOS-CONECTADOS-DIO] C${i}: cabo ${idMetaCabo}, ponta ${ponta}`);
+
+        // Encontrar a polyline do cabo
+        const polyline = this.encontrarPolylinePorIdMeta(idMetaCabo);
+        
+        if (!polyline) {
+          console.warn(`⚠️ [CABOS-CONECTADOS-DIO] Polyline não encontrada para cabo ${idMetaCabo}`);
+          continue;
+        }
+
+        // Atualizar a ponta do cabo visualmente
+        this.atualizarPontaCabo(polyline, ponta, novaCoordenada);
+        
+        // 🆕 Salvar no banco após atualizar visualmente
+        const promessaSalvamento = new Promise<void>((resolve) => {
+          // Extrair coordenadas atualizadas da polyline
+          const coordenadasAtualizadas = this.updateCaboService.extrairCoordenadasPolyline(polyline);
+          
+          // Calcular novo comprimento
+          const novoComprimento = this.updateCaboService.calcularComprimentoPolyline(polyline);
+          
+          // Preparar dados para atualização
+          const caboData = {
+            id_meta: idMetaCabo,
+            length: novoComprimento,
+            GOOGLE_LATLNG: coordenadasAtualizadas
+          };
+
+          console.log(`💾 [CABOS-CONECTADOS-DIO] Salvando cabo ${idMetaCabo} no banco...`, caboData);
+
+          // Salvar no banco
+          this.updateCaboService.atualizarCabo(caboData).subscribe({
+            next: (response) => {
+              console.log(`✅ [CABOS-CONECTADOS-DIO] Cabo ${idMetaCabo} salvo com sucesso:`, response);
+              resolve();
+            },
+            error: (error) => {
+              console.error(`❌ [CABOS-CONECTADOS-DIO] Erro ao salvar cabo ${idMetaCabo}:`, error);
+              // Resolve mesmo com erro para não bloquear outros cabos
+              resolve();
+            }
+          });
+        });
+
+        promessasSalvamento.push(promessaSalvamento);
+      }
+
+      // Aguardar todos os salvamentos (mas não bloquear se algum falhar)
+      await Promise.allSettled(promessasSalvamento);
+      
+      console.log(`✅ [CABOS-CONECTADOS-DIO] Processamento concluído. ${promessasSalvamento.length} cabo(s) processado(s)`);
+      
+    } catch (error) {
+      console.error('❌ [CABOS-CONECTADOS-DIO] Erro ao atualizar cabos conectados:', error);
+      // Não mostrar alerta para não interromper o fluxo de edição
+    }
+  }
+
+  /**
    * 🔧 NOVO: Cancela a edição da caixa (restaura posição original)
    */
   private cancelarEdicaoCaixa(): void {
@@ -5474,9 +5965,244 @@ private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = fal
     console.log('❌ [EDITAR-CAIXA] Edição cancelada, posição restaurada');
     alert('Edição cancelada. Posição original restaurada.');
   }
-  
 
+  // ============================================================================
+  // 🔧 MÉTODOS DE EDIÇÃO DE DIO
+  // ============================================================================
 
+  /**
+   * 🔧 Habilita a edição de um DIO (torna arrastável)
+   */
+  private habilitarEdicaoDio(index: number): void {
+    if (index < 0 || index >= this.markerDios.length) {
+      console.error('❌ [EDITAR-DIO] Índice inválido:', index);
+      return;
+    }
+
+    const marker = this.markerDios[index];
+    const dio = this.destinoDios[index];
+
+    if (!marker || !dio) {
+      console.error('❌ [EDITAR-DIO] Marcador ou DIO não encontrados');
+      return;
+    }
+
+    // Se já há um DIO em edição, desabilitar o anterior
+    if (this.dioEmEdicao) {
+      this.desabilitarEdicaoDio();
+    }
+
+    // Salvar posição original para poder cancelar
+    const position = marker.getPosition();
+    if (position) {
+      this.dioEmEdicaoOriginalPosition = {
+        lat: position.lat(),
+        lng: position.lng()
+      };
+    }
+
+    // Salvar ícone original
+    this.dioEmEdicaoOriginalIcon = marker.getIcon() as google.maps.Icon;
+
+    // Tornar marcador arrastável
+    marker.setDraggable(true);
+    
+    // Mudar aparência visual para indicar modo de edição
+    marker.setOpacity(0.7);
+    marker.setIcon({
+      url: '/assets/dioV2.png',
+      labelOrigin: new google.maps.Point(58, 35),
+      scaledSize: new google.maps.Size(140, 25.2) // Ligeiramente maior (original: 120, 21.6)
+    });
+
+    // Armazenar referências
+    this.dioEmEdicao = marker;
+    this.dioEmEdicaoIndex = index;
+
+    // 🆕 Salvar id_meta do DIO no authService para buscar bandejas conectadas
+    if (dio.id_meta) {
+      this.authService.setIDmetaDio(dio.id_meta);
+      console.log('💾 [EDITAR-DIO] ID_META salvo no authService:', dio.id_meta);
+    }
+
+    console.log('✅ [EDITAR-DIO] Edição habilitada para DIO:', dio.sigla);
+
+    // Adicionar listener para salvar ao clicar no mapa
+    if (this.map && !this.listenerMapaSalvarDio) {
+      this.listenerMapaSalvarDio = this.map.addListener('click', () => {
+        if (this.dioEmEdicao) {
+          this.salvarEdicaoDio();
+        }
+      });
+    }
+
+    // Adicionar listener para cancelar com ESC
+    if (!this.listenerEscCancelarDio) {
+      this.listenerEscCancelarDio = (event: KeyboardEvent) => {
+        if (event.key === 'Escape' && this.dioEmEdicao) {
+          this.cancelarEdicaoDio();
+        }
+      };
+      document.addEventListener('keydown', this.listenerEscCancelarDio);
+    }
+  }
+
+  /**
+   * 🔧 Desabilita a edição do DIO
+   */
+  private desabilitarEdicaoDio(): void {
+    if (this.dioEmEdicao) {
+      this.dioEmEdicao.setDraggable(false);
+      this.dioEmEdicao.setOpacity(1.0);
+      
+      // Restaurar ícone original
+      if (this.dioEmEdicaoOriginalIcon) {
+        this.dioEmEdicao.setIcon(this.dioEmEdicaoOriginalIcon);
+      }
+    }
+
+    // Remover listeners
+    if (this.listenerMapaSalvarDio) {
+      google.maps.event.removeListener(this.listenerMapaSalvarDio);
+      this.listenerMapaSalvarDio = null;
+    }
+
+    if (this.listenerEscCancelarDio) {
+      document.removeEventListener('keydown', this.listenerEscCancelarDio);
+      this.listenerEscCancelarDio = null;
+    }
+
+    // 🆕 Limpar id_meta do DIO do storage
+    this.authService.setIDmetaDio(undefined);
+
+    this.dioEmEdicao = null;
+    this.dioEmEdicaoIndex = null;
+    this.dioEmEdicaoOriginalPosition = null;
+    this.dioEmEdicaoOriginalIcon = null;
+  }
+
+  /**
+   * 🔧 Salva a edição do DIO
+   */
+  private salvarEdicaoDio(): void {
+    if (!this.dioEmEdicao || this.dioEmEdicaoIndex === null) {
+      return;
+    }
+
+    const position = this.dioEmEdicao.getPosition();
+    if (!position) {
+      console.error('❌ [EDITAR-DIO] Posição não disponível');
+      return;
+    }
+
+    const newLat = position.lat();
+    const newLng = position.lng();
+
+    console.log(`💾 [EDITAR-DIO] Salvando nova posição:`, { lat: newLat, lng: newLng });
+
+    const dio = this.destinoDios[this.dioEmEdicaoIndex];
+    
+    // Verificar se tem id_meta
+    if (!dio.id_meta) {
+      console.error('❌ [EDITAR-DIO] ID_META não encontrado no DIO');
+      alert('❌ Erro: ID_META do DIO não encontrado!');
+      return;
+    }
+
+    // Atualizar coordenadas localmente
+    dio.LAT = newLat as any;
+    dio.LNG = newLng as any;
+    
+    // Chamar serviço para atualizar coordenadas no banco
+    this.updateDioService.atualizarCoordenadas({
+      ID_META: dio.id_meta,
+      lat: newLat,
+      lng: newLng
+    }).subscribe({
+      next: (response) => {
+        console.log('✅ [EDITAR-DIO] Coordenadas atualizadas com sucesso:', response);
+        
+        // 🆕 Atualizar cabos conectados ao DIO (apenas se tiver id_meta)
+        if (dio.id_meta) {
+          const novaCoordenada = new google.maps.LatLng(newLat, newLng);
+          this.atualizarCabosConectadosADio(dio.id_meta, novaCoordenada)
+            .then(() => {
+              console.log('✅ [EDITAR-DIO] Cabos conectados atualizados');
+            })
+            .catch((error) => {
+              console.error('❌ [EDITAR-DIO] Erro ao atualizar cabos:', error);
+            });
+        }
+        
+        // Inserir log de atualização de DIO com id_evento 31
+        const idUsuario = this.authService.getIdUser();
+        const idCity = this.authService.getIdCity();
+        if (idUsuario && idCity && dio.id_meta) {
+          console.log('🔄 Inserindo log de move de DIO...');
+          this.insertLogService.inserirLog({
+            id_usuario: idUsuario,
+            id_evento: 31,
+            id_city: idCity,
+            id_meta_objeto: dio.id_meta,
+            descricao: `Move DIO sigla: ${dio.sigla}  idmeta: ${dio.id_meta} `,
+            VERSION: 'Fiberworks WEB 1.0.0'
+          }).subscribe({
+            next: (logResponse) => {
+              console.log('✅ Log de move de DIO:', logResponse);
+            },
+            error: (error) => {
+              console.error('❌ Erro ao inserir log de move de DIO:', error);
+            }
+          });
+        }
+        
+        // Desabilitar edição após sucesso
+        this.desabilitarEdicaoDio();
+      },
+      error: (error) => {
+        console.error('❌ [EDITAR-DIO] Erro ao atualizar coordenadas:', error);
+        // Reverter coordenadas em caso de erro
+        if (this.dioEmEdicao) {
+          const originalPos = this.dioEmEdicaoOriginalPosition;
+          if (originalPos) {
+            this.dioEmEdicao.setPosition({
+              lat: originalPos.lat,
+              lng: originalPos.lng
+            });
+            dio.LAT = originalPos.lat as any;
+            dio.LNG = originalPos.lng as any;
+          }
+        }
+        alert(`❌ Erro ao atualizar coordenadas do DIO!\n\n🆔 ID_META: ${dio.id_meta}\n\nErro: ${error.message}`);
+        // Desabilitar edição mesmo em caso de erro (para não ficar travado)
+        this.desabilitarEdicaoDio();
+      }
+    });
+    
+    // Retornar aqui para não desabilitar edição antes da requisição terminar
+    return;
+  }
+
+  /**
+   * 🔧 Cancela a edição do DIO (restaura posição original)
+   */
+  private cancelarEdicaoDio(): void {
+    if (!this.dioEmEdicao || !this.dioEmEdicaoOriginalPosition) {
+      return;
+    }
+
+    // Restaurar posição original
+    this.dioEmEdicao.setPosition({
+      lat: this.dioEmEdicaoOriginalPosition.lat,
+      lng: this.dioEmEdicaoOriginalPosition.lng
+    });
+
+    // Desabilitar edição
+    this.desabilitarEdicaoDio();
+
+    console.log('❌ [EDITAR-DIO] Edição cancelada, posição restaurada');
+    alert('Edição cancelada. Posição original restaurada.');
+  }
 
 openPopInfoModal(id_meta: number|undefined) {
   const dialogRef = this.dialog.open(PopInfoModalComponent, {
@@ -5540,7 +6266,60 @@ private visualizarCabo(): void {
     this.hideContextMenu();
   }
 }
+
+/**
+ * 🔍 Visualiza um DIO (abre o modal de visualização)
+ */
+private visualizarDio(): void {
+  console.log('🔍 [CONTEXT-MENU] Visualizando DIO...', this.clickedDioData);
   
+  if (this.clickedDioData && this.clickedDioData.id_meta) {
+    this.openVisualizaDioModal(this.clickedDioData.id_meta, this.clickedDioData.CAPACIDADE);
+    this.hideContextMenu();
+  } else {
+    alert('❌ Erro: Dados do DIO não encontrados.');
+    this.hideContextMenu();
+  }
+}
+
+/**
+ * 🗑️ Exclui um DIO
+ */
+private excluirDio(): void {
+  console.log('🗑️ [CONTEXT-MENU] Excluindo DIO...', this.clickedDioData);
+  
+  if (!this.clickedDioData) {
+    console.warn('⚠️ [EXCLUI-DIO] Nenhum DIO selecionado');
+    return;
+  }
+
+  const idMeta = this.clickedDioData.id_meta;
+  const sigla = this.clickedDioData.sigla || 'DIO';
+  
+  if (!idMeta) {
+    alert('Erro: ID do DIO não encontrado');
+    return;
+  }
+
+  // Confirmação do usuário
+  const confirmacao = confirm(
+    `⚠️ ATENÇÃO!\n\n` +
+    `Deseja realmente excluir o DIO "${sigla}" (ID: ${idMeta})?\n\n` +
+    `Esta ação não pode ser desfeita!`
+  );
+
+  if (!confirmacao) {
+    console.log('❌ [EXCLUI-DIO] Exclusão cancelada pelo usuário');
+    this.hideContextMenu();
+    return;
+  }
+
+  // TODO: Implementar chamada ao serviço de exclusão de DIO
+  // Similar ao excluirCabo(), deve chamar um serviço que fará a exclusão no backend
+  console.log('🔧 [EXCLUI-DIO] Funcionalidade de exclusão a ser implementada para DIO:', idMeta);
+  alert('Funcionalidade de exclusão de DIO será implementada em breve!');
+  this.hideContextMenu();
+}
 
   onCaixaInternaClose() {
     console.log('Evento de fechamento recebido no GoogleMapsComponent');
@@ -6685,7 +7464,7 @@ openGoJSModal() {
           });
         }
         
-        alert(`✅ Cabo inserido com sucesso!\n🆔 ID: ${idMetaReal}\n📏 Comprimento: ${comprimento.toFixed(2)}m\n📊 Capacidade: ${tipagemData.capacidade}\n🏷️ Label: ${tipagemData.label}`);
+        //20251210 alert(`✅ Cabo inserido com sucesso!\n🆔 ID: ${idMetaReal}\n📏 Comprimento: ${comprimento.toFixed(2)}m\n📊 Capacidade: ${tipagemData.capacidade}\n🏷️ Label: ${tipagemData.label}`);
       },
       error: (error) => {
         console.error('❌ [TIPAGEM] Erro ao inserir cabo:', error);
@@ -6756,12 +7535,251 @@ openGoJSModal() {
 
     // 311025 alert('❌ Desenho cancelado');
   }
- /***********************************************************************************************************/
- //********************************************************************************************
+  // ============================================================================
+  // 📏 SEÇÃO: MÉTODOS PARA MEDIÇÃO DE DISTÂNCIA (RÉGUA)
+  // ============================================================================
 
+  /**
+   * 📏 Ativa o modo de medição de distância
+   */
+  ativarModoMedicao(): void {
+    console.log('📏 [MEDICAO] Ativando modo de medição...');
 
+    // Se já estiver em modo de medição, apenas retorna
+    if (this.modoMedicao) {
+      console.log('📏 [MEDICAO] Modo de medição já está ativo');
+      return;
+    }
 
+    // Cancelar outros modos se estiverem ativos
+    if (this.isDesenhandoCabo) {
+      this.cancelarDesenhoCabo();
+    }
 
+    this.modoMedicao = true;
+    this.pontosMedicao = [];
+    this.linhaMedicao = null;
 
+    if (!this.map) {
+      console.error('📏 [MEDICAO] Mapa não está inicializado');
+      this.modoMedicao = false;
+      return;
+    }
+
+    // Mudar cursor do mapa
+    this.map.setOptions({
+      draggableCursor: 'crosshair',
+      clickableIcons: false
+    });
+
+    // Adicionar listener de clique no mapa para medição
+    this.listenerMapaMedicao = this.map.addListener('click', (event: google.maps.MapMouseEvent) => {
+      this.adicionarPontoMedicao(event);
+    });
+
+    // Adicionar listener de tecla ESC para desativar
+    this.setupMedicaoEscListener();
+
+    console.log('📏 [MEDICAO] Modo de medição ativado. Clique no mapa para adicionar pontos.');
+  }
+
+  /**
+   * 📏 Desativa o modo de medição e limpa tudo
+   */
+  desativarModoMedicao(): void {
+    console.log('📏 [MEDICAO] Desativando modo de medição...');
+
+    // Remover listener de clique
+    if (this.listenerMapaMedicao) {
+      google.maps.event.removeListener(this.listenerMapaMedicao);
+      this.listenerMapaMedicao = null;
+    }
+
+    // Remover listener ESC
+    if (this.listenerEscMedicao) {
+      document.removeEventListener('keydown', this.listenerEscMedicao);
+      this.listenerEscMedicao = null;
+    }
+
+    // Remover linha de medição
+    if (this.linhaMedicao) {
+      this.linhaMedicao.setMap(null);
+      this.linhaMedicao = null;
+    }
+
+    // Remover todos os marcadores de vértices
+    this.marcadoresMedicao.forEach(marker => marker.setMap(null));
+    this.marcadoresMedicao = [];
+
+    // Remover todos os labels de distância
+    this.labelsMedicao.forEach(label => label.setMap(null));
+    this.labelsMedicao = [];
+
+    // Limpar pontos
+    this.pontosMedicao = [];
+
+    // Restaurar cursor
+    if (this.map) {
+      this.map.setOptions({
+        draggableCursor: null,
+        clickableIcons: true
+      });
+    }
+
+    this.modoMedicao = false;
+    console.log('📏 [MEDICAO] Modo de medição desativado');
+  }
+
+  /**
+   * 📏 Adiciona um ponto à medição
+   */
+  private adicionarPontoMedicao(event: google.maps.MapMouseEvent): void {
+    if (!this.modoMedicao || !event.latLng) {
+      return;
+    }
+
+    console.log('📏 [MEDICAO] Adicionando ponto:', event.latLng.lat(), event.latLng.lng());
+    this.pontosMedicao.push(event.latLng);
+
+    // Criar marcador de vértice
+    const marcador = new google.maps.Marker({
+      position: event.latLng,
+      map: this.map,
+      icon: {
+        path: google.maps.SymbolPath.CIRCLE,
+        scale: 6,
+        fillColor: '#0891b2',
+        fillOpacity: 1,
+        strokeColor: '#ffffff',
+        strokeWeight: 2
+      },
+      zIndex: 1001
+    });
+    this.marcadoresMedicao.push(marcador);
+
+    // Atualizar ou criar a linha de medição
+    this.atualizarLinhaMedicao();
+
+    // Se tiver mais de um ponto, calcular e exibir distância do segmento
+    if (this.pontosMedicao.length > 1) {
+      this.adicionarLabelDistancia();
+    }
+  }
+
+  /**
+   * 📏 Atualiza a linha de medição no mapa
+   */
+  private atualizarLinhaMedicao(): void {
+    // Remover linha anterior se existir
+    if (this.linhaMedicao) {
+      this.linhaMedicao.setMap(null);
+    }
+
+    if (this.pontosMedicao.length < 2) {
+      return;
+    }
+
+    // Criar nova linha
+    this.linhaMedicao = new google.maps.Polyline({
+      path: this.pontosMedicao,
+      map: this.map,
+      strokeColor: '#0891b2',
+      strokeWeight: 3,
+      strokeOpacity: 1,
+      zIndex: 1000,
+      clickable: false,
+      geodesic: true,
+      icons: [{
+        icon: {
+          path: 'M 0,-1 0,1',
+          strokeOpacity: 1,
+          scale: 3
+        },
+        offset: '0',
+        repeat: '15px'
+      }]
+    });
+  }
+
+  /**
+   * 📏 Adiciona label com distância do último segmento e total acumulado
+   */
+  private adicionarLabelDistancia(): void {
+    const totalPontos = this.pontosMedicao.length;
+    if (totalPontos < 2) return;
+
+    const pontoA = this.pontosMedicao[totalPontos - 2];
+    const pontoB = this.pontosMedicao[totalPontos - 1];
+
+    // Calcular distância do segmento
+    const distanciaSegmento = google.maps.geometry.spherical.computeDistanceBetween(pontoA, pontoB);
+
+    // Calcular distância total acumulada
+    const distanciaTotal = google.maps.geometry.spherical.computeLength(this.pontosMedicao);
+
+    // Calcular ponto médio do segmento para posicionar o label
+    const pontoMedio = new google.maps.LatLng(
+      (pontoA.lat() + pontoB.lat()) / 2,
+      (pontoA.lng() + pontoB.lng()) / 2
+    );
+
+    // Formatar distâncias
+    const textoSegmento = this.formatarDistancia(distanciaSegmento);
+    const textoTotal = this.formatarDistancia(distanciaTotal);
+
+    // Montar texto do label: "segmento (total)"
+    const textoLabel = `${textoSegmento} (${textoTotal})`;
+
+    // Criar label como um Marker com ícone customizado (usando label)
+    const labelMarker = new google.maps.Marker({
+      position: pontoMedio,
+      map: this.map,
+      icon: {
+        path: google.maps.SymbolPath.CIRCLE,
+        scale: 0 // Invisível
+      },
+      label: {
+        text: textoLabel,
+        color: '#000000',
+        fontSize: '12px',
+        fontWeight: 'bold',
+        className: 'label-medicao'
+      },
+      zIndex: 1002
+    });
+    this.labelsMedicao.push(labelMarker);
+
+    console.log(`📏 [MEDICAO] Segmento: ${textoSegmento}, Total: ${textoTotal}`);
+  }
+
+  /**
+   * 📏 Formata distância em metros
+   */
+  private formatarDistancia(metros: number): string {
+    if (metros < 1000) {
+      return `${Math.round(metros)}m`;
+    } else {
+      return `${(metros / 1000).toFixed(2)}km`;
+    }
+  }
+
+  /**
+   * 📏 Configura listener de tecla ESC para desativar medição
+   */
+  private listenerEscMedicao: ((e: KeyboardEvent) => void) | null = null;
+
+  private setupMedicaoEscListener(): void {
+    this.listenerEscMedicao = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && this.modoMedicao) {
+        console.log('📏 [MEDICAO] ESC pressionado - desativando medição');
+        this.desativarModoMedicao();
+        
+        // Disparar evento para atualizar botão na toolbar
+        const event = new CustomEvent('medicaoDesativada');
+        window.dispatchEvent(event);
+      }
+    };
+    document.addEventListener('keydown', this.listenerEscMedicao);
+  }
 
 }

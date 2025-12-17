@@ -59,11 +59,28 @@ export class AuthService {
   }
 
 
-
   getIDmetaCaixa(): string | null {
     return localStorage.getItem(this.IDMETACX);
     
   }
+
+
+  setIDmetaDio(idmetacx: number|undefined): void {
+
+    if(idmetacx){
+    localStorage.setItem(this.IDMETACX, idmetacx.toString());}
+    else {
+    localStorage.removeItem(this.IDMETACX);
+    }
+    
+  }
+
+
+  getIDmetaDio(): string | null {
+    return localStorage.getItem(this.IDMETACX);
+    
+  }
+
 
 
   setUsuario(chave: string): void {
