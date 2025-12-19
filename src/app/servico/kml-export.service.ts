@@ -105,37 +105,37 @@ export class KmlExportService {
     }
 
     // Exportar Clientes
-    if (data.clientes && data.clientes.length > 0) {
-      kmlContent += this.exportMarkersToKML('Clientes', data.clientes, (item) => ({
-        name: item.sigla || 'S/N',
-        description: `ID: ${item.id_meta}<br>Sigla: ${item.sigla}`,
-        lat: parseFloat(item.LAT),
-        lng: parseFloat(item.LNG),
-        icon: 'icon-cliente'
-      }));
-    }
+    // if (data.clientes && data.clientes.length > 0) {
+    //   kmlContent += this.exportMarkersToKML('Clientes', data.clientes, (item) => ({
+    //     name: item.sigla || 'S/N',
+    //     description: `ID: ${item.id_meta}<br>Sigla: ${item.sigla}`,
+    //     lat: parseFloat(item.LAT),
+    //     lng: parseFloat(item.LNG),
+    //     icon: 'icon-cliente'
+    //   }));
+    // }
 
     // Exportar Clientes Ativados
-    if (data.clientesAtivados && data.clientesAtivados.length > 0) {
-      kmlContent += this.exportMarkersToKML('Clientes Ativados', data.clientesAtivados, (item) => ({
-        name: item.sigla || 'S/N',
-        description: `ID: ${item.id_meta}<br>Sigla: ${item.sigla}`,
-        lat: parseFloat(item.LAT),
-        lng: parseFloat(item.LNG),
-        icon: 'icon-cliente-ativado'
-      }));
-    }
+    // if (data.clientesAtivados && data.clientesAtivados.length > 0) {
+    //   kmlContent += this.exportMarkersToKML('Clientes Ativados', data.clientesAtivados, (item) => ({
+    //     name: item.sigla || 'S/N',
+    //     description: `ID: ${item.id_meta}<br>Sigla: ${item.sigla}`,
+    //     lat: parseFloat(item.LAT),
+    //     lng: parseFloat(item.LNG),
+    //     icon: 'icon-cliente-ativado'
+    //   }));
+    // }
 
     // Exportar Clientes Desativados
-    if (data.clientesDesativados && data.clientesDesativados.length > 0) {
-      kmlContent += this.exportMarkersToKML('Clientes Desativados', data.clientesDesativados, (item) => ({
-        name: item.sigla || 'S/N',
-        description: `ID: ${item.id_meta}<br>Sigla: ${item.sigla}`,
-        lat: parseFloat(item.LAT),
-        lng: parseFloat(item.LNG),
-        icon: 'icon-cliente-desativado'
-      }));
-    }
+    // if (data.clientesDesativados && data.clientesDesativados.length > 0) {
+    //   kmlContent += this.exportMarkersToKML('Clientes Desativados', data.clientesDesativados, (item) => ({
+    //     name: item.sigla || 'S/N',
+    //     description: `ID: ${item.id_meta}<br>Sigla: ${item.sigla}`,
+    //     lat: parseFloat(item.LAT),
+    //     lng: parseFloat(item.LNG),
+    //     icon: 'icon-cliente-desativado'
+    //   }));
+    // }
 
     // Exportar estações
     if (data.estacoes && data.estacoes.length > 0) {
@@ -237,8 +237,9 @@ export class KmlExportService {
           return;
         }
         
-        const escapedName = this.escapeXml(data.name);
-        const escapedDescription = this.escapeXml(data.description);
+        // 🆕 Limpar caracteres inválidos antes de escapar
+        const escapedName = this.escapeXml(this.cleanInvalidChars(data.name));
+        const escapedDescription = this.escapeXml(this.cleanInvalidChars(data.description));
 
         kml += `
       <Placemark>
@@ -285,7 +286,8 @@ export class KmlExportService {
             const coordinatesStr = validCoords.map(c => `${c.lng},${c.lat},0`).join(' ');
             
             const idMeta = cabo.id_meta || 'N/A';
-            const label = this.escapeXml(cabo.Label_cabo || 'N/A');
+            // 🆕 Limpar caracteres inválidos antes de escapar
+            const label = this.escapeXml(this.cleanInvalidChars(cabo.Label_cabo || 'N/A'));
             const tipo = this.escapeXml(folderName || 'N/A');
             
             kml += `
@@ -379,12 +381,30 @@ export class KmlExportService {
   }
 
   /**
+   * 🆕 Limpa caracteres inválidos e de controle
+   */
+  private cleanInvalidChars(str: string): string {
+    if (!str) return '';
+    
+    // Remover caracteres de controle (0x00-0x1F) exceto \n, \r, \t
+    // Remover caracteres não-UTF8 válidos
+    return str
+      .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '') // Remove caracteres de controle exceto \n, \r, \t
+      .replace(/[\uFFFE\uFFFF]/g, '') // Remove caracteres não-UTF8
+      .replace(/[\u200B-\u200D\uFEFF]/g, '') // Remove zero-width spaces
+      .trim();
+  }
+
+  /**
    * 📤 EXPORT: Escapa caracteres especiais XML
    */
   private escapeXml(str: string): string {
     if (!str) return '';
     
-    return str
+    // 🆕 Limpar caracteres inválidos primeiro
+    const cleaned = this.cleanInvalidChars(str);
+    
+    return cleaned
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
