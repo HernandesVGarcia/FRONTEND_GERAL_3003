@@ -1,0 +1,77 @@
+<div class="modal-container">
+  <!-- Header -->
+  <div class="modal-header">
+    <h2 mat-dialog-title class="modal-title">
+      <mat-icon>link</mat-icon>
+      Conexão Cabo - DIO
+    </h2>
+    <button mat-icon-button class="close-button" (click)="cancelarConexao()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <!-- Content -->
+  <div class="modal-content">
+    <!-- Informação da conexão -->
+    <div class="info-section">
+      <p class="info-text">
+        <strong>Ponta {{ data.ponta }}</strong> conectada no DIO <strong>{{ data.numeroDio }}</strong>
+      </p>
+    </div>
+
+    <!-- Campo de bandeja -->
+    <div class="bandeja-input-section">
+      <label class="bandeja-label">CABO SERÁ CONECTADO NA BANDEJA:</label>
+      <mat-form-field class="bandeja-input-field">
+        <input 
+          matInput 
+          [(ngModel)]="bandejaSelecionada" 
+          name="bandejaSelecionada"
+          placeholder="C1"
+          maxlength="2"
+          pattern="C[1-6]"
+          class="bandeja-input">
+      </mat-form-field>
+    </div>
+
+    <!-- Botões de ação principais -->
+    <div class="action-buttons">
+      <button 
+        mat-raised-button 
+        color="primary" 
+        class="confirm-button"
+        [disabled]="isLoading"
+        (click)="confirmarConexao()">
+        <mat-spinner *ngIf="isLoading" diameter="20" style="display: inline-block; margin-right: 8px;"></mat-spinner>
+        <span *ngIf="!isLoading">Confirmar Conexão</span>
+        <span *ngIf="isLoading">Conectando...</span>
+      </button>
+      <button 
+        mat-button 
+        class="cancel-button"
+        [disabled]="isLoading"
+        (click)="cancelarConexao()">
+        Cancelar Conexão
+      </button>
+    </div>
+
+    <!-- Frame de seleção de bandejas -->
+    <div class="bandeja-selection-frame">
+      <label class="frame-label">ALTERAR BANDEJA:</label>
+      
+      <!-- Fileira única: C1-C6 -->
+      <div class="bandeja-row">
+        <button 
+          *ngFor="let bandeja of bandejas" 
+          mat-raised-button
+          class="bandeja-button"
+          [class.selected]="bandejaSelecionada === bandeja"
+          [disabled]="!isBandejaLivre(bandeja)"
+          (click)="selecionarBandeja(bandeja)">
+          {{ bandeja }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+

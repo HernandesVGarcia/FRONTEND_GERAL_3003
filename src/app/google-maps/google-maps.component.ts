@@ -48,6 +48,7 @@ import { VisualizaDioComponent } from '../visualiza-dio/visualiza-dio.component'
 import { VisualizaCaboComponent } from '../visualiza-cabo/visualiza-cabo.component';
 import { GraphvizModalComponent } from '../graphviz-modal/graphviz-modal.component';
 import { ConexaoCaboCaixaEmendaComponent, ConexaoCaboCaixaEmendaData } from '../conexao-cabo-caixa-emenda/conexao-cabo-caixa-emenda.component';
+import { ConexaoCaboDioComponent, ConexaoCaboDioData } from '../conexao-cabo-dio/conexao-cabo-dio.component';
 import { BocasService } from '../servico/bocas.service';
 import { Bocas } from '../modelo/Bocas';
 import { BandejasService } from '../servico/bandejas.service';
@@ -990,7 +991,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
         const pontoAtual = path.getAt(index);
         const qualPonta = isPontaA ? 'A' : 'B';
         
-        console.log(`🔍 [CONEXÃO] Verificando se Ponta ${qualPonta} está sobre uma caixa...`, {
+        console.log(`🔍 [CONEXÃO] Verificando se Ponta ${qualPonta} está sobre uma caixa ou DIO...`, {
           lat: pontoAtual.lat(),
           lng: pontoAtual.lng()
         });
@@ -1004,6 +1005,17 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
           return; // Não continuar com a proteção se detectou conexão
         } else {
           console.log(`❌ [CONEXÃO] Ponta ${qualPonta} não está sobre nenhuma caixa próxima`);
+          
+          // 🆕 NOVO: Verificar DIO
+          const dioProximo = this.encontrarDioProximo(pontoAtual);
+          if (dioProximo) {
+            console.log(`🔌 [CONEXÃO-DIO] Ponta ${qualPonta} solta sobre o DIO ${dioProximo.sigla || 'N/A'}`);
+            // Abrir modal de conexão DIO
+            this.abrirModalConexaoDio(qualPonta as 'A' | 'B', dioProximo);
+            return; // Não continuar com a proteção se detectou conexão
+          } else {
+            console.log(`❌ [CONEXÃO-DIO] Ponta ${qualPonta} não está sobre nenhum DIO próximo`);
+          }
         }
       }
       
@@ -1377,6 +1389,90 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
   }
 
   /**
+   * 🔌 Abre o modal de conexão cabo-DIO
+   */
+  private abrirModalConexaoDio(ponta: 'A' | 'B', dio: Dios): void {
+    // ✅ Obter id_meta do cabo (já está disponível)
+    const idMetaCabo = this.clickedPolyline?.get('id_meta') || this.clickedCaboData?.id_meta;
+    
+    // ✅ Obter capacidade e extrair número da string (ex: "48f" → 48)
+    const capacidadeStr = this.clickedPolyline?.get('capacidade') || this.clickedCaboData?.capacidade;
+    let capacidadeNum: number;
+    
+    if (typeof capacidadeStr === 'string') {
+      // Extrair número de "48f" → 48
+      const match = capacidadeStr.match(/(\d+)/);
+      capacidadeNum = match ? parseInt(match[1], 10) : 12; // fallback para 12 se não encontrar
+    } else if (typeof capacidadeStr === 'number') {
+      capacidadeNum = capacidadeStr;
+    } else {
+      console.warn('⚠️ [CONEXÃO-DIO] Capacidade não encontrada, usando fallback 12');
+      capacidadeNum = 12; // fallback
+    }
+
+    if (!idMetaCabo) {
+      console.error('❌ [CONEXÃO-DIO] ID do cabo não encontrado:', {
+        clickedPolyline: this.clickedPolyline,
+        clickedCaboData: this.clickedCaboData
+      });
+      alert('Erro: Não foi possível obter o ID do cabo. Tente novamente.');
+      return;
+    }
+
+    const dialogData: ConexaoCaboDioData = {
+      ponta: ponta,
+      numeroDio: dio.sigla || 'N/A',
+      idMetaDio: dio.id_meta,
+      idMetaCabo: idMetaCabo,           // ✅ Já disponível
+      CapacidadeCabo: capacidadeNum      // ✅ Extraído da string
+    };
+
+    console.log('🔌 [CONEXÃO-DIO] Abrindo modal com dados:', dialogData);
+
+    const dialogRef = this.dialog.open(ConexaoCaboDioComponent, {
+      width: '450px',
+      maxWidth: '90vw',
+      disableClose: false,
+      data: dialogData
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result && result.confirmado) {
+        console.log('✅ [CONEXÃO-DIO] Conexão confirmada e salva:', result);
+        
+        // 🔧 NOVO: Mover ponta do cabo para coordenadas do DIO e salvar
+        this.moverPontaParaDioEPersistir(ponta, dio);
+
+        // Inserir log de conexão de cabo no DIO evento 15
+        const idUsuario = this.authService.getIdUser();
+        const idCity = this.authService.getIdCity();
+        if (idUsuario && idCity && idMetaCabo) {
+          console.log('🔄 Inserindo log de conexão de cabo no DIO...');
+          this.insertLogService.inserirLog({
+            id_usuario: idUsuario,
+            id_evento: 15, // ID do evento para conexão cabo-DIO 
+            id_city: idCity,
+            id_meta_objeto: idMetaCabo,
+            descricao: `Conexão de cabo : Ponta ${ponta}, DIO ${dio.sigla || 'N/A'}, Bandeja ${result.bandeja || 'N/A'}, ID DIO: ${dio.id_meta}`,
+            VERSION: 'Fiberworks WEB 1.0.0'
+          }).subscribe({
+            next: (logResponse) => {
+              console.log('✅ Log de conexão de cabo no DIO inserido com sucesso:', logResponse);
+            },
+            error: (error) => {
+              console.error('❌ Erro ao inserir log de conexão de cabo no DIO:', error);
+            }
+          });
+        }
+
+
+      } else {
+        console.log('❌ [CONEXÃO-DIO] Conexão cancelada');
+      }
+    });
+  }
+
+  /**
    * 🔧 NOVO: Move a ponta do cabo para as coordenadas da caixa e salva no banco
    */
   private moverPontaParaCaixaEPersistir(ponta: 'A' | 'B', caixa: Caixa): void {
@@ -1463,6 +1559,92 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
   }
 
   /**
+   * 🔧 NOVO: Move a ponta do cabo para as coordenadas do DIO e salva no banco
+   */
+  private moverPontaParaDioEPersistir(ponta: 'A' | 'B', dio: Dios): void {
+    if (!this.clickedPolyline || !dio.LAT || !dio.LNG) {
+      console.error('❌ [CONEXÃO-DIO] Dados insuficientes para mover ponta:', {
+        clickedPolyline: this.clickedPolyline,
+        dio: dio
+      });
+      return;
+    }
+
+    const path = this.clickedPolyline.getPath();
+    if (!path || path.getLength() < 2) {
+      console.error('❌ [CONEXÃO-DIO] Path inválido');
+      return;
+    }
+
+    // Obter coordenadas do DIO
+    const latDio = typeof dio.LAT === 'number' ? dio.LAT : Number(dio.LAT);
+    const lngDio = typeof dio.LNG === 'number' ? dio.LNG : Number(dio.LNG);
+    
+    const coordenadaDio = new google.maps.LatLng(latDio, lngDio);
+    
+    console.log(`🔧 [CONEXÃO-DIO] Movendo Ponta ${ponta} para coordenadas do DIO:`, {
+      lat: latDio,
+      lng: lngDio
+    });
+
+    // 🔧 CORREÇÃO: Marcar ponta como conectada (protegida) ANTES de mover
+    // Isso evita que o listener set_at tente detectar conexão novamente
+    if (ponta === 'A') {
+      this.pontasProtegidas.pontaA = true;
+      this.pontasOriginais.pontaA = { lat: latDio, lng: lngDio };
+    } else {
+      this.pontasProtegidas.pontaB = true;
+      this.pontasOriginais.pontaB = { lat: latDio, lng: lngDio };
+    }
+
+    console.log(`🛡️ [CONEXÃO-DIO] Ponta ${ponta} marcada como conectada e protegida ANTES de mover`);
+
+    // Determinar índice da ponta (0 = A, último = B)
+    const indexPonta = ponta === 'A' ? 0 : path.getLength() - 1;
+    
+    // Mover a ponta para as coordenadas do DIO
+    // Agora quando o evento set_at for disparado, a ponta já estará marcada como protegida
+    path.setAt(indexPonta, coordenadaDio);
+    
+    console.log(`✅ [CONEXÃO-DIO] Ponta ${ponta} movida para coordenadas do DIO`);
+
+    // Extrair coordenadas atualizadas da polyline
+    const coordenadasAtualizadas = this.updateCaboService.extrairCoordenadasPolyline(this.clickedPolyline);
+    
+    // Calcular novo comprimento
+    const novoComprimento = this.updateCaboService.calcularComprimentoPolyline(this.clickedPolyline);
+    
+    // Obter id_meta do cabo
+    const idMetaCabo = this.clickedPolyline.get('id_meta') || this.clickedCaboData?.id_meta;
+    
+    if (!idMetaCabo) {
+      console.error('❌ [CONEXÃO-DIO] ID do cabo não encontrado para salvar');
+      return;
+    }
+
+    // Preparar dados para atualização
+    const caboData = {
+      id_meta: idMetaCabo,
+      length: novoComprimento,
+      GOOGLE_LATLNG: coordenadasAtualizadas
+    };
+
+    console.log('💾 [CONEXÃO-DIO] Salvando coordenadas atualizadas no banco...', caboData);
+
+    // Salvar no banco
+    this.updateCaboService.atualizarCabo(caboData).subscribe({
+      next: (response) => {
+        console.log('✅ [CONEXÃO-DIO] Coordenadas salvas com sucesso:', response);
+        //20251210 alert(`✅ Conexão realizada e coordenadas atualizadas!\n\nPonta ${ponta} agora está conectada ao DIO ${dio.sigla}`);
+      },
+      error: (error) => {
+        console.error('❌ [CONEXÃO-DIO] Erro ao salvar coordenadas:', error);
+        alert(`⚠️ Conexão realizada, mas houve erro ao salvar coordenadas:\n\n${error.message || error}`);
+      }
+    });
+  }
+
+  /**
    * 📍 Encontra a caixa mais próxima de uma coordenada usando distância real do Google Maps
    * @param ponto - Coordenada da ponta do cabo
    * @returns Caixa mais próxima se estiver dentro do threshold, null caso contrário
@@ -1507,6 +1689,53 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
     }
 
     return caixaMaisProxima;
+  }
+
+  /**
+   * 📍 Encontra o DIO mais próximo de uma coordenada usando distância real do Google Maps
+   * @param ponto - Coordenada da ponta do cabo
+   * @returns DIO mais próximo se estiver dentro do threshold, null caso contrário
+   */
+  private encontrarDioProximo(ponto: google.maps.LatLng): Dios | null {
+    if (!this.destinoDios || this.destinoDios.length === 0) {
+      console.warn('⚠️ [CONEXÃO-DIO] Array destinoDios está vazio ou não existe');
+      return null;
+    }
+
+    console.log(`🔍 [CONEXÃO-DIO] Verificando ${this.destinoDios.length} DIOs...`);
+
+    const THRESHOLD_DISTANCIA_METROS = 1; // 1 metro
+    let dioMaisProximo: Dios | null = null;
+    let menorDistancia = Infinity;
+
+    this.destinoDios.forEach((dio, index) => {
+      if (!dio.LAT || !dio.LNG) {
+        return;
+      }
+
+      const latDio = typeof dio.LAT === 'number' ? dio.LAT : Number(dio.LAT);
+      const lngDio = typeof dio.LNG === 'number' ? dio.LNG : Number(dio.LNG);
+      
+      const posicaoDio = new google.maps.LatLng(latDio, lngDio);
+      
+      // Usar função do Google Maps para calcular distância real em metros
+      const distancia = google.maps.geometry.spherical.computeDistanceBetween(
+        ponto,
+        posicaoDio
+      );
+
+      if (distancia < THRESHOLD_DISTANCIA_METROS && distancia < menorDistancia) {
+        menorDistancia = distancia;
+        dioMaisProximo = dio;
+        console.log(`✅ [CONEXÃO-DIO] DIO ${dio.sigla || 'N/A'} encontrado a ${distancia.toFixed(2)}m`);
+      }
+    });
+
+    if (!dioMaisProximo) {
+      console.log(`❌ [CONEXÃO-DIO] Nenhum DIO encontrado dentro de ${THRESHOLD_DISTANCIA_METROS}m`);
+    }
+
+    return dioMaisProximo;
   }
 
   /**
