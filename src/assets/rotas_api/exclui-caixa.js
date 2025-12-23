@@ -5,7 +5,7 @@ const login = require('../middleware/login');
 
 /**
  * Rota: /api/exclui_caixa
- * Função: Exclui uma caixa do banco de dados
+ * Função: Exclui uma caixa ou CTO do banco de dados
  * Método: POST
  * Middleware: login (autenticação obrigatória)
  * 
@@ -15,6 +15,9 @@ const login = require('../middleware/login');
  *   id_city: number,
  *   id_condominio: number
  * }
+ * 
+ * Nota: Esta rota serve tanto para caixas quanto para CTOs.
+ * A diferenciação é feita automaticamente verificando em qual tabela o registro existe (tst.caixa ou tst.cto).
  */
 
 router.post('/', login, (req, res, next) => {
@@ -75,76 +78,219 @@ router.post('/', login, (req, res, next) => {
                 }
             }
 
-            // 🔍 Verificar se há splitter
-            const queryChecaSplitter = `SELECT conta_splitter FROM tstmeta.caixa WHERE idmeta = ?`;
+            // 🔍 Verificar se há splitter na tabela splitter_e
+            const queryChecaSplitter = `SELECT COUNT(*) as total FROM splitter_e WHERE id_meta_caixa = ?`;
             
             conn.query(queryChecaSplitter, [id_meta], (error, resultadoSplitter) => {
                 if (error) {
                     conn.release();
-                    console.error('❌ [EXCLUI-CAIXA] Erro ao verificar contador de splitter:', error);
+                    console.error('❌ [EXCLUI-CAIXA] Erro ao verificar splitter:', error);
                     return res.status(500).send({
                         success: false,
-                        error: 'Erro ao verificar contador de splitter'
+                        error: 'Erro ao verificar splitter'
                     });
                 }
 
                 const flagSplitter = resultadoSplitter.length > 0 && 
-                                     resultadoSplitter[0].conta_splitter > 0;
+                                     resultadoSplitter[0].total > 0;
+                const totalSplitters = resultadoSplitter[0]?.total || 0;
 
-                // ⚠️ Se estiver conectada OU tiver splitter, impedir exclusão
-                if (flagConectada || flagSplitter) {
+                // ⚠️ Verificar cada caso específico e retornar mensagem apropriada
+                if (flagConectada && flagSplitter) {
+                    // Caso 1: Ambos (cabo conectado E splitter)
                     conn.release();
                     console.log(`⚠️ [EXCLUI-CAIXA] Caixa ${id_meta} não pode ser excluída:`);
                     console.log(`   - Conectada: ${flagConectada}`);
-                    console.log(`   - Splitter: ${flagSplitter}`);
+                    console.log(`   - Splitter: ${flagSplitter} (total: ${totalSplitters})`);
                     return res.status(400).send({
                         success: false,
-                        error: 'Caixa conectada ou com splitter! Desconecte os cabos e remova os splitters antes de excluir.',
-                        message: 'Caixa conectada ou com splitter! Desconecte os cabos e remova os splitters antes de excluir.',
+                        error: 'Caixa com cabos conectados e splitters! Desconecte os cabos e remova os splitters antes de excluir.',
+                        message: `Caixa possui cabos conectados e ${totalSplitters} splitter(s). Desconecte os cabos e remova os splitters antes de excluir.`,
                         flagConectada: flagConectada,
-                        flagSplitter: flagSplitter
+                        flagSplitter: flagSplitter,
+                        totalSplitters: totalSplitters,
+                        motivo: 'cabos_conectados_e_splitters'
+                    });
+                } else if (flagConectada) {
+                    // Caso 2: Apenas cabo conectado
+                    conn.release();
+                    console.log(`⚠️ [EXCLUI-CAIXA] Caixa ${id_meta} não pode ser excluída: possui cabos conectados`);
+                    return res.status(400).send({
+                        success: false,
+                        error: 'Caixa com cabos conectados! Desconecte os cabos antes de excluir.',
+                        message: 'Caixa possui cabos conectados. Desconecte todos os cabos antes de excluir.',
+                        flagConectada: flagConectada,
+                        flagSplitter: false,
+                        totalSplitters: 0,
+                        motivo: 'cabos_conectados'
+                    });
+                } else if (flagSplitter) {
+                    // Caso 3: Apenas splitter
+                    conn.release();
+                    console.log(`⚠️ [EXCLUI-CAIXA] Caixa ${id_meta} não pode ser excluída: possui ${totalSplitters} splitter(s)`);
+                    return res.status(400).send({
+                        success: false,
+                        error: 'Caixa com splitters! Remova os splitters antes de excluir.',
+                        message: `Caixa possui ${totalSplitters} splitter(s). Remova todos os splitters antes de excluir.`,
+                        flagConectada: false,
+                        flagSplitter: flagSplitter,
+                        totalSplitters: totalSplitters,
+                        motivo: 'splitters'
                     });
                 }
 
                 // ✅ Se não estiver conectada e não tiver splitter, prossegue com a exclusão
-                // 1️⃣ Delete na tabela tstmeta.ids (gera o ID_META)
-                const queryID = `DELETE FROM tstmeta.ids WHERE id_meta = ? AND id_city = ? AND id_condominio = ?`;
-                
-                conn.query(
-                    queryID,
-                    [id_meta, id_city, id_condominio],
-                    (error, resultadoID) => {
-                        conn.release(); // Libera a conexão
-                        
+                // Iniciar transação para garantir atomicidade
+                conn.beginTransaction((error) => {
+                    if (error) {
+                        conn.release();
+                        console.error('❌ [EXCLUI-CAIXA] Erro ao iniciar transação:', error);
+                        return res.status(500).send({
+                            success: false,
+                            error: 'Erro ao iniciar transação',
+                            details: error.message
+                        });
+                    }
+
+                    // 1️⃣ Delete na tabela tstmeta.ids (gera o ID_META)
+                    const queryID = `DELETE FROM tstmeta.ids WHERE id_meta = ? AND id_city = ? AND id_condominio = ?`;
+                    
+                    conn.query(queryID, [id_meta, id_city, id_condominio], (error, resultadoID) => {
                         if (error) {
-                            console.error('❌ [EXCLUI-CAIXA] Erro ao deletar caixa:', id_meta, 'de tstmeta.ids:', error);
-                            return res.status(500).send({
-                                success: false,
-                                error: 'Erro ao deletar caixa',
-                                details: error.message
+                            return conn.rollback(() => {
+                                conn.release();
+                                console.error('❌ [EXCLUI-CAIXA] Erro ao deletar de tstmeta.ids:', error);
+                                return res.status(500).send({
+                                    success: false,
+                                    error: 'Erro ao deletar caixa de tstmeta.ids',
+                                    details: error.message
+                                });
                             });
                         }
 
                         // Verificar se realmente deletou algo
                         if (resultadoID.affectedRows === 0) {
-                            console.warn(`⚠️ [EXCLUI-CAIXA] Nenhuma caixa encontrada para deletar - ID: ${id_meta}`);
-                            return res.status(404).send({
-                                success: false,
-                                error: 'Caixa não encontrada',
-                                message: `Nenhuma caixa encontrada com id_meta ${id_meta}`
+                            return conn.rollback(() => {
+                                conn.release();
+                                console.warn(`⚠️ [EXCLUI-CAIXA] Nenhuma caixa encontrada em tstmeta.ids - ID: ${id_meta}`);
+                                return res.status(404).send({
+                                    success: false,
+                                    error: 'Caixa não encontrada',
+                                    message: `Nenhuma caixa encontrada com id_meta ${id_meta}`
+                                });
                             });
                         }
 
-                        console.log(`✅ [EXCLUI-CAIXA] Caixa deletada com sucesso - ID: ${id_meta}`);
-                        return res.status(200).send({
-                            success: true,
-                            message: 'Caixa deletada com sucesso',
-                            id_meta: id_meta,
-                            id_city: id_city,
-                            affectedRows: resultadoID.affectedRows
+                        console.log(`✅ [EXCLUI-CAIXA] Registro deletado de tstmeta.ids - ID: ${id_meta}`);
+
+                        // 2️⃣ Verificar e deletar da tabela correta (tst.caixa ou tst.cto)
+                        // Primeiro tenta excluir de tst.caixa
+                        const queryCaixa = `DELETE FROM tst.caixa WHERE ID_META = ?`;
+                        
+                        conn.query(queryCaixa, [id_meta], (error, resultadoCaixa) => {
+                            if (error) {
+                                return conn.rollback(() => {
+                                    conn.release();
+                                    console.error('❌ [EXCLUI-CAIXA] Erro ao deletar de tst.caixa:', error);
+                                    return res.status(500).send({
+                                        success: false,
+                                        error: 'Erro ao deletar de tst.caixa',
+                                        details: error.message
+                                    });
+                                });
+                            }
+
+                            // Se encontrou em tst.caixa, commit e retorna
+                            if (resultadoCaixa.affectedRows > 0) {
+                                conn.commit((error) => {
+                                    if (error) {
+                                        return conn.rollback(() => {
+                                            conn.release();
+                                            console.error('❌ [EXCLUI-CAIXA] Erro ao fazer commit da transação:', error);
+                                            return res.status(500).send({
+                                                success: false,
+                                                error: 'Erro ao confirmar exclusão',
+                                                details: error.message
+                                            });
+                                        });
+                                    }
+
+                                    conn.release();
+                                    console.log(`✅ [EXCLUI-CAIXA] Registro deletado de tst.caixa - ID: ${id_meta}`);
+                                    console.log(`✅ [EXCLUI-CAIXA] Transação concluída com sucesso - Caixa ${id_meta} deletada`);
+                                    
+                                    return res.status(200).send({
+                                        success: true,
+                                        message: 'Caixa deletada com sucesso',
+                                        id_meta: id_meta,
+                                        id_city: id_city,
+                                        affectedRowsIds: resultadoID.affectedRows,
+                                        affectedRowsCaixa: resultadoCaixa.affectedRows
+                                    });
+                                });
+                            } else {
+                                // Se não encontrou em tst.caixa, tenta excluir de tst.cto
+                                console.log(`🔍 [EXCLUI-CAIXA] Não encontrado em tst.caixa, tentando tst.cto - ID: ${id_meta}`);
+                                const queryCto = `DELETE FROM tst.cto WHERE ID_META = ?`;
+                                
+                                conn.query(queryCto, [id_meta], (error, resultadoCto) => {
+                                    if (error) {
+                                        return conn.rollback(() => {
+                                            conn.release();
+                                            console.error('❌ [EXCLUI-CAIXA] Erro ao deletar de tst.cto:', error);
+                                            return res.status(500).send({
+                                                success: false,
+                                                error: 'Erro ao deletar de tst.cto',
+                                                details: error.message
+                                            });
+                                        });
+                                    }
+
+                                    // Verificar se encontrou em tst.cto
+                                    if (resultadoCto.affectedRows === 0) {
+                                        return conn.rollback(() => {
+                                            conn.release();
+                                            console.warn(`⚠️ [EXCLUI-CAIXA] Nenhum registro encontrado em tst.caixa nem tst.cto - ID: ${id_meta}`);
+                                            return res.status(404).send({
+                                                success: false,
+                                                error: 'Registro não encontrado',
+                                                message: `Nenhum registro encontrado com id_meta ${id_meta} em tst.caixa nem tst.cto`
+                                            });
+                                        });
+                                    }
+
+                                    // ✅ Commit da transação
+                                    conn.commit((error) => {
+                                        if (error) {
+                                            return conn.rollback(() => {
+                                                conn.release();
+                                                console.error('❌ [EXCLUI-CAIXA] Erro ao fazer commit da transação:', error);
+                                                return res.status(500).send({
+                                                    success: false,
+                                                    error: 'Erro ao confirmar exclusão',
+                                                    details: error.message
+                                                });
+                                            });
+                                        }
+
+                                        conn.release();
+                                        console.log(`✅ [EXCLUI-CAIXA] Registro deletado de tst.cto - ID: ${id_meta}`);
+                                        console.log(`✅ [EXCLUI-CAIXA] Transação concluída com sucesso - CTO ${id_meta} deletada`);
+                                        
+                                        return res.status(200).send({
+                                            success: true,
+                                            message: 'CTO deletada com sucesso',
+                                            id_meta: id_meta,
+                                            id_city: id_city,
+                                            affectedRowsIds: resultadoID.affectedRows,
+                                            affectedRowsCto: resultadoCto.affectedRows
+                                        });
+                                    });
+                                });
+                            }
                         });
-                    }
-                );
+                    });
+                });
             });
         });
     });

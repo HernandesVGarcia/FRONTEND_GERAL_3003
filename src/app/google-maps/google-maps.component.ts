@@ -40,6 +40,7 @@ import { UpdateCaixaService } from '../servico/update-caixa.service';
 import { UpdateDioService, UpdateDioData, UpdateDioResponse } from '../servico/update-dio.service';
 import { InsertLogService } from '../servico/insert-log.service';
 import { ExcluiCaboService } from '../servico/exclui-cabo.service';
+import { ExcluiCaixaService, ExcluiCaixaRequest, ExcluiCaixaResponse } from '../servico/exclui-caixa.service';
 import { Subject, takeUntil } from 'rxjs';
 
 import { MatDialog } from '@angular/material/dialog';
@@ -355,6 +356,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
     private dialog: MatDialog,
     private insertLogService: InsertLogService,
     private excluiCaboService: ExcluiCaboService,
+    private excluiCaixaService: ExcluiCaixaService,
     private buscaObjetoConexPontaService: BuscaObjetoConexPontaService
   ) {}
 
@@ -605,8 +607,8 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
       //this.editarCaixa();
         break;
         case 'excluir-caixa':
-      //this.excluirCaixa();
-        break;
+          this.excluirCaixa();
+          break;
 
       // 🆕 Ações para DIO
       case 'visualizar-dio':
@@ -676,12 +678,425 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
   }
   
   private excluirCaixa(): void {
-    if (!this.clickedCaixaData) {
-      console.warn('🗺️ [CONTEXT-MENU] Nenhuma caixa selecionada');
+    console.log('🔴 [CONTEXT-MENU] Excluindo caixa...', this.clickedCaixaData);
+    
+    // 🆕 Verificar se é CTO primeiro (CTOs usam o mesmo menu de caixa)
+    if (this.clickedCTOData) {
+      console.log('🔴 [CONTEXT-MENU] É uma CTO, redirecionando para excluirCTO()');
+      this.excluirCTO();
       return;
     }
-    console.log('🗺️ [CONTEXT-MENU] Excluindo caixa:', this.clickedCaixaData);
-    // Implementar lógica de exclusão
+    
+    // 🆕 Verificar se é CTO_SP
+    if (this.clickedCTOSPData) {
+      console.log('🔴 [CONTEXT-MENU] É uma CTO_SP, redirecionando para excluirCTOSP()');
+      this.excluirCTOSP();
+      return;
+    }
+    
+    if (!this.clickedCaixaData) {
+      console.warn('⚠️ [EXCLUI-CAIXA] Nenhuma caixa selecionada');
+      return;
+    }
+
+    // Obter dados da caixa
+    const idMeta = this.clickedCaixaData.id_meta;
+    const idCity = this.authService.getIdCity();
+    
+    if (!idMeta) {
+      alert('Erro: ID da caixa não encontrado');
+      return;
+    }
+
+    if (!idCity) {
+      alert('Erro: ID da cidade não encontrado');
+      return;
+    }
+
+    // id_condominio padrão é 0 (fora de condomínio)
+    const idCondominio = this.clickedCaixaData.id_condominio || 0;
+
+    // Confirmação antes de excluir
+    const confirmacao = confirm(`Tem certeza que deseja excluir esta caixa?\n\n🆔 ID: ${idMeta}`);
+    
+    if (!confirmacao) {
+      return;
+    }
+
+    // Preparar requisição
+    const request: ExcluiCaixaRequest = {
+      id_meta: idMeta,
+      id_city: idCity,
+      id_condominio: idCondominio
+    };
+
+    // Fazer a requisição usando o serviço
+    this.excluiCaixaService.excluirCaixa(request).subscribe({
+      next: (response: ExcluiCaixaResponse) => {
+        console.log('✅ [EXCLUI-CAIXA] Resposta da API:', response);
+        
+        if (response.success) {
+          console.log('🗑️ [EXCLUI-CAIXA] Iniciando remoção do marcador do mapa...');
+          console.log('🗑️ [EXCLUI-CAIXA] id_meta:', idMeta);
+          
+          // Buscar marcador pelo id_meta
+          const markerParaRemover = this.buscarMarcadorCaixaPorIdMeta(idMeta);
+          
+          // Remover o marcador do mapa
+          if (markerParaRemover) {
+            console.log('🗑️ [EXCLUI-CAIXA] Chamando setMap(null)...');
+            markerParaRemover.setMap(null);
+            console.log('🗑️ [EXCLUI-CAIXA] setMap(null) executado');
+            
+            // Remover também do array markerCaixas
+            const index = this.markerCaixas.indexOf(markerParaRemover);
+            if (index !== -1) {
+              this.markerCaixas.splice(index, 1);
+              console.log('🗑️ [EXCLUI-CAIXA] Marcador removido do array');
+            }
+          } else {
+            console.warn('⚠️ [EXCLUI-CAIXA] Não foi possível encontrar o marcador para remover!');
+          }
+
+          // Limpar dados da caixa
+          this.clickedCaixaData = null;
+          
+          // Fechar context menu
+          this.hideContextMenu();
+
+          // Inserir log de exclusão de caixa
+          const idUsuario = this.authService.getIdUser();
+          if (idUsuario && idCity) {
+            console.log('🔄 Inserindo log de exclusão de caixa...');
+            this.insertLogService.inserirLog({
+              id_usuario: idUsuario,
+              id_evento: 19, // Usando o mesmo id_evento de exclusão de cabo (verificar se precisa ser diferente)
+              id_city: idCity,
+              id_meta_objeto: request.id_meta,
+              descricao: `Exclusão de Caixa: ${request.id_meta}`,
+              VERSION: 'Fiberworks WEB 1.0.0'
+            }).subscribe({
+              next: (logResponse) => {
+                console.log('✅ Log de exclusão de caixa:', logResponse);
+              },
+              error: (error) => {
+                console.error('❌ Erro ao inserir log de exclusão de caixa:', error);
+              }
+            });
+          }
+        } else {
+          // Tratar erros específicos baseados no motivo
+          let mensagemErro = response.error || response.message || 'Erro desconhecido';
+          
+          if (response.motivo) {
+            switch (response.motivo) {
+              case 'cabos_conectados':
+                mensagemErro = `⚠️ Caixa possui cabos conectados!\n\nDesconecte todos os cabos antes de excluir.`;
+                break;
+              case 'splitters':
+                mensagemErro = `⚠️ Caixa possui ${response.totalSplitters || 0} splitter(s)!\n\nRemova todos os splitters antes de excluir.`;
+                break;
+              case 'cabos_conectados_e_splitters':
+                mensagemErro = `⚠️ Caixa possui cabos conectados e ${response.totalSplitters || 0} splitter(s)!\n\nDesconecte os cabos e remova os splitters antes de excluir.`;
+                break;
+            }
+          }
+          
+          alert(mensagemErro);
+        }
+      },
+      error: (error: string) => {
+        console.error('❌ [EXCLUI-CAIXA] Erro na requisição:', error);
+        alert(`❌ Operação não realizada: ${error}`);
+      }
+    });
+  }
+
+  /************************************
+   * 🔍 Busca um marcador de caixa pelo id_meta
+   */
+  private buscarMarcadorCaixaPorIdMeta(idMeta: number): google.maps.Marker | null {
+    // Buscar o índice da caixa no array destino pelo id_meta
+    const index = this.destino.findIndex(caixa => caixa.id_meta === idMeta);
+    
+    if (index !== -1 && index < this.markerCaixas.length) {
+      return this.markerCaixas[index];
+    }
+    
+    console.warn(`⚠️ [EXCLUI-CAIXA] Marcador não encontrado para id_meta: ${idMeta}`);
+    return null;
+  }
+
+  private excluirCTO(): void {
+    console.log('🔴 [CONTEXT-MENU] Excluindo CTO...', this.clickedCTOData);
+    
+    if (!this.clickedCTOData) {
+      console.warn('⚠️ [EXCLUI-CTO] Nenhuma CTO selecionada');
+      return;
+    }
+
+    // Obter dados da CTO
+    const idMeta = this.clickedCTOData.id_meta;
+    const idCity = this.authService.getIdCity();
+    
+    if (!idMeta) {
+      alert('Erro: ID da CTO não encontrado');
+      return;
+    }
+
+    if (!idCity) {
+      alert('Erro: ID da cidade não encontrado');
+      return;
+    }
+
+    // id_condominio padrão é 0 (fora de condomínio)
+    const idCondominio = this.clickedCTOData.id_condominio || 0;
+
+    // Confirmação antes de excluir
+    const confirmacao = confirm(`Tem certeza que deseja excluir esta CTO?\n\n🆔 ID: ${idMeta}`);
+    
+    if (!confirmacao) {
+      return;
+    }
+
+    // Preparar requisição
+    const request: ExcluiCaixaRequest = {
+      id_meta: idMeta,
+      id_city: idCity,
+      id_condominio: idCondominio
+    };
+
+    // Fazer a requisição usando o serviço (mesmo serviço usado para caixas)
+    this.excluiCaixaService.excluirCaixa(request).subscribe({
+      next: (response: ExcluiCaixaResponse) => {
+        console.log('✅ [EXCLUI-CTO] Resposta da API:', response);
+        
+        if (response.success) {
+          console.log('🗑️ [EXCLUI-CTO] Iniciando remoção do marcador do mapa...');
+          console.log('🗑️ [EXCLUI-CTO] id_meta:', idMeta);
+          
+          // Buscar marcador pelo id_meta
+          const markerParaRemover = this.buscarMarcadorCtoPorIdMeta(idMeta);
+          
+          // Remover o marcador do mapa
+          if (markerParaRemover) {
+            console.log('🗑️ [EXCLUI-CTO] Chamando setMap(null)...');
+            markerParaRemover.setMap(null);
+            console.log('🗑️ [EXCLUI-CTO] setMap(null) executado');
+            
+            // Remover também do array markerCtos
+            const index = this.markerCtos.indexOf(markerParaRemover);
+            if (index !== -1) {
+              this.markerCtos.splice(index, 1);
+              console.log('🗑️ [EXCLUI-CTO] Marcador removido do array');
+            }
+          } else {
+            console.warn('⚠️ [EXCLUI-CTO] Não foi possível encontrar o marcador para remover!');
+          }
+
+          // Limpar dados da CTO
+          this.clickedCTOData = null;
+          
+          // Fechar context menu
+          this.hideContextMenu();
+
+          // Inserir log de exclusão de CTO
+          const idUsuario = this.authService.getIdUser();
+          if (idUsuario && idCity) {
+            console.log('🔄 Inserindo log de exclusão de CTO...');
+            this.insertLogService.inserirLog({
+              id_usuario: idUsuario,
+              id_evento: 19, // Usando o mesmo id_evento de exclusão de cabo/caixa
+              id_city: idCity,
+              id_meta_objeto: request.id_meta,
+              descricao: `Exclusão de CTO: ${request.id_meta}`,
+              VERSION: 'Fiberworks WEB 1.0.0'
+            }).subscribe({
+              next: (logResponse) => {
+                console.log('✅ Log de exclusão de CTO:', logResponse);
+              },
+              error: (error) => {
+                console.error('❌ Erro ao inserir log de exclusão de CTO:', error);
+              }
+            });
+          }
+        } else {
+          // Tratar erros específicos baseados no motivo
+          let mensagemErro = response.error || response.message || 'Erro desconhecido';
+          
+          if (response.motivo) {
+            switch (response.motivo) {
+              case 'cabos_conectados':
+                mensagemErro = `⚠️ CTO possui cabos conectados!\n\nDesconecte todos os cabos antes de excluir.`;
+                break;
+              case 'splitters':
+                mensagemErro = `⚠️ CTO possui ${response.totalSplitters || 0} splitter(s)!\n\nRemova todos os splitters antes de excluir.`;
+                break;
+              case 'cabos_conectados_e_splitters':
+                mensagemErro = `⚠️ CTO possui cabos conectados e ${response.totalSplitters || 0} splitter(s)!\n\nDesconecte os cabos e remova os splitters antes de excluir.`;
+                break;
+            }
+          }
+          
+          alert(mensagemErro);
+        }
+      },
+      error: (error: string) => {
+        console.error('❌ [EXCLUI-CTO] Erro na requisição:', error);
+        alert(`❌ Operação não realizada: ${error}`);
+      }
+    });
+  }
+
+  private excluirCTOSP(): void {
+    console.log('🔴 [CONTEXT-MENU] Excluindo CTO_SP...', this.clickedCTOSPData);
+    
+    if (!this.clickedCTOSPData) {
+      console.warn('⚠️ [EXCLUI-CTOSP] Nenhuma CTO_SP selecionada');
+      return;
+    }
+
+    // Obter dados da CTO_SP
+    const idMeta = this.clickedCTOSPData.id_meta;
+    const idCity = this.authService.getIdCity();
+    
+    if (!idMeta) {
+      alert('Erro: ID da CTO_SP não encontrado');
+      return;
+    }
+
+    if (!idCity) {
+      alert('Erro: ID da cidade não encontrado');
+      return;
+    }
+
+    // id_condominio padrão é 0 (fora de condomínio)
+    const idCondominio = this.clickedCTOSPData.id_condominio || 0;
+
+    // Confirmação antes de excluir
+    const confirmacao = confirm(`Tem certeza que deseja excluir esta CTO_SP?\n\n🆔 ID: ${idMeta}`);
+    
+    if (!confirmacao) {
+      return;
+    }
+
+    // Preparar requisição
+    const request: ExcluiCaixaRequest = {
+      id_meta: idMeta,
+      id_city: idCity,
+      id_condominio: idCondominio
+    };
+
+    // Fazer a requisição usando o serviço (mesmo serviço usado para caixas)
+    this.excluiCaixaService.excluirCaixa(request).subscribe({
+      next: (response: ExcluiCaixaResponse) => {
+        console.log('✅ [EXCLUI-CTOSP] Resposta da API:', response);
+        
+        if (response.success) {
+          console.log('🗑️ [EXCLUI-CTOSP] Iniciando remoção do marcador do mapa...');
+          console.log('🗑️ [EXCLUI-CTOSP] id_meta:', idMeta);
+          
+          // Buscar marcador pelo id_meta
+          const markerParaRemover = this.buscarMarcadorCtoSPPorIdMeta(idMeta);
+          
+          // Remover o marcador do mapa
+          if (markerParaRemover) {
+            console.log('🗑️ [EXCLUI-CTOSP] Chamando setMap(null)...');
+            markerParaRemover.setMap(null);
+            console.log('🗑️ [EXCLUI-CTOSP] setMap(null) executado');
+            
+            // Remover também do array markerCtosSP
+            const index = this.markerCtosSP.indexOf(markerParaRemover);
+            if (index !== -1) {
+              this.markerCtosSP.splice(index, 1);
+              console.log('🗑️ [EXCLUI-CTOSP] Marcador removido do array');
+            }
+          } else {
+            console.warn('⚠️ [EXCLUI-CTOSP] Não foi possível encontrar o marcador para remover!');
+          }
+
+          // Limpar dados da CTO_SP
+          this.clickedCTOSPData = null;
+          
+          // Fechar context menu
+          this.hideContextMenu();
+
+          // Inserir log de exclusão de CTO_SP
+          const idUsuario = this.authService.getIdUser();
+          if (idUsuario && idCity) {
+            console.log('🔄 Inserindo log de exclusão de CTO_SP...');
+            this.insertLogService.inserirLog({
+              id_usuario: idUsuario,
+              id_evento: 19, // Usando o mesmo id_evento de exclusão de cabo/caixa
+              id_city: idCity,
+              id_meta_objeto: request.id_meta,
+              descricao: `Exclusão de CTO_SP: ${request.id_meta}`,
+              VERSION: 'Fiberworks WEB 1.0.0'
+            }).subscribe({
+              next: (logResponse) => {
+                console.log('✅ Log de exclusão de CTO_SP:', logResponse);
+              },
+              error: (error) => {
+                console.error('❌ Erro ao inserir log de exclusão de CTO_SP:', error);
+              }
+            });
+          }
+        } else {
+          // Tratar erros específicos baseados no motivo
+          let mensagemErro = response.error || response.message || 'Erro desconhecido';
+          
+          if (response.motivo) {
+            switch (response.motivo) {
+              case 'cabos_conectados':
+                mensagemErro = `⚠️ CTO_SP possui cabos conectados!\n\nDesconecte todos os cabos antes de excluir.`;
+                break;
+              case 'splitters':
+                mensagemErro = `⚠️ CTO_SP possui ${response.totalSplitters || 0} splitter(s)!\n\nRemova todos os splitters antes de excluir.`;
+                break;
+              case 'cabos_conectados_e_splitters':
+                mensagemErro = `⚠️ CTO_SP possui cabos conectados e ${response.totalSplitters || 0} splitter(s)!\n\nDesconecte os cabos e remova os splitters antes de excluir.`;
+                break;
+            }
+          }
+          
+          alert(mensagemErro);
+        }
+      },
+      error: (error: string) => {
+        console.error('❌ [EXCLUI-CTOSP] Erro na requisição:', error);
+        alert(`❌ Operação não realizada: ${error}`);
+      }
+    });
+  }
+
+  /************************************
+   * 🔍 Busca um marcador de CTO pelo id_meta
+   */
+  private buscarMarcadorCtoPorIdMeta(idMeta: number): google.maps.Marker | null {
+    // Buscar o índice da CTO no array destinoCTO pelo id_meta
+    const index = this.destinoCTO.findIndex(cto => cto.id_meta === idMeta);
+    
+    if (index !== -1 && index < this.markerCtos.length) {
+      return this.markerCtos[index];
+    }
+    
+    console.warn(`⚠️ [EXCLUI-CTO] Marcador não encontrado para id_meta: ${idMeta}`);
+    return null;
+  }
+
+  /************************************
+   * 🔍 Busca um marcador de CTO_SP pelo id_meta
+   */
+  private buscarMarcadorCtoSPPorIdMeta(idMeta: number): google.maps.Marker | null {
+    // Buscar o índice da CTO_SP no array destinoCTOSP pelo id_meta
+    const index = this.destinoCTOSP.findIndex(ctosp => ctosp.id_meta === idMeta);
+    
+    if (index !== -1 && index < this.markerCtosSP.length) {
+      return this.markerCtosSP[index];
+    }
+    
+    console.warn(`⚠️ [EXCLUI-CAIXA] Marcador CTO_SP não encontrado para id_meta: ${idMeta}`);
+    return null;
   }
 
   // ============================================================================
