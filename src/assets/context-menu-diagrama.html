@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagrama - Context Menu</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .mermaid-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .mermaid {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="mermaid-container">
+        <pre class="mermaid">
+flowchart TD
+    Start([Usuário clica com botão direito]) --> PreventDefault[Prevenir menu padrão do navegador]
+    PreventDefault --> IdentifyType{Identificar tipo de elemento}
+    
+    IdentifyType -->|isCTO| CTO[CTO]
+    IdentifyType -->|isCTOSP| CTOSP[CTO_SP]
+    IdentifyType -->|isCLI| Cliente[Cliente Normal]
+    IdentifyType -->|isCLIAT| ClienteAt[Cliente Ativado]
+    IdentifyType -->|isCLIDES| ClienteDes[Cliente Desativado]
+    IdentifyType -->|isCLI = false<br/>isCLIAT = false<br/>isCLIDES = false| Caixa[Caixa]
+    IdentifyType -->|Polyline| Cabo[Cabo]
+    IdentifyType -->|DIO Marker| DIO[DIO]
+    IdentifyType -->|Mapa vazio| Mapa[Mapa]
+    
+    CTO --> StoreCTO[Armazenar clickedCTOData<br/>Limpar outros dados<br/>contextMenuType = 'caixa']
+    CTOSP --> StoreCTOSP[Armazenar clickedCTOSPData<br/>Limpar outros dados<br/>contextMenuType = 'caixa']
+    Caixa --> StoreCaixa[Armazenar clickedCaixaData<br/>Limpar outros dados<br/>contextMenuType = 'caixa']
+    
+    Cliente --> StoreCliente[Armazenar clickedCliData<br/>Limpar outros dados<br/>contextMenuType = 'cliente']
+    ClienteAt --> StoreClienteAt[Armazenar clickedCliAtData<br/>Limpar outros dados<br/>contextMenuType = 'cliente']
+    ClienteDes --> StoreClienteDes[Armazenar clickedCliDesData<br/>Limpar outros dados<br/>contextMenuType = 'cliente']
+    
+    Cabo --> StoreCabo[Armazenar clickedCaboData<br/>Armazenar clickedPolyline<br/>contextMenuType = 'cabo']
+    DIO --> StoreDIO[Armazenar clickedDioData<br/>Limpar outros dados<br/>contextMenuType = 'dio']
+    Mapa --> StoreMapa[contextMenuType = 'map']
+    
+    StoreCTO --> ShowMenu[showContextMenu<br/>clientX, clientY]
+    StoreCTOSP --> ShowMenu
+    StoreCaixa --> ShowMenu
+    StoreCliente --> ShowMenu
+    StoreClienteAt --> ShowMenu
+    StoreClienteDes --> ShowMenu
+    StoreCabo --> ShowMenu
+    StoreDIO --> ShowMenu
+    StoreMapa --> ShowMenu
+    
+    ShowMenu --> MenuVisible[Menu visível na tela]
+    MenuVisible --> UserSelect{Usuário seleciona ação}
+    
+    UserSelect -->|Visualizar| ActionVisualizar[onContextMenuAction<br/>'visualizar-*']
+    UserSelect -->|Editar| ActionEditar[onContextMenuAction<br/>'editar-*']
+    UserSelect -->|Excluir| ActionExcluir[onContextMenuAction<br/>'excluir-*']
+    UserSelect -->|Liberar| ActionLiberar[onContextMenuAction<br/>'liberar-*']
+    UserSelect -->|Criar| ActionCriar[onContextMenuAction<br/>'cria-*']
+    UserSelect -->|Clicar fora| CloseMenu[hideContextMenu]
+    
+    ActionVisualizar --> SwitchCase[Switch case no<br/>onContextMenuAction]
+    ActionEditar --> SwitchCase
+    ActionExcluir --> SwitchCase
+    ActionLiberar --> SwitchCase
+    ActionCriar --> SwitchCase
+    
+    SwitchCase --> ExecuteMethod[Executar método específico<br/>visualizarCabo<br/>visualizarCaixa<br/>visualizarDio<br/>visualizarCliente<br/>excluirCabo<br/>excluirCaixa<br/>excluirDio<br/>excluirCliente<br/>liberarCabo<br/>criarCaixa<br/>criarDIO<br/>etc]
+    
+    ExecuteMethod --> CloseMenu
+    CloseMenu --> Cleanup[Limpar dados armazenados<br/>clickedCaboData = null<br/>clickedCaixaData = null<br/>clickedCTOData = null<br/>clickedCTOSPData = null<br/>clickedDioData = null<br/>clickedCliData = null<br/>clickedCliAtData = null<br/>clickedCliDesData = null<br/>contextMenuType = 'map']
+    
+    Cleanup --> End([Fim])
+    
+    style Start fill:#667eea,stroke:#333,stroke-width:2px,color:#fff
+    style End fill:#667eea,stroke:#333,stroke-width:2px,color:#fff
+    style IdentifyType fill:#ffc107,stroke:#333,stroke-width:2px,color:#333
+    style UserSelect fill:#ffc107,stroke:#333,stroke-width:2px,color:#333
+    style ShowMenu fill:#28a745,stroke:#333,stroke-width:2px,color:#fff
+    style MenuVisible fill:#28a745,stroke:#333,stroke-width:2px,color:#fff
+    style SwitchCase fill:#17a2b8,stroke:#333,stroke-width:2px,color:#fff
+    style ExecuteMethod fill:#17a2b8,stroke:#333,stroke-width:2px,color:#fff
+    style CloseMenu fill:#dc3545,stroke:#333,stroke-width:2px,color:#fff
+    style Cleanup fill:#6c757d,stroke:#333,stroke-width:2px,color:#fff
+        </pre>
+    </div>
+    
+    <script>
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'default',
+            flowchart: {
+                diagramMarginX: 50,
+                diagramMarginY: 50,
+                nodeSpacing: 80,
+                rankSpacing: 100,
+                curve: 'basis',
+                padding: 20
+            }
+        });
+    </script>
+</body>
+</html>
+

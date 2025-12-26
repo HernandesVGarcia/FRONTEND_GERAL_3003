@@ -41,6 +41,7 @@ import { UpdateDioService, UpdateDioData, UpdateDioResponse } from '../servico/u
 import { InsertLogService } from '../servico/insert-log.service';
 import { ExcluiCaboService } from '../servico/exclui-cabo.service';
 import { ExcluiCaixaService, ExcluiCaixaRequest, ExcluiCaixaResponse } from '../servico/exclui-caixa.service';
+import { ExcluiDioService, ExcluiDioRequest, ExcluiDioResponse } from '../servico/exclui-dio.service';
 import { Subject, takeUntil } from 'rxjs';
 
 import { MatDialog } from '@angular/material/dialog';
@@ -268,13 +269,16 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
   // 🎯 Propriedades para context menu
   contextMenuVisible = false;
   contextMenuPosition = { x: 0, y: 0 };
-  contextMenuType: 'caixa' | 'map' | 'cabo' | 'dio' = 'map'; // 🆕 Tipo de contexto do menu
+  contextMenuType: 'caixa' | 'map' | 'cabo' | 'dio' | 'cliente' = 'map'; // 🆕 Tipo de contexto do menu
   private contextMenuListenerAdded = false; // Flag para evitar listeners duplicados
   private clickedCaboData: any = null; // 🆕 Armazena dados do cabo clicado
   private clickedCaixaData: any = null; // 🆕 Armazena dados da caixa clicada
   private clickedCTOData: any = null; // 🆕 Armazena dados da CTO clicada
   private clickedCTOSPData: any = null; // 🆕 Armazena dados da CTO_SP clicada
   private clickedDioData: any = null; // 🆕 Armazena dados do DIO clicado
+  private clickedCliData: any = null; // 🆕 Armazena dados do cliente clicado
+  private clickedCliAtData: any = null; // 🆕 Armazena dados do cliente ativado clicado
+  private clickedCliDesData: any = null; // 🆕 Armazena dados do cliente desativado clicado
   private clickedPolyline: google.maps.Polyline | null = null; // 🆕 Armazena a polyline clicada
   private ultimaCoordenadaClique: google.maps.LatLng | null = null; // 🆕 Armazena coordenada do último clique para identificar ponta
   // 🔧 Propriedades para edição de caixa/CTO/CTO_SP
@@ -357,6 +361,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
     private insertLogService: InsertLogService,
     private excluiCaboService: ExcluiCaboService,
     private excluiCaixaService: ExcluiCaixaService,
+    private excluiDioService: ExcluiDioService,
     private buscaObjetoConexPontaService: BuscaObjetoConexPontaService
   ) {}
 
@@ -528,6 +533,10 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
       this.clickedCaixaData = null;
       this.clickedCTOData = null; // 🔧 NOVO: Limpar dados de CTO
       this.clickedCTOSPData = null; // 🔧 NOVO: Limpar dados de CTO_SP
+      this.clickedDioData = null; // 🔧 NOVO: Limpar dados de DIO
+      this.clickedCliData = null; // 🆕 Limpar dados de cliente
+      this.clickedCliAtData = null; // 🆕 Limpar dados de cliente ativado
+      this.clickedCliDesData = null; // 🆕 Limpar dados de cliente desativado
       this.clickedDioData = null; // 🆕 Limpar dados do DIO
     }
     
@@ -616,6 +625,14 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
         break;
       case 'excluir-dio':
         this.excluirDio();
+        break;
+
+      // 🆕 Ações para Clientes
+      case 'visualizar-cliente':
+        this.visualizarCliente();
+        break;
+      case 'excluir-cliente':
+        this.excluirCliente();
         break;
 
       default:
@@ -824,6 +841,21 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
     }
     
     console.warn(`⚠️ [EXCLUI-CAIXA] Marcador não encontrado para id_meta: ${idMeta}`);
+    return null;
+  }
+
+  /************************************
+   * 🔍 Busca um marcador de DIO pelo id_meta
+   */
+  private buscarMarcadorDioPorIdMeta(idMeta: number): google.maps.Marker | null {
+    // Buscar o índice do DIO no array destinoDios pelo id_meta
+    const index = this.destinoDios.findIndex(dio => dio.id_meta === idMeta);
+    
+    if (index !== -1 && index < this.markerDios.length) {
+      return this.markerDios[index];
+    }
+    
+    console.warn(`⚠️ [EXCLUI-DIO] Marcador não encontrado para id_meta: ${idMeta}`);
     return null;
   }
 
@@ -3689,9 +3721,40 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
         marker.setMap(this.map);
       }
       
+      // Variáveis para controlar cliques
+      let clickTimeout: any;
+      
+      // Adicionar listener de clique simples para abrir InfoWindow
+      marker.addListener('click', (event: google.maps.MapMouseEvent) => {
+        // Limpar timeout anterior se existir
+        if (clickTimeout) {
+          clearTimeout(clickTimeout);
+          clickTimeout = null;
+        }
+
+        // Definir timeout para clique simples
+        clickTimeout = setTimeout(() => {
+          // Clique simples - mostrar InfoWindow
+          console.log('🔍 [DIO] Clique simples detectado no DIO:', location.id_meta);
+          this.showMarkerInfoWindow(marker, event, 'dio', location);
+        }, 300); // Delay de 300ms para distinguir de duplo clique
+      });
+      
       // Adicionar listener de duplo clique para EDITAR DIO (movimentar)
-      marker.addListener('dblclick', () => {
+      marker.addListener('dblclick', (event: google.maps.MapMouseEvent) => {
         console.log('🖱️ [DIO] Double-click no DIO:', location);
+        
+        // Cancelar clique simples se estiver pendente
+        if (clickTimeout) {
+          clearTimeout(clickTimeout);
+          clickTimeout = null;
+        }
+        
+        // Fechar InfoWindow se estiver aberto
+        if (this.currentMarkerInfoWindow) {
+          this.currentMarkerInfoWindow.close();
+        }
+        
         const index = this.markerDios.indexOf(marker);
         if (index !== -1) {
           this.habilitarEdicaoDio(index);
@@ -3701,6 +3764,18 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
       // 🆕 Adicionar listener de rightclick para context menu do DIO
       marker.addListener('rightclick', (event: google.maps.MapMouseEvent) => {
         console.log('🔴 [DIO] Right-click no DIO:', location);
+        
+        // Cancelar clique simples se estiver pendente
+        if (clickTimeout) {
+          clearTimeout(clickTimeout);
+          clickTimeout = null;
+        }
+        
+        // Fechar InfoWindow se estiver aberto
+        if (this.currentMarkerInfoWindow) {
+          this.currentMarkerInfoWindow.close();
+        }
+        
         this.clickedDioData = location;
         this.contextMenuType = 'dio';
         
@@ -5233,6 +5308,11 @@ private generateMarkerInfoWindowContent(tipo: string, dados: any): string {
       cor = '#e67e22';
       icone = '🔧';
       break;
+    case 'dio':
+      titulo = `🔌 DIO ${numero}`;
+      cor = '#9b59b6';
+      icone = '🔌';
+      break;
     default:
       titulo = `📍 ${numero}`;
       cor = '#95a5a6';
@@ -5245,6 +5325,7 @@ private generateMarkerInfoWindowContent(tipo: string, dados: any): string {
         ${titulo}
       </h4>
       <p style="margin: 6px 0; color: #34495e;"><strong>ID:</strong> ${id}</p>
+      ${tipo === 'dio' && dados.CAPACIDADE ? `<p style="margin: 6px 0; color: #34495e;"><strong>Capacidade:</strong> ${dados.CAPACIDADE}</p>` : ''}
       <div style="margin: 10px 0; padding: 8px; background: #ecf0f1; border-radius: 5px;">
         <p style="margin: 0 0 5px 0; font-weight: bold; color: #2c3e50;">Coordenadas:</p>
         <p style="margin: 0; font-family: 'Courier New', monospace; font-size: 13px; color: #2c3e50;">
@@ -5272,6 +5353,7 @@ private darkenColor(color: string): string {
     '#3498db': '#2980b9', // Azul
     '#27ae60': '#229954', // Verde
     '#e67e22': '#d35400', // Laranja
+    '#9b59b6': '#8e44ad', // Roxo (DIO)
     '#95a5a6': '#7f8c8d'  // Cinza
   };
   return colorMap[color] || color;
@@ -5434,25 +5516,9 @@ private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = fal
         }
       }
     }
+    // 🔧 REMOVIDO: Duplo clique em clientes não abre mais o modal
+    // O modal agora é aberto apenas através do context menu (opção "Visualiza Cliente")
       
-      else if (isCLI) {      
-        const index = this.markerPopsCli.indexOf(marker);
-        if (index !== -1) {
-          this.onMarkerClick(event, index,false,false,true,false,false);
-        }} 
-        
-      else if (isCLIAT) {      
-          const index = this.markerPopsCliAtv.indexOf(marker);
-          if (index !== -1) {
-            this.onMarkerClick(event, index,false,false,false,true,false);
-          }}
-          
-      else if (isCLIDES) {      
-            const index = this.markerPopsCliDes.indexOf(marker);
-            if (index !== -1) {
-              this.onMarkerClick(event, index,false,false,false,false,true);
-            }}        
-
       else {
       // É uma caixa
       const index = this.markerCaixas.indexOf(marker);
@@ -5605,8 +5671,92 @@ private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = fal
       } else {
         console.log('🔴 [CONTEXT-MENU] Marcador não encontrado em markerCaixas');
       }
+    }
+    // 🆕 Verificar se é um cliente
+    else if (isCLI) {
+      const index = this.markerPopsCli.indexOf(marker);
+      if (index !== -1) {
+        const cliente = this.destinoPopsCli[index];
+        
+        console.log('🔴 [CONTEXT-MENU] Cliente encontrado no índice:', index);
+        console.log('🔴 [CONTEXT-MENU] Dados do cliente:', cliente);
+        
+        // Armazenar dados do cliente clicado
+        this.clickedCliData = cliente;
+        this.clickedCliAtData = null; // Limpar dados de outros tipos
+        this.clickedCliDesData = null;
+        this.clickedCaixaData = null;
+        this.clickedCTOData = null;
+        this.clickedCTOSPData = null;
+        
+        // Definir tipo de contexto como 'cliente'
+        this.contextMenuType = 'cliente';
+        
+        // Mostrar context menu na posição do clique
+        if (event.domEvent) {
+          const mouseEvent = event.domEvent as MouseEvent;
+          console.log('🔴 [CONTEXT-MENU] Mostrando context menu para cliente em:', mouseEvent.clientX, mouseEvent.clientY);
+          this.showContextMenu(mouseEvent.clientX, mouseEvent.clientY);
+        }
+      }
+    }
+    // 🆕 Verificar se é um cliente ativado
+    else if (isCLIAT) {
+      const index = this.markerPopsCliAtv.indexOf(marker);
+      if (index !== -1) {
+        const clienteAt = this.destinoPopsCliAtv[index];
+        
+        console.log('🔴 [CONTEXT-MENU] Cliente Ativado encontrado no índice:', index);
+        console.log('🔴 [CONTEXT-MENU] Dados do cliente ativado:', clienteAt);
+        
+        // Armazenar dados do cliente ativado clicado
+        this.clickedCliAtData = clienteAt;
+        this.clickedCliData = null; // Limpar dados de outros tipos
+        this.clickedCliDesData = null;
+        this.clickedCaixaData = null;
+        this.clickedCTOData = null;
+        this.clickedCTOSPData = null;
+        
+        // Definir tipo de contexto como 'cliente'
+        this.contextMenuType = 'cliente';
+        
+        // Mostrar context menu na posição do clique
+        if (event.domEvent) {
+          const mouseEvent = event.domEvent as MouseEvent;
+          console.log('🔴 [CONTEXT-MENU] Mostrando context menu para cliente ativado em:', mouseEvent.clientX, mouseEvent.clientY);
+          this.showContextMenu(mouseEvent.clientX, mouseEvent.clientY);
+        }
+      }
+    }
+    // 🆕 Verificar se é um cliente desativado
+    else if (isCLIDES) {
+      const index = this.markerPopsCliDes.indexOf(marker);
+      if (index !== -1) {
+        const clienteDes = this.destinoPopsCliDes[index];
+        
+        console.log('🔴 [CONTEXT-MENU] Cliente Desativado encontrado no índice:', index);
+        console.log('🔴 [CONTEXT-MENU] Dados do cliente desativado:', clienteDes);
+        
+        // Armazenar dados do cliente desativado clicado
+        this.clickedCliDesData = clienteDes;
+        this.clickedCliData = null; // Limpar dados de outros tipos
+        this.clickedCliAtData = null;
+        this.clickedCaixaData = null;
+        this.clickedCTOData = null;
+        this.clickedCTOSPData = null;
+        
+        // Definir tipo de contexto como 'cliente'
+        this.contextMenuType = 'cliente';
+        
+        // Mostrar context menu na posição do clique
+        if (event.domEvent) {
+          const mouseEvent = event.domEvent as MouseEvent;
+          console.log('🔴 [CONTEXT-MENU] Mostrando context menu para cliente desativado em:', mouseEvent.clientX, mouseEvent.clientY);
+          this.showContextMenu(mouseEvent.clientX, mouseEvent.clientY);
+        }
+      }
     } else {
-      console.log('🔴 [CONTEXT-MENU] Não é uma caixa/CTO, é:', { isCTO, isCTOSP, isCLI, isCLIAT, isCLIDES });
+      console.log('🔴 [CONTEXT-MENU] Tipo de marcador não reconhecido:', { isCTO, isCTOSP, isCLI, isCLIAT, isCLIDES });
     }
   });
 
@@ -5716,33 +5866,9 @@ private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = fal
         this.habilitarEdicaoCTOSP(index);
     }
 
-    }else if (isCLI) {
-      if (this.destinoPopsCli[index]) {
-    console.log('Cliente clicado', this.destinoPopsCli[index].sigla);
-    this.openPopInfoModal(this.destinoPopsCli[index].id_meta)
-    this.cdr.detectChanges();
-
-  }
-
-  }else if (isCLIAT) {
-    if (this.destinoPopsCliAtv[index]) {
-  console.log('Cliente Ativo clicado', this.destinoPopsCliAtv[index].sigla);
-  this.openPopInfoModal(this.destinoPopsCliAtv[index].id_meta)
-  this.cdr.detectChanges();
-
-  }
-
-
-  }else if (isCLIDES) {
-   if (this.destinoPopsCliDes[index]) {
-  console.log('Cliente Desativado clicado', this.destinoPopsCliDes[index].sigla);
-  this.openPopInfoModal(this.destinoPopsCliDes[index].id_meta)
-  this.cdr.detectChanges();
-  }  
-    //this.authService.setIDmetaCliente(this.destinoPopsCli[index].id_meta)//<---escrevo idmeta da cto no storage
-    //this.isGoJSModalOpen = true;
-    //this.cdr.detectChanges();
-  
+    // 🔧 REMOVIDO: Duplo clique em clientes não abre mais o modal
+    // O modal agora é aberto apenas através do context menu (opção "Visualiza Cliente")
+    // Blocos removidos: else if (isCLI), else if (isCLIAT), else if (isCLIDES)
 
   } else {
       if (this.destino[index]) {
@@ -6927,6 +7053,39 @@ private visualizarDio(): void {
 }
 
 /**
+ * 🔍 Visualiza um cliente (abre o modal PopInfoModalComponent)
+ */
+private visualizarCliente(): void {
+  console.log('🔍 [CONTEXT-MENU] Visualizando Cliente...');
+  let idMeta: number | undefined;
+
+  if (this.clickedCliData) {
+    idMeta = this.clickedCliData.id_meta;
+  } else if (this.clickedCliAtData) {
+    idMeta = this.clickedCliAtData.id_meta;
+  } else if (this.clickedCliDesData) {
+    idMeta = this.clickedCliDesData.id_meta;
+  }
+
+  if (idMeta) {
+    this.openPopInfoModal(idMeta);
+    this.hideContextMenu();
+  } else {
+    alert('❌ Erro: Dados do cliente não encontrados.');
+    this.hideContextMenu();
+  }
+}
+
+/**
+ * 🗑️ Exclui um cliente (funcionalidade ainda não implementada)
+ */
+private excluirCliente(): void {
+  console.log('🗑️ [CONTEXT-MENU] Excluindo Cliente...');
+  alert('Funcionalidade de exclusão de cliente será implementada em breve!');
+  this.hideContextMenu();
+}
+
+/**
  * 🗑️ Exclui um DIO
  */
 private excluirDio(): void {
@@ -6937,7 +7096,9 @@ private excluirDio(): void {
     return;
   }
 
+  // Obter dados do DIO
   const idMeta = this.clickedDioData.id_meta;
+  const idCity = this.authService.getIdCity();
   const sigla = this.clickedDioData.sigla || 'DIO';
   
   if (!idMeta) {
@@ -6945,24 +7106,108 @@ private excluirDio(): void {
     return;
   }
 
-  // Confirmação do usuário
-  const confirmacao = confirm(
-    `⚠️ ATENÇÃO!\n\n` +
-    `Deseja realmente excluir o DIO "${sigla}" (ID: ${idMeta})?\n\n` +
-    `Esta ação não pode ser desfeita!`
-  );
-
-  if (!confirmacao) {
-    console.log('❌ [EXCLUI-DIO] Exclusão cancelada pelo usuário');
-    this.hideContextMenu();
+  if (!idCity) {
+    alert('Erro: ID da cidade não encontrado');
     return;
   }
 
-  // TODO: Implementar chamada ao serviço de exclusão de DIO
-  // Similar ao excluirCabo(), deve chamar um serviço que fará a exclusão no backend
-  console.log('🔧 [EXCLUI-DIO] Funcionalidade de exclusão a ser implementada para DIO:', idMeta);
-  alert('Funcionalidade de exclusão de DIO será implementada em breve!');
-  this.hideContextMenu();
+  // id_condominio padrão é 0 (fora de condomínio)
+  const idCondominio = this.clickedDioData.id_condominio || 0;
+
+  // Confirmação antes de excluir
+  const confirmacao = confirm(`Tem certeza que deseja excluir este DIO?\n\n🆔 ID: ${idMeta}\n📋 Sigla: ${sigla}`);
+  
+  if (!confirmacao) {
+    return;
+  }
+
+  // Preparar requisição
+  const request: ExcluiDioRequest = {
+    id_meta: idMeta,
+    id_city: idCity,
+    id_condominio: idCondominio
+  };
+
+  // Fazer a requisição usando o serviço
+  this.excluiDioService.excluirDio(request).subscribe({
+    next: (response: ExcluiDioResponse) => {
+      console.log('✅ [EXCLUI-DIO] Resposta da API:', response);
+      
+      if (response.success) {
+        console.log('🗑️ [EXCLUI-DIO] Iniciando remoção do marcador do mapa...');
+        console.log('🗑️ [EXCLUI-DIO] id_meta:', idMeta);
+        
+        // Buscar marcador pelo id_meta
+        const markerParaRemover = this.buscarMarcadorDioPorIdMeta(idMeta);
+        
+        // Remover o marcador do mapa
+        if (markerParaRemover) {
+          console.log('🗑️ [EXCLUI-DIO] Chamando setMap(null)...');
+          markerParaRemover.setMap(null);
+          console.log('🗑️ [EXCLUI-DIO] setMap(null) executado');
+          
+          // Remover também do array markerDios
+          const index = this.markerDios.indexOf(markerParaRemover);
+          if (index !== -1) {
+            this.markerDios.splice(index, 1);
+            console.log('🗑️ [EXCLUI-DIO] Marcador removido do array');
+          }
+        } else {
+          console.warn('⚠️ [EXCLUI-DIO] Não foi possível encontrar o marcador para remover!');
+        }
+
+        // Limpar dados do DIO
+        this.clickedDioData = null;
+        
+        // Fechar context menu
+        this.hideContextMenu();
+
+        // Inserir log de exclusão de DIO
+        const idUsuario = this.authService.getIdUser();
+        if (idUsuario && idCity) {
+          console.log('🔄 Inserindo log de exclusão de DIO...');
+          this.insertLogService.inserirLog({
+            id_usuario: idUsuario,
+            id_evento: 19, // Usando o mesmo id_evento de exclusão de cabo/caixa
+            id_city: idCity,
+            id_meta_objeto: request.id_meta,
+            descricao: `Exclusão de DIO: ${request.id_meta}`,
+            VERSION: 'Fiberworks WEB 1.0.0'
+          }).subscribe({
+            next: (logResponse) => {
+              console.log('✅ Log de exclusão de DIO:', logResponse);
+            },
+            error: (error) => {
+              console.error('❌ Erro ao inserir log de exclusão de DIO:', error);
+            }
+          });
+        }
+      } else {
+        // Tratar erros específicos baseados no motivo
+        let mensagemErro = response.error || response.message || 'Erro desconhecido';
+        
+        if (response.motivo) {
+          switch (response.motivo) {
+            case 'cabos_conectados':
+              mensagemErro = `⚠️ DIO possui cabos conectados!\n\nDesconecte todos os cabos antes de excluir.`;
+              break;
+            case 'splitters':
+              mensagemErro = `⚠️ DIO possui ${response.totalSplitters || 0} splitter(s)!\n\nRemova todos os splitters antes de excluir.`;
+              break;
+            case 'cabos_conectados_e_splitters':
+              mensagemErro = `⚠️ DIO possui cabos conectados e ${response.totalSplitters || 0} splitter(s)!\n\nDesconecte os cabos e remova os splitters antes de excluir.`;
+              break;
+          }
+        }
+        
+        alert(mensagemErro);
+      }
+    },
+    error: (error: string) => {
+      console.error('❌ [EXCLUI-DIO] Erro na requisição:', error);
+      alert(`❌ Operação não realizada: ${error}`);
+    }
+  });
 }
 
   onCaixaInternaClose() {

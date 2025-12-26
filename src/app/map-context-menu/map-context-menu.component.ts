@@ -12,7 +12,7 @@ import { MatIconModule } from '@angular/material/icon';
 export class MapContextMenuComponent implements OnInit, OnChanges {
   @Input() visible = false;
   @Input() position = { x: 0, y: 0 };
-  @Input() contextType: 'caixa' | 'map' | 'cabo' | 'dio' = 'map'; // 🆕 Define o tipo de contexto
+  @Input() contextType: 'caixa' | 'map' | 'cabo' | 'dio' | 'cliente' = 'map'; // 🆕 Define o tipo de contexto
   @Output() action = new EventEmitter<string>();
   @Output() close = new EventEmitter<void>();
 
