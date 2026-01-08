@@ -45,12 +45,14 @@ import { ExcluiDioService, ExcluiDioRequest, ExcluiDioResponse } from '../servic
 import { Subject, takeUntil } from 'rxjs';
 
 import { MatDialog } from '@angular/material/dialog';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { PopInfoModalComponent } from '../pop-info-modal/pop-info-modal.component';
 import { VisualizaDioComponent } from '../visualiza-dio/visualiza-dio.component';
 import { VisualizaCaboComponent } from '../visualiza-cabo/visualiza-cabo.component';
 import { GraphvizModalComponent } from '../graphviz-modal/graphviz-modal.component';
 import { ConexaoCaboCaixaEmendaComponent, ConexaoCaboCaixaEmendaData } from '../conexao-cabo-caixa-emenda/conexao-cabo-caixa-emenda.component';
 import { ConexaoCaboDioComponent, ConexaoCaboDioData } from '../conexao-cabo-dio/conexao-cabo-dio.component';
+import { PlotaCaixaComponent, PlotaCaixaData } from '../plota-caixa/plota-caixa.component';
 import { BocasService } from '../servico/bocas.service';
 import { Bocas } from '../modelo/Bocas';
 import { BandejasService } from '../servico/bandejas.service';
@@ -281,6 +283,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
   private clickedCliDesData: any = null; // 🆕 Armazena dados do cliente desativado clicado
   private clickedPolyline: google.maps.Polyline | null = null; // 🆕 Armazena a polyline clicada
   private ultimaCoordenadaClique: google.maps.LatLng | null = null; // 🆕 Armazena coordenada do último clique para identificar ponta
+  private ultimaCoordenadaContextMenu: google.maps.LatLng | null = null; // 🆕 Armazena coordenada do context menu do mapa
   // 🔧 Propriedades para edição de caixa/CTO/CTO_SP
   private caixaEmEdicao: google.maps.Marker | null = null; // Marcador em edição (caixa, CTO ou CTO_SP)
   private caixaEmEdicaoIndex: number | null = null; // Índice do item em edição
@@ -329,6 +332,9 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
   listenerMapaDesenho: google.maps.MapsEventListener | null = null;
   listenerRightClickDesenho: google.maps.MapsEventListener | null = null;
   
+  // 🛡️ Listener para prevenir menu do navegador no elemento do mapa
+  private listenerContextMenuDOM: (() => void) | null = null;
+  
   // 🆕 Propriedades para modal de tipagem
   tipagemCabosModalVisible = false;
   pontosCaboAguardandoTipagem: google.maps.LatLng[] = []; // Guarda pontos enquanto modal está aberto
@@ -358,6 +364,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
     private bocasService: BocasService,
     private bandejasService: BandejasService,
     private dialog: MatDialog,
+    private ngbModal: NgbModal,
     private insertLogService: InsertLogService,
     private excluiCaboService: ExcluiCaboService,
     private excluiCaixaService: ExcluiCaixaService,
@@ -423,6 +430,12 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
             // Prevenir menu padrão do navegador
             mouseEvent.preventDefault();
             mouseEvent.stopPropagation();
+            
+            // 🆕 Armazenar coordenada do clique para usar no modal de criar caixa
+            if (event.latLng) {
+              this.ultimaCoordenadaContextMenu = event.latLng;
+              console.log('🗺️ [CONTEXT-MENU] Coordenada armazenada:', event.latLng.lat(), event.latLng.lng());
+            }
             
             // 🔧 CORREÇÃO: Garantir que o tipo seja 'map'
             this.contextMenuType = 'map';
@@ -538,6 +551,14 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
       this.clickedCliAtData = null; // 🆕 Limpar dados de cliente ativado
       this.clickedCliDesData = null; // 🆕 Limpar dados de cliente desativado
       this.clickedDioData = null; // 🆕 Limpar dados do DIO
+      
+      // 🆕 NOVO: Limpar coordenada do context menu quando não estiver em edição
+      // Isso garante que a próxima vez que o usuário clicar com botão direito,
+      // a coordenada será atualizada corretamente
+      if (this.ultimaCoordenadaContextMenu) {
+        console.log('🗺️ [CONTEXT-MENU] Limpando coordenada antiga do context menu');
+        this.ultimaCoordenadaContextMenu = null;
+      }
     }
     
     this.isCaboClicked = false; // 🔄 Reseta flag
@@ -643,7 +664,69 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
   // Métodos placeholder para as ações do context menu
   private criarCaixa(): void {
     console.log('🗺️ [CONTEXT-MENU] Criando caixa...');
-    alert('Funcionalidade de criar caixa será implementada em breve!');
+    
+    // Verificar se há coordenada do context menu
+    if (!this.ultimaCoordenadaContextMenu) {
+      alert('Erro: Coordenada do mapa não encontrada. Clique novamente no mapa.');
+      this.hideContextMenu();
+      return;
+    }
+
+    // 🆕 Capturar coordenadas e limpar imediatamente para evitar reutilização
+    const lat = this.ultimaCoordenadaContextMenu.lat();
+    const lng = this.ultimaCoordenadaContextMenu.lng();
+    this.ultimaCoordenadaContextMenu = null; // Limpar coordenada após capturar valores
+    console.log('🗺️ [CONTEXT-MENU] Coordenada capturada e limpa:', { lat, lng });
+
+    // Preparar dados para o modal
+    const data: PlotaCaixaData = {
+      tipagem: 'INDEFINIDO',
+      lat: lat,
+      lng: lng,
+      labelCaixa: '', // Sempre vazio
+      endereco: '',
+      obs: '',
+      splitagemBalanceada: undefined,
+      splitagemDesbalanceada: undefined
+    };
+
+    // Abrir modal com ng-bootstrap
+    const modalRef = this.ngbModal.open(PlotaCaixaComponent, {
+      size: 'lg',
+      backdrop: 'static',
+      keyboard: false
+    });
+    
+    // Passar dados para o modal
+    modalRef.componentInstance.data = data;
+
+    // Fechar context menu
+    this.hideContextMenu();
+
+    // Processar resultado do modal
+    modalRef.result.then(
+      (result) => {
+        if (result) {
+          console.log('📦 [PLOTA-CAIXA] Resultado do modal:', result);
+          // Adicionar marcador da caixa criada ao mapa
+          // O método adicionarMarcadorCaixa já adiciona ao array correto (destino, destinoCTO ou destinoCTOSP)
+          // baseado no ID_TIPO
+          this.adicionarMarcadorCaixa({
+            id_meta: result.id_meta,
+            numero: result.labelCaixa,
+            LAT: result.lat,
+            LONGI: result.lng,
+            ID_TIPO: result.ID_TIPO || '1' // Usar ID_TIPO do resultado ou padrão
+          });
+          
+          console.log('✅ [PLOTA-CAIXA] Caixa adicionada ao mapa');
+        }
+      },
+      (dismissReason) => {
+        // Modal foi fechado sem resultado (cancelado)
+        console.log('📦 [PLOTA-CAIXA] Modal fechado:', dismissReason);
+      }
+    );
   }
 
   private criarDIO(): void {
@@ -770,6 +853,13 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
             if (index !== -1) {
               this.markerCaixas.splice(index, 1);
               console.log('🗑️ [EXCLUI-CAIXA] Marcador removido do array');
+            }
+            
+            // Remover também do array destino
+            const indexDestino = this.destino.findIndex(caixa => caixa.id_meta === idMeta);
+            if (indexDestino !== -1) {
+              this.destino.splice(indexDestino, 1);
+              console.log('🗑️ [EXCLUI-CAIXA] Item removido do array destino');
             }
           } else {
             console.warn('⚠️ [EXCLUI-CAIXA] Não foi possível encontrar o marcador para remover!');
@@ -922,6 +1012,13 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
               this.markerCtos.splice(index, 1);
               console.log('🗑️ [EXCLUI-CTO] Marcador removido do array');
             }
+            
+            // Remover também do array destinoCTO
+            const indexDestino = this.destinoCTO.findIndex(cto => cto.id_meta === idMeta);
+            if (indexDestino !== -1) {
+              this.destinoCTO.splice(indexDestino, 1);
+              console.log('🗑️ [EXCLUI-CTO] Item removido do array destinoCTO');
+            }
           } else {
             console.warn('⚠️ [EXCLUI-CTO] Não foi possível encontrar o marcador para remover!');
           }
@@ -1042,6 +1139,13 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
             if (index !== -1) {
               this.markerCtosSP.splice(index, 1);
               console.log('🗑️ [EXCLUI-CTOSP] Marcador removido do array');
+            }
+            
+            // Remover também do array destinoCTOSP
+            const indexDestino = this.destinoCTOSP.findIndex(ctosp => ctosp.id_meta === idMeta);
+            if (indexDestino !== -1) {
+              this.destinoCTOSP.splice(indexDestino, 1);
+              console.log('🗑️ [EXCLUI-CTOSP] Item removido do array destinoCTOSP');
             }
           } else {
             console.warn('⚠️ [EXCLUI-CTOSP] Não foi possível encontrar o marcador para remover!');
@@ -2104,7 +2208,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
 
     console.log(`🔍 [CONEXÃO] Verificando ${this.destino.length} caixas...`);
 
-    const THRESHOLD_DISTANCIA_METROS = 1; // 5 metros
+    const THRESHOLD_DISTANCIA_METROS = 3; // 5 metros
     let caixaMaisProxima: Caixa | null = null;
     let menorDistancia = Infinity;
 
@@ -2437,6 +2541,12 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
               console.log('⚠️ [EDITAR-CABO] Context menu do mapa detectado durante edição. Cancelando edição...');
               this.cancelarEdicaoCabo();
               return; // Não mostrar menu do mapa após cancelar
+            }
+            
+            // 🆕 CORREÇÃO: Armazenar coordenada do clique para usar no modal de criar caixa
+            if (event.latLng) {
+              this.ultimaCoordenadaContextMenu = event.latLng;
+              console.log('🗺️ [MAP] Coordenada armazenada (recriado):', event.latLng.lat(), event.latLng.lng());
             }
             
             // Mostrar context menu do mapa
@@ -4202,6 +4312,118 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
     }
   }  //======================================================================================================
 
+  /**
+   * Adiciona um marcador de caixa individual ao mapa
+   * @param caixa Objeto com dados da caixa (id_meta, numero, LAT, LONGI, ID_TIPO)
+   */
+  private adicionarMarcadorCaixa(caixa: { id_meta?: number; numero?: string; LAT: number; LONGI: number; ID_TIPO?: string }): void {
+    if (!this.map) {
+      console.warn('⚠️ [ADICIONAR-MARCADOR-CAIXA] Mapa não está inicializado');
+      return;
+    }
+
+    const ceo_layer = this.authService.getceo_layer();
+    if (ceo_layer === '0') {
+      console.log('⚠️ [ADICIONAR-MARCADOR-CAIXA] CEO layer desabilitado');
+      return;
+    }
+
+    const position = { lat: Number(caixa.LAT), lng: Number(caixa.LONGI) };
+    
+    // Determinar ícone baseado no ID_TIPO
+    const idTipo = parseInt(caixa.ID_TIPO || '1', 10);
+    let iconUrl: string;
+    let labelOrigin: google.maps.Point;
+    let scaledSize: google.maps.Size;
+    let isCTO = false;
+    let isCTOSP = false;
+
+    if (idTipo >= 10 && idTipo <= 13) {
+      // CTO sem splitter (ID 10-13)
+      iconUrl = '/assets/CTO80.png';
+      labelOrigin = new google.maps.Point(50, 10);
+      scaledSize = new google.maps.Size(18, 22);
+      isCTO = true;
+    } else if (idTipo > 13) {
+      // CTO com splitter (ID > 13)
+      iconUrl = '/assets/CTOSP.png';
+      labelOrigin = new google.maps.Point(50, 10);
+      scaledSize = new google.maps.Size(18, 22);
+      isCTOSP = true;
+    } else {
+      // CEO (ID 1-9)
+      iconUrl = '/assets/fosc ama.png';
+      labelOrigin = new google.maps.Point(70, 10);
+      scaledSize = new google.maps.Size(20, 40);
+    }
+
+    // Determinar zoom level baseado no tipo
+    const zoomLevel = isCTO ? this.ZOOM_LEVEL_CTOS : (isCTOSP ? this.ZOOM_LEVEL_CTOSSP : this.ZOOM_LEVEL_CAIXAS);
+
+    const markerOptions: google.maps.MarkerOptions = {
+      position: position,
+      title: caixa.numero || 'Sem número',
+      draggable: false,
+      label: {
+        text: caixa.numero || 'S/N',
+        color: 'blue',
+        fontSize: '12px'
+      } as google.maps.MarkerLabel,
+      icon: {
+        url: iconUrl,
+        labelOrigin: labelOrigin,
+        scaledSize: scaledSize
+      },
+      visible: this.currentZoom >= zoomLevel
+    };
+
+    const marker = new google.maps.Marker(markerOptions);
+    marker.setMap(this.map);
+    
+    // Adicionar event listeners com os parâmetros corretos baseado no tipo
+    this.addMarkerEventListeners(marker, isCTO, isCTOSP, false, false, false);
+    
+    // Adicionar ao array correto baseado no tipo
+    if (isCTO) {
+      this.markerCtos.push(marker);
+      // Adicionar ao destinoCTO
+      this.destinoCTO.push({
+        id_meta: caixa.id_meta,
+        numero: caixa.numero,
+        LAT: caixa.LAT,
+        LONGI: caixa.LONGI
+      } as any);
+    } else if (isCTOSP) {
+      this.markerCtosSP.push(marker);
+      // Adicionar ao destinoCTOSP
+      this.destinoCTOSP.push({
+        id_meta: caixa.id_meta,
+        numero: caixa.numero,
+        LAT: caixa.LAT,
+        LONGI: caixa.LONGI
+      } as any);
+    } else {
+      this.markerCaixas.push(marker);
+      // Adicionar ao destino (CEO)
+      this.destino.push({
+        id_meta: caixa.id_meta,
+        numero: caixa.numero,
+        LAT: caixa.LAT,
+        LONGI: caixa.LONGI,
+        ID_TIPO: caixa.ID_TIPO || '1'
+      } as any);
+    }
+    
+    console.log('✅ [ADICIONAR-MARCADOR-CAIXA] Marcador criado:', { 
+      id_meta: caixa.id_meta, 
+      numero: caixa.numero, 
+      position: position, 
+      ID_TIPO: idTipo,
+      icon: iconUrl,
+      tipo: isCTO ? 'CTO' : (isCTOSP ? 'CTO_SP' : 'CEO')
+    });
+  }
+
   
   onMarkerDragEnd(event: google.maps.MapMouseEvent, index: number, isCTO: boolean = false) {
     if (event.latLng) {
@@ -4877,6 +5099,43 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
     // 🔧 CORREÇÃO: Atribuir this.map ANTES de configurar o context menu
     this.map = map;
     console.log('🗺️ [MAP-INIT] this.map atribuído:', this.map);
+
+    // 🛡️ Prevenir menu do navegador apenas quando clicar no mapa
+    // Usa verificação baseada em coordenadas (não depende do elemento clicado)
+    const preventContextMenuGlobal = (e: Event) => {
+      if (!this.mapContainerRef?.nativeElement) return true;
+      
+      const mouseEvent = e as MouseEvent;
+      if (!mouseEvent || mouseEvent.clientX === undefined || mouseEvent.clientY === undefined) return true;
+      
+      const mapElement = this.mapContainerRef.nativeElement;
+      const mapRect = mapElement.getBoundingClientRect();
+      
+      // Verificar se as coordenadas do clique estão dentro dos limites visuais do mapa
+      const isWithinMapBounds = 
+        mouseEvent.clientX >= mapRect.left &&
+        mouseEvent.clientX <= mapRect.right &&
+        mouseEvent.clientY >= mapRect.top &&
+        mouseEvent.clientY <= mapRect.bottom;
+      
+      if (isWithinMapBounds) {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        return false;
+      }
+      
+      return true;
+    };
+
+    document.addEventListener('contextmenu', preventContextMenuGlobal, true);
+
+    // Armazenar função para remover depois
+    this.listenerContextMenuDOM = () => {
+      document.removeEventListener('contextmenu', preventContextMenuGlobal, true);
+    };
+
+    console.log('🛡️ [MAP-INIT] Listener de contextmenu adicionado no document (verificação por coordenadas)');
 
     //==========================================================para mobile
     if (window.innerWidth < 768) {
@@ -7825,7 +8084,7 @@ openGoJSModal() {
       this.caboEmDesenho.setMap(null);
     }
 
-    // Criar/atualizar a polyline temporária
+    // Criar/atualizar a polyline temporária (apenas quando há mais de 1 ponto)
     if (this.pontosCaboEmDesenho.length > 1) {
       this.caboEmDesenho = new google.maps.Polyline({
         path: this.pontosCaboEmDesenho,
@@ -7837,22 +8096,8 @@ openGoJSModal() {
         clickable: false,
         geodesic: true
       });
-    } else if (this.pontosCaboEmDesenho.length === 1) {
-      // Marcar o primeiro ponto com um marcador pequeno
-      new google.maps.Marker({
-        position: event.latLng,
-        map: this.map,
-        icon: {
-          path: google.maps.SymbolPath.CIRCLE,
-          scale: 4,
-          fillColor: '#808080',
-          fillOpacity: 1,
-          strokeColor: '#ffffff',
-          strokeWeight: 2
-        },
-        title: 'Início do cabo'
-      });
     }
+    // Removido: marcador cinza no primeiro ponto (não era removido após finalizar/cancelar)
   }
 
   /**
@@ -8369,7 +8614,14 @@ openGoJSModal() {
    * 🧹 Limpa listeners quando o componente é destruído
    */
   ngOnDestroy(): void {
-    // Limpeza de listeners será feita aqui se necessário no futuro
+    // 🛡️ Remover listener de contextmenu do elemento do mapa
+    if (this.listenerContextMenuDOM) {
+      this.listenerContextMenuDOM();
+      this.listenerContextMenuDOM = null;
+      console.log('🛡️ [DESTROY] Listener de contextmenu removido do elemento do mapa');
+    }
+    
+    // Limpeza de outros listeners será feita aqui se necessário no futuro
   }
 
   /**

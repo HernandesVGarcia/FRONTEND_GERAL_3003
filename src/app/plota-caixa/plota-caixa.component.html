@@ -1,0 +1,215 @@
+<div class="modal-dialog modal-lg" #modalDialog>
+  <div class="modal-content shadow-lg">
+    <!-- Header -->
+    <div class="modal-header bg-primary text-white" (mousedown)="onMouseDown($event)" style="cursor: move;">
+      <h5 class="modal-title fw-bold">
+        <span class="icon me-2"></span>
+        Plotar Caixa
+      </h5>
+      <button type="button" class="btn-close btn-close-white" (click)="fechar()" aria-label="Close"></button>
+    </div>
+
+    <!-- Content -->
+    <div class="modal-body">
+      <div class="row g-3">
+        <!-- Coluna Esquerda -->
+        <div class="col-md-5">
+          <!-- Card Tipagem -->
+          <div class="card mb-3 border-primary">
+            <div class="card-header bg-light">
+              <h6 class="mb-0 fw-semibold">Tipagem</h6>
+            </div>
+            <div class="card-body">
+              <div class="row g-3">
+                <!-- Coluna Esquerda - Campos -->
+                <div class="col-md-7">
+                  <!-- Tipagem -->
+                  <div class="mb-3">
+                    <label class="form-label fw-semibold">
+                      <span class="badge bg-info me-1"></span>
+                      Tipagem
+                      <span class="badge bg-danger ms-1">obrigatório</span>
+                    </label>
+                    <select 
+                      [(ngModel)]="form.tipagem" 
+                      name="tipagem"
+                      class="form-select form-select-sm"
+                      [disabled]="carregandoTipos">
+                      <option value="" disabled *ngIf="carregandoTipos">Carregando tipos...</option>
+                      <option *ngFor="let tipagem of tipagens; trackBy: trackByOption" [value]="tipagem">
+                        {{ tipagem }}
+                      </option>
+                    </select>
+                  </div>
+
+                  <!-- Coordenadas -->
+                  <div class="row g-2">
+                    <div class="col-6">
+                      <label class="form-label fw-semibold">
+                        <span class="badge bg-secondary me-1"></span>
+                        LAT
+                        <span class="badge bg-danger ms-1">obrigatório</span>
+                      </label>
+                      <input 
+                        type="text" 
+                        [(ngModel)]="form.lat" 
+                        name="lat"
+                        class="form-control form-control-sm">
+                    </div>
+                    <div class="col-6">
+                      <label class="form-label fw-semibold">
+                        <span class="badge bg-secondary me-1"></span>
+                        LONG
+                        <span class="badge bg-danger ms-1">obrigatório</span>
+                      </label>
+                      <input 
+                        type="text" 
+                        [(ngModel)]="form.lng" 
+                        name="lng"
+                        class="form-control form-control-sm">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Coluna Direita - Ilustração -->
+                <div class="col-md-5 d-flex align-items-center justify-content-center">
+                  <div class="text-center">
+                    <img 
+                      [src]="getImagemCaixa()" 
+                      [alt]="'Ilustração da Caixa: ' + (form.tipagem || 'Padrão')" 
+                      class="img-fluid" 
+                      style="max-height: 120px;"
+                      (error)="onImagemError($event)">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card Informações Básicas -->
+          <div class="card h-100 border-primary">
+            <div class="card-header bg-light">
+              <h6 class="mb-0 fw-semibold">Informações Básicas</h6>
+            </div>
+            <div class="card-body">
+              <!-- Label da Caixa -->
+              <div class="mb-3">
+                <label class="form-label fw-semibold">
+                  <span class="badge bg-warning text-dark me-1"></span>
+                  Label da Caixa
+                  <small class="text-muted">(será preenchido com o ID_META se não informado)</small>
+                </label>
+                <input 
+                  type="text" 
+                  [(ngModel)]="form.labelCaixa" 
+                  name="labelCaixa"
+                  class="form-control form-control-sm">
+              </div>
+
+              <!-- Endereço -->
+              <div class="mb-3">
+                <label class="form-label fw-semibold">
+                  <span class="badge bg-secondary me-1"></span>
+                  Endereço
+                  <span class="badge bg-light text-dark ms-1">opcional</span>
+                </label>
+                <input 
+                  type="text" 
+                  [(ngModel)]="form.endereco" 
+                  name="endereco"
+                  class="form-control form-control-sm">
+              </div>
+
+              <!-- OBS -->
+              <div class="mb-3">
+                <label class="form-label fw-semibold">
+                  <span class="badge bg-secondary me-1"></span>
+                  Observações
+                  <span class="badge bg-light text-dark ms-1">opcional</span>
+                </label>
+                <textarea 
+                  [(ngModel)]="form.obs" 
+                  name="obs" 
+                  rows="2"
+                  class="form-control form-control-sm"></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Coluna Direita -->
+        <div class="col-md-7">
+          <!-- Splitagem Balanceada -->
+          <div class="card mb-3 border-primary">
+            <div class="card-header bg-secondary text-white">
+              <h6 class="mb-0 fw-semibold"> Splitagem Balanceada</h6>
+              <small class="opacity-75">opcional</small>
+            </div>
+            <div class="card-body">
+              <div class="radio-group">
+                <div class="row g-2" *ngFor="let row of getBalanceadaRows(); trackBy: trackByIndex">
+                  <div class="col-md-3" *ngFor="let option of row; trackBy: trackByOption">
+                    <div class="form-check" *ngIf="option">
+                      <input 
+                        class="form-check-input" 
+                        type="radio" 
+                        [value]="option"
+                        [checked]="form.splitagemBalanceada === option"
+                        (change)="form.splitagemBalanceada = option"
+                        name="splitagemBalanceada"
+                        [id]="'balanceada-' + option">
+                      <label class="form-check-label" [for]="'balanceada-' + option">
+                        <span class="badge bg-secondary-subtle text-success-emphasis">{{ option }}</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Splitagem Desbalanceada -->
+          <div class="card border-primary">
+            <div class="card-header bg-warning text-dark">
+              <h6 class="mb-0 fw-semibold"> Splitagem Desbalanceada</h6>
+              <small class="opacity-75">opcional</small>
+            </div>
+            <div class="card-body">
+              <div class="radio-group">
+                <div class="row g-2" *ngFor="let row of getDesbalanceadaRows(); trackBy: trackByIndex">
+                  <div class="col-md-3" *ngFor="let option of row; trackBy: trackByOption">
+                    <div class="form-check" *ngIf="option">
+                      <input 
+                        class="form-check-input" 
+                        type="radio" 
+                        [value]="option"
+                        [checked]="form.splitagemDesbalanceada === option"
+                        (change)="form.splitagemDesbalanceada = option"
+                        name="splitagemDesbalanceada"
+                        [id]="'desbalanceada-' + option">
+                      <label class="form-check-label" [for]="'desbalanceada-' + option">
+                        <span class="badge bg-secondary-subtle text-warning-emphasis">{{ option }}</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="modal-footer bg-light">
+      <button type="button" class="btn btn-secondary btn-sm me-2" (click)="fechar()">
+        <span class="me-1">✕</span>
+        Cancelar
+      </button>
+      <button type="button" class="btn btn-primary btn-sm" (click)="plotar()">
+        <span class="me-1">✓</span>
+        Plotar Caixa
+      </button>
+    </div>
+  </div>
+</div>

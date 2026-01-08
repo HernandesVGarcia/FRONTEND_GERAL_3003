@@ -96,3 +96,26 @@
   border: 1px solid #0891b2 !important;
 }
 
+/* ============================================================================
+   🛡️ DESABILITAR MENU DE CONTEXTO DO NAVEGADOR NO MAPA
+   ============================================================================ */
+/* Desabilitar menu de contexto e seleção de texto no mapa */
+google-map,
+google-map * {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Permitir seleção de texto em inputs e textareas dentro do mapa (se houver) */
+google-map input,
+google-map textarea {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+}
+

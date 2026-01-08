@@ -195,7 +195,7 @@ export class ConexaoCaboCaixaEmendaComponent implements OnInit {
       this.dialogRef.close(resultado);
       
       // Mostrar mensagem de sucesso
-      alert(`✅ Conexão realizada com sucesso!\n\n${response.message}`);
+      // retirada em 08012026 alert(`✅ Conexão realizada com sucesso!\n\n${response.message}`);
       
     } catch (error: any) {
       console.error('❌ [CONEXÃO-MODAL] Erro ao conectar:', error);
