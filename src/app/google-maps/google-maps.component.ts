@@ -1557,15 +1557,49 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
         } else {
           console.log(`❌ [CONEXÃO] Ponta ${qualPonta} não está sobre nenhuma caixa próxima`);
           
-          // 🆕 NOVO: Verificar DIO
-          const dioProximo = this.encontrarDioProximo(pontoAtual);
-          if (dioProximo) {
-            console.log(`🔌 [CONEXÃO-DIO] Ponta ${qualPonta} solta sobre o DIO ${dioProximo.sigla || 'N/A'}`);
-            // Abrir modal de conexão DIO
-            this.abrirModalConexaoDio(qualPonta as 'A' | 'B', dioProximo);
+          // 🆕 NOVO: Verificar CTO
+          const ctoProxima = this.encontrarCTOProximo(pontoAtual);
+          if (ctoProxima) {
+            console.log(`🔌 [CONEXÃO-CTO] Ponta ${qualPonta} solta sobre a CTO ${ctoProxima.numero}`);
+            // Converter CTO para formato de Caixa para usar o mesmo modal
+            const caixaFormatada: Caixa = {
+              id_meta: ctoProxima.id_meta,
+              numero: ctoProxima.numero,
+              LAT: ctoProxima.LAT,
+              LONGI: ctoProxima.LONGI
+            };
+            this.abrirModalConexao(qualPonta as 'A' | 'B', caixaFormatada);
             return; // Não continuar com a proteção se detectou conexão
           } else {
-            console.log(`❌ [CONEXÃO-DIO] Ponta ${qualPonta} não está sobre nenhum DIO próximo`);
+            console.log(`❌ [CONEXÃO-CTO] Ponta ${qualPonta} não está sobre nenhuma CTO próxima`);
+            
+            // 🆕 NOVO: Verificar CTO_SP
+            const ctospProxima = this.encontrarCTOSPProximo(pontoAtual);
+            if (ctospProxima) {
+              console.log(`🔌 [CONEXÃO-CTOSP] Ponta ${qualPonta} solta sobre a CTO_SP ${ctospProxima.numero}`);
+              // Converter CTO_SP para formato de Caixa para usar o mesmo modal
+              const caixaFormatada: Caixa = {
+                id_meta: ctospProxima.id_meta,
+                numero: ctospProxima.numero,
+                LAT: ctospProxima.LAT,
+                LONGI: ctospProxima.LONGI
+              };
+              this.abrirModalConexao(qualPonta as 'A' | 'B', caixaFormatada);
+              return; // Não continuar com a proteção se detectou conexão
+            } else {
+              console.log(`❌ [CONEXÃO-CTOSP] Ponta ${qualPonta} não está sobre nenhuma CTO_SP próxima`);
+              
+              // 🆕 NOVO: Verificar DIO
+              const dioProximo = this.encontrarDioProximo(pontoAtual);
+              if (dioProximo) {
+                console.log(`🔌 [CONEXÃO-DIO] Ponta ${qualPonta} solta sobre o DIO ${dioProximo.sigla || 'N/A'}`);
+                // Abrir modal de conexão DIO
+                this.abrirModalConexaoDio(qualPonta as 'A' | 'B', dioProximo);
+                return; // Não continuar com a proteção se detectou conexão
+              } else {
+                console.log(`❌ [CONEXÃO-DIO] Ponta ${qualPonta} não está sobre nenhum DIO próximo`);
+              }
+            }
           }
         }
       }
@@ -2287,6 +2321,100 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
     }
 
     return dioMaisProximo;
+  }
+
+  /**
+   * 📍 Encontra a CTO mais próxima de uma coordenada usando distância real do Google Maps
+   * @param ponto - Coordenada da ponta do cabo
+   * @returns CTO mais próxima se estiver dentro do threshold, null caso contrário
+   */
+  private encontrarCTOProximo(ponto: google.maps.LatLng): Cto | null {
+    if (!this.destinoCTO || this.destinoCTO.length === 0) {
+      console.warn('⚠️ [CONEXÃO-CTO] Array destinoCTO está vazio ou não existe');
+      return null;
+    }
+
+    console.log(`🔍 [CONEXÃO-CTO] Verificando ${this.destinoCTO.length} CTOs...`);
+
+    const THRESHOLD_DISTANCIA_METROS = 3; // 3 metros
+    let ctoMaisProxima: Cto | null = null;
+    let menorDistancia = Infinity;
+
+    this.destinoCTO.forEach((cto, index) => {
+      if (!cto.LAT || !cto.LONGI) {
+        return;
+      }
+
+      const latCTO = typeof cto.LAT === 'number' ? cto.LAT : Number(cto.LAT);
+      const lngCTO = typeof cto.LONGI === 'number' ? cto.LONGI : Number(cto.LONGI);
+      
+      const posicaoCTO = new google.maps.LatLng(latCTO, lngCTO);
+      
+      // Usar função do Google Maps para calcular distância real em metros
+      const distancia = google.maps.geometry.spherical.computeDistanceBetween(
+        ponto,
+        posicaoCTO
+      );
+
+      if (distancia < THRESHOLD_DISTANCIA_METROS && distancia < menorDistancia) {
+        menorDistancia = distancia;
+        ctoMaisProxima = cto;
+        console.log(`✅ [CONEXÃO-CTO] CTO ${cto.numero} encontrada a ${distancia.toFixed(2)}m`);
+      }
+    });
+
+    if (!ctoMaisProxima) {
+      console.log(`❌ [CONEXÃO-CTO] Nenhuma CTO encontrada dentro de ${THRESHOLD_DISTANCIA_METROS}m`);
+    }
+
+    return ctoMaisProxima;
+  }
+
+  /**
+   * 📍 Encontra a CTO_SP mais próxima de uma coordenada usando distância real do Google Maps
+   * @param ponto - Coordenada da ponta do cabo
+   * @returns CTO_SP mais próxima se estiver dentro do threshold, null caso contrário
+   */
+  private encontrarCTOSPProximo(ponto: google.maps.LatLng): Cto_SP | null {
+    if (!this.destinoCTOSP || this.destinoCTOSP.length === 0) {
+      console.warn('⚠️ [CONEXÃO-CTOSP] Array destinoCTOSP está vazio ou não existe');
+      return null;
+    }
+
+    console.log(`🔍 [CONEXÃO-CTOSP] Verificando ${this.destinoCTOSP.length} CTOs_SP...`);
+
+    const THRESHOLD_DISTANCIA_METROS = 3; // 3 metros
+    let ctospMaisProxima: Cto_SP | null = null;
+    let menorDistancia = Infinity;
+
+    this.destinoCTOSP.forEach((ctosp, index) => {
+      if (!ctosp.LAT || !ctosp.LONGI) {
+        return;
+      }
+
+      const latCTOSP = typeof ctosp.LAT === 'number' ? ctosp.LAT : Number(ctosp.LAT);
+      const lngCTOSP = typeof ctosp.LONGI === 'number' ? ctosp.LONGI : Number(ctosp.LONGI);
+      
+      const posicaoCTOSP = new google.maps.LatLng(latCTOSP, lngCTOSP);
+      
+      // Usar função do Google Maps para calcular distância real em metros
+      const distancia = google.maps.geometry.spherical.computeDistanceBetween(
+        ponto,
+        posicaoCTOSP
+      );
+
+      if (distancia < THRESHOLD_DISTANCIA_METROS && distancia < menorDistancia) {
+        menorDistancia = distancia;
+        ctospMaisProxima = ctosp;
+        console.log(`✅ [CONEXÃO-CTOSP] CTO_SP ${ctosp.numero} encontrada a ${distancia.toFixed(2)}m`);
+      }
+    });
+
+    if (!ctospMaisProxima) {
+      console.log(`❌ [CONEXÃO-CTOSP] Nenhuma CTO_SP encontrada dentro de ${THRESHOLD_DISTANCIA_METROS}m`);
+    }
+
+    return ctospMaisProxima;
   }
 
   /**
