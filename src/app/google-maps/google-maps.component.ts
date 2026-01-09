@@ -720,6 +720,43 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
           });
           
           console.log('✅ [PLOTA-CAIXA] Caixa adicionada ao mapa');
+
+          // 🆕 NOVO: Inserir log de plotagem de caixa com id_evento 4
+          const idUsuario = this.authService.getIdUser();
+          const idCity = this.authService.getIdCity();
+          if (idUsuario && idCity) {
+            console.log('🔄 Inserindo log de plotagem de caixa...');
+            
+            // Determinar tipo de caixa para a descrição
+            let tipoCaixa = 'Caixa';
+            if (result.tipagem) {
+              // Verificar se é CTO ou CTO_SP baseado na tipagem
+              const tipagemUpper = result.tipagem.toUpperCase();
+              if (tipagemUpper.includes('CTO') && tipagemUpper.includes('SP')) {
+                tipoCaixa = 'CTO_SP';
+              } else if (tipagemUpper.includes('CTO')) {
+                tipoCaixa = 'CTO';
+              } else {
+                tipoCaixa = 'Caixa';
+              }
+            }
+            
+            this.insertLogService.inserirLog({
+              id_usuario: idUsuario,
+              id_evento: 4, // ID do evento para plotagem de caixa
+              id_city: idCity,
+              id_meta_objeto: result.id_meta,
+              descricao: `Plota ${tipoCaixa}: ${result.labelCaixa || result.id_meta}, Tipagem: ${result.tipagem || 'N/A'}, ID_META: ${result.id_meta}`,
+              VERSION: 'Fiberworks WEB 1.0.0'
+            }).subscribe({
+              next: (logResponse) => {
+                console.log('✅ Log de plotagem de caixa inserido com sucesso:', logResponse);
+              },
+              error: (error) => {
+                console.error('❌ Erro ao inserir log de plotagem de caixa:', error);
+              }
+            });
+          }
         }
       },
       (dismissReason) => {
