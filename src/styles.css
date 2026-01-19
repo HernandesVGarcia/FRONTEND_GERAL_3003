@@ -123,8 +123,8 @@ body.modal-open .modal {
 body.modal-open .modal-dialog {
   position: relative !important;
   margin: 1.75rem auto !important;
-  width: 900px !important;
-  max-width: 900px !important;
+  /* ⚠️ LARGURA REMOVIDA - cada componente define sua própria largura */
+  /* Isso evita conflitos quando componentes tentam definir tamanhos diferentes */
   z-index: 5002 !important;
   pointer-events: none !important;
 }

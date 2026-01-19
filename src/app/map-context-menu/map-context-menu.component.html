@@ -76,6 +76,26 @@
   </div>
 </ng-container>
 
+<!-- Menu para Estação -->
+<ng-container *ngIf="contextType === 'estacao'">
+  <div class="menu-item" (click)="onAction('visualizar-estacao')">
+    <mat-icon>visibility</mat-icon>
+    <span>Visualiza Estação</span>
+  </div>
+  
+  <div class="menu-item" (click)="onAction('incluir-dio-estacao')">
+    <mat-icon>add</mat-icon>
+    <span>Inclui DIO na Estação</span>
+  </div>
+  
+  <div class="menu-divider"></div>
+  
+  <div class="menu-item" (click)="onAction('excluir-estacao')">
+    <mat-icon>delete</mat-icon>
+    <span>Exclui Estação</span>
+  </div>
+</ng-container>
+
     
     <!-- Menu para MAPA (quando não há cabos) -->
     <ng-container *ngIf="contextType === 'map'">
@@ -85,11 +105,7 @@
         <span>Cria Caixa</span>
       </div>
 
-      <!-- Cria DIO -->
-      <div class="menu-item" (click)="onAction('cria-dio')">
-        <mat-icon>router</mat-icon>
-        <span>Cria DIO</span>
-      </div>
+      <!-- Cria DIO removido - agora só via context menu da estação -->
 
       <!-- Cria Ponto (com submenu) -->
       <div class="menu-item has-submenu" 

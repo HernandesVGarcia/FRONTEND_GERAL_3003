@@ -32,12 +32,13 @@ import { MapSearchButtonsComponent } from '../map-search-buttons/map-search-butt
 import { MapTracerButtonsComponent } from '../map-tracer-buttons/map-tracer-buttons.component';
 import { MapContextMenuComponent } from '../map-context-menu/map-context-menu.component';
 import { TipagemCabosModalComponent, TipagemCabosData } from '../tipagem-cabos-modal/tipagem-cabos-modal.component';
-import { CompartilhamentoService, CaixaData, ClienteData } from '../servico/compartilhamento.service';
+import { CompartilhamentoService, CaixaData, ClienteData, EstacaoData } from '../servico/compartilhamento.service';
 import { KmlExportService } from '../servico/kml-export.service';
 import { InsertCaboService } from '../servico/insert-cabo.service';
 import { UpdateCaboService } from '../servico/update-cabo.service';
 import { UpdateCaixaService } from '../servico/update-caixa.service';
 import { UpdateDioService, UpdateDioData, UpdateDioResponse } from '../servico/update-dio.service';
+import { UpdateEstacaoService } from '../servico/update-estacao.service';
 import { InsertLogService } from '../servico/insert-log.service';
 import { ExcluiCaboService } from '../servico/exclui-cabo.service';
 import { ExcluiCaixaService, ExcluiCaixaRequest, ExcluiCaixaResponse } from '../servico/exclui-caixa.service';
@@ -53,6 +54,7 @@ import { GraphvizModalComponent } from '../graphviz-modal/graphviz-modal.compone
 import { ConexaoCaboCaixaEmendaComponent, ConexaoCaboCaixaEmendaData } from '../conexao-cabo-caixa-emenda/conexao-cabo-caixa-emenda.component';
 import { ConexaoCaboDioComponent, ConexaoCaboDioData } from '../conexao-cabo-dio/conexao-cabo-dio.component';
 import { PlotaCaixaComponent, PlotaCaixaData } from '../plota-caixa/plota-caixa.component';
+import { PlotaDioComponent, PlotaDioData } from '../plota-dio/plota-dio.component';
 import { BocasService } from '../servico/bocas.service';
 import { Bocas } from '../modelo/Bocas';
 import { BandejasService } from '../servico/bandejas.service';
@@ -271,7 +273,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
   // 🎯 Propriedades para context menu
   contextMenuVisible = false;
   contextMenuPosition = { x: 0, y: 0 };
-  contextMenuType: 'caixa' | 'map' | 'cabo' | 'dio' | 'cliente' = 'map'; // 🆕 Tipo de contexto do menu
+  contextMenuType: 'caixa' | 'map' | 'cabo' | 'dio' | 'cliente' | 'estacao' = 'map'; // 🆕 Tipo de contexto do menu
   private contextMenuListenerAdded = false; // Flag para evitar listeners duplicados
   private clickedCaboData: any = null; // 🆕 Armazena dados do cabo clicado
   private clickedCaixaData: any = null; // 🆕 Armazena dados da caixa clicada
@@ -281,6 +283,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
   private clickedCliData: any = null; // 🆕 Armazena dados do cliente clicado
   private clickedCliAtData: any = null; // 🆕 Armazena dados do cliente ativado clicado
   private clickedCliDesData: any = null; // 🆕 Armazena dados do cliente desativado clicado
+  private clickedEstacaoData: any = null; // 🆕 Armazena dados da estação clicada
   private clickedPolyline: google.maps.Polyline | null = null; // 🆕 Armazena a polyline clicada
   private ultimaCoordenadaClique: google.maps.LatLng | null = null; // 🆕 Armazena coordenada do último clique para identificar ponta
   private ultimaCoordenadaContextMenu: google.maps.LatLng | null = null; // 🆕 Armazena coordenada do context menu do mapa
@@ -297,6 +300,14 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
   private dioEmEdicaoIndex: number | null = null; // Índice do DIO em edição
   private dioEmEdicaoOriginalPosition: { lat: number, lng: number } | null = null; // Posição original para cancelar
   private dioEmEdicaoOriginalIcon: google.maps.Icon | null = null; // Ícone original para restaurar
+
+  // Variáveis para edição de estação
+  private estacaoEmEdicao: google.maps.Marker | null = null; // Marcador estação em edição
+  private estacaoEmEdicaoIndex: number | null = null; // Índice da estação em edição
+  private estacaoEmEdicaoOriginalPosition: { lat: number, lng: number } | null = null; // Posição original para cancelar
+  private estacaoEmEdicaoOriginalIcon: google.maps.Icon | null = null; // Ícone original para restaurar
+  private listenerMapaSalvarEstacao: google.maps.MapsEventListener | null = null; // Listener para salvar ao clicar no mapa
+  private listenerEscCancelarEstacao: ((event: KeyboardEvent) => void) | null = null; // Listener para cancelar com ESC
   private listenerMapaSalvarDio: google.maps.MapsEventListener | null = null; // Listener para salvar ao clicar no mapa
   private listenerEscCancelarDio: any = null; // Listener para cancelar com ESC
   // 🔧 Propriedades para detectar long press (mobile)
@@ -361,6 +372,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
     private updateCaboService: UpdateCaboService,
     private updateCaixaService: UpdateCaixaService,
     private updateDioService: UpdateDioService,
+    private updateEstacaoService: UpdateEstacaoService,
     private bocasService: BocasService,
     private bandejasService: BandejasService,
     private dialog: MatDialog,
@@ -551,6 +563,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
       this.clickedCliAtData = null; // 🆕 Limpar dados de cliente ativado
       this.clickedCliDesData = null; // 🆕 Limpar dados de cliente desativado
       this.clickedDioData = null; // 🆕 Limpar dados do DIO
+      this.clickedEstacaoData = null; // 🆕 Limpar dados da estação
       
       // 🆕 NOVO: Limpar coordenada do context menu quando não estiver em edição
       // Isso garante que a próxima vez que o usuário clicar com botão direito,
@@ -578,9 +591,6 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
     switch (action) {
       case 'cria-caixa':
         this.criarCaixa();
-        break;
-      case 'cria-dio':
-        this.criarDIO();
         break;
       case 'cria-cliente':
         this.criarCliente();
@@ -654,6 +664,17 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
         break;
       case 'excluir-cliente':
         this.excluirCliente();
+        break;
+
+      // 🆕 Ações para Estação
+      case 'visualizar-estacao':
+        this.visualizarEstacao();
+        break;
+      case 'incluir-dio-estacao':
+        this.criarDIO();
+        break;
+      case 'excluir-estacao':
+        this.excluirEstacao();
         break;
 
       default:
@@ -764,11 +785,6 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
         console.log('📦 [PLOTA-CAIXA] Modal fechado:', dismissReason);
       }
     );
-  }
-
-  private criarDIO(): void {
-    console.log('🗺️ [CONTEXT-MENU] Criando DIO...');
-    alert('Funcionalidade de criar DIO será implementada em breve!');
   }
 
   private criarCliente(): void {
@@ -3702,6 +3718,14 @@ polylineOptions144f: google.maps.PolylineOptions = {
       }
     });
 
+    // Subscription para escutar dados de estação selecionada
+    this.compartilhamentoService.estacao$.pipe(takeUntil(this.destroy$)).subscribe((estacaoData: EstacaoData | null) => {
+      if (estacaoData) {
+        console.log('Dados da estação recebidos no GoogleMaps:', estacaoData);
+        this.centralizarNaEstacao(estacaoData);
+      }
+    });
+
   }
 
   //MÉTODOS========================================================
@@ -4386,10 +4410,88 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
         marker.setMap(this.map);
       }
       
+      // 🆕 Armazenar id_meta no marcador (se disponível) - igual aos cabos
+      // Agora usando location.id_meta diretamente (tipado na interface PopsEst)
+      if (location.id_meta) {
+        marker.set('id_meta', location.id_meta);
+        marker.set('estacao_data', location); // Armazenar objeto completo (seguindo padrão dos cabos)
+        console.log('🔴 [MARKER] id_meta armazenado no marcador:', location.id_meta);
+        console.log('🔴 [MARKER] Objeto completo da estação armazenado no marcador');
+      } else {
+        console.warn('⚠️ [MARKER] id_meta não encontrado no objeto location:', location);
+      }
+      
       marker.addListener('dragend', (event: google.maps.MapMouseEvent) => {
         const index = this.markerPopsEst.indexOf(marker);
         if (index !== -1) {
           this.onMarkerDragEnd(event, index, true);
+        }
+      });
+
+      // 🆕 Adicionar listener de right-click para context menu da estação
+      marker.addListener('rightclick', (event: google.maps.MapMouseEvent) => {
+        console.log('🔴 [CONTEXT-MENU] Right-click detectado no marcador de estação');
+        
+        // Prevenir menu padrão do navegador
+        if (event.domEvent) {
+          event.domEvent.preventDefault();
+          event.domEvent.stopPropagation();
+        }
+
+        const index = this.markerPopsEst.indexOf(marker);
+        if (index !== -1) {
+          const estacao = this.destinoPopsEst[index];
+          
+          // 🆕 Recuperar id_meta do marcador (prioridade sobre o objeto estacao)
+          const idMetaDoMarcador = marker.get('id_meta');
+          if (idMetaDoMarcador) {
+            estacao.id_meta = idMetaDoMarcador; // Agora tipado na interface
+            console.log('🔴 [CONTEXT-MENU] id_meta recuperado do marcador:', idMetaDoMarcador);
+          } else if (estacao.id_meta) {
+            // Se não estiver no marcador, usar do objeto estacao diretamente (agora tipado)
+            console.log('🔴 [CONTEXT-MENU] id_meta obtido do objeto estacao:', estacao.id_meta);
+          } else {
+            console.warn('⚠️ [CONTEXT-MENU] id_meta não encontrado no marcador nem no objeto estacao');
+          }
+          
+          console.log('🔴 [CONTEXT-MENU] Estação encontrada no índice:', index);
+          console.log('🔴 [CONTEXT-MENU] Dados da estação:', estacao);
+          console.log('🔴 [CONTEXT-MENU] id_meta da estação:', estacao.id_meta);
+          
+          // Armazenar dados da estação clicada
+          this.clickedEstacaoData = estacao;
+          this.clickedCaixaData = null;
+          this.clickedCTOData = null;
+          this.clickedCTOSPData = null;
+          this.clickedDioData = null;
+          this.clickedCliData = null;
+          this.clickedCliAtData = null;
+          this.clickedCliDesData = null;
+          
+          // Definir tipo de contexto como 'estacao'
+          this.contextMenuType = 'estacao';
+          
+          // Mostrar context menu na posição do clique
+          if (event.domEvent) {
+            const mouseEvent = event.domEvent as MouseEvent;
+            console.log('🔴 [CONTEXT-MENU] Mostrando context menu para estação em:', mouseEvent.clientX, mouseEvent.clientY);
+            this.showContextMenu(mouseEvent.clientX, mouseEvent.clientY);
+          }
+        }
+      });
+
+      // Adicionar listener de duplo clique para EDITAR ESTAÇÃO (movimentar)
+      marker.addListener('dblclick', (event: google.maps.MapMouseEvent) => {
+        console.log('🖱️ [ESTAÇÃO] Double-click na estação:', location);
+        
+        // Fechar InfoWindow se estiver aberto
+        if (this.currentMarkerInfoWindow) {
+          this.currentMarkerInfoWindow.close();
+        }
+        
+        const index = this.markerPopsEst.indexOf(marker);
+        if (index !== -1) {
+          this.habilitarEdicaoEstacao(index);
         }
       });
 
@@ -4587,6 +4689,138 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
       icon: iconUrl,
       tipo: isCTO ? 'CTO' : (isCTOSP ? 'CTO_SP' : 'CEO')
     });
+  }
+
+  /**
+   * Adiciona um marcador de DIO ao mapa e ao array destinoDios
+   * Similar ao adicionarMarcadorCaixa(), mas para DIOs
+   */
+  private adicionarMarcadorDio(dio: { id_meta?: number; sigla?: string; CAPACIDADE?: number; LAT: number; LNG: number }): void {
+    if (!this.map) {
+      console.warn('⚠️ [ADICIONAR-MARCADOR-DIO] Mapa não está inicializado');
+      return;
+    }
+
+    if (!dio.id_meta || dio.id_meta <= 0) {
+      console.warn('⚠️ [ADICIONAR-MARCADOR-DIO] id_meta inválido:', dio.id_meta);
+      return;
+    }
+
+    const position = { lat: Number(dio.LAT), lng: Number(dio.LNG) };
+    
+    // Validar coordenadas
+    if (isNaN(position.lat) || isNaN(position.lng)) {
+      console.warn('⚠️ [ADICIONAR-MARCADOR-DIO] Coordenadas inválidas:', position);
+      return;
+    }
+
+    const markerOptions: google.maps.MarkerOptions = {
+      position: position,
+      title: dio.sigla || 'Sem nome',
+      draggable: false,
+      opacity: 10,
+      label: {
+        text: 'DIO: ' + (dio.sigla || 'S/N'),
+        color: 'blue',
+        fontSize: '12px'
+      } as google.maps.MarkerLabel,
+      icon: {
+        url: '/assets/dioV2.png',
+        labelOrigin: new google.maps.Point(50, 30),
+        scaledSize: new google.maps.Size(120, 21.6),
+      },
+      visible: this.currentZoom >= this.ZOOM_LEVEL_DIOS
+    };
+
+    const marker = new google.maps.Marker(markerOptions);
+    marker.setMap(this.map);
+    
+    // Armazenar id_meta no marcador
+    marker.set('id_meta', dio.id_meta);
+    
+    // Variáveis para controlar cliques
+    let clickTimeout: any;
+    
+    // Adicionar listener de clique simples para abrir InfoWindow
+    marker.addListener('click', (event: google.maps.MapMouseEvent) => {
+      // Limpar timeout anterior se existir
+      if (clickTimeout) {
+        clearTimeout(clickTimeout);
+        clickTimeout = null;
+      }
+
+      // Definir timeout para clique simples
+      clickTimeout = setTimeout(() => {
+        // Clique simples - mostrar InfoWindow
+        console.log('🔍 [DIO] Clique simples detectado no DIO:', dio.id_meta);
+        this.showMarkerInfoWindow(marker, event, 'dio', dio as any);
+      }, 300); // Delay de 300ms para distinguir de duplo clique
+    });
+    
+    // Adicionar listener de duplo clique para EDITAR DIO (movimentar)
+    marker.addListener('dblclick', (event: google.maps.MapMouseEvent) => {
+      console.log('🖱️ [DIO] Double-click no DIO:', dio);
+      
+      // Cancelar clique simples se estiver pendente
+      if (clickTimeout) {
+        clearTimeout(clickTimeout);
+        clickTimeout = null;
+      }
+      
+      // Fechar InfoWindow se estiver aberto
+      if (this.currentMarkerInfoWindow) {
+        this.currentMarkerInfoWindow.close();
+      }
+      
+      const index = this.markerDios.indexOf(marker);
+      if (index !== -1) {
+        this.habilitarEdicaoDio(index);
+      }
+    });
+
+    // Adicionar listener de rightclick para context menu do DIO
+    marker.addListener('rightclick', (event: google.maps.MapMouseEvent) => {
+      console.log('🔴 [DIO] Right-click no DIO:', dio);
+      
+      // Cancelar clique simples se estiver pendente
+      if (clickTimeout) {
+        clearTimeout(clickTimeout);
+        clickTimeout = null;
+      }
+      
+      // Fechar InfoWindow se estiver aberto
+      if (this.currentMarkerInfoWindow) {
+        this.currentMarkerInfoWindow.close();
+      }
+      
+      this.clickedDioData = dio as any;
+      this.contextMenuType = 'dio';
+      
+      if (event.domEvent) {
+        const mouseEvent = event.domEvent as MouseEvent;
+        this.showContextMenu(mouseEvent.clientX, mouseEvent.clientY);
+      }
+    });
+    
+    // Adicionar ao array de marcadores
+    this.markerDios.push(marker);
+    
+    // Adicionar ao array destinoDios
+    this.destinoDios.push({
+      id_meta: dio.id_meta,
+      sigla: dio.sigla,
+      CAPACIDADE: dio.CAPACIDADE,
+      LAT: dio.LAT,
+      LNG: dio.LNG
+    } as any);
+    
+    console.log('✅ [ADICIONAR-MARCADOR-DIO] Marcador criado:', { 
+      id_meta: dio.id_meta, 
+      sigla: dio.sigla, 
+      position: position,
+      capacidade: dio.CAPACIDADE
+    });
+    console.log('✅ [ADICIONAR-MARCADOR-DIO] DIO adicionado ao array destinoDios. Total de DIOs:', this.destinoDios.length);
   }
 
   
@@ -7242,6 +7476,108 @@ private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = fal
   }
 
   /**
+   * Habilita a edição de uma estação (torna arrastável)
+   */
+  private habilitarEdicaoEstacao(index: number): void {
+    if (index < 0 || index >= this.markerPopsEst.length) {
+      console.error('❌ [EDITAR-ESTAÇÃO] Índice inválido:', index);
+      return;
+    }
+
+    const marker = this.markerPopsEst[index];
+    const estacao = this.destinoPopsEst[index];
+
+    if (!marker || !estacao) {
+      console.error('❌ [EDITAR-ESTAÇÃO] Marcador ou estação não encontrados');
+      return;
+    }
+
+    // Se já há uma estação em edição, desabilitar a anterior
+    if (this.estacaoEmEdicao) {
+      this.desabilitarEdicaoEstacao();
+    }
+
+    // Salvar posição original para poder cancelar
+    const position = marker.getPosition();
+    if (position) {
+      this.estacaoEmEdicaoOriginalPosition = {
+        lat: position.lat(),
+        lng: position.lng()
+      };
+    }
+
+    // Salvar ícone original ANTES de modificar
+    this.estacaoEmEdicaoOriginalIcon = marker.getIcon() as google.maps.Icon;
+
+    // Tornar marcador arrastável
+    marker.setDraggable(true);
+    
+    // Mudar aparência visual para indicar modo de edição
+    marker.setOpacity(0.7);
+    marker.setIcon({
+      url: '/assets/TORRE4.png',
+      labelOrigin: new google.maps.Point(50, 0),
+      scaledSize: new google.maps.Size(30, 30) // Ligeiramente maior (original: 25, 25)
+    });
+
+    // Armazenar referências
+    this.estacaoEmEdicao = marker;
+    this.estacaoEmEdicaoIndex = index;
+
+    console.log('✅ [EDITAR-ESTAÇÃO] Edição habilitada para estação:', estacao.sigla);
+
+    // Adicionar listener para salvar ao clicar no mapa
+    if (this.map && !this.listenerMapaSalvarEstacao) {
+      this.listenerMapaSalvarEstacao = this.map.addListener('click', () => {
+        if (this.estacaoEmEdicao) {
+          this.salvarEdicaoEstacao();
+        }
+      });
+    }
+
+    // Adicionar listener para cancelar com ESC
+    if (!this.listenerEscCancelarEstacao) {
+      this.listenerEscCancelarEstacao = (event: KeyboardEvent) => {
+        if (event.key === 'Escape' && this.estacaoEmEdicao) {
+          this.cancelarEdicaoEstacao();
+        }
+      };
+      document.addEventListener('keydown', this.listenerEscCancelarEstacao);
+    }
+  }
+
+  /**
+   * Desabilita a edição da estação
+   */
+  private desabilitarEdicaoEstacao(): void {
+    if (this.estacaoEmEdicao) {
+      this.estacaoEmEdicao.setDraggable(false);
+      this.estacaoEmEdicao.setOpacity(1.0);
+      
+      // Restaurar ícone original
+      if (this.estacaoEmEdicaoOriginalIcon) {
+        this.estacaoEmEdicao.setIcon(this.estacaoEmEdicaoOriginalIcon);
+      }
+    }
+
+    // Remover listeners
+    if (this.listenerMapaSalvarEstacao) {
+      google.maps.event.removeListener(this.listenerMapaSalvarEstacao);
+      this.listenerMapaSalvarEstacao = null;
+    }
+
+    if (this.listenerEscCancelarEstacao) {
+      document.removeEventListener('keydown', this.listenerEscCancelarEstacao);
+      this.listenerEscCancelarEstacao = null;
+    }
+
+    this.estacaoEmEdicao = null;
+    this.estacaoEmEdicaoIndex = null;
+    this.estacaoEmEdicaoOriginalPosition = null;
+    this.estacaoEmEdicaoOriginalIcon = null;
+  }
+
+  /**
    * 🔧 Desabilita a edição do DIO
    */
   private desabilitarEdicaoDio(): void {
@@ -7395,6 +7731,117 @@ private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = fal
     this.desabilitarEdicaoDio();
 
     console.log('❌ [EDITAR-DIO] Edição cancelada, posição restaurada');
+    alert('Edição cancelada. Posição original restaurada.');
+  }
+
+  /**
+   * Salva a edição da estação
+   */
+  private salvarEdicaoEstacao(): void {
+    if (!this.estacaoEmEdicao || this.estacaoEmEdicaoIndex === null) {
+      return;
+    }
+
+    const position = this.estacaoEmEdicao.getPosition();
+    if (!position) {
+      console.error('❌ [EDITAR-ESTAÇÃO] Posição não disponível');
+      return;
+    }
+
+    const newLat = position.lat();
+    const newLng = position.lng();
+
+    console.log(`💾 [EDITAR-ESTAÇÃO] Salvando nova posição:`, { lat: newLat, lng: newLng });
+
+    const estacao = this.destinoPopsEst[this.estacaoEmEdicaoIndex];
+    
+    // Verificar se tem id_meta
+    if (!estacao.id_meta) {
+      console.error('❌ [EDITAR-ESTAÇÃO] ID_META não encontrado na estação');
+      alert('❌ Erro: ID_META da estação não encontrado!');
+      return;
+    }
+
+    // Atualizar coordenadas localmente
+    estacao.LAT = newLat as any;
+    estacao.LNG = newLng as any;
+    
+    // Chamar serviço para atualizar coordenadas no banco
+    this.updateEstacaoService.atualizarCoordenadas({
+      ID_META: estacao.id_meta,
+      lat: newLat,
+      lng: newLng
+    }).subscribe({
+      next: (response) => {
+        console.log('✅ [EDITAR-ESTAÇÃO] Coordenadas atualizadas com sucesso:', response);
+        
+        // Inserir log de atualização de estação
+        const idUsuario = this.authService.getIdUser();
+        const idCity = this.authService.getIdCity();
+        if (idUsuario && idCity && estacao.id_meta) {
+          console.log('🔄 Inserindo log de move de estação...');
+          this.insertLogService.inserirLog({
+            id_usuario: idUsuario,
+            id_evento: 31, // Usando o mesmo id_evento de move de DIO (ajustar se necessário)
+            id_city: idCity,
+            id_meta_objeto: estacao.id_meta,
+            descricao: `Move Estação sigla: ${estacao.sigla}  idmeta: ${estacao.id_meta} `,
+            VERSION: 'Fiberworks WEB 1.0.0'
+          }).subscribe({
+            next: (logResponse) => {
+              console.log('✅ Log de move de estação:', logResponse);
+            },
+            error: (error) => {
+              console.error('❌ Erro ao inserir log de move de estação:', error);
+            }
+          });
+        }
+        
+        // Desabilitar edição após sucesso
+        this.desabilitarEdicaoEstacao();
+      },
+      error: (error) => {
+        console.error('❌ [EDITAR-ESTAÇÃO] Erro ao atualizar coordenadas:', error);
+        // Reverter coordenadas em caso de erro
+        if (this.estacaoEmEdicao) {
+          const originalPos = this.estacaoEmEdicaoOriginalPosition;
+          if (originalPos) {
+            this.estacaoEmEdicao.setPosition({
+              lat: originalPos.lat,
+              lng: originalPos.lng
+            });
+            estacao.LAT = originalPos.lat as any;
+            estacao.LNG = originalPos.lng as any;
+          }
+        }
+        alert(`❌ Erro ao atualizar coordenadas da estação!\n\n🆔 ID_META: ${estacao.id_meta}\n\nErro: ${error.message}`);
+        // Desabilitar edição mesmo em caso de erro (para não ficar travado)
+        this.desabilitarEdicaoEstacao();
+      }
+    });
+    
+    // Retornar aqui para não desabilitar edição antes da requisição terminar
+    return;
+  }
+
+  /**
+   * Cancela a edição da estação
+   */
+  private cancelarEdicaoEstacao(): void {
+    if (!this.estacaoEmEdicao || !this.estacaoEmEdicaoOriginalPosition) {
+      return;
+    }
+
+    // Restaurar posição original
+    this.estacaoEmEdicao.setPosition({
+      lat: this.estacaoEmEdicaoOriginalPosition.lat,
+      lng: this.estacaoEmEdicaoOriginalPosition.lng
+    });
+
+    // Desabilitar edição
+    this.desabilitarEdicaoEstacao();
+
+    console.log('❌ [EDITAR-ESTAÇÃO] Edição cancelada, posição restaurada');
     alert('Edição cancelada. Posição original restaurada.');
   }
 
@@ -7576,6 +8023,13 @@ private excluirDio(): void {
             this.markerDios.splice(index, 1);
             console.log('🗑️ [EXCLUI-DIO] Marcador removido do array');
           }
+          
+          // Remover também do array destinoDios
+          const indexDestino = this.destinoDios.findIndex(dio => dio.id_meta === idMeta);
+          if (indexDestino !== -1) {
+            this.destinoDios.splice(indexDestino, 1);
+            console.log('🗑️ [EXCLUI-DIO] Item removido do array destinoDios');
+          }
         } else {
           console.warn('⚠️ [EXCLUI-DIO] Não foi possível encontrar o marcador para remover!');
         }
@@ -7632,6 +8086,180 @@ private excluirDio(): void {
       alert(`❌ Operação não realizada: ${error}`);
     }
   });
+}
+
+/**
+ * 🔍 Visualiza uma estação
+ */
+private visualizarEstacao(): void {
+  console.log('🔍 [CONTEXT-MENU] Visualizando estação...', this.clickedEstacaoData);
+  
+  if (!this.clickedEstacaoData) {
+    alert('❌ Erro: Dados da estação não encontrados.');
+    this.hideContextMenu();
+    return;
+  }
+
+  // TODO: Implementar visualização da estação
+  // Por enquanto, apenas mostrar informações básicas
+  const sigla = this.clickedEstacaoData.sigla || 'N/A';
+  alert(`Visualizando Estação: ${sigla}\n\nFuncionalidade de visualização será implementada em breve!`);
+  this.hideContextMenu();
+}
+
+/**
+ * Cria DIO na estação (DIOs sempre são criados vinculados a uma estação)
+ */
+private criarDIO(): void {
+  console.log('➕ [CONTEXT-MENU] Criando DIO na estação...', this.clickedEstacaoData);
+  
+  if (!this.clickedEstacaoData) {
+    alert('❌ Erro: Dados da estação não encontrados.');
+    this.hideContextMenu();
+    return;
+  }
+
+  // Usar coordenadas da estação
+  const lat = Number(this.clickedEstacaoData.LAT);
+  const lng = Number(this.clickedEstacaoData.LNG);
+  
+  if (!lat || !lng) {
+    alert('❌ Erro: Coordenadas da estação não encontradas.');
+    this.hideContextMenu();
+    return;
+  }
+
+  // 🆕 Obter id_meta de múltiplas fontes (prioridade: objeto estacao > marcador)
+  let idMeta: number | undefined;
+  
+  // Primeiro tentar obter do objeto estacao (agora tipado na interface)
+  if (this.clickedEstacaoData.id_meta) {
+    idMeta = this.clickedEstacaoData.id_meta;
+      console.log('✅ [CRIAR-DIO] id_meta obtido do objeto estacao:', idMeta);
+  } else {
+    // Se não estiver no objeto, tentar buscar do marcador usando o índice
+    const index = this.destinoPopsEst.indexOf(this.clickedEstacaoData);
+    if (index !== -1 && this.markerPopsEst[index]) {
+      const idMetaDoMarcador = this.markerPopsEst[index].get('id_meta');
+      if (idMetaDoMarcador) {
+        idMeta = idMetaDoMarcador;
+        console.log('✅ [CRIAR-DIO] id_meta obtido do marcador:', idMeta);
+      }
+    }
+  }
+  
+  // Validar que id_meta seja um número válido
+  if (!idMeta || (typeof idMeta !== 'number') || isNaN(idMeta) || idMeta <= 0) {
+    console.error('❌ [INCLUIR-DIO] id_meta inválido ou não encontrado:', idMeta);
+    console.error('❌ [INCLUIR-DIO] Dados da estação:', this.clickedEstacaoData);
+    alert('❌ Erro: Não foi possível identificar o ID da estação. Verifique os logs do console.');
+    this.hideContextMenu();
+    return;
+  }
+
+  console.log('✅ [CRIAR-DIO] id_meta válido encontrado:', idMeta);
+
+  // Preparar dados para o modal
+  const data: PlotaDioData = {
+    lat: lat,
+    lng: lng,
+    estacaoSelecionada: this.clickedEstacaoData,
+    sigla: this.clickedEstacaoData.sigla,
+    id_meta: idMeta // Passar o id_meta encontrado e validado
+  };
+  
+  console.log('📦 [INCLUIR-DIO] Dados preparados para o modal:', data);
+
+  // Abrir modal com ng-bootstrap
+  const modalRef = this.ngbModal.open(PlotaDioComponent, {
+    size: 'lg',
+    backdrop: 'static',
+    keyboard: false
+  });
+  
+  // Passar dados para o modal
+  modalRef.componentInstance.data = data;
+
+  // Fechar context menu
+  this.hideContextMenu();
+
+  // Processar resultado do modal
+  modalRef.result.then(
+    (result) => {
+      if (result && result.id_meta) {
+        console.log('🔌 [PLOTA-DIO] DIO criado na estação:', result);
+        // Adicionar marcador do DIO criado ao mapa
+        this.adicionarMarcadorDio({
+          id_meta: result.id_meta,
+          sigla: result.sigla,
+          CAPACIDADE: result.CAPACIDADE,
+          LAT: result.LAT,
+          LNG: result.LNG
+        });
+        console.log('✅ [PLOTA-DIO] DIO adicionado ao mapa e ao array destinoDios');
+
+        // Inserir log de plotagem de DIO com id_evento 5
+        const idUsuario = this.authService.getIdUser();
+        const idCity = this.authService.getIdCity();
+        if (idUsuario && idCity && result.id_meta) {
+          console.log('🔄 Inserindo log de plotagem de DIO...');
+          const idMetaEstacao = result.id_estacao || 'N/A';
+          this.insertLogService.inserirLog({
+            id_usuario: idUsuario,
+            id_evento: 5, // ID do evento para plotagem de DIO
+            id_city: idCity,
+            id_meta_objeto: result.id_meta,
+            descricao: `Plota DIO: ${result.sigla || result.id_meta}, Capacidade: ${result.CAPACIDADE || 'N/A'}, ID_POP: ${idMetaEstacao}, ID_DIO: ${result.id_meta}`,
+            VERSION: 'Fiberworks WEB 1.0.0'
+          }).subscribe({
+            next: (logResponse) => {
+              console.log('✅ Log de plotagem de DIO inserido com sucesso:', logResponse);
+            },
+            error: (error) => {
+              console.error('❌ Erro ao inserir log de plotagem de DIO:', error);
+            }
+          });
+        }
+      } else {
+        console.warn('⚠️ [PLOTA-DIO] Resultado do modal não contém id_meta válido:', result);
+      }
+    },
+    (dismissReason) => {
+      console.log('🔌 [PLOTA-DIO] Modal fechado:', dismissReason);
+    }
+  );
+}
+
+/**
+ * 🗑️ Exclui uma estação
+ */
+private excluirEstacao(): void {
+  console.log('🗑️ [CONTEXT-MENU] Excluindo estação...', this.clickedEstacaoData);
+  
+  if (!this.clickedEstacaoData) {
+    console.warn('⚠️ [EXCLUI-ESTACAO] Nenhuma estação selecionada');
+    alert('❌ Erro: Dados da estação não encontrados.');
+    return;
+  }
+
+  const sigla = this.clickedEstacaoData.sigla || 'N/A';
+  
+  // Confirmação antes de excluir
+  const confirmacao = confirm(`Tem certeza que deseja excluir esta estação?\n\n📋 Sigla: ${sigla}`);
+  
+  if (!confirmacao) {
+    return;
+  }
+
+  // TODO: Implementar exclusão da estação via API
+  // Por enquanto, apenas mostrar mensagem
+  alert(`Funcionalidade de exclusão de estação será implementada em breve!\n\nEstação: ${sigla}`);
+  
+  // Limpar dados da estação
+  this.clickedEstacaoData = null;
+  
+  // Fechar context menu
+  this.hideContextMenu();
 }
 
   onCaixaInternaClose() {
@@ -8158,6 +8786,17 @@ openGoJSModal() {
       this.map.setCenter(center);
       this.map.setZoom(20); // Zoom próximo para visualizar a caixa
       console.log(`Mapa centralizado na caixa ${clienteData.SIGLA} - Coordenadas: ${clienteData.LAT}, ${clienteData.LNG}`);
+    } 
+    
+  }
+
+  // Método para centralizar o mapa na estação selecionada
+  centralizarNaEstacao(estacaoData: EstacaoData): void {
+    if (estacaoData.LAT && estacaoData.LNG && this.map) {
+      const center = new google.maps.LatLng(estacaoData.LAT, estacaoData.LNG);
+      this.map.setCenter(center);
+      this.map.setZoom(20); // Zoom próximo para visualizar a estação
+      console.log(`Mapa centralizado na estação ${estacaoData.SIGLA} - Coordenadas: ${estacaoData.LAT}, ${estacaoData.LNG}`);
     } 
     
   }

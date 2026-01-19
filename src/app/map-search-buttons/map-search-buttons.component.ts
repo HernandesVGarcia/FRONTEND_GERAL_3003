@@ -5,6 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { CaixaSearchModalComponent } from '../caixa-search-modal/caixa-search-modal.component';
 import { ClienteSearchModalComponent } from '../cliente-search-modal/cliente-search-modal.component';
+import { EstacaoSearchModalComponent } from '../estacao-search-modal/estacao-search-modal.component';
 
 @Component({
   selector: 'app-map-search-buttons',
@@ -57,7 +58,19 @@ export class MapSearchButtonsComponent {
 
   onPesquisarEstacao(): void {
     console.log('Pesquisar Estação clicado');
-    // Abrir modal quando implementado; comunicação via service
+    const dialogRef = this.dialog.open(EstacaoSearchModalComponent, {
+      width: '800px',
+      maxWidth: '90vw',
+      height: 'auto',
+      maxHeight: '80vh',
+      disableClose: false,
+      data: {}
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      console.log('Modal fechado');
+      // Não precisamos fazer nada aqui pois já estamos tratando as seleções via @Output
+    });
   }
 
   onPesquisarLogradouro(): void {

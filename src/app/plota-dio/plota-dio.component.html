@@ -1,0 +1,173 @@
+<div class="modal-dialog modal-lg" #modalDialog>
+  <div class="modal-content shadow-lg">
+    <!-- Header -->
+    <div class="modal-header bg-primary text-white" (mousedown)="onMouseDown($event)" style="cursor: move;">
+      <h5 class="modal-title fw-bold">
+        <span class="icon me-2">🔌</span>
+        Criar DIO
+      </h5>
+      <button type="button" class="btn-close btn-close-white" (click)="fechar()" aria-label="Close"></button>
+    </div>
+
+    <!-- Content -->
+    <div class="modal-body">
+      <div class="row g-3">
+        <!-- Coluna 1: Estações -->
+        <!-- Flex-grid de estações (mostrado apenas quando não há estação pré-selecionada) -->
+        <div class="col-flexgrid flexgrid-estacoes" *ngIf="!estacaoPreSelecionada">
+          <div class="card border-primary">
+            <div class="card-header bg-light">
+              <h6 class="mb-0 fw-semibold">Estações</h6>
+              <small class="text-muted" *ngIf="carregandoEstacoes">Carregando...</small>
+            </div>
+            <div class="card-body p-0">
+              <div class="table-responsive flexgrid-table">
+                <table class="table table-sm table-hover mb-0">
+                  <thead class="table-light sticky-top">
+                    <tr>
+                      <th>Nomenclatura</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr 
+                      *ngFor="let estacao of estacoes; trackBy: trackByEstacao"
+                      (click)="selecionarEstacao(estacao)"
+                      [class.table-active]="form.estacaoSelecionada?.sigla === estacao.sigla"
+                      style="cursor: pointer;">
+                      <td>{{ estacao.sigla || 'N/A' }}</td>
+                    </tr>
+                    <tr *ngIf="!carregandoEstacoes && estacoes.length === 0">
+                      <td class="text-muted text-center">Nenhuma estação encontrada</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Coluna 2: Bastidores -->
+        <div class="col-flexgrid flexgrid-bastidores">
+          <div class="card border-primary">
+            <div class="card-header bg-light">
+              <h6 class="mb-0 fw-semibold">(Bastidores)</h6>
+            </div>
+            <div class="card-body p-0">
+              <div class="table-responsive flexgrid-table">
+                <table class="table table-sm table-hover mb-0">
+                  <thead class="table-light sticky-top">
+                    <tr>
+                      <th>Racks</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr 
+                      *ngFor="let bastidor of bastidores; trackBy: trackByBastidor"
+                      (click)="selecionarBastidor(bastidor)"
+                      [class.table-active]="form.bastidorSelecionado === bastidor"
+                      style="cursor: pointer;">
+                      <td>{{ bastidor }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Coluna 3: Posições -->
+        <div class="col-flexgrid flexgrid-posicoes">
+          <div class="card border-primary">
+            <div class="card-header bg-light">
+              <h6 class="mb-0 fw-semibold">(Cabos)</h6>
+            </div>
+            <div class="card-body p-0">
+              <div class="table-responsive flexgrid-table">
+                <table class="table table-sm table-hover mb-0">
+                  <thead class="table-light sticky-top">
+                    <tr>
+                      <th>Posição</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr 
+                      *ngFor="let posicao of posicoes; trackBy: trackByPosicao"
+                      (click)="selecionarPosicao(posicao)"
+                      [class.table-active]="form.posicaoSelecionada === posicao"
+                      style="cursor: pointer;">
+                      <td>{{ posicao }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Coluna Direita - Capacidade e Tipo de Conector -->
+        <div class="col-controles">
+          <!-- Capacidade -->
+          <div class="card mb-3 border-primary">
+            <div class="card-header bg-secondary text-white">
+              <h6 class="mb-0 fw-semibold">Capacidade (Conectores)</h6>
+               </div>
+            <div class="card-body">
+              <div class="radio-group">
+                <div class="row g-2" *ngFor="let row of getCapacidadeRows(); trackBy: trackByIndex">
+                  <div class="col-md-3" *ngFor="let capacidade of row; trackBy: trackByIndex">
+                    <div class="form-check">
+                      <input 
+                        class="form-check-input" 
+                        type="radio" 
+                        [value]="capacidade"
+                        [checked]="form.capacidade === capacidade"
+                        (change)="form.capacidade = capacidade"
+                        name="capacidade"
+                        [id]="'capacidade-' + capacidade">
+                      <label class="form-check-label" [for]="'capacidade-' + capacidade ">
+                        <span class="badge bg-secondary-subtle text-success-emphasis">{{ capacidade }}</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tipo de Conector -->
+          <div class="card border-primary">
+            <div class="card-header bg-light">
+              <h6 class="mb-0 fw-semibold">Tipo de Conector</h6>
+               </div>
+            <div class="card-body">
+              <select 
+                [(ngModel)]="form.tipoConector" 
+                name="tipoConector"
+                class="form-select form-select-sm"
+                [disabled]="carregandoConectores">
+                <option [value]="null" disabled>Selecione o tipo de conector...</option>
+                <option *ngIf="carregandoConectores" disabled>Carregando tipos...</option>
+                <option *ngFor="let conector of tiposConector; trackBy: trackByConector" [value]="conector.id">
+                  {{ conector.tipo }}
+                </option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="modal-footer bg-light">
+      <button type="button" class="btn btn-secondary btn-sm me-2" (click)="fechar()" [disabled]="salvando">
+        <span class="me-1">✕</span>
+        Cancelar
+      </button>
+      <button type="button" class="btn btn-primary btn-sm" (click)="criar()" [disabled]="salvando || !formValido">
+        <span class="me-1" *ngIf="!salvando">✓</span>
+        <span class="spinner-border spinner-border-sm me-1" *ngIf="salvando" role="status" aria-hidden="true"></span>
+        {{ salvando ? 'Criando...' : 'Plotar DIO' }}
+      </button>
+    </div>
+  </div>
+</div>

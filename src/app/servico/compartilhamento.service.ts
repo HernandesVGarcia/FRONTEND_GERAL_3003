@@ -18,6 +18,14 @@ export interface ClienteData {
   [key: string]: any;
 }
 
+export interface EstacaoData {
+  LAT: number;
+  LNG: number;
+  SIGLA: string;
+  ENDERECO: string;
+  [key: string]: any;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -29,6 +37,9 @@ export class CompartilhamentoService {
 
   private clienteSubject = new BehaviorSubject<ClienteData | null>(null);
   public cliente$: Observable<ClienteData | null> = this.clienteSubject.asObservable();
+
+  private estacaoSubject = new BehaviorSubject<EstacaoData | null>(null);
+  public estacao$: Observable<EstacaoData | null> = this.estacaoSubject.asObservable();
 
   constructor() {
     console.log('CompartilhamentoService inicializado');
@@ -77,5 +88,27 @@ export class CompartilhamentoService {
       console.log('Caixa atual:', this.obterClienteAtual());
       console.log('===============================================');
 
+  }
+
+  // Métodos para Estação ==============================================================================================
+  compartilharEstacao(estacao: EstacaoData): void {
+    console.log('Compartilhando dados da estação:', estacao);
+    this.estacaoSubject.next(estacao);
+  }
+
+  obterEstacaoAtual(): EstacaoData | null {
+    return this.estacaoSubject.value;
+  }
+
+  limparEstacao(): void {
+    console.log('Limpando dados da estação');
+    this.estacaoSubject.next(null);
+  }
+
+  // Método para debug - mostrar estado atual
+  mostrarEstadoAtualEstacao(): void {
+    console.log('=== Estado Atual do CompartilhamentoService ===');
+    console.log('Estação atual:', this.obterEstacaoAtual());
+    console.log('===============================================');
   }
 }
