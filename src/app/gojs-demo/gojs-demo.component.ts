@@ -107,6 +107,7 @@ import { CaboDestinoCxService } from '../servico/cabo-destino-cx.service';
 import { GojsDropComponent } from '../gojs-drop/gojs-drop.component';
 import { PopClienteService } from '../servico/pop-cliente.service';
 import { UpdateBocaXYService} from '../servico/update-boca-xy.service';
+import { UpdateFusaoService } from '../servico/update-fusao.service';
 import { AuthService } from '../servico/auth.service'; // 🏠 NOVO: Import AuthService
 import { FiberApiService } from '../servico/fiber-api.service'; // 🏠 NOVO: Import FiberApiService
 import { UpdateSplitterXYService} from '../servico/update-splitter-xy.service';
@@ -304,13 +305,16 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit {
      private UpdateBCLadoService:UpdateBocaLadoService,    
      private popClienteService: PopClienteService,
      private pesquisaSiglaService: PesquisaSiglaService,
-     private authService: AuthService, // 🏠 NOVO: Injetar AuthService
-     private fiberApiService: FiberApiService, // 🏠 NOVO: Injetar FiberApiService
-     private dialog: MatDialog // 🔀 NOVO: Injetar MatDialog para context menu
-    ) {}
+    private authService: AuthService, // 🏠 NOVO: Injetar AuthService
+    private fiberApiService: FiberApiService, // 🏠 NOVO: Injetar FiberApiService
+    private dialog: MatDialog, // 🔀 NOVO: Injetar MatDialog para context menu
+    private updateFusaoService: UpdateFusaoService // 🔗 NOVO: Serviço para realizar fusões internas
+   ) {}
 
 
   //==============================================================================================================  
+
+  
 
   /**
    * 🏠 NOVO: Carrega o número da caixa (numerocx) usando o idmeta disponível
@@ -3376,7 +3380,13 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
             console.log("  Cabo Destino:", toCableKey);
             console.log("  Porta Destino:", toPortNumber);
 
-
+            // 🔗 NOVO: Realizar fusão interna via API
+            this.realizarFusaoInterna(
+              fromCableKey,
+              fromPortNumber,
+              toCableKey,
+              toPortNumber
+            );
 
             this.aplicarCorDoPortNaConexao(link);
 
@@ -3471,6 +3481,141 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
 
   }
 
+  /**
+   * 🔗 NOVO: Extrai o número da boca de uma string como "Boca1", "boca2", etc.
+   * @param bocaKey - String no formato "Boca1", "boca2", "BOCA18", etc.
+   * @returns Número da boca (1-18) ou null se não conseguir extrair
+   */
+  private extrairNumeroBoca(bocaKey: string): number | null {
+    if (!bocaKey) return null;
+    
+    // Remove espaços e converte para minúsculo
+    const key = bocaKey.trim().toLowerCase();
+    
+    // Procura por padrão "boca" seguido de números
+    const match = key.match(/boca\s*(\d+)/);
+    if (match && match[1]) {
+      const numero = parseInt(match[1], 10);
+      // Valida se está no range válido (1-18)
+      if (numero >= 1 && numero <= 18) {
+        return numero;
+      }
+    }
+    
+    console.warn(`⚠️ [UPDATE_FUSAO] Não foi possível extrair número da boca de: ${bocaKey}`);
+    return null;
+  }
+
+  /**
+   * 🔗 NOVO: Extrai o número da fibra de uma string como "F1", "F3", "F144", etc.
+   * @param portNumber - String no formato "F1", "F3", "f144", etc.
+   * @returns Número da fibra (1-144) ou null se não conseguir extrair
+   */
+  private extrairNumeroFibra(portNumber: string): number | null {
+    if (!portNumber) return null;
+    
+    // Remove espaços e converte para maiúsculo
+    const port = portNumber.trim().toUpperCase();
+    
+    // Procura por padrão "F" seguido de números
+    const match = port.match(/^F(\d+)$/);
+    if (match && match[1]) {
+      const numero = parseInt(match[1], 10);
+      // Valida se está no range válido (1-144)
+      if (numero >= 1 && numero <= 144) {
+        return numero;
+      }
+    }
+    
+    console.warn(`⚠️ [UPDATE_FUSAO] Não foi possível extrair número da fibra de: ${portNumber}`);
+    return null;
+  }
+
+  /**
+   * 🔗 NOVO: Realiza fusão interna de fibras dentro da caixa
+   * @param fromCableKey - Chave do cabo origem (ex: "Boca1")
+   * @param fromPortNumber - Número da porta origem (ex: "F3")
+   * @param toCableKey - Chave do cabo destino (ex: "Boca2")
+   * @param toPortNumber - Número da porta destino (ex: "F3")
+   */
+  private realizarFusaoInterna(
+    fromCableKey: string,
+    fromPortNumber: string,
+    toCableKey: string,
+    toPortNumber: string
+  ): void {
+    try {
+      // Extrair números das bocas e fibras
+      const boca_origem = this.extrairNumeroBoca(fromCableKey);
+      const fibra_origem = this.extrairNumeroFibra(fromPortNumber);
+      const boca_destino = this.extrairNumeroBoca(toCableKey);
+      const fibra_destino = this.extrairNumeroFibra(toPortNumber);
+
+      // Validar se todos os valores foram extraídos corretamente
+      if (boca_origem === null || fibra_origem === null || boca_destino === null || fibra_destino === null) {
+        console.error('❌ [UPDATE_FUSAO] Erro ao extrair valores:', {
+          fromCableKey,
+          fromPortNumber,
+          toCableKey,
+          toPortNumber,
+          boca_origem,
+          fibra_origem,
+          boca_destino,
+          fibra_destino
+        });
+        alert('Erro ao processar conexão. Verifique os valores e tente novamente.');
+        return;
+      }
+
+      // Obter id_meta_caixa
+      const idMetaCaixaStr = this.authService.getIDmetaCaixa();
+      if (!idMetaCaixaStr) {
+        console.error('❌ [UPDATE_FUSAO] id_meta_caixa não disponível');
+        alert('Erro: ID da caixa não encontrado. Certifique-se de que a caixa está aberta.');
+        return;
+      }
+
+      const id_meta_caixa = parseInt(idMetaCaixaStr, 10);
+      if (isNaN(id_meta_caixa)) {
+        console.error('❌ [UPDATE_FUSAO] id_meta_caixa inválido:', idMetaCaixaStr);
+        alert('Erro: ID da caixa inválido.');
+        return;
+      }
+
+      console.log('🔗 [UPDATE_FUSAO] Realizando fusão:', {
+        boca_origem,
+        fibra_origem,
+        boca_destino,
+        fibra_destino,
+        id_meta_caixa
+      });
+
+      // Chamar o serviço
+      this.updateFusaoService.realizarFusao({
+        boca_origem,
+        fibra_origem,
+        boca_destino,
+        fibra_destino,
+        id_meta_caixa
+      }).subscribe({
+        next: (response) => {
+          console.log('✅ [UPDATE_FUSAO] Fusão realizada com sucesso:', response);
+          if (response.message) {
+            // Opcional: mostrar mensagem de sucesso ao usuário
+            console.log('✅', response.message);
+          }
+        },
+        error: (error) => {
+          console.error('❌ [UPDATE_FUSAO] Erro ao realizar fusão:', error);
+          alert(`Erro ao realizar fusão: ${error}`);
+        }
+      });
+
+    } catch (error) {
+      console.error('❌ [UPDATE_FUSAO] Erro inesperado:', error);
+      alert('Erro inesperado ao processar a conexão.');
+    }
+  }
 
   
   //SISTEMA============================================================================================================

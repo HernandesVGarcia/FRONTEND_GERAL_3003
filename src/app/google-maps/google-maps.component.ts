@@ -48,6 +48,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { PopInfoModalComponent } from '../pop-info-modal/pop-info-modal.component';
+import { PopEstacaoInfoModalComponent } from '../pop-estacao-info-modal/pop-estacao-info-modal.component';
 import { VisualizaDioComponent } from '../visualiza-dio/visualiza-dio.component';
 import { VisualizaCaboComponent } from '../visualiza-cabo/visualiza-cabo.component';
 import { GraphvizModalComponent } from '../graphviz-modal/graphviz-modal.component';
@@ -7853,6 +7854,13 @@ openPopInfoModal(id_meta: number|undefined) {
 
 }
 
+openPopEstacaoInfoModal(id_meta: number|undefined) {
+  const dialogRef = this.dialog.open(PopEstacaoInfoModalComponent, {
+    width: '600px',
+    data: { id_meta }
+  });
+}
+
 openVisualizaDioModal(id_meta: number, capacity?: number) {
   const dialogRef = this.dialog.open(VisualizaDioComponent, {
     width: '80vw',
@@ -8100,10 +8108,32 @@ private visualizarEstacao(): void {
     return;
   }
 
-  // TODO: Implementar visualização da estação
-  // Por enquanto, apenas mostrar informações básicas
-  const sigla = this.clickedEstacaoData.sigla || 'N/A';
-  alert(`Visualizando Estação: ${sigla}\n\nFuncionalidade de visualização será implementada em breve!`);
+  // 🆕 Obter id_meta de múltiplas fontes (prioridade: objeto estacao > marcador)
+  let idMeta: number | undefined;
+
+  if (this.clickedEstacaoData.id_meta) {
+    idMeta = Number(this.clickedEstacaoData.id_meta);
+    console.log('✅ [VISUALIZAR-ESTAÇÃO] id_meta obtido do objeto estacao:', idMeta);
+  } else {
+    const index = this.destinoPopsEst.indexOf(this.clickedEstacaoData);
+    if (index !== -1 && this.markerPopsEst[index]) {
+      const idMetaDoMarcador = this.markerPopsEst[index].get('id_meta');
+      if (idMetaDoMarcador) {
+        idMeta = Number(idMetaDoMarcador);
+        console.log('✅ [VISUALIZAR-ESTAÇÃO] id_meta obtido do marcador:', idMeta);
+      }
+    }
+  }
+
+  if (!idMeta || isNaN(idMeta) || idMeta <= 0) {
+    console.error('❌ [VISUALIZAR-ESTAÇÃO] id_meta inválido ou não encontrado:', idMeta);
+    console.error('❌ [VISUALIZAR-ESTAÇÃO] Dados da estação:', this.clickedEstacaoData);
+    alert('❌ Erro: Não foi possível identificar o ID da estação. Verifique os logs do console.');
+    this.hideContextMenu();
+    return;
+  }
+
+  this.openPopEstacaoInfoModal(idMeta);
   this.hideContextMenu();
 }
 
