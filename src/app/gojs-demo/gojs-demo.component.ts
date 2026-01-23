@@ -110,6 +110,9 @@ import { UpdateBocaXYService} from '../servico/update-boca-xy.service';
 import { UpdateFusaoService } from '../servico/update-fusao.service';
 import { AuthService } from '../servico/auth.service'; // 🏠 NOVO: Import AuthService
 import { FiberApiService } from '../servico/fiber-api.service'; // 🏠 NOVO: Import FiberApiService
+import { PlotaSplitterComponent, PlotaSplitterData, PlotaSplitterResult } from '../plota-splitter/plota-splitter.component';
+import { TiposService } from '../servico/tipos.service';
+import { InsertSplitterService, InsertSplitterRequest } from '../servico/insert-splitter.service'; // 🔀 NOVO: Import InsertSplitterService
 import { UpdateSplitterXYService} from '../servico/update-splitter-xy.service';
 import { UpdateBocaAngleService} from '../servico/update-boca-angle.service';
 import { UpdateBocaLadoService} from '../servico/update-boca-lado.service';
@@ -308,7 +311,9 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit {
     private authService: AuthService, // 🏠 NOVO: Injetar AuthService
     private fiberApiService: FiberApiService, // 🏠 NOVO: Injetar FiberApiService
     private dialog: MatDialog, // 🔀 NOVO: Injetar MatDialog para context menu
-    private updateFusaoService: UpdateFusaoService // 🔗 NOVO: Serviço para realizar fusões internas
+    private tiposService: TiposService, // 🔗 NOVO: Injetar TiposService para buscar tipos de splitter
+    private updateFusaoService: UpdateFusaoService, // 🔗 NOVO: Serviço para realizar fusões internas
+    private insertSplitterService: InsertSplitterService // 🔀 NOVO: Serviço para inserir splitter
    ) {}
 
 
@@ -552,6 +557,80 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit {
     //this.diagram.commitTransaction();
   }
 
+  /**
+   * 🔀 NOVO: Adiciona um único splitter ao diagrama após criação no banco
+   * @param splitterData Dados do splitter a ser adicionado
+   */
+  private adicionarSplitterAoDiagrama(splitterData: { 
+    id_meta: number, 
+    tipoSplitter: number, 
+    label: string, 
+    x: number, 
+    y: number 
+  }): void {
+    if (!this.diagram) {
+      console.error('❌ [ADD-SPLITTER] Diagrama não inicializado');
+      return;
+    }
+
+    console.log('🔀 [ADD-SPLITTER] Adicionando splitter ao diagrama:', splitterData);
+
+    const model = this.diagram.model as go.GraphLinksModel;
+    
+    // Mapear tipoSplitter para o componente correto
+    let splitterModelDefinition: go.ObjectData;
+    
+    switch (splitterData.tipoSplitter) {
+      case 12:
+        splitterModelDefinition = this.splitter12.getModelDefinition();
+        break;
+      case 13:
+        splitterModelDefinition = this.splitter14.getModelDefinition();
+        break;
+      case 14:
+        splitterModelDefinition = this.splitter18.getModelDefinition();
+        break;
+      case 15:
+        splitterModelDefinition = this.splitter116.getModelDefinition();
+        break;
+      default:
+        splitterModelDefinition = this.splitterDesb.getModelDefinition();
+        break;
+    }
+
+    // Arredondar coordenadas
+    const POSX = Math.round(splitterData.x);
+    const POSY = Math.round(splitterData.y);
+
+    // Criar node do splitter
+    const splitterNode: go.ObjectData = {
+      ...splitterModelDefinition,
+      key: `Splitter${splitterData.id_meta}`,
+      labelText: `${splitterData.label || 'Splitter'} (${this.servicoSplitter.getSplitterName(splitterData.tipoSplitter)})`,
+      loc: `${POSX} ${POSY}`,
+      idmeta: splitterData.id_meta,
+      tipoSplitter: splitterData.tipoSplitter,
+    };
+
+    // Adicionar ao modelo
+    model.addNodeData(splitterNode);
+
+    // Configurar propriedades do node após um pequeno delay
+    setTimeout(() => {
+      if (this.diagram) {
+        const node = this.diagram.findNodeForKey(`Splitter${splitterData.id_meta}`);
+        if (node) {
+          node.resizable = true;
+          node.rotatable = true;
+          node.movable = true;
+          node.position = new go.Point(POSX, POSY);
+          console.log('✅ [ADD-SPLITTER] Splitter adicionado e configurado no diagrama');
+        } else {
+          console.warn('⚠️ [ADD-SPLITTER] Node não encontrado após adição');
+        }
+      }
+    }, 10);
+  }
 
 //================================================================================================
 
@@ -814,12 +893,37 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit {
    * 🆕 NOVO: Configura context menu HTML customizado para splitters
    */
   private setupCustomContextMenu(): void {
-    console.log('🔀 [CUSTOM-CONTEXT] Configurando context menu HTML customizado...');
+    // 🔧 NOTA: O context menu em área em branco é tratado pelo listener do GoJS
+    // (BackgroundContextClicked) adicionado em initializeDiagram().
+    // O context menu do splitter é tratado pelo template do GoJS (contextMenu no stencil).
     
-    // Criar elemento HTML do context menu
+    // Adicionar listener para fechar o menu de área em branco ao clicar fora
+    document.addEventListener('click', () => {
+      this.hideBlankAreaContextMenu();
+    });
+    
+    console.log('🔀 [CUSTOM-CONTEXT] Context menu configurado - área em branco via GoJS listener');
+  }
+
+
+  /**
+   * 🔗 NOVO: Mostra o context menu para área em branco (criar splitter)
+   * @param x - Coordenada X da tela (para posicionar o menu)
+   * @param y - Coordenada Y da tela (para posicionar o menu)
+   * @param docX - Coordenada X do documento GoJS (para plotar o splitter)
+   * @param docY - Coordenada Y do documento GoJS (para plotar o splitter)
+   */
+  private showBlankAreaContextMenu(x: number, y: number, docX: number, docY: number): void {
+    // Remover menu anterior se existir
+    const existingMenu = document.getElementById('blank-area-context-menu');
+    if (existingMenu) {
+      document.body.removeChild(existingMenu);
+    }
+
+    // Criar novo menu
     const contextMenu = document.createElement('div');
-    contextMenu.id = 'splitter-context-menu';
-    contextMenu.className = 'splitter-context-menu';
+    contextMenu.id = 'blank-area-context-menu';
+    contextMenu.className = 'blank-area-context-menu';
     contextMenu.style.cssText = `
       position: fixed;
       background: white;
@@ -827,17 +931,17 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit {
       border-radius: 4px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.2);
       padding: 8px 0;
-      min-width: 150px;
+      min-width: 200px;
       font-family: 'Roboto', sans-serif;
       z-index: 10000;
-      display: none;
+      left: ${x}px;
+      top: ${y}px;
     `;
     
-    // Adicionar opções do menu
+    // Opções do menu
     const options = [
-      { text: 'Mapear Splitter', action: 'mapear' },
-      { text: 'Informações', action: 'info' },
-      { text: 'Configurar', action: 'config' }
+      { text: 'Criar Splitter Balanceado', action: 'criar_balanceado' },
+      { text: 'Criar Splitter Desbalanceado', action: 'criar_desbalanceado' }
     ];
     
     options.forEach(option => {
@@ -863,9 +967,9 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit {
       });
       
       menuItem.addEventListener('click', () => {
-        console.log(`🔀 [CUSTOM-CONTEXT] Opção clicada: ${option.action}`);
-        this.handleContextMenuAction(option.action);
-        this.hideCustomContextMenu();
+        console.log(`🔗 [BLANK-AREA] Opção clicada: ${option.action}`);
+        this.handleBlankAreaMenuAction(option.action, docX, docY);
+        this.hideBlankAreaContextMenu();
       });
       
       contextMenu.appendChild(menuItem);
@@ -874,103 +978,152 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit {
     // Adicionar ao body
     document.body.appendChild(contextMenu);
     
-    // Adicionar listener para botão direito no diagrama
-    if (this.diagram && this.diagram.div) {
-      this.diagram.div.addEventListener('contextmenu', (event: MouseEvent) => {
-        console.log('🔀 [CUSTOM-CONTEXT] Botão direito detectado no GoJS');
-        console.log('🔀 [CUSTOM-CONTEXT] Event target:', event.target);
-        console.log('🔀 [CUSTOM-CONTEXT] ClientX:', event.clientX, 'ClientY:', event.clientY);
-        
-        // 🔧 CORREÇÃO: Usar coordenadas relativas ao canvas
-        const canvas = event.target as HTMLCanvasElement;
-        const rect = canvas.getBoundingClientRect();
-        const x = event.clientX - rect.left;
-        const y = event.clientY - rect.top;
-        
-        console.log('🔀 [CUSTOM-CONTEXT] Coordenadas relativas ao canvas:', x, y);
-        
-        // Encontrar o objeto clicado usando coordenadas do canvas
-        const point = new go.Point(x, y);
-        const goObject = this.diagram!.findObjectAt(point);
-        
-        console.log('🔀 [CUSTOM-CONTEXT] GoObject encontrado:', goObject);
-        
-        if (goObject && goObject.part && goObject.part.data && goObject.part.data.key && goObject.part.data.key.startsWith("Splitter")) {
-          console.log('🔀 [CUSTOM-CONTEXT] Splitter clicado:', goObject.part.data);
-          event.preventDefault();
-          event.stopPropagation();
-          
-          // Salvar dados do splitter
-          this.currentSplitterData = goObject.part.data;
-          
-          // Mostrar context menu
-          this.showCustomContextMenu(event.clientX, event.clientY);
-        } else {
-          console.log('🔀 [CUSTOM-CONTEXT] Não é um splitter ou objeto não encontrado');
-          if (goObject) {
-            console.log('🔀 [CUSTOM-CONTEXT] Objeto encontrado mas não é splitter:', goObject.part?.data);
-          }
-        }
-      });
-    }
-    
-    // Adicionar listener para fechar o menu ao clicar fora
-    document.addEventListener('click', () => {
-      this.hideCustomContextMenu();
-    });
-    
-    console.log('🔀 [CUSTOM-CONTEXT] Context menu HTML customizado configurado com sucesso!');
+    console.log('🔗 [BLANK-AREA] Context menu para área em branco mostrado');
   }
 
   /**
-   * 🆕 NOVO: Mostra o context menu customizado
+   * 🔗 NOVO: Esconde o context menu de área em branco
    */
-  private showCustomContextMenu(x: number, y: number): void {
-    const contextMenu = document.getElementById('splitter-context-menu');
-    if (contextMenu) {
-      contextMenu.style.left = `${x}px`;
-      contextMenu.style.top = `${y}px`;
-      contextMenu.style.display = 'block';
-      console.log('🔀 [CUSTOM-CONTEXT] Context menu mostrado');
+  private hideBlankAreaContextMenu(): void {
+    const contextMenu = document.getElementById('blank-area-context-menu');
+    if (contextMenu && document.body.contains(contextMenu)) {
+      document.body.removeChild(contextMenu);
     }
   }
 
   /**
-   * 🆕 NOVO: Esconde o context menu customizado
+   * 🔗 NOVO: Manipula ações do context menu de área em branco
+   * @param action - Ação selecionada
+   * @param docX - Coordenada X do documento GoJS (para plotar o splitter)
+   * @param docY - Coordenada Y do documento GoJS (para plotar o splitter)
    */
-  private hideCustomContextMenu(): void {
-    const contextMenu = document.getElementById('splitter-context-menu');
-    if (contextMenu) {
-      contextMenu.style.display = 'none';
-    }
-  }
-
-  /**
-   * 🆕 NOVO: Manipula ações do context menu
-   */
-  private handleContextMenuAction(action: string): void {
-    if (!this.currentSplitterData) {
-      console.log('🔀 [CUSTOM-CONTEXT] Nenhum splitter selecionado');
-      return;
-    }
-    
-    console.log(`🔀 [CUSTOM-CONTEXT] Executando ação: ${action}`, this.currentSplitterData);
+  private handleBlankAreaMenuAction(action: string, docX: number, docY: number): void {
+    console.log(`🔗 [BLANK-AREA] Executando ação: ${action}`, { docX, docY });
     
     switch (action) {
-      case 'mapear':
-        this.abrirModalSplitter(this.currentSplitterData);
+      case 'criar_balanceado':
+        this.abrirModalSelecionarSplitter(docX, docY, 'balanceado');
         break;
-      case 'info':
-        alert(`Splitter: ${this.currentSplitterData.labelText}\nID: ${this.currentSplitterData.idmeta}\nTipo: ${this.currentSplitterData.tipoSplitter}`);
+      case 'criar_desbalanceado':
+        this.abrirModalSelecionarSplitter(docX, docY, 'desbalanceado');
         break;
-      case 'config':
-        alert('Função de configuração será implementada em breve!');
-        break;
+      default:
+        console.warn(`🔗 [BLANK-AREA] Ação desconhecida: ${action}`);
     }
   }
+  /*********************************************************************************** */
+  /**
+   * 🔗 NOVO: Abre o modal para selecionar splitter (balanceado ou desbalanceado)
+   * @param docX - Coordenada X do documento GoJS (onde o splitter será plotado)
+   * @param docY - Coordenada Y do documento GoJS (onde o splitter será plotado)
+   * @param tipo - Tipo de splitter: 'balanceado' ou 'desbalanceado'
+   */
+  private abrirModalSelecionarSplitter(docX: number, docY: number, tipo: 'balanceado' | 'desbalanceado' = 'balanceado'): void {
+    const dialogData: PlotaSplitterData = { x: docX, y: docY, tipo: tipo };
 
-  // 🆕 NOVO: Propriedade para armazenar dados do splitter atual
-  private currentSplitterData: any = null;
+    const dialogRef = this.dialog.open(PlotaSplitterComponent, {
+      width: '350px',
+      data: dialogData,
+      disableClose: false
+    });
+
+    dialogRef.afterClosed().subscribe((result: PlotaSplitterResult | undefined) => {
+      if (result && result.tipoSplitter) {
+        console.log('🔗 [BLANK-AREA] Splitter selecionado para plotar:', result.tipoSplitter);
+        console.log('🔗 [BLANK-AREA] Label:', result.label || '(sem label)');
+        console.log('🔗 [BLANK-AREA] Coordenadas do documento:', docX, docY);
+        
+        // 🔀 NOVO: Implementar plotagem do splitter usando coordenadas do documento
+        this.criarSplitter(result, docX, docY);
+      } else {
+        console.log('🔗 [BLANK-AREA] Modal cancelado ou fechado sem seleção');
+      }
+    });
+  }
+//*************************20260123************************************************************** */
+  /**
+   * 🔀 NOVO: Cria um splitter no banco de dados usando o serviço
+   * @param result Resultado do modal com tipo de splitter e label
+   * @param x Coordenada X do clique
+   * @param y Coordenada Y do clique
+   */
+  private criarSplitter(result: PlotaSplitterResult, x: number, y: number): void {
+    // Validar dados obrigatórios
+    if (!result.tipoSplitter) {
+      console.error('❌ [INSERT-SPLITTER] Tipo de splitter não fornecido');
+      alert('Erro: Tipo de splitter não fornecido.');
+      return;
+    }
+
+    // Obter ID_META_CAIXA
+    const idMetaCaixaStr = this.authService.getIDmetaCaixa();
+    if (!idMetaCaixaStr) {
+      console.error('❌ [INSERT-SPLITTER] ID_META_CAIXA não disponível');
+      alert('Erro: ID da caixa não disponível. Certifique-se de que uma caixa está aberta.');
+      return;
+    }
+    const idMetaCaixa = Number(idMetaCaixaStr);
+
+    // Obter NUMERO_CX (campo alfanumérico)
+    if (this.caixaNumerocx === 'N/A' || !this.caixaNumerocx) {
+      console.error('❌ [INSERT-SPLITTER] NUMERO_CX não disponível:', this.caixaNumerocx);
+      alert('Erro: Número da caixa não disponível.');
+      return;
+    }
+    const numeroCx = this.caixaNumerocx; // Usar como string (alfanumérico)
+
+    // Obter id_city
+    const idCity = this.authService.getIdCity();
+    if (!idCity) {
+      console.error('❌ [INSERT-SPLITTER] id_city não disponível');
+      alert('Erro: ID da cidade não disponível.');
+      return;
+    }
+
+    // Obter capacidade usando método existente
+    const capacidade = this.getCapacidadeFromTipo(result.tipoSplitter.id);
+
+    // Preparar request
+    const request: InsertSplitterRequest = {
+      CAPACIDADE: capacidade,
+      ID_META_CAIXA: idMetaCaixa,
+      NUMERO_CX: numeroCx,
+      LABEL: result.label || "", // String vazia quando não especificado
+      TIPO_SPLITTER: result.tipoSplitter.id,
+      X: x,
+      Y: y,
+      id_city: idCity,
+      id_condominio: 0 // Valor padrão conforme solicitado
+    };
+
+    console.log('🔀 [INSERT-SPLITTER] Criando splitter com dados:', request);
+
+    // Chamar serviço
+    this.insertSplitterService.inserirSplitter(request).subscribe({
+      next: (response) => {
+        console.log('✅ [INSERT-SPLITTER] Splitter criado com sucesso:', response);
+        //alert(`Splitter criado com sucesso! ID: ${response.id_meta}`);
+        
+        // 🔀 NOVO: Adicionar splitter ao diagrama imediatamente
+        if (result.tipoSplitter) {
+          this.adicionarSplitterAoDiagrama({
+            id_meta: response.id_meta,
+            tipoSplitter: result.tipoSplitter.id,
+            label: result.label || "", // String vazia quando não especificado
+            x: x,
+            y: y
+          });
+        } else {
+          console.error('❌ [INSERT-SPLITTER] tipoSplitter não disponível para adicionar ao diagrama');
+        }
+      },
+      error: (error) => {
+        console.error('❌ [INSERT-SPLITTER] Erro ao criar splitter:', error);
+        alert(`Erro ao criar splitter: ${error}`);
+      }
+    });
+  }
+
 
 
   //===============================================================================================================
@@ -3345,8 +3498,52 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
         // Atribuindo o modelo ao diagrama
         this.diagram.model = model;
 
-        
-        
+        // 🔗 NOVO: Configurar context menu após o diagrama estar pronto
+        this.setupCustomContextMenu();
+
+      //=================================detectar  click em area em branco==========================================
+      // 🔗 NOVO: Listener do GoJS para context menu click em área em branco do diagrama (aparece criar splitters)
+        this.diagram.addDiagramListener("BackgroundContextClicked", (e: go.DiagramEvent) => {
+          console.log('🔗 [BLANK-AREA] BackgroundContextClicked detectado pelo GoJS');
+          
+          // Verificar se o diagram tem div
+          if (!e.diagram.div) {
+            console.error('🔗 [BLANK-AREA] Diagram div não disponível');
+            return;
+          }
+          
+          // Obter o ponto clicado em coordenadas do documento
+          const docPoint = e.diagram.lastInput.documentPoint;
+          console.log('🔗 [BLANK-AREA] Document point:', docPoint);
+          
+          // Verificar se há alguma parte no ponto clicado
+          const part = e.diagram.findPartAt(docPoint);
+          console.log('🔗 [BLANK-AREA] Part encontrada no ponto:', part);
+          
+          // Se não há parte, é área em branco
+          if (!part) {
+            // Converter coordenadas do documento para coordenadas da view (tela)
+            const viewPoint = e.diagram.transformDocToView(docPoint);
+            console.log('🔗 [BLANK-AREA] View point:', viewPoint);
+            
+            // Obter coordenadas absolutas da tela (apenas para posicionar o menu)
+            const rect = e.diagram.div.getBoundingClientRect();
+            const screenX = rect.left + viewPoint.x;
+            const screenY = rect.top + viewPoint.y;
+            
+            // Coordenadas do documento (para plotar o splitter)
+            const docX = docPoint.x;
+            const docY = docPoint.y;
+            
+            console.log('🔗 [BLANK-AREA] Screen coordinates (menu):', screenX, screenY);
+            console.log('🔗 [BLANK-AREA] Document coordinates (splitter):', docX, docY);
+            
+            // Mostrar context menu para área em branco (passar coordenadas de tela para posição do menu e do documento para plotar)
+            this.showBlankAreaContextMenu(screenX, screenY, docX, docY);
+          } else {
+            console.log('🔗 [BLANK-AREA] Part encontrada, não é área em branco:', part.data?.key);
+          }
+        });
 
         //=================================detectar conexoes==========================================
         //=================================//=================================//======================

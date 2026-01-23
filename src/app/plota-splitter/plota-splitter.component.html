@@ -1,0 +1,55 @@
+<div class="modal-container">
+  <div class="modal-header">
+    <h2>Criar Splitter</h2>
+  </div>
+
+  <div class="modal-body">
+    <div *ngIf="loading" class="loading-container">
+      <mat-spinner diameter="40"></mat-spinner>
+      <p>Carregando tipos de splitter...</p>
+    </div>
+
+    <div *ngIf="error && !loading" class="error-container">
+      <p class="error-message">{{ error }}</p>
+      <button mat-button (click)="carregarSplitters(tipoSplitter)">Tentar Novamente</button>
+    </div>
+
+    <div *ngIf="!loading && !error">
+      <mat-form-field class="full-width">
+        <mat-label>Selecione o Splitter {{ tipoSplitter === 'balanceado' ? 'Balanceado' : 'Desbalanceado' }} *</mat-label>
+        <mat-select [(ngModel)]="selectedSplitter" name="splitter" required>
+          <mat-option *ngFor="let splitter of splittersBalanceados" [value]="splitter">
+            {{ splitter.acoplamento }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field class="full-width">
+        <mat-label>Label</mat-label>
+        <input matInput 
+               type="text" 
+               [(ngModel)]="splitterLabel" 
+               name="splitterLabel"
+               placeholder="">
+        <mat-hint>Opcional</mat-hint>
+      </mat-form-field>
+
+      <div *ngIf="selectedSplitter" class="splitter-details">
+        <h3>Detalhes do Splitter</h3>
+        <p><strong>Acoplamento:</strong> {{ selectedSplitter.acoplamento }}</p>
+        <p><strong>Perda:</strong> {{ selectedSplitter.perda_P1 }} dB</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <button mat-button (click)="onCancelar()">Cancelar</button>
+    <button 
+      mat-raised-button 
+      color="primary" 
+      (click)="onPlotar()" 
+      [disabled]="!selectedSplitter || loading">
+      Plotar
+    </button>
+  </div>
+</div>
