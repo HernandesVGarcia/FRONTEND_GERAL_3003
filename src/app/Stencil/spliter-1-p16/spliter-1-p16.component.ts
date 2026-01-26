@@ -44,7 +44,10 @@ export class Splitter116Component {
               if (contextmenu && contextmenu.data) {
                 const splitterData = contextmenu.data;
                 console.log('🔀 [SPLITTER-TEMPLATE] Excluir Splitter clicado:', splitterData);
-                alert('Função de exclusão será implementada em breve!');
+                // Disparar evento customizado para o componente pai
+                window.dispatchEvent(new CustomEvent('splitterContextMenu', { 
+                  detail: { action: 'excluir', data: splitterData } 
+                }));
               }
             }
           })

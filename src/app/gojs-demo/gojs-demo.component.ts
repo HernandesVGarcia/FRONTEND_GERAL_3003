@@ -113,6 +113,7 @@ import { FiberApiService } from '../servico/fiber-api.service'; // 🏠 NOVO: Im
 import { PlotaSplitterComponent, PlotaSplitterData, PlotaSplitterResult } from '../plota-splitter/plota-splitter.component';
 import { TiposService } from '../servico/tipos.service';
 import { InsertSplitterService, InsertSplitterRequest } from '../servico/insert-splitter.service'; // 🔀 NOVO: Import InsertSplitterService
+import { ExcluiSplitterService, ExcluiSplitterRequest } from '../servico/exclui-splitter.service'; // 🗑️ NOVO: Import ExcluiSplitterService
 import { UpdateSplitterXYService} from '../servico/update-splitter-xy.service';
 import { UpdateBocaAngleService} from '../servico/update-boca-angle.service';
 import { UpdateBocaLadoService} from '../servico/update-boca-lado.service';
@@ -313,7 +314,8 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit {
     private dialog: MatDialog, // 🔀 NOVO: Injetar MatDialog para context menu
     private tiposService: TiposService, // 🔗 NOVO: Injetar TiposService para buscar tipos de splitter
     private updateFusaoService: UpdateFusaoService, // 🔗 NOVO: Serviço para realizar fusões internas
-    private insertSplitterService: InsertSplitterService // 🔀 NOVO: Serviço para inserir splitter
+    private insertSplitterService: InsertSplitterService, // 🔀 NOVO: Serviço para inserir splitter
+    private excluiSplitterService: ExcluiSplitterService // 🗑️ NOVO: Serviço para excluir splitter
    ) {}
 
 
@@ -3292,6 +3294,9 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
               case 'mapear':
                 this.abrirModalSplitter(data);
                 break;
+              case 'excluir':
+                this.excluirSplitter(data);
+                break;
               case 'info':
                 alert(`Splitter: ${data.labelText}\nID: ${data.idmeta}\nTipo: ${data.tipoSplitter}`);
                 break;
@@ -4319,6 +4324,110 @@ espelhar(): void {
     });
   }
 
+
+  /**
+   * 🗑️ NOVO: Exclui um splitter do banco de dados e do diagrama
+   * @param splitterData Dados do splitter a ser excluído (vindo do context menu)
+   */
+  private excluirSplitter(splitterData: any): void {
+    console.log('🗑️ [EXCLUI-SPLITTER] Iniciando exclusão de splitter:', splitterData);
+
+    // Validar dados obrigatórios
+    if (!splitterData || !splitterData.idmeta) {
+      console.error('❌ [EXCLUI-SPLITTER] Dados do splitter inválidos ou idmeta não encontrado');
+      alert('Erro: Dados do splitter inválidos.');
+      return;
+    }
+
+    const idMeta = splitterData.idmeta;
+    const tipoSplitter = splitterData.tipoSplitter;
+
+    // Obter id_city
+    const idCity = this.authService.getIdCity();
+    if (!idCity) {
+      console.error('❌ [EXCLUI-SPLITTER] id_city não disponível');
+      alert('Erro: ID da cidade não disponível.');
+      return;
+    }
+
+    // Obter id_meta_cx (ID da caixa de emenda)
+    const idMetaCxStr = this.authService.getIDmetaCaixa();
+    if (!idMetaCxStr) {
+      console.error('❌ [EXCLUI-SPLITTER] id_meta_cx não disponível');
+      alert('Erro: ID da caixa não disponível.');
+      return;
+    }
+    const idMetaCx = Number(idMetaCxStr);
+    if (isNaN(idMetaCx)) {
+      console.error('❌ [EXCLUI-SPLITTER] id_meta_cx inválido:', idMetaCxStr);
+      alert('Erro: ID da caixa inválido.');
+      return;
+    }
+
+    // Obter capacidade usando método existente
+    const capacidade = this.getCapacidadeFromTipo(tipoSplitter);
+    if (!capacidade || capacidade <= 0) {
+      console.error('❌ [EXCLUI-SPLITTER] Capacidade inválida:', capacidade);
+      alert('Erro: Capacidade do splitter inválida.');
+      return;
+    }
+
+    // Confirmar exclusão com o usuário
+    const confirmacao = confirm(`Deseja realmente excluir o splitter ${splitterData.labelText || idMeta}?`);
+    if (!confirmacao) {
+      console.log('🗑️ [EXCLUI-SPLITTER] Exclusão cancelada pelo usuário');
+      return;
+    }
+
+    // Preparar request
+    const request: ExcluiSplitterRequest = {
+      id_meta: idMeta,
+      id_city: idCity,
+      id_condominio: 0, // Valor padrão
+      capacidade: capacidade,
+      id_meta_cx: idMetaCx // ID da caixa de emenda (obrigatório para decrementar contador)
+    };
+
+    console.log('🗑️ [EXCLUI-SPLITTER] Excluindo splitter com dados:', request);
+
+    // Chamar serviço
+    this.excluiSplitterService.excluirSplitter(request).subscribe({
+      next: (response) => {
+        console.log('✅ [EXCLUI-SPLITTER] Splitter excluído com sucesso:', response);
+        
+        // Remover splitter do diagrama
+        // Nota: Se chegou aqui, significa que a exclusão foi bem-sucedida na API,
+        // o que implica que o splitter não estava conectado (sem links)
+        if (this.diagram && this.diagram.model) {
+          const nodeKey = `Splitter${idMeta}`;
+          const node = this.diagram.findNodeForKey(nodeKey);
+          
+          if (node) {
+            const model = this.diagram.model as go.GraphLinksModel;
+            model.removeNodeData(node.data);
+            console.log('✅ [EXCLUI-SPLITTER] Splitter removido do diagrama');
+          } else {
+            console.warn('⚠️ [EXCLUI-SPLITTER] Node não encontrado no diagrama para remover:', nodeKey);
+          }
+        }
+
+        // Mostrar mensagem de sucesso
+        // 26/01/2025 comentado alert(`Splitter excluído com sucesso!`);
+      },
+      error: (error) => {
+        console.error('❌ [EXCLUI-SPLITTER] Erro ao excluir splitter:', error);
+        
+        // Mensagem de erro específica se o splitter estiver conectado
+        if (typeof error === 'string' && error.includes('conectado')) {
+          alert('Erro: Splitter conectado! Desconecte as fibras antes de excluir.');
+        } else if (typeof error === 'string' && error.includes('não encontrado')) {
+          alert('Erro: Splitter não encontrado.');
+        } else {
+          alert(`Erro ao excluir splitter: ${error}`);
+        }
+      }
+    });
+  }
 
   private getCapacidadeFromTipo(tipoSplitter: number): number {
     switch(tipoSplitter) {
