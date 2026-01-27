@@ -114,6 +114,7 @@ import { PlotaSplitterComponent, PlotaSplitterData, PlotaSplitterResult } from '
 import { TiposService } from '../servico/tipos.service';
 import { InsertSplitterService, InsertSplitterRequest } from '../servico/insert-splitter.service'; // 🔀 NOVO: Import InsertSplitterService
 import { ExcluiSplitterService, ExcluiSplitterRequest } from '../servico/exclui-splitter.service'; // 🗑️ NOVO: Import ExcluiSplitterService
+import { InsertLogService, InsertLogData } from '../servico/insert-log.service'; // 📝 NOVO: Import InsertLogService
 import { UpdateSplitterXYService} from '../servico/update-splitter-xy.service';
 import { UpdateBocaAngleService} from '../servico/update-boca-angle.service';
 import { UpdateBocaLadoService} from '../servico/update-boca-lado.service';
@@ -315,7 +316,8 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit {
     private tiposService: TiposService, // 🔗 NOVO: Injetar TiposService para buscar tipos de splitter
     private updateFusaoService: UpdateFusaoService, // 🔗 NOVO: Serviço para realizar fusões internas
     private insertSplitterService: InsertSplitterService, // 🔀 NOVO: Serviço para inserir splitter
-    private excluiSplitterService: ExcluiSplitterService // 🗑️ NOVO: Serviço para excluir splitter
+    private excluiSplitterService: ExcluiSplitterService, // 🗑️ NOVO: Serviço para excluir splitter
+    private insertLogService: InsertLogService // 📝 NOVO: Serviço para inserir logs
    ) {}
 
 
@@ -1117,6 +1119,31 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit {
           });
         } else {
           console.error('❌ [INSERT-SPLITTER] tipoSplitter não disponível para adicionar ao diagrama');
+        }
+
+        // 📝 NOVO: Inserir log de criação de splitter
+        const idUsuario = this.authService.getIdUser();
+        const idCityLog = this.authService.getIdCity();
+        if (idUsuario && idCityLog && result.tipoSplitter) {
+          const tipoSplitterDesc = result.tipoSplitter.acoplamento || `Tipo ${result.tipoSplitter.id}`;
+          const labelDesc = result.label || '(sem label)';
+          const descricao = `Criado Splitter: ${tipoSplitterDesc}, Capacidade: ${capacidade}, Label: ${labelDesc}, ID_META: ${response.id_meta}`;
+          
+          this.insertLogService.inserirLog({
+            id_usuario: idUsuario,
+            id_evento: 46, // ID do evento para criar splitter
+            id_city: idCityLog,
+            id_meta_objeto: idMetaCaixa,
+            descricao: descricao,
+            VERSION: 'Fiberworks WEB 1.0.0'
+          }).subscribe({
+            next: (logResponse) => {
+              console.log('✅ [INSERT-LOG] Log de criação de splitter inserido com sucesso:', logResponse);
+            },
+            error: (error) => {
+              console.error('❌ [INSERT-LOG] Erro ao inserir log de criação de splitter:', error);
+            }
+          });
         }
       },
       error: (error) => {
@@ -4325,7 +4352,7 @@ espelhar(): void {
   }
 
 
-  /**
+  /*********************************26012025********************************************
    * 🗑️ NOVO: Exclui um splitter do banco de dados e do diagrama
    * @param splitterData Dados do splitter a ser excluído (vindo do context menu)
    */
@@ -4409,6 +4436,30 @@ espelhar(): void {
           } else {
             console.warn('⚠️ [EXCLUI-SPLITTER] Node não encontrado no diagrama para remover:', nodeKey);
           }
+        }
+
+        // 📝 NOVO: Inserir log de exclusão de splitter
+        const idUsuario = this.authService.getIdUser();
+        const idCityLog = this.authService.getIdCity();
+        if (idUsuario && idCityLog) {
+          const labelDesc = splitterData.labelText || '(sem label)';
+          const descricao = `Excluido Splitter: ${labelDesc},  Capacidade: ${capacidade}, ID_META: ${idMeta}`;
+          
+          this.insertLogService.inserirLog({
+            id_usuario: idUsuario,
+            id_evento: 47, // ID do evento para excluir splitter
+            id_city: idCityLog,
+            id_meta_objeto: idMetaCx,
+            descricao: descricao,
+            VERSION: 'Fiberworks WEB 1.0.0'
+          }).subscribe({
+            next: (logResponse) => {
+              console.log('✅ [INSERT-LOG] Log de exclusão de splitter inserido com sucesso:', logResponse);
+            },
+            error: (error) => {
+              console.error('❌ [INSERT-LOG] Erro ao inserir log de exclusão de splitter:', error);
+            }
+          });
         }
 
         // Mostrar mensagem de sucesso
