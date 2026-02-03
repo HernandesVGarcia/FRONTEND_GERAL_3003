@@ -108,6 +108,13 @@ import { GojsDropComponent } from '../gojs-drop/gojs-drop.component';
 import { PopClienteService } from '../servico/pop-cliente.service';
 import { UpdateBocaXYService} from '../servico/update-boca-xy.service';
 import { UpdateFusaoService } from '../servico/update-fusao.service';
+import { UpdateExcluiFusaoService, ExcluiFusaoRequest } from '../servico/update-exclui-fusao.service'; // 🗑️ NOVO: Import UpdateExcluiFusaoService
+import { UpdateFusaoFibraEntradaSPService, UpdateFusaoFibraEntradaSPRequest } from '../servico/update-fusao-fibra-entradaSP.service'; // 🔗 NOVO: Import UpdateFusaoFibraEntradaSPService
+import { UpdateExcluiFusaoFibraEntradaSPService, ExcluiFusaoFibraEntradaSPRequest, ExcluiFusaoFibraEntradaSPResponse } from '../servico/update-exclui-fusao-fibra-entradaSP.service'; // 🗑️ NOVO: Import UpdateExcluiFusaoFibraEntradaSPService
+import { UpdateFusaoFibraSaidaSPService, UpdateFusaoFibraSaidaSPRequest } from '../servico/update-fusao-fibra-saidaSP.service'; // 🔗 NOVO: Import UpdateFusaoFibraSaidaSPService
+import { UpdateExcluiFusaoFibraSaidaSPService, ExcluiFusaoFibraSaidaSPRequest, ExcluiFusaoFibraSaidaSPResponse } from '../servico/update-exclui-fusao-fibra-saidaSP.service'; // 🗑️ NOVO: Import UpdateExcluiFusaoFibraSaidaSPService
+import { UpdateFusaoSaidaEntradaSPService, UpdateFusaoSaidaEntradaSPRequest } from '../servico/update-fusao-saida-entradaSP.service'; // 🔗 NOVO: Import UpdateFusaoSaidaEntradaSPService
+import { UpdateExcluiFusaoSaidaEntradaSPService, ExcluiFusaoSaidaEntradaSPRequest, ExcluiFusaoSaidaEntradaSPResponse } from '../servico/update-exclui-fusao-saida-entradaSP.service'; // 🗑️ NOVO: Import UpdateExcluiFusaoSaidaEntradaSPService
 import { AuthService } from '../servico/auth.service'; // 🏠 NOVO: Import AuthService
 import { FiberApiService } from '../servico/fiber-api.service'; // 🏠 NOVO: Import FiberApiService
 import { PlotaSplitterComponent, PlotaSplitterData, PlotaSplitterResult } from '../plota-splitter/plota-splitter.component';
@@ -276,7 +283,8 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit {
   
   // Adicionar propriedade para armazenar a referência do handler
   private handleSplitterContextMenu: ((event: any) => void) | null = null;
-  
+  private handleLinkContextMenu!: (event: any) => void;
+
   // Adicionar flag para evitar múltiplas chamadas
   private modalSplitterOpen = false;
   
@@ -288,6 +296,8 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit {
   
   // Flag global para controlar se o listener já foi adicionado
   private static globalListenerAdded = false;
+  // Flag para listener do context menu de links (evita múltiplas chamadas ao excluir fusão)
+  private static linkContextMenuListenerAdded = false;
   
   constructor(
      public dialogRef: MatDialogRef<GoJSDemoComponent>,
@@ -315,6 +325,13 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit {
     private dialog: MatDialog, // 🔀 NOVO: Injetar MatDialog para context menu
     private tiposService: TiposService, // 🔗 NOVO: Injetar TiposService para buscar tipos de splitter
     private updateFusaoService: UpdateFusaoService, // 🔗 NOVO: Serviço para realizar fusões internas
+    private updateExcluiFusaoService: UpdateExcluiFusaoService, // 🗑️ NOVO: Serviço para excluir fusões
+    private updateFusaoFibraEntradaSPService: UpdateFusaoFibraEntradaSPService, // 🔗 NOVO: Serviço para fusão cabo-entrada de splitter
+    private updateExcluiFusaoFibraEntradaSPService: UpdateExcluiFusaoFibraEntradaSPService, // 🗑️ NOVO: Serviço para excluir fusão cabo-entrada de splitter
+    private updateFusaoFibraSaidaSPService: UpdateFusaoFibraSaidaSPService, // 🔗 NOVO: Serviço para fusão cabo-saída de splitter
+    private updateExcluiFusaoFibraSaidaSPService: UpdateExcluiFusaoFibraSaidaSPService, // 🗑️ NOVO: Serviço para excluir fusão cabo-saída de splitter
+    private updateFusaoSaidaEntradaSPService: UpdateFusaoSaidaEntradaSPService, // 🔗 NOVO: Serviço para fusão splitter-splitter (saída-entrada)
+    private updateExcluiFusaoSaidaEntradaSPService: UpdateExcluiFusaoSaidaEntradaSPService, // 🗑️ NOVO: Serviço para excluir fusão splitter-splitter (saída-entrada)
     private insertSplitterService: InsertSplitterService, // 🔀 NOVO: Serviço para inserir splitter
     private excluiSplitterService: ExcluiSplitterService, // 🗑️ NOVO: Serviço para excluir splitter
     private insertLogService: InsertLogService // 📝 NOVO: Serviço para inserir logs
@@ -944,8 +961,8 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit {
     
     // Opções do menu
     const options = [
-      { text: 'Criar Splitter Balanceado', action: 'criar_balanceado' },
-      { text: 'Criar Splitter Desbalanceado', action: 'criar_desbalanceado' }
+      { text: ' 🔀 Criar Splitter Balanceado', action: 'criar_balanceado' },
+      { text: ' 🔀 Criar Splitter Desbalanceado', action: 'criar_desbalanceado' }
     ];
     
     options.forEach(option => {
@@ -3315,14 +3332,14 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
           console.log('🔀 [GLOBAL] Adicionando listener splitterContextMenu pela primeira vez');
           
           this.handleSplitterContextMenu = (event: any) => {
-            const { action, data } = event.detail;
+            const { action, data, node: nodeRef } = event.detail;
             
             switch (action) {
               case 'mapear':
                 this.abrirModalSplitter(data);
                 break;
               case 'excluir':
-                this.excluirSplitter(data);
+                this.excluirSplitter(data, nodeRef);
                 break;
               case 'info':
                 alert(`Splitter: ${data.labelText}\nID: ${data.idmeta}\nTipo: ${data.tipoSplitter}`);
@@ -3489,7 +3506,109 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
             // Adicione validação de conexão para respeitar os limites
             relinkableFrom: true,
             relinkableTo: true,
-            
+            contextMenu: go.GraphObject.build("ContextMenu", {
+              alignment: go.Spot.Left,
+              alignmentFocus: go.Spot.Right
+            })
+              .add(
+                go.GraphObject.build("ContextMenuButton", {
+                  click: (e, obj) => {
+                    // Tentar acessar o link de diferentes formas
+                    let link: go.Link | null = null;
+                    
+                    // Método 1: obj.part pode ser o ContextMenu, então obj.part.part seria o Link
+                    if (obj.part && obj.part.part instanceof go.Link) {
+                      link = obj.part.part as go.Link;
+                    }
+                    // Método 2: Tentar através do diagram selection
+                    else if (e.diagram && e.diagram.selection.first() instanceof go.Link) {
+                      link = e.diagram.selection.first() as go.Link;
+                    }
+                    // Método 3: Tentar obj.part diretamente
+                    else if (obj.part instanceof go.Link) {
+                      link = obj.part as go.Link;
+                    }
+                    
+                    if (link && link.fromNode && link.toNode) {
+                      const fromNode = link.fromNode;
+                      const toNode = link.toNode;
+                      const fromPort = link.fromPort;
+                      const toPort = link.toPort;
+                      
+                      if (fromNode && toNode && fromPort && toPort) {
+                        const fromCableKey = fromNode.data.key;
+                        const toCableKey = toNode.data.key;
+                        const fromPortId = fromPort.portId;
+                        const toPortId = toPort.portId;
+                        
+                        // Detectar tipo de conexão usando a função existente
+                        const tipoConexao = this.detectarTipoConexao(fromCableKey, fromPortId, toCableKey, toPortId);
+                        
+                        // Determinar tipo de conexão e mensagem de confirmação
+                        let mensagemConfirmacao = '';
+                        let podeExcluir = false;
+                        
+                        if (tipoConexao === 'cabo-cabo') {
+                          // Fusão cabo-cabo
+                          mensagemConfirmacao = `Deseja realmente excluir a fusão?\n\n` +
+                            `Cabo: ${fromCableKey} - ${fromPortId} <-----X-----> Cabo: ${toCableKey} - ${toPortId}`;
+                          podeExcluir = true;
+                        } else if (tipoConexao === 'cabo-splitter' || tipoConexao === 'splitter-cabo') {
+                          // Fusão cabo-splitter (entrada)
+                          const caboKey = tipoConexao === 'cabo-splitter' ? fromCableKey : toCableKey;
+                          const caboPort = tipoConexao === 'cabo-splitter' ? fromPortId : toPortId;
+                          const splitterKey = tipoConexao === 'cabo-splitter' ? toCableKey : fromCableKey;
+                          mensagemConfirmacao = `Deseja realmente excluir a fusão?\n\n` +
+                            `Cabo: ${caboKey} - ${caboPort} <-----X----->  ${splitterKey} - ENTRADA`;
+                          podeExcluir = true;
+                        } else if (tipoConexao === 'cabo-saida-splitter' || tipoConexao === 'saida-splitter-cabo') {
+                          // Fusão cabo-saída de splitter
+                          const caboKey = tipoConexao === 'cabo-saida-splitter' ? fromCableKey : toCableKey;
+                          const caboPort = tipoConexao === 'cabo-saida-splitter' ? fromPortId : toPortId;
+                          const splitterKey = tipoConexao === 'cabo-saida-splitter' ? toCableKey : fromCableKey;
+                          const saidaPort = tipoConexao === 'cabo-saida-splitter' ? toPortId : fromPortId;
+                          mensagemConfirmacao = `Deseja realmente excluir a fusão?\n\n` +
+                            `Cabo: ${caboKey} - ${caboPort} <-----X----->  ${splitterKey} - ${saidaPort}`;
+                          podeExcluir = true;
+                        } else if (tipoConexao === 'saida-entrada-splitter') {
+                          // Fusão splitter-splitter (saída-entrada)
+                          mensagemConfirmacao = `Deseja realmente excluir a fusão?\n\n` +
+                            `Splitter: ${fromCableKey} - ${fromPortId} <-----X----->  Splitter: ${toCableKey} - ${toPortId}`;
+                          podeExcluir = true;
+                        } else {
+                          // Outros tipos de conexão não suportados
+                          mensagemConfirmacao = 'Exclusão de fusão não suportada.';
+                          podeExcluir = false;
+                        }
+                        
+                        if (podeExcluir) {
+                          const confirmacao = confirm(mensagemConfirmacao);
+                          
+                          if (confirmacao) {
+                            // Disparar evento customizado para o componente processar
+                            window.dispatchEvent(new CustomEvent('linkContextMenu', { 
+                              detail: { 
+                                action: 'excluir', 
+                                link: link,
+                                fromCableKey: fromCableKey,
+                                fromPortId: fromPortId,
+                                toCableKey: toCableKey,
+                                toPortId: toPortId
+                              } 
+                            }));
+                          }
+                        } else {
+                          alert(mensagemConfirmacao);
+                        }
+                      }
+                    }
+                  }
+                })
+                  .add(new go.TextBlock(" ❌   Excluir Fusão", { 
+                    textAlign: "left",
+                    alignment: go.Spot.Left
+                  }))
+              )
           })
           .add(
             new go.Shape({
@@ -3621,6 +3740,25 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
 
           }
         }  );
+
+        // 🗑️ NOVO: Listener para context menu de links (exclusão de fusão)
+        // Adicionar apenas UMA VEZ para evitar múltiplas chamadas (ex.: 6x API + 6x log ao excluir fusão saida-entrada-splitter)
+        if (!GoJSDemoComponent.linkContextMenuListenerAdded) {
+          this.handleLinkContextMenu = (event: any) => {
+            const { action, link, fromCableKey, fromPortId, toCableKey, toPortId } = event.detail;
+            if (action === 'excluir' && link) {
+              this.excluirFusaoInterna(
+                fromCableKey,
+                fromPortId,
+                toCableKey,
+                toPortId,
+                link
+              );
+            }
+          };
+          window.addEventListener('linkContextMenu', this.handleLinkContextMenu);
+          GoJSDemoComponent.linkContextMenuListenerAdded = true;
+        }
 
         
 
@@ -3761,11 +3899,86 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
   }
 
   /**
+   * 🔗 NOVO: Extrai o ID do splitter de uma string como "Splitter764666"
+   * @param splitterKey - String no formato "Splitter764666"
+   * @returns ID do splitter ou null se não conseguir extrair
+   */
+  private extrairIdMetaSplitter(splitterKey: string): number | null {
+    if (!splitterKey) return null;
+    
+    const key = splitterKey.trim();
+    
+    // Verificar se começa com "Splitter"
+    if (key.startsWith('Splitter')) {
+      const idStr = key.replace('Splitter', '');
+      const id = parseInt(idStr, 10);
+      
+      if (!isNaN(id) && id > 0) {
+        return id;
+      }
+    }
+    
+    console.warn(`⚠️ [FUSAO-ENTRADA-SP] Não foi possível extrair ID do splitter de: ${splitterKey}`);
+    return null;
+  }
+
+  /**
+   * 🔗 NOVO: Detecta o tipo de conexão baseado nas keys e portas
+   * @param fromCableKey - Chave do nó origem (ex: "Boca1" ou "Splitter764666")
+   * @param fromPortId - ID da porta origem (ex: "F1" ou "ENTRADA")
+   * @param toCableKey - Chave do nó destino (ex: "Boca2" ou "Splitter764666")
+   * @param toPortId - ID da porta destino (ex: "F2" ou "ENTRADA")
+   * @returns Tipo de conexão: 'cabo-cabo' | 'cabo-splitter' | 'splitter-cabo'
+   */
+  private detectarTipoConexao(
+    fromCableKey: string,
+    fromPortId: string,
+    toCableKey: string,
+    toPortId: string
+  ): 'cabo-cabo' | 'cabo-splitter' | 'splitter-cabo' | 'cabo-saida-splitter' | 'saida-splitter-cabo' | 'saida-entrada-splitter' {
+    const fromIsSplitter = fromCableKey.startsWith('Splitter');
+    const toIsSplitter = toCableKey.startsWith('Splitter');
+    const fromIsEntrada = fromPortId === 'ENTRADA';
+    const toIsEntrada = toPortId === 'ENTRADA';
+    const fromIsSaida = fromIsSplitter && !fromIsEntrada && fromPortId.startsWith('F');
+    const toIsSaida = toIsSplitter && !toIsEntrada && toPortId.startsWith('F');
+
+    // Caso 1: Splitter origem com saída (F1, F2, etc.) E destino é splitter com ENTRADA → saida-entrada-splitter
+    // IMPORTANTE: Verificar ANTES dos casos mais genéricos
+    if (fromIsSaida && toIsSplitter && toIsEntrada) {
+      return 'saida-entrada-splitter';
+    }
+
+    // Caso 2: Splitter origem com ENTRADA → splitter-cabo
+    if (fromIsSplitter && fromIsEntrada) {
+      return 'splitter-cabo';
+    }
+
+    // Caso 3: Splitter destino com ENTRADA → cabo-splitter
+    if (toIsSplitter && toIsEntrada) {
+      return 'cabo-splitter';
+    }
+
+    // Caso 4: Splitter origem com saída (F1, F2, etc.) → saida-splitter-cabo
+    if (fromIsSaida) {
+      return 'saida-splitter-cabo';
+    }
+
+    // Caso 5: Splitter destino com saída (F1, F2, etc.) → cabo-saida-splitter
+    if (toIsSaida) {
+      return 'cabo-saida-splitter';
+    }
+
+    // Caso padrão: cabo-cabo
+    return 'cabo-cabo';
+  }
+
+  /**
    * 🔗 NOVO: Realiza fusão interna de fibras dentro da caixa
-   * @param fromCableKey - Chave do cabo origem (ex: "Boca1")
-   * @param fromPortNumber - Número da porta origem (ex: "F3")
-   * @param toCableKey - Chave do cabo destino (ex: "Boca2")
-   * @param toPortNumber - Número da porta destino (ex: "F3")
+   * @param fromCableKey - Chave do cabo origem (ex: "Boca1" ou "Splitter764666")
+   * @param fromPortNumber - Número da porta origem (ex: "F3" ou "ENTRADA")
+   * @param toCableKey - Chave do cabo destino (ex: "Boca2" ou "Splitter764666")
+   * @param toPortNumber - Número da porta destino (ex: "F3" ou "ENTRADA")
    */
   private realizarFusaoInterna(
     fromCableKey: string,
@@ -3774,6 +3987,33 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
     toPortNumber: string
   ): void {
     try {
+      // Detectar tipo de conexão
+      const tipoConexao = this.detectarTipoConexao(fromCableKey, fromPortNumber, toCableKey, toPortNumber);
+      
+      console.log('🔗 [FUSAO] Tipo de conexão detectado:', tipoConexao, {
+        origem: `${fromCableKey}:${fromPortNumber}`,
+        destino: `${toCableKey}:${toPortNumber}`
+      });
+
+      // Se for conexão cabo-splitter ou splitter-cabo (entrada), usar serviço específico
+      if (tipoConexao === 'cabo-splitter' || tipoConexao === 'splitter-cabo') {
+        this.realizarFusaoCaboSplitter(fromCableKey, fromPortNumber, toCableKey, toPortNumber, tipoConexao);
+        return;
+      }
+
+      // Se for conexão cabo-saida-splitter ou saida-splitter-cabo, usar serviço específico
+      if (tipoConexao === 'cabo-saida-splitter' || tipoConexao === 'saida-splitter-cabo') {
+        this.realizarFusaoCaboSaidaSplitter(fromCableKey, fromPortNumber, toCableKey, toPortNumber, tipoConexao);
+        return;
+      }
+
+      // Se for conexão saida-entrada-splitter, usar serviço específico
+      if (tipoConexao === 'saida-entrada-splitter') {
+        this.realizarFusaoSaidaEntradaSplitter(fromCableKey, fromPortNumber, toCableKey, toPortNumber);
+        return;
+      }
+
+      // Caso contrário, usar serviço cabo-cabo existente
       // Extrair números das bocas e fibras
       const boca_origem = this.extrairNumeroBoca(fromCableKey);
       const fibra_origem = this.extrairNumeroFibra(fromPortNumber);
@@ -3833,6 +4073,29 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
             // Opcional: mostrar mensagem de sucesso ao usuário
             console.log('✅', response.message);
           }
+
+          // 📝 NOVO: Inserir log de fusão cabo-cabo
+          const idUsuario = this.authService.getIdUser();
+          const idCityLog = this.authService.getIdCity();
+          if (idUsuario && idCityLog) {
+            const descricao = `Fusão Caixa: Boca ${boca_origem} - Fibra ${fibra_origem} -> Boca ${boca_destino} - Fibra ${fibra_destino}`;
+            
+            this.insertLogService.inserirLog({
+              id_usuario: idUsuario,
+              id_evento: 33, // ID do evento para fusão caixa
+              id_city: idCityLog,
+              id_meta_objeto: id_meta_caixa,
+              descricao: descricao,
+              VERSION: 'Fiberworks WEB 1.0.0'
+            }).subscribe({
+              next: (logResponse) => {
+                console.log('✅ [INSERT-LOG] Log de fusão cabo-cabo inserido com sucesso:', logResponse);
+              },
+              error: (error) => {
+                console.error('❌ [INSERT-LOG] Erro ao inserir log de fusão cabo-cabo:', error);
+              }
+            });
+          }
         },
         error: (error) => {
           console.error('❌ [UPDATE_FUSAO] Erro ao realizar fusão:', error);
@@ -3843,6 +4106,958 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
     } catch (error) {
       console.error('❌ [UPDATE_FUSAO] Erro inesperado:', error);
       alert('Erro inesperado ao processar a conexão.');
+    }
+  }
+
+  /**
+   * 🔗 NOVO: Realiza fusão de cabo para entrada de splitter
+   * @param fromCableKey - Chave do nó origem (ex: "Boca1" ou "Splitter764666")
+   * @param fromPortNumber - Número da porta origem (ex: "F3" ou "ENTRADA")
+   * @param toCableKey - Chave do nó destino (ex: "Boca2" ou "Splitter764666")
+   * @param toPortNumber - Número da porta destino (ex: "F3" ou "ENTRADA")
+   * @param tipoConexao - Tipo de conexão: 'cabo-splitter' ou 'splitter-cabo'
+   */
+  private realizarFusaoCaboSplitter(
+    fromCableKey: string,
+    fromPortNumber: string,
+    toCableKey: string,
+    toPortNumber: string,
+    tipoConexao: 'cabo-splitter' | 'splitter-cabo'
+  ): void {
+    try {
+      let idMetaSplitter: number | null = null;
+      let boca: number | null = null;
+      let fibra: number | null = null;
+
+      if (tipoConexao === 'cabo-splitter') {
+        // Cabo origem, Splitter destino
+        idMetaSplitter = this.extrairIdMetaSplitter(toCableKey);
+        boca = this.extrairNumeroBoca(fromCableKey);
+        fibra = this.extrairNumeroFibra(fromPortNumber);
+      } else if (tipoConexao === 'splitter-cabo') {
+        // Splitter origem, Cabo destino
+        idMetaSplitter = this.extrairIdMetaSplitter(fromCableKey);
+        boca = this.extrairNumeroBoca(toCableKey);
+        fibra = this.extrairNumeroFibra(toPortNumber);
+      }
+
+      // Validar valores extraídos
+      if (idMetaSplitter === null || boca === null || fibra === null) {
+        console.error('❌ [FUSAO-ENTRADA-SP] Erro ao extrair valores:', {
+          fromCableKey,
+          fromPortNumber,
+          toCableKey,
+          toPortNumber,
+          tipoConexao,
+          idMetaSplitter,
+          boca,
+          fibra
+        });
+        alert('Erro ao processar conexão cabo-splitter. Verifique os valores e tente novamente.');
+        return;
+      }
+
+      // Obter id_meta_caixa
+      const idMetaCaixaStr = this.authService.getIDmetaCaixa();
+      if (!idMetaCaixaStr) {
+        console.error('❌ [FUSAO-ENTRADA-SP] id_meta_caixa não disponível');
+        alert('Erro: ID da caixa não encontrado. Certifique-se de que a caixa está aberta.');
+        return;
+      }
+
+      const id_meta_caixa = parseInt(idMetaCaixaStr, 10);
+      if (isNaN(id_meta_caixa)) {
+        console.error('❌ [FUSAO-ENTRADA-SP] id_meta_caixa inválido:', idMetaCaixaStr);
+        alert('Erro: ID da caixa inválido.');
+        return;
+      }
+
+      console.log('🔗 [FUSAO-ENTRADA-SP] Realizando fusão cabo-entrada de splitter:', {
+        id_meta_splitter: idMetaSplitter,
+        boca,
+        fibra,
+        id_meta_caixa,
+        tipoConexao
+      });
+
+      // Preparar request
+      const request: UpdateFusaoFibraEntradaSPRequest = {
+        id_meta_splitter: idMetaSplitter,
+        boca: boca,
+        fibra: fibra,
+        id_meta_caixa: id_meta_caixa
+      };
+
+      // Chamar o serviço
+      this.updateFusaoFibraEntradaSPService.realizarFusao(request).subscribe({
+        next: (response) => {
+          console.log('✅ [FUSAO-ENTRADA-SP] Fusão cabo-entrada de splitter realizada com sucesso:', response);
+          if (response.message) {
+            console.log('✅', response.message);
+          }
+
+          // 📝 NOVO: Inserir log de fusão cabo-entrada splitter
+          const idUsuario = this.authService.getIdUser();
+          const idCityLog = this.authService.getIdCity();
+          if (idUsuario && idCityLog) {
+            const descricao = `Fusão Caixa: Boca ${boca} - Fibra ${fibra} -> Splitter ${idMetaSplitter} (Entrada)`;
+            
+            this.insertLogService.inserirLog({
+              id_usuario: idUsuario,
+              id_evento: 33, // ID do evento para fusão caixa
+              id_city: idCityLog,
+              id_meta_objeto: id_meta_caixa,
+              descricao: descricao,
+              VERSION: 'Fiberworks WEB 1.0.0'
+            }).subscribe({
+              next: (logResponse) => {
+                console.log('✅ [INSERT-LOG] Log de fusão cabo-entrada splitter inserido com sucesso:', logResponse);
+              },
+              error: (error) => {
+                console.error('❌ [INSERT-LOG] Erro ao inserir log de fusão cabo-entrada splitter:', error);
+              }
+            });
+          }
+        },
+        error: (error) => {
+          console.error('❌ [FUSAO-ENTRADA-SP] Erro ao realizar fusão cabo-entrada de splitter:', error);
+          alert(`Erro ao realizar fusão cabo-entrada de splitter: ${error}`);
+        }
+      });
+
+    } catch (error) {
+      console.error('❌ [FUSAO-ENTRADA-SP] Erro inesperado:', error);
+      alert('Erro inesperado ao processar a conexão cabo-splitter.');
+    }
+  }
+
+  /**
+   * 🔗 NOVO: Realiza fusão de cabo para saída de splitter
+   * @param fromCableKey - Chave do nó origem (ex: "Boca1" ou "Splitter764666")
+   * @param fromPortNumber - Número da porta origem (ex: "F3" ou "F1")
+   * @param toCableKey - Chave do nó destino (ex: "Boca2" ou "Splitter764666")
+   * @param toPortNumber - Número da porta destino (ex: "F3" ou "F1")
+   * @param tipoConexao - Tipo de conexão: 'cabo-saida-splitter' ou 'saida-splitter-cabo'
+   */
+  private realizarFusaoCaboSaidaSplitter(
+    fromCableKey: string,
+    fromPortNumber: string,
+    toCableKey: string,
+    toPortNumber: string,
+    tipoConexao: 'cabo-saida-splitter' | 'saida-splitter-cabo'
+  ): void {
+    try {
+      let idMetaSplitter: number | null = null;
+      let saidaSplitter: number | null = null;
+      let boca: number | null = null;
+      let fibra: number | null = null;
+
+      if (tipoConexao === 'cabo-saida-splitter') {
+        // Cabo origem, Splitter destino (saída)
+        idMetaSplitter = this.extrairIdMetaSplitter(toCableKey);
+        saidaSplitter = this.extrairNumeroFibra(toPortNumber); // F1 → 1, F2 → 2, etc.
+        boca = this.extrairNumeroBoca(fromCableKey);
+        fibra = this.extrairNumeroFibra(fromPortNumber);
+      } else if (tipoConexao === 'saida-splitter-cabo') {
+        // Splitter origem (saída), Cabo destino
+        idMetaSplitter = this.extrairIdMetaSplitter(fromCableKey);
+        saidaSplitter = this.extrairNumeroFibra(fromPortNumber); // F1 → 1, F2 → 2, etc.
+        boca = this.extrairNumeroBoca(toCableKey);
+        fibra = this.extrairNumeroFibra(toPortNumber);
+      }
+
+      // Validar valores extraídos
+      if (idMetaSplitter === null || saidaSplitter === null || boca === null || fibra === null) {
+        console.error('❌ [FUSAO-SAIDA-SP] Erro ao extrair valores:', {
+          fromCableKey,
+          fromPortNumber,
+          toCableKey,
+          toPortNumber,
+          tipoConexao,
+          idMetaSplitter,
+          saidaSplitter,
+          boca,
+          fibra
+        });
+        alert('Erro ao processar conexão cabo-saída de splitter. Verifique os valores e tente novamente.');
+        return;
+      }
+
+      // Obter id_meta_caixa
+      const idMetaCaixaStr = this.authService.getIDmetaCaixa();
+      if (!idMetaCaixaStr) {
+        console.error('❌ [FUSAO-SAIDA-SP] id_meta_caixa não disponível');
+        alert('Erro: ID da caixa não encontrado. Certifique-se de que a caixa está aberta.');
+        return;
+      }
+
+      const id_meta_caixa = parseInt(idMetaCaixaStr, 10);
+      if (isNaN(id_meta_caixa)) {
+        console.error('❌ [FUSAO-SAIDA-SP] id_meta_caixa inválido:', idMetaCaixaStr);
+        alert('Erro: ID da caixa inválido.');
+        return;
+      }
+
+      console.log('🔗 [FUSAO-SAIDA-SP] Realizando fusão cabo-saída de splitter:', {
+        id_meta_splitter: idMetaSplitter,
+        saida_splitter: saidaSplitter,
+        boca,
+        fibra,
+        id_meta_caixa,
+        tipoConexao
+      });
+
+      // Preparar request
+      const request: UpdateFusaoFibraSaidaSPRequest = {
+        id_meta_splitter: idMetaSplitter,
+        saida_splitter: saidaSplitter,
+        boca: boca,
+        fibra: fibra,
+        id_meta_caixa: id_meta_caixa
+      };
+
+      // Chamar o serviço
+      this.updateFusaoFibraSaidaSPService.realizarFusao(request).subscribe({
+        next: (response) => {
+          console.log('✅ [FUSAO-SAIDA-SP] Fusão cabo-saída de splitter realizada com sucesso:', response);
+          if (response.message) {
+            console.log('✅', response.message);
+          }
+
+          // 📝 NOVO: Inserir log de fusão cabo-saída splitter
+          const idUsuario = this.authService.getIdUser();
+          const idCityLog = this.authService.getIdCity();
+          if (idUsuario && idCityLog) {
+            const descricao = `Fusão Caixa: Boca ${boca} - Fibra ${fibra} -> Splitter ${idMetaSplitter} (Saída ${saidaSplitter})`;
+            
+            this.insertLogService.inserirLog({
+              id_usuario: idUsuario,
+              id_evento: 33, // ID do evento para fusão caixa
+              id_city: idCityLog,
+              id_meta_objeto: id_meta_caixa,
+              descricao: descricao,
+              VERSION: 'Fiberworks WEB 1.0.0'
+            }).subscribe({
+              next: (logResponse) => {
+                console.log('✅ [INSERT-LOG] Log de fusão cabo-saída splitter inserido com sucesso:', logResponse);
+              },
+              error: (error) => {
+                console.error('❌ [INSERT-LOG] Erro ao inserir log de fusão cabo-saída splitter:', error);
+              }
+            });
+          }
+        },
+        error: (error) => {
+          console.error('❌ [FUSAO-SAIDA-SP] Erro ao realizar fusão cabo-saída de splitter:', error);
+          alert(`Erro ao realizar fusão cabo-saída de splitter: ${error}`);
+        }
+      });
+
+    } catch (error) {
+      console.error('❌ [FUSAO-SAIDA-SP] Erro inesperado:', error);
+      alert('Erro inesperado ao processar a conexão cabo-saída de splitter.');
+    }
+  }
+
+  /**
+   * 🔗 NOVO: Realiza fusão de saída de splitter para entrada de outro splitter
+   * @param fromCableKey - Chave do splitter origem (ex: "Splitter764698")
+   * @param fromPortNumber - Número da porta origem (ex: "F8")
+   * @param toCableKey - Chave do splitter destino (ex: "Splitter764666")
+   * @param toPortNumber - Número da porta destino (ex: "ENTRADA")
+   */
+  private realizarFusaoSaidaEntradaSplitter(
+    fromCableKey: string,
+    fromPortNumber: string,
+    toCableKey: string,
+    toPortNumber: string
+  ): void {
+    try {
+      // Extrair dados
+      const idMetaSplitterS = this.extrairIdMetaSplitter(fromCableKey);
+      const saidaSplitter = this.extrairNumeroFibra(fromPortNumber); // F8 → 8
+      const idMetaSplitterE = this.extrairIdMetaSplitter(toCableKey);
+
+      // Validar valores extraídos
+      if (idMetaSplitterS === null || saidaSplitter === null || idMetaSplitterE === null) {
+        console.error('❌ [FUSAO-SAIDA-ENTRADA-SP] Erro ao extrair valores:', {
+          fromCableKey,
+          fromPortNumber,
+          toCableKey,
+          toPortNumber,
+          idMetaSplitterS,
+          saidaSplitter,
+          idMetaSplitterE
+        });
+        alert('Erro ao processar conexão splitter-splitter (saída-entrada). Verifique os valores e tente novamente.');
+        return;
+      }
+
+      // Obter id_meta_caixa
+      const idMetaCaixaStr = this.authService.getIDmetaCaixa();
+      if (!idMetaCaixaStr) {
+        console.error('❌ [FUSAO-SAIDA-ENTRADA-SP] id_meta_caixa não disponível');
+        alert('Erro: ID da caixa não encontrado. Certifique-se de que a caixa está aberta.');
+        return;
+      }
+
+      const id_meta_caixa = parseInt(idMetaCaixaStr, 10);
+      if (isNaN(id_meta_caixa)) {
+        console.error('❌ [FUSAO-SAIDA-ENTRADA-SP] id_meta_caixa inválido:', idMetaCaixaStr);
+        alert('Erro: ID da caixa inválido.');
+        return;
+      }
+
+      console.log('🔗 [FUSAO-SAIDA-ENTRADA-SP] Realizando fusão splitter-splitter (saída-entrada):', {
+        id_meta_splitterS: idMetaSplitterS,
+        saida_splitter: saidaSplitter,
+        id_meta_splitterE: idMetaSplitterE,
+        id_meta_caixa
+      });
+
+      // Preparar request
+      const request: UpdateFusaoSaidaEntradaSPRequest = {
+        id_meta_splitterS: idMetaSplitterS,
+        saida_splitter: saidaSplitter,
+        id_meta_splitterE: idMetaSplitterE,
+        id_meta_caixa: id_meta_caixa
+      };
+
+      // Chamar o serviço
+      this.updateFusaoSaidaEntradaSPService.realizarFusao(request).subscribe({
+        next: (response) => {
+          console.log('✅ [FUSAO-SAIDA-ENTRADA-SP] Fusão splitter-splitter (saída-entrada) realizada com sucesso:', response);
+          if (response.message) {
+            console.log('✅', response.message);
+          }
+
+          // 📝 NOVO: Inserir log de fusão splitter-splitter
+          const idUsuario = this.authService.getIdUser();
+          const idCityLog = this.authService.getIdCity();
+          if (idUsuario && idCityLog) {
+            const descricao = `Fusão Caixa: Splitter ${idMetaSplitterS} (Saída ${saidaSplitter}) -> Splitter ${idMetaSplitterE} (Entrada)`;
+            
+            this.insertLogService.inserirLog({
+              id_usuario: idUsuario,
+              id_evento: 33, // ID do evento para fusão caixa
+              id_city: idCityLog,
+              id_meta_objeto: id_meta_caixa,
+              descricao: descricao,
+              VERSION: 'Fiberworks WEB 1.0.0'
+            }).subscribe({
+              next: (logResponse) => {
+                console.log('✅ [INSERT-LOG] Log de fusão splitter-splitter inserido com sucesso:', logResponse);
+              },
+              error: (error) => {
+                console.error('❌ [INSERT-LOG] Erro ao inserir log de fusão splitter-splitter:', error);
+              }
+            });
+          }
+        },
+        error: (error) => {
+          console.error('❌ [FUSAO-SAIDA-ENTRADA-SP] Erro ao realizar fusão splitter-splitter (saída-entrada):', error);
+          alert(`Erro ao realizar fusão splitter-splitter (saída-entrada): ${error}`);
+        }
+      });
+
+    } catch (error) {
+      console.error('❌ [FUSAO-SAIDA-ENTRADA-SP] Erro inesperado:', error);
+      alert('Erro inesperado ao processar a conexão splitter-splitter (saída-entrada).');
+    }
+  }
+
+  /**
+   * 🗑️ NOVO: Exclui fusão interna de fibras dentro da caixa (cabo-cabo ou cabo-splitter)
+   * @param fromCableKey - Chave do cabo origem (ex: "Boca1" ou "Splitter764666")
+   * @param fromPortNumber - Número da porta origem (ex: "F3" ou "ENTRADA")
+   * @param toCableKey - Chave do cabo destino (ex: "Boca2" ou "Splitter764666")
+   * @param toPortNumber - Número da porta destino (ex: "F3" ou "ENTRADA")
+   * @param link - Referência ao link do GoJS para remover visualmente após exclusão
+   */
+  private excluirFusaoInterna(
+    fromCableKey: string,
+    fromPortNumber: string,
+    toCableKey: string,
+    toPortNumber: string,
+    link: go.Link
+  ): void {
+    try {
+      // Detectar tipo de conexão
+      const tipoConexao = this.detectarTipoConexao(fromCableKey, fromPortNumber, toCableKey, toPortNumber);
+      
+      console.log('🗑️ [EXCLUI-FUSAO] Tipo de conexão detectado:', tipoConexao, {
+        origem: `${fromCableKey}:${fromPortNumber}`,
+        destino: `${toCableKey}:${toPortNumber}`
+      });
+
+      // Se for conexão cabo-splitter ou splitter-cabo (entrada), usar serviço específico
+      if (tipoConexao === 'cabo-splitter' || tipoConexao === 'splitter-cabo') {
+        this.excluirFusaoCaboSplitter(fromCableKey, fromPortNumber, toCableKey, toPortNumber, tipoConexao, link);
+        return;
+      }
+
+      // Se for conexão cabo-saida-splitter ou saida-splitter-cabo, usar serviço específico
+      if (tipoConexao === 'cabo-saida-splitter' || tipoConexao === 'saida-splitter-cabo') {
+        this.excluirFusaoCaboSaidaSplitter(fromCableKey, fromPortNumber, toCableKey, toPortNumber, tipoConexao, link);
+        return;
+      }
+
+      // Se for conexão saida-entrada-splitter (splitter-splitter), usar serviço específico
+      if (tipoConexao === 'saida-entrada-splitter') {
+        this.excluirFusaoSaidaEntradaSplitter(fromCableKey, fromPortNumber, toCableKey, toPortNumber, link);
+        return;
+      }
+
+      // Caso contrário, usar serviço cabo-cabo existente
+      // Extrair números das bocas e fibras
+      const boca_origem = this.extrairNumeroBoca(fromCableKey);
+      const fibra_origem = this.extrairNumeroFibra(fromPortNumber);
+      const boca_destino = this.extrairNumeroBoca(toCableKey);
+      const fibra_destino = this.extrairNumeroFibra(toPortNumber);
+
+      // Validar se todos os valores foram extraídos corretamente
+      if (boca_origem === null || fibra_origem === null || boca_destino === null || fibra_destino === null) {
+        console.error('❌ [EXCLUI-FUSAO] Erro ao extrair valores:', {
+          fromCableKey,
+          fromPortNumber,
+          toCableKey,
+          toPortNumber,
+          boca_origem,
+          fibra_origem,
+          boca_destino,
+          fibra_destino
+        });
+        alert('Erro ao processar exclusão de fusão. Verifique os valores e tente novamente.');
+        return;
+      }
+
+      // Obter id_meta_caixa
+      const idMetaCaixaStr = this.authService.getIDmetaCaixa();
+      if (!idMetaCaixaStr) {
+        console.error('❌ [EXCLUI-FUSAO] id_meta_caixa não disponível');
+        alert('Erro: ID da caixa não encontrado. Certifique-se de que a caixa está aberta.');
+        return;
+      }
+
+      const id_meta_caixa = parseInt(idMetaCaixaStr, 10);
+      if (isNaN(id_meta_caixa)) {
+        console.error('❌ [EXCLUI-FUSAO] id_meta_caixa inválido:', idMetaCaixaStr);
+        alert('Erro: ID da caixa inválido.');
+        return;
+      }
+
+      console.log('🗑️ [EXCLUI-FUSAO] Excluindo fusão:', {
+        boca_origem,
+        fibra_origem,
+        boca_destino,
+        fibra_destino,
+        id_meta_caixa
+      });
+
+      // Preparar request
+      const request: ExcluiFusaoRequest = {
+        boca_origem,
+        fibra_origem,
+        boca_destino,
+        fibra_destino,
+        id_meta_caixa
+      };
+
+      // Chamar o serviço
+      this.updateExcluiFusaoService.excluirFusao(request).subscribe({
+        next: (response) => {
+          console.log('✅ [EXCLUI-FUSAO] Fusão excluída com sucesso:', response);
+          
+          // Remover link visualmente do diagrama após sucesso (usar link.diagram para o diagrama correto após fechar/reabrir modal)
+          if (link.diagram && link.diagram.model && link.data) {
+            const model = link.diagram.model as go.GraphLinksModel;
+            try {
+              model.removeLinkData(link.data);
+              console.log('✅ [EXCLUI-FUSAO] Link removido do diagrama');
+              link.diagram.clearSelection();
+            } catch (error) {
+              console.error('❌ [EXCLUI-FUSAO] Erro ao remover link do diagrama:', error);
+            }
+          }
+          
+          if (response.message) {
+            console.log('✅', response.message);
+          }
+
+          // 📝 NOVO: Inserir log de quebra de fusão cabo-cabo
+          const idUsuario = this.authService.getIdUser();
+          const idCityLog = this.authService.getIdCity();
+          if (idUsuario && idCityLog) {
+            const descricao = `Quebra de Fusão Caixa: Boca ${boca_origem} - Fibra ${fibra_origem} <-> Boca ${boca_destino} - Fibra ${fibra_destino}`;
+            
+            this.insertLogService.inserirLog({
+              id_usuario: idUsuario,
+              id_evento: 34, // ID do evento para quebra de fusão caixa
+              id_city: idCityLog,
+              id_meta_objeto: id_meta_caixa,
+              descricao: descricao,
+              VERSION: 'Fiberworks WEB 1.0.0'
+            }).subscribe({
+              next: (logResponse) => {
+                console.log('✅ [INSERT-LOG] Log de quebra de fusão cabo-cabo inserido com sucesso:', logResponse);
+              },
+              error: (error) => {
+                console.error('❌ [INSERT-LOG] Erro ao inserir log de quebra de fusão cabo-cabo:', error);
+              }
+            });
+          }
+        },
+        error: (error) => {
+          console.error('❌ [EXCLUI-FUSAO] Erro ao excluir fusão:', error);
+          alert(`Erro ao excluir fusão: ${error}`);
+          
+          // Limpar seleção em caso de erro
+          if (this.diagram) {
+            this.diagram.clearSelection();
+          }
+        }
+      });
+
+    } catch (error) {
+      console.error('❌ [EXCLUI-FUSAO] Erro inesperado:', error);
+      alert('Erro inesperado ao processar a exclusão da fusão.');
+      
+      // Limpar seleção em caso de erro
+      if (this.diagram) {
+        this.diagram.clearSelection();
+      }
+    }
+  }
+
+  /**
+   * 🗑️ NOVO: Exclui fusão de cabo para entrada de splitter
+   * @param fromCableKey - Chave do nó origem (ex: "Boca1" ou "Splitter764666")
+   * @param fromPortNumber - Número da porta origem (ex: "F3" ou "ENTRADA")
+   * @param toCableKey - Chave do nó destino (ex: "Boca2" ou "Splitter764666")
+   * @param toPortNumber - Número da porta destino (ex: "F3" ou "ENTRADA")
+   * @param tipoConexao - Tipo de conexão: 'cabo-splitter' ou 'splitter-cabo'
+   * @param link - Referência ao link do GoJS para remover visualmente após exclusão
+   */
+  private excluirFusaoCaboSplitter(
+    fromCableKey: string,
+    fromPortNumber: string,
+    toCableKey: string,
+    toPortNumber: string,
+    tipoConexao: 'cabo-splitter' | 'splitter-cabo',
+    link: go.Link
+  ): void {
+    try {
+      let idMetaSplitter: number | null = null;
+      let boca: number | null = null;
+      let fibra: number | null = null;
+
+      if (tipoConexao === 'cabo-splitter') {
+        // Cabo origem, Splitter destino
+        idMetaSplitter = this.extrairIdMetaSplitter(toCableKey);
+        boca = this.extrairNumeroBoca(fromCableKey);
+        fibra = this.extrairNumeroFibra(fromPortNumber);
+      } else if (tipoConexao === 'splitter-cabo') {
+        // Splitter origem, Cabo destino
+        idMetaSplitter = this.extrairIdMetaSplitter(fromCableKey);
+        boca = this.extrairNumeroBoca(toCableKey);
+        fibra = this.extrairNumeroFibra(toPortNumber);
+      }
+
+      // Validar valores extraídos
+      if (idMetaSplitter === null || boca === null || fibra === null) {
+        console.error('❌ [EXCLUI-FUSAO-ENTRADA-SP] Erro ao extrair valores:', {
+          fromCableKey,
+          fromPortNumber,
+          toCableKey,
+          toPortNumber,
+          tipoConexao,
+          idMetaSplitter,
+          boca,
+          fibra
+        });
+        alert('Erro ao processar exclusão de fusão cabo-splitter. Verifique os valores e tente novamente.');
+        return;
+      }
+
+      // Obter id_meta_caixa
+      const idMetaCaixaStr = this.authService.getIDmetaCaixa();
+      if (!idMetaCaixaStr) {
+        console.error('❌ [EXCLUI-FUSAO-ENTRADA-SP] id_meta_caixa não disponível');
+        alert('Erro: ID da caixa não encontrado. Certifique-se de que a caixa está aberta.');
+        return;
+      }
+
+      const id_meta_caixa = parseInt(idMetaCaixaStr, 10);
+      if (isNaN(id_meta_caixa)) {
+        console.error('❌ [EXCLUI-FUSAO-ENTRADA-SP] id_meta_caixa inválido:', idMetaCaixaStr);
+        alert('Erro: ID da caixa inválido.');
+        return;
+      }
+
+      console.log('🗑️ [EXCLUI-FUSAO-ENTRADA-SP] Excluindo fusão cabo-entrada de splitter:', {
+        id_meta_splitter: idMetaSplitter,
+        boca,
+        fibra,
+        id_meta_caixa,
+        tipoConexao
+      });
+
+      // Preparar request
+      const request: ExcluiFusaoFibraEntradaSPRequest = {
+        id_meta_splitter: idMetaSplitter,
+        boca: boca,
+        fibra: fibra,
+        id_meta_caixa: id_meta_caixa
+      };
+
+      // Chamar o serviço
+      this.updateExcluiFusaoFibraEntradaSPService.excluirFusao(request).subscribe({
+        next: (response: ExcluiFusaoFibraEntradaSPResponse) => {
+          console.log('✅ [EXCLUI-FUSAO-ENTRADA-SP] Fusão cabo-entrada de splitter excluída com sucesso:', response);
+          
+          // Remover link visualmente do diagrama após sucesso (usar link.diagram para o diagrama correto após fechar/reabrir modal)
+          if (link.diagram && link.diagram.model && link.data) {
+            const model = link.diagram.model as go.GraphLinksModel;
+            try {
+              model.removeLinkData(link.data);
+              console.log('✅ [EXCLUI-FUSAO-ENTRADA-SP] Link removido do diagrama');
+              link.diagram.clearSelection();
+            } catch (error) {
+              console.error('❌ [EXCLUI-FUSAO-ENTRADA-SP] Erro ao remover link do diagrama:', error);
+            }
+          }
+          
+          if (response.message) {
+            console.log('✅', response.message);
+          }
+
+          // 📝 NOVO: Inserir log de quebra de fusão cabo-entrada splitter
+          const idUsuario = this.authService.getIdUser();
+          const idCityLog = this.authService.getIdCity();
+          if (idUsuario && idCityLog) {
+            const descricao = `Quebra de Fusão Caixa: Boca ${boca} - Fibra ${fibra} <-> Splitter ${idMetaSplitter} (Entrada)`;
+            
+            this.insertLogService.inserirLog({
+              id_usuario: idUsuario,
+              id_evento: 34, // ID do evento para quebra de fusão caixa
+              id_city: idCityLog,
+              id_meta_objeto: id_meta_caixa,
+              descricao: descricao,
+              VERSION: 'Fiberworks WEB 1.0.0'
+            }).subscribe({
+              next: (logResponse) => {
+                console.log('✅ [INSERT-LOG] Log de quebra de fusão cabo-entrada splitter inserido com sucesso:', logResponse);
+              },
+              error: (error) => {
+                console.error('❌ [INSERT-LOG] Erro ao inserir log de quebra de fusão cabo-entrada splitter:', error);
+              }
+            });
+          }
+        },
+        error: (error: any) => {
+          console.error('❌ [EXCLUI-FUSAO-ENTRADA-SP] Erro ao excluir fusão cabo-entrada de splitter:', error);
+          alert(`Erro ao excluir fusão cabo-entrada de splitter: ${error}`);
+          
+          // Limpar seleção em caso de erro
+          if (this.diagram) {
+            this.diagram.clearSelection();
+          }
+        }
+      });
+
+    } catch (error) {
+      console.error('❌ [EXCLUI-FUSAO-ENTRADA-SP] Erro inesperado:', error);
+      alert('Erro inesperado ao processar a exclusão da fusão cabo-splitter.');
+      
+      // Limpar seleção em caso de erro
+      if (this.diagram) {
+        this.diagram.clearSelection();
+      }
+    }
+  }
+
+  /**
+   * 🗑️ NOVO: Exclui fusão de cabo para saída de splitter
+   * @param fromCableKey - Chave do nó origem (ex: "Boca1" ou "Splitter764666")
+   * @param fromPortNumber - Número da porta origem (ex: "F3" ou "F1")
+   * @param toCableKey - Chave do nó destino (ex: "Boca2" ou "Splitter764666")
+   * @param toPortNumber - Número da porta destino (ex: "F3" ou "F1")
+   * @param tipoConexao - Tipo de conexão: 'cabo-saida-splitter' ou 'saida-splitter-cabo'
+   * @param link - Referência ao link do GoJS para remover visualmente após exclusão
+   */
+  private excluirFusaoCaboSaidaSplitter(
+    fromCableKey: string,
+    fromPortNumber: string,
+    toCableKey: string,
+    toPortNumber: string,
+    tipoConexao: 'cabo-saida-splitter' | 'saida-splitter-cabo',
+    link: go.Link
+  ): void {
+    try {
+      let idMetaSplitter: number | null = null;
+      let saidaSplitter: number | null = null;
+      let boca: number | null = null;
+      let fibra: number | null = null;
+
+      if (tipoConexao === 'cabo-saida-splitter') {
+        // Cabo origem, Splitter destino (saída)
+        idMetaSplitter = this.extrairIdMetaSplitter(toCableKey);
+        saidaSplitter = this.extrairNumeroFibra(toPortNumber); // F1 → 1, F2 → 2, etc.
+        boca = this.extrairNumeroBoca(fromCableKey);
+        fibra = this.extrairNumeroFibra(fromPortNumber);
+      } else if (tipoConexao === 'saida-splitter-cabo') {
+        // Splitter origem (saída), Cabo destino
+        idMetaSplitter = this.extrairIdMetaSplitter(fromCableKey);
+        saidaSplitter = this.extrairNumeroFibra(fromPortNumber); // F1 → 1, F2 → 2, etc.
+        boca = this.extrairNumeroBoca(toCableKey);
+        fibra = this.extrairNumeroFibra(toPortNumber);
+      }
+
+      // Validar valores extraídos
+      if (idMetaSplitter === null || saidaSplitter === null || boca === null || fibra === null) {
+        console.error('❌ [EXCLUI-FUSAO-SAIDA-SP] Erro ao extrair valores:', {
+          fromCableKey,
+          fromPortNumber,
+          toCableKey,
+          toPortNumber,
+          tipoConexao,
+          idMetaSplitter,
+          saidaSplitter,
+          boca,
+          fibra
+        });
+        alert('Erro ao processar exclusão de fusão cabo-saída de splitter. Verifique os valores e tente novamente.');
+        return;
+      }
+
+      // Obter id_meta_caixa
+      const idMetaCaixaStr = this.authService.getIDmetaCaixa();
+      if (!idMetaCaixaStr) {
+        console.error('❌ [EXCLUI-FUSAO-SAIDA-SP] id_meta_caixa não disponível');
+        alert('Erro: ID da caixa não encontrado. Certifique-se de que a caixa está aberta.');
+        return;
+      }
+
+      const id_meta_caixa = parseInt(idMetaCaixaStr, 10);
+      if (isNaN(id_meta_caixa)) {
+        console.error('❌ [EXCLUI-FUSAO-SAIDA-SP] id_meta_caixa inválido:', idMetaCaixaStr);
+        alert('Erro: ID da caixa inválido.');
+        return;
+      }
+
+      console.log('🗑️ [EXCLUI-FUSAO-SAIDA-SP] Excluindo fusão cabo-saída de splitter:', {
+        id_meta_splitter: idMetaSplitter,
+        saida_splitter: saidaSplitter,
+        boca,
+        fibra,
+        id_meta_caixa,
+        tipoConexao
+      });
+
+      // Preparar request
+      const request: ExcluiFusaoFibraSaidaSPRequest = {
+        id_meta_splitter: idMetaSplitter,
+        saida_splitter: saidaSplitter,
+        boca: boca,
+        fibra: fibra,
+        id_meta_caixa: id_meta_caixa
+      };
+
+      // Chamar o serviço
+      this.updateExcluiFusaoFibraSaidaSPService.excluirFusao(request).subscribe({
+        next: (response: ExcluiFusaoFibraSaidaSPResponse) => {
+          console.log('✅ [EXCLUI-FUSAO-SAIDA-SP] Fusão cabo-saída de splitter excluída com sucesso:', response);
+          
+          // Remover link visualmente do diagrama após sucesso (usar link.diagram para o diagrama correto após fechar/reabrir modal)
+          if (link.diagram && link.diagram.model && link.data) {
+            const model = link.diagram.model as go.GraphLinksModel;
+            try {
+              model.removeLinkData(link.data);
+              console.log('✅ [EXCLUI-FUSAO-SAIDA-SP] Link removido do diagrama');
+              link.diagram.clearSelection();
+            } catch (error) {
+              console.error('❌ [EXCLUI-FUSAO-SAIDA-SP] Erro ao remover link do diagrama:', error);
+            }
+          }
+          
+          if (response.message) {
+            console.log('✅', response.message);
+          }
+
+          // 📝 NOVO: Inserir log de quebra de fusão cabo-saída splitter
+          const idUsuario = this.authService.getIdUser();
+          const idCityLog = this.authService.getIdCity();
+          if (idUsuario && idCityLog) {
+            const descricao = `Quebra de Fusão Caixa: Boca ${boca} - Fibra ${fibra} <-> Splitter ${idMetaSplitter} (Saída ${saidaSplitter})`;
+            
+            this.insertLogService.inserirLog({
+              id_usuario: idUsuario,
+              id_evento: 34, // ID do evento para quebra de fusão caixa
+              id_city: idCityLog,
+              id_meta_objeto: id_meta_caixa,
+              descricao: descricao,
+              VERSION: 'Fiberworks WEB 1.0.0'
+            }).subscribe({
+              next: (logResponse) => {
+                console.log('✅ [INSERT-LOG] Log de quebra de fusão cabo-saída splitter inserido com sucesso:', logResponse);
+              },
+              error: (error) => {
+                console.error('❌ [INSERT-LOG] Erro ao inserir log de quebra de fusão cabo-saída splitter:', error);
+              }
+            });
+          }
+        },
+        error: (error: any) => {
+          console.error('❌ [EXCLUI-FUSAO-SAIDA-SP] Erro ao excluir fusão cabo-saída de splitter:', error);
+          alert(`Erro ao excluir fusão cabo-saída de splitter: ${error}`);
+          
+          // Limpar seleção em caso de erro
+          if (this.diagram) {
+            this.diagram.clearSelection();
+          }
+        }
+      });
+
+    } catch (error) {
+      console.error('❌ [EXCLUI-FUSAO-SAIDA-SP] Erro inesperado:', error);
+      alert('Erro inesperado ao processar a exclusão da fusão cabo-saída de splitter.');
+      
+      // Limpar seleção em caso de erro
+      if (this.diagram) {
+        this.diagram.clearSelection();
+      }
+    }
+  }
+
+  /**
+   * 🗑️ NOVO: Exclui fusão de saída de splitter para entrada de outro splitter
+   * @param fromCableKey - Chave do splitter origem (ex: "Splitter764698")
+   * @param fromPortNumber - Número da porta origem (ex: "F8")
+   * @param toCableKey - Chave do splitter destino (ex: "Splitter764666")
+   * @param toPortNumber - Número da porta destino (ex: "ENTRADA")
+   * @param link - Referência ao link do GoJS para remover visualmente após exclusão
+   */
+  private excluirFusaoSaidaEntradaSplitter(
+    fromCableKey: string,
+    fromPortNumber: string,
+    toCableKey: string,
+    toPortNumber: string,
+    link: go.Link
+  ): void {
+    try {
+      // Extrair dados
+      const idMetaSplitterS = this.extrairIdMetaSplitter(fromCableKey);
+      const saidaSplitter = this.extrairNumeroFibra(fromPortNumber); // F8 → 8
+      const idMetaSplitterE = this.extrairIdMetaSplitter(toCableKey);
+
+      // Validar valores extraídos
+      if (idMetaSplitterS === null || saidaSplitter === null || idMetaSplitterE === null) {
+        console.error('❌ [EXCLUI-FUSAO-SAIDA-ENTRADA-SP] Erro ao extrair valores:', {
+          fromCableKey,
+          fromPortNumber,
+          toCableKey,
+          toPortNumber,
+          idMetaSplitterS,
+          saidaSplitter,
+          idMetaSplitterE
+        });
+        alert('Erro ao processar exclusão de fusão splitter-splitter (saída-entrada). Verifique os valores e tente novamente.');
+        return;
+      }
+
+      // Obter id_meta_caixa
+      const idMetaCaixaStr = this.authService.getIDmetaCaixa();
+      if (!idMetaCaixaStr) {
+        console.error('❌ [EXCLUI-FUSAO-SAIDA-ENTRADA-SP] id_meta_caixa não disponível');
+        alert('Erro: ID da caixa não encontrado. Certifique-se de que a caixa está aberta.');
+        return;
+      }
+
+      const id_meta_caixa = parseInt(idMetaCaixaStr, 10);
+      if (isNaN(id_meta_caixa)) {
+        console.error('❌ [EXCLUI-FUSAO-SAIDA-ENTRADA-SP] id_meta_caixa inválido:', idMetaCaixaStr);
+        alert('Erro: ID da caixa inválido.');
+        return;
+      }
+
+      console.log('🗑️ [EXCLUI-FUSAO-SAIDA-ENTRADA-SP] Excluindo fusão splitter-splitter (saída-entrada):', {
+        id_meta_splitterS: idMetaSplitterS,
+        saida_splitter: saidaSplitter,
+        id_meta_splitterE: idMetaSplitterE,
+        id_meta_caixa
+      });
+
+      // Preparar request
+      const request: ExcluiFusaoSaidaEntradaSPRequest = {
+        id_meta_splitterS: idMetaSplitterS,
+        saida_splitter: saidaSplitter,
+        id_meta_splitterE: idMetaSplitterE,
+        id_meta_caixa: id_meta_caixa
+      };
+
+      // Chamar o serviço
+      this.updateExcluiFusaoSaidaEntradaSPService.excluirFusao(request).subscribe({
+        next: (response: ExcluiFusaoSaidaEntradaSPResponse) => {
+          console.log('✅ [EXCLUI-FUSAO-SAIDA-ENTRADA-SP] Fusão splitter-splitter (saída-entrada) excluída com sucesso:', response);
+          
+          // Remover link visualmente do diagrama após sucesso (usar link.diagram para o diagrama correto após fechar/reabrir modal)
+          if (link.diagram && link.diagram.model && link.data) {
+            const model = link.diagram.model as go.GraphLinksModel;
+            try {
+              model.removeLinkData(link.data);
+              console.log('✅ [EXCLUI-FUSAO-SAIDA-ENTRADA-SP] Link removido do diagrama');
+              link.diagram.clearSelection();
+            } catch (error) {
+              console.error('❌ [EXCLUI-FUSAO-SAIDA-ENTRADA-SP] Erro ao remover link do diagrama:', error);
+            }
+          }
+          
+          if (response.message) {
+            console.log('✅', response.message);
+          }
+
+          // 📝 NOVO: Inserir log de quebra de fusão splitter-splitter
+          const idUsuario = this.authService.getIdUser();
+          const idCityLog = this.authService.getIdCity();
+          if (idUsuario && idCityLog) {
+            const descricao = `Quebra de Fusão Caixa: Splitter ${idMetaSplitterS} (Saída ${saidaSplitter}) <-> Splitter ${idMetaSplitterE} (Entrada)`;
+            
+            this.insertLogService.inserirLog({
+              id_usuario: idUsuario,
+              id_evento: 34, // ID do evento para quebra de fusão caixa
+              id_city: idCityLog,
+              id_meta_objeto: id_meta_caixa,
+              descricao: descricao,
+              VERSION: 'Fiberworks WEB 1.0.0'
+            }).subscribe({
+              next: (logResponse) => {
+                console.log('✅ [INSERT-LOG] Log de quebra de fusão splitter-splitter inserido com sucesso:', logResponse);
+              },
+              error: (error) => {
+                console.error('❌ [INSERT-LOG] Erro ao inserir log de quebra de fusão splitter-splitter:', error);
+              }
+            });
+          }
+        },
+        error: (error: any) => {
+          console.error('❌ [EXCLUI-FUSAO-SAIDA-ENTRADA-SP] Erro ao excluir fusão splitter-splitter (saída-entrada):', error);
+          alert(`Erro ao excluir fusão splitter-splitter (saída-entrada): ${error}`);
+          
+          // Limpar seleção em caso de erro
+          if (this.diagram) {
+            this.diagram.clearSelection();
+          }
+        }
+      });
+
+    } catch (error) {
+      console.error('❌ [EXCLUI-FUSAO-SAIDA-ENTRADA-SP] Erro inesperado:', error);
+      alert('Erro inesperado ao processar a exclusão da fusão splitter-splitter (saída-entrada).');
+      
+      // Limpar seleção em caso de erro
+      if (this.diagram) {
+        this.diagram.clearSelection();
+      }
     }
   }
 
@@ -4356,7 +5571,7 @@ espelhar(): void {
    * 🗑️ NOVO: Exclui um splitter do banco de dados e do diagrama
    * @param splitterData Dados do splitter a ser excluído (vindo do context menu)
    */
-  private excluirSplitter(splitterData: any): void {
+  private excluirSplitter(splitterData: any, nodeRef?: go.Node): void {
     console.log('🗑️ [EXCLUI-SPLITTER] Iniciando exclusão de splitter:', splitterData);
 
     // Validar dados obrigatórios
@@ -4422,19 +5637,20 @@ espelhar(): void {
       next: (response) => {
         console.log('✅ [EXCLUI-SPLITTER] Splitter excluído com sucesso:', response);
         
-        // Remover splitter do diagrama
-        // Nota: Se chegou aqui, significa que a exclusão foi bem-sucedida na API,
-        // o que implica que o splitter não estava conectado (sem links)
-        if (this.diagram && this.diagram.model) {
-          const nodeKey = `Splitter${idMeta}`;
-          const node = this.diagram.findNodeForKey(nodeKey);
-          
-          if (node) {
-            const model = this.diagram.model as go.GraphLinksModel;
+        // Remover splitter do diagrama (usar diagrama do nó quando disponível, para funcionar após fechar/reabrir modal)
+        const diagramToUse = nodeRef?.diagram ?? this.diagram;
+        if (diagramToUse && diagramToUse.model) {
+          let node: go.Node | null = nodeRef ?? null;
+          if (!node) {
+            const nodeKey = splitterData.key || `Splitter${idMeta}`;
+            node = diagramToUse.findNodeForKey(nodeKey);
+          }
+          if (node && node.data) {
+            const model = diagramToUse.model as go.GraphLinksModel;
             model.removeNodeData(node.data);
             console.log('✅ [EXCLUI-SPLITTER] Splitter removido do diagrama');
           } else {
-            console.warn('⚠️ [EXCLUI-SPLITTER] Node não encontrado no diagrama para remover:', nodeKey);
+            console.warn('⚠️ [EXCLUI-SPLITTER] Node não encontrado no diagrama para remover:', splitterData.key || `Splitter${idMeta}`);
           }
         }
 

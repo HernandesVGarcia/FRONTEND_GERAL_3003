@@ -32,7 +32,7 @@ export class Splitter12Component {
               }
             }
           })
-          .add(new go.TextBlock("Mapear Splitter", { 
+          .add(new go.TextBlock(" 🔍 Mapear Splitter", { 
             textAlign: "left",
             alignment: go.Spot.Left
           }))
@@ -43,15 +43,15 @@ export class Splitter12Component {
               const contextmenu = obj.part;
               if (contextmenu && contextmenu.data) {
                 const splitterData = contextmenu.data;
+                const node = (contextmenu.part && (contextmenu.part as go.Adornment).adornedPart) ? (contextmenu.part as go.Adornment).adornedPart : null;
                 console.log('🔀 [SPLITTER-TEMPLATE] Excluir Splitter clicado:', splitterData);
-                // Disparar evento customizado para o componente pai
                 window.dispatchEvent(new CustomEvent('splitterContextMenu', { 
-                  detail: { action: 'excluir', data: splitterData } 
+                  detail: { action: 'excluir', data: splitterData, node } 
                 }));
               }
             }
           })
-          .add(new go.TextBlock("Excluir Splitter", { 
+          .add(new go.TextBlock("❌ Excluir Splitter", { 
             textAlign: "left",
             alignment: go.Spot.Left
           }))
@@ -67,7 +67,7 @@ export class Splitter12Component {
               }
             }
           })
-          .add(new go.TextBlock("Power Meter", { 
+          .add(new go.TextBlock("🔌 Power Meter", { 
             textAlign: "left",
             alignment: go.Spot.Left
           }))
