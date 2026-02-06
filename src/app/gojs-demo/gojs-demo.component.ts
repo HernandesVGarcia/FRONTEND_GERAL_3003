@@ -86,6 +86,9 @@ import { Splitter12Component } from '../Stencil/spliter-1-p2/spliter-1-p2.compon
 import { Splitter14Component } from '../Stencil/spliter-1-p4/spliter-1-p4.component';
 import { Splitter18Component } from '../Stencil/spliter-1-p8/spliter-1-p8.component';
 import { Splitter116Component } from '../Stencil/spliter-1-p16/spliter-1-p16.component';
+import { Splitter132Component } from '../Stencil/spliter-1-p32/spliter-1-p32.component';
+import { Splitter164Component } from '../Stencil/spliter-1-p64/spliter-1-p64.component';
+import { Splitter1128Component } from '../Stencil/spliter-1-p128/spliter-1-p128.component';
 import { SplitterDesbComponent } from '../Stencil/spliter-desbalanceado/spliter-desbalanceado.component';
 
 
@@ -261,6 +264,9 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit {
   private splitter14: Splitter14Component = new Splitter14Component();
   private splitter18: Splitter18Component = new Splitter18Component();
   private splitter116: Splitter116Component = new Splitter116Component();
+  private splitter132: Splitter132Component = new Splitter132Component();
+  private splitter164: Splitter164Component = new Splitter164Component();
+  private splitter1128: Splitter1128Component = new Splitter1128Component();
   private splitterDesb: SplitterDesbComponent = new SplitterDesbComponent();
 
   private savedViewportBounds: go.Rect | null = null;
@@ -539,6 +545,15 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit {
         case 15:
           splitterModelDefinition = this.splitter116.getModelDefinition();
           break;
+        case 16:
+          splitterModelDefinition = this.splitter132.getModelDefinition();
+          break;
+        case 17:
+          splitterModelDefinition = this.splitter164.getModelDefinition();
+          break;
+        case 18:
+          splitterModelDefinition = this.splitter1128.getModelDefinition();
+          break;
         default:
           splitterModelDefinition = this.splitterDesb.getModelDefinition();
           break;
@@ -613,6 +628,15 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit {
         break;
       case 15:
         splitterModelDefinition = this.splitter116.getModelDefinition();
+        break;
+      case 16:
+        splitterModelDefinition = this.splitter132.getModelDefinition();
+        break;
+      case 17:
+        splitterModelDefinition = this.splitter164.getModelDefinition();
+        break;
+      case 18:
+        splitterModelDefinition = this.splitter1128.getModelDefinition();
         break;
       default:
         splitterModelDefinition = this.splitterDesb.getModelDefinition();
@@ -3454,9 +3478,9 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
         caboTemplateMap.add("splitterDesb", this.splitterDesb.getNodeTemplate());
         
         // Adicionar templates genéricos para outros tipos de splitters que ainda não têm componentes específicos
-        caboTemplateMap.add("splitter132", this.splitter116.getNodeTemplate());
-        caboTemplateMap.add("splitter164", this.splitter116.getNodeTemplate());
-        caboTemplateMap.add("splitter1128", this.splitter116.getNodeTemplate());
+        caboTemplateMap.add("splitter132", this.splitter132.getNodeTemplate());
+        caboTemplateMap.add("splitter164", this.splitter164.getNodeTemplate());
+        caboTemplateMap.add("splitter1128", this.splitter1128.getNodeTemplate());
         caboTemplateMap.add("splitter1256", this.splitter116.getNodeTemplate());
 
         
@@ -5717,6 +5741,8 @@ espelhar(): void {
       case 14: return 8;   // 1:8
       case 15: return 16;  // 1:16
       case 16: return 32;  // 1:32
+      case 17: return 64;  // 1:64
+      case 18: return 128;  // 1:128
       default: return 8;  // fallback
     }
   }

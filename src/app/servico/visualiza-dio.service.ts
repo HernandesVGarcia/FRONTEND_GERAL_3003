@@ -9,7 +9,7 @@ import { AuthService } from './auth.service';
   providedIn: 'root'
 })
 export class VisualizaDioService {
-  private baseUrl = 'https://www.fiberworks-api.com:3002';
+  private baseUrl = 'https://www.fiberworks-api.com:3001';
 
   constructor(
     private http: HttpClient,

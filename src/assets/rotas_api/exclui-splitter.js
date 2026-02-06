@@ -50,6 +50,7 @@ router.post('/', login, async (req, res, next) => {
         // ✅ Recebe os parâmetros do body
         const {
             id_meta,
+            id_meta_cx,
             id_city,
             id_condominio,
             capacidade
@@ -103,7 +104,7 @@ router.post('/', login, async (req, res, next) => {
             }
             const camposStr = campos.join(', ');
             
-            const queryBocas = `SELECT ${camposStr} FROM tstmeta.splitter_t${tabela} WHERE ID_META = ?`;
+            const queryBocas = `SELECT ${camposStr} FROM tstmeta.splitter_t${tabela} WHERE IDMETA = ?`;
             
             try {
                 const resultadoBocas = await executarQuery(conn, queryBocas, [id_meta]);
@@ -130,14 +131,31 @@ router.post('/', login, async (req, res, next) => {
             }
         }
 
-        // ⚠️ Verificar se splitter está conectado e retornar erro se estiver
+        // 🔍 Verificar se a ENTRADA do splitter está livre (tabela splitter_e)
+        // Quando livre, ENTRADA é '' (ou null ou '=id()')
+        try {
+            const queryEntrada = `SELECT ENTRADA FROM tstmeta.splitter_e WHERE IDMETA = ?`;
+            const resultadoEntrada = await executarQuery(conn, queryEntrada, [id_meta]);
+            if (resultadoEntrada.length > 0) {
+                const valorEntrada = resultadoEntrada[0].ENTRADA;
+                const entradaLivre = valorEntrada === '' || valorEntrada === null || valorEntrada === '=id()' || (typeof valorEntrada === 'string' && valorEntrada.trim() === '');
+                if (!entradaLivre) {
+                    flagConectada = true;
+                    console.log(`⚠️ [EXCLUI-SPLITTER] Splitter ${id_meta} não pode ser excluído: entrada conectada (valor: ${valorEntrada})`);
+                }
+            }
+        } catch (queryEntradaError) {
+            console.warn('⚠️ [EXCLUI-SPLITTER] Erro ao verificar ENTRADA em splitter_e:', queryEntradaError.message);
+        }
+
+        // ⚠️ Verificar se splitter está conectado (saídas ou entrada) e retornar erro se estiver
         if (flagConectada) {
             conn.release();
             console.log(`⚠️ [EXCLUI-splitter] Splitter ${id_meta} não pode ser excluído: esta conectado`);
             return res.status(400).send({
                 success: false,
-                error: 'Splitter conectado! Desconecte as fibras antes de excluir.',
-                message: 'Splitter possui fibras conectadas. Desconecte as fibras antes de excluir.',
+                error: 'Splitter conectado! Desconecte as fibras (entrada e saídas) antes de excluir.',
+                message: 'Splitter possui entrada ou fibras de saída conectadas. Desconecte antes de excluir.',
                 flagConectada: flagConectada,
                 flagSplitter: false,
                 totalSplitters: 0,
@@ -183,13 +201,23 @@ router.post('/', login, async (req, res, next) => {
         console.log(`✅ [EXCLUI-Splitter] Registro deletado de tstmeta.ids - ID: ${id_meta}`);
 
         // 2️⃣ Delete na tabela tstmeta.splitter_e
-        const querySplitterE = `DELETE FROM tstmeta.splitter_e WHERE id_meta = ?`;
+        const querySplitterE = `DELETE FROM tstmeta.splitter_e WHERE IDMETA = ?`;
         const resultadoSplitterE = await executarQuery(conn, querySplitterE, [id_meta]);
 
         if (resultadoSplitterE.affectedRows > 0) {
             console.log(`✅ [EXCLUI-Splitter] Registro deletado de tstmeta.splitter_e - ID: ${id_meta}`);
         } else {
             console.warn(`⚠️ [EXCLUI-Splitter] Nenhum registro encontrado em tstmeta.splitter_e - ID: ${id_meta}`);
+        }
+
+        // 3 decrementa contador splitter na tabela tstmeta.caixa
+        const querySubContador = `UPDATE tstmeta.caixa set conta_splitter=conta_splitter - 1 where ID_META = ?`;
+        const resultadoContador = await executarQuery(conn, querySubContador, [id_meta_cx]);
+
+        if (resultadoContador.affectedRows > 0) {
+            console.log(`✅ [EXCLUI-Splitter] contador splitter decrementado de tstmeta.caixa - ID: ${id_meta_cx}`);
+        } else {
+            console.warn(`⚠️ [EXCLUI-Splitter] Nenhum registro decrementado tstmeta.caixa - ID: ${id_meta_cx}`);
         }
 
         // ✅ Commit da transação
