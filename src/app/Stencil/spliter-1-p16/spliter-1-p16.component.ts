@@ -10,8 +10,12 @@ export class Splitter116Component {
   
   constructor() { }
 
-  // Método que retorna o template do nó para o GoJS
+  private static geoNormal = go.Geometry.parse("F M 170 0 L 340 240 L 0 240 Z");
+  private static geoEspelhado = go.Geometry.parse("F M 170 240 L 0 0 L 340 0 Z");
+
   getNodeTemplate(): go.Node {
+    const geoNorm = Splitter116Component.geoNormal;
+    const geoEsp = Splitter116Component.geoEspelhado;
     return new go.Node("Spot", {
       contextMenu: go.GraphObject.build("ContextMenu", {
         // 🎯 NOVO: Alinhamento à esquerda
@@ -72,18 +76,33 @@ export class Splitter116Component {
             alignment: go.Spot.Left
           }))
         )
+        .add(
+          go.GraphObject.build("ContextMenuButton", {
+            click: (e, obj) => {
+              const adorno = obj.part as go.Adornment;
+              const node = adorno?.adornedPart;
+              const diagram = node?.diagram;
+              if (diagram && node?.data) {
+                const esp = !node.data.espelhado;
+                diagram.model.commit((m: go.Model) => (m as go.GraphLinksModel).setDataProperty(node.data, 'espelhado', esp), 'espelhar');
+                window.dispatchEvent(new CustomEvent('splitterContextMenu', { detail: { action: 'espelhar', data: node.data, node } }));
+              }
+            }
+          })
+          .add(new go.TextBlock(" ⇄ Espelhar", { textAlign: "left", alignment: go.Spot.Left }))
+        )
     })
       .add(
         new go.Panel("Spot")
           .add(
-            new go.Shape("Triangle", {
-              fill: "#9FFFFF", 
+            new go.Shape({
+              geometry: geoNorm,
+              fill: "#9FFFFF",
               stroke: "#0097A9",
               strokeWidth: 3,
               desiredSize: new go.Size(340, 240),
-              // Rotação para apontar entrada à esquerda e saídas à direita
               angle: -90
-            })
+            }).bind("geometry", "espelhado", (esp: boolean) => esp ? geoEsp : geoNorm)
           )
           .add(
             new go.TextBlock({
@@ -95,22 +114,21 @@ export class Splitter116Component {
             }).bind("text", "labelText")
           )
       )
-      // Porta de entrada (esquerda)
       .add(
         new go.Shape("Rectangle", {
           fill: "#1E88E5",
           stroke: "#0D47A1",
           desiredSize: new go.Size(12, 10),
           portId: "ENTRADA",
-          alignment: new go.Spot(0, 0.5, -4, 0),
-          fromSpot: go.Spot.Left,
-          toSpot: go.Spot.Left,
           fromLinkable: true,
           toLinkable: true,
           fromLinkableDuplicates: false,
           toLinkableDuplicates: false,
           cursor: "pointer"
         })
+          .bind("alignment", "espelhado", (esp: boolean) => esp ? new go.Spot(1, 0.5, 4, 0) : new go.Spot(0, 0.5, -4, 0))
+          .bind("fromSpot", "espelhado", (esp: boolean) => esp ? go.Spot.Right : go.Spot.Left)
+          .bind("toSpot", "espelhado", (esp: boolean) => esp ? go.Spot.Right : go.Spot.Left)
       )
       // Porta de saída 1 (superior direita)
       .add(
@@ -119,275 +137,255 @@ export class Splitter116Component {
           stroke: "#E65100",
           desiredSize: new go.Size(34, 6),
           portId: "F1",
-          alignment: new go.Spot(1, 0.038, 8, 0),
-          fromSpot: go.Spot.Right,
-          toSpot: go.Spot.Right,
           fromLinkable: true,
           toLinkable: true,
           fromLinkableDuplicates: false,
           toLinkableDuplicates: false,
           cursor: "pointer"
         })
+          .bind("alignment", "espelhado", (esp: boolean) => esp ? new go.Spot(0, 0.038, -8, 0) : new go.Spot(1, 0.038, 8, 0))
+          .bind("fromSpot", "espelhado", (esp: boolean) => esp ? go.Spot.Left : go.Spot.Right)
+          .bind("toSpot", "espelhado", (esp: boolean) => esp ? go.Spot.Left : go.Spot.Right)
       )
-      // Porta de saída 2 (inferior direita)
       .add(
         new go.Shape("Rectangle", {
-          fill: "#ff9c4a", // laranja
+          fill: "#ff9c4a",
           stroke: "#E65100",
           desiredSize: new go.Size(34, 6),
           portId: "F2",
-          alignment: new go.Spot(1, 0.097, 8, 0),
-          fromSpot: go.Spot.Right,
-          toSpot: go.Spot.Right,
           fromLinkable: true,
           toLinkable: true,
           fromLinkableDuplicates: false,
           toLinkableDuplicates: false,
           cursor: "pointer"
         })
+          .bind("alignment", "espelhado", (esp: boolean) => esp ? new go.Spot(0, 0.097, -8, 0) : new go.Spot(1, 0.097, 8, 0))
+          .bind("fromSpot", "espelhado", (esp: boolean) => esp ? go.Spot.Left : go.Spot.Right)
+          .bind("toSpot", "espelhado", (esp: boolean) => esp ? go.Spot.Left : go.Spot.Right)
       )
-
       .add(
         new go.Shape("Rectangle", {
-          fill: "#73c883", // verde
+          fill: "#73c883",
           stroke: "#E65100",
           desiredSize: new go.Size(34, 6),
           portId: "F3",
-          alignment: new go.Spot(1, 0.159, 8, 0),
-          fromSpot: go.Spot.Right,
-          toSpot: go.Spot.Right,
           fromLinkable: true,
           toLinkable: true,
           fromLinkableDuplicates: false,
           toLinkableDuplicates: false,
           cursor: "pointer"
         })
+          .bind("alignment", "espelhado", (esp: boolean) => esp ? new go.Spot(0, 0.159, -8, 0) : new go.Spot(1, 0.159, 8, 0))
+          .bind("fromSpot", "espelhado", (esp: boolean) => esp ? go.Spot.Left : go.Spot.Right)
+          .bind("toSpot", "espelhado", (esp: boolean) => esp ? go.Spot.Left : go.Spot.Right)
       )
-      // Porta de saída 2 (inferior direita)
       .add(
         new go.Shape("Rectangle", {
-          fill: "#aa7444", // marrom
+          fill: "#aa7444",
           stroke: "#E65100",
           desiredSize: new go.Size(34, 6),
           portId: "F4",
-          alignment: new go.Spot(1, 0.221, 8, 0),
-          fromSpot: go.Spot.Right,
-          toSpot: go.Spot.Right,
           fromLinkable: true,
           toLinkable: true,
           fromLinkableDuplicates: false,
           toLinkableDuplicates: false,
           cursor: "pointer"
         })
+          .bind("alignment", "espelhado", (esp: boolean) => esp ? new go.Spot(0, 0.219, -8, 0) : new go.Spot(1, 0.219, 8, 0))
+          .bind("fromSpot", "espelhado", (esp: boolean) => esp ? go.Spot.Left : go.Spot.Right)
+          .bind("toSpot", "espelhado", (esp: boolean) => esp ? go.Spot.Left : go.Spot.Right)
       )
-
-      
-      // Porta de saída 1 (superior direita)
       .add(
         new go.Shape("Rectangle", {
-          fill: "gray", // cinza
+          fill: "gray",
           stroke: "#E65100",
           desiredSize: new go.Size(34, 6),
           portId: "F5",
-          alignment: new go.Spot(1, 0.283, 8, 0),
-          fromSpot: go.Spot.Right,
-          toSpot: go.Spot.Right,
           fromLinkable: true,
           toLinkable: true,
           fromLinkableDuplicates: false,
           toLinkableDuplicates: false,
           cursor: "pointer"
         })
+          .bind("alignment", "espelhado", (esp: boolean) => esp ? new go.Spot(0, 0.283, -8, 0) : new go.Spot(1, 0.283, 8, 0))
+          .bind("fromSpot", "espelhado", (esp: boolean) => esp ? go.Spot.Left : go.Spot.Right)
+          .bind("toSpot", "espelhado", (esp: boolean) => esp ? go.Spot.Left : go.Spot.Right)
       )
-      // Porta de saída 2 (inferior direita)
       .add(
         new go.Shape("Rectangle", {
-          fill: "#ffffff", // branco
+          fill: "#ffffff",
           stroke: "#E65100",
           desiredSize: new go.Size(34, 6),
           portId: "F6",
-          alignment: new go.Spot(1, 0.345, 8, 0),
-          fromSpot: go.Spot.Right,
-          toSpot: go.Spot.Right,
           fromLinkable: true,
           toLinkable: true,
           fromLinkableDuplicates: false,
           toLinkableDuplicates: false,
           cursor: "pointer"
         })
+          .bind("alignment", "espelhado", (esp: boolean) => esp ? new go.Spot(0, 0.345, -8, 0) : new go.Spot(1, 0.345, 8, 0))
+          .bind("fromSpot", "espelhado", (esp: boolean) => esp ? go.Spot.Left : go.Spot.Right)
+          .bind("toSpot", "espelhado", (esp: boolean) => esp ? go.Spot.Left : go.Spot.Right)
       )
-
       .add(
         new go.Shape("Rectangle", {
-          fill: "red", // vermelho
+          fill: "red",
           stroke: "#E65100",
           desiredSize: new go.Size(34, 6),
           portId: "F7",
-          alignment: new go.Spot(1, 0.407, 8, 0),
-          fromSpot: go.Spot.Right,
-          toSpot: go.Spot.Right,
           fromLinkable: true,
           toLinkable: true,
           fromLinkableDuplicates: false,
           toLinkableDuplicates: false,
           cursor: "pointer"
         })
+          .bind("alignment", "espelhado", (esp: boolean) => esp ? new go.Spot(0, 0.407, -8, 0) : new go.Spot(1, 0.407, 8, 0))
+          .bind("fromSpot", "espelhado", (esp: boolean) => esp ? go.Spot.Left : go.Spot.Right)
+          .bind("toSpot", "espelhado", (esp: boolean) => esp ? go.Spot.Left : go.Spot.Right)
       )
-      // Porta de saída 2 (inferior direita)
       .add(
         new go.Shape("Rectangle", {
-          fill: "black", // preto
+          fill: "black",
           stroke: "#E65100",
           desiredSize: new go.Size(34, 6),
           portId: "F8",
-          alignment: new go.Spot(1, 0.469, 8, 0),
-          fromSpot: go.Spot.Right,
-          toSpot: go.Spot.Right,
           fromLinkable: true,
           toLinkable: true,
           fromLinkableDuplicates: false,
           toLinkableDuplicates: false,
           cursor: "pointer"
         })
+          .bind("alignment", "espelhado", (esp: boolean) => esp ? new go.Spot(0, 0.469, -8, 0) : new go.Spot(1, 0.469, 8, 0))
+          .bind("fromSpot", "espelhado", (esp: boolean) => esp ? go.Spot.Left : go.Spot.Right)
+          .bind("toSpot", "espelhado", (esp: boolean) => esp ? go.Spot.Left : go.Spot.Right)
       )
-
-       // Porta de saída 1 (superior direita)
       .add(
         new go.Shape("Rectangle", {
-          fill: "yellow", // amarelo
+          fill: "yellow",
           stroke: "#E65100",
           desiredSize: new go.Size(34, 6),
           portId: "F9",
-          alignment: new go.Spot(1, 0.531, 8, 0),
-          fromSpot: go.Spot.Right,
-          toSpot: go.Spot.Right,
           fromLinkable: true,
           toLinkable: true,
           fromLinkableDuplicates: false,
           toLinkableDuplicates: false,
           cursor: "pointer"
         })
+          .bind("alignment", "espelhado", (esp: boolean) => esp ? new go.Spot(0, 0.531, -8, 0) : new go.Spot(1, 0.531, 8, 0))
+          .bind("fromSpot", "espelhado", (esp: boolean) => esp ? go.Spot.Left : go.Spot.Right)
+          .bind("toSpot", "espelhado", (esp: boolean) => esp ? go.Spot.Left : go.Spot.Right)
       )
-      // Porta de saída 2 (inferior direita)
       .add(
         new go.Shape("Rectangle", {
-          fill: "#aa46db", // violeta
+          fill: "#aa46db",
           stroke: "#E65100",
           desiredSize: new go.Size(34, 6),
           portId: "F10",
-          alignment: new go.Spot(1, 0.593, 8, 0),
-          fromSpot: go.Spot.Right,
-          toSpot: go.Spot.Right,
           fromLinkable: true,
           toLinkable: true,
           fromLinkableDuplicates: false,
           toLinkableDuplicates: false,
           cursor: "pointer"
         })
+          .bind("alignment", "espelhado", (esp: boolean) => esp ? new go.Spot(0, 0.593, -8, 0) : new go.Spot(1, 0.593, 8, 0))
+          .bind("fromSpot", "espelhado", (esp: boolean) => esp ? go.Spot.Left : go.Spot.Right)
+          .bind("toSpot", "espelhado", (esp: boolean) => esp ? go.Spot.Left : go.Spot.Right)
       )
-
       .add(
         new go.Shape("Rectangle", {
-          fill: "#ffcbdb", //rosa
+          fill: "#ffcbdb",
           stroke: "#E65100",
           desiredSize: new go.Size(34, 6),
           portId: "F11",
-          alignment: new go.Spot(1, 0.655, 8, 0),
-          fromSpot: go.Spot.Right,
-          toSpot: go.Spot.Right,
           fromLinkable: true,
           toLinkable: true,
           fromLinkableDuplicates: false,
           toLinkableDuplicates: false,
           cursor: "pointer"
         })
+          .bind("alignment", "espelhado", (esp: boolean) => esp ? new go.Spot(0, 0.655, -8, 0) : new go.Spot(1, 0.655, 8, 0))
+          .bind("fromSpot", "espelhado", (esp: boolean) => esp ? go.Spot.Left : go.Spot.Right)
+          .bind("toSpot", "espelhado", (esp: boolean) => esp ? go.Spot.Left : go.Spot.Right)
       )
-      // Porta de saída 2 (inferior direita)
       .add(
         new go.Shape("Rectangle", {
-          fill: "#00ffff", //ciano
+          fill: "#00ffff",
           stroke: "#E65100",
           desiredSize: new go.Size(34, 6),
           portId: "F12",
-          alignment: new go.Spot(1, 0.717, 8, 0),
-          fromSpot: go.Spot.Right,
-          toSpot: go.Spot.Right,
           fromLinkable: true,
           toLinkable: true,
           fromLinkableDuplicates: false,
           toLinkableDuplicates: false,
           cursor: "pointer"
         })
+          .bind("alignment", "espelhado", (esp: boolean) => esp ? new go.Spot(0, 0.717, -8, 0) : new go.Spot(1, 0.717, 8, 0))
+          .bind("fromSpot", "espelhado", (esp: boolean) => esp ? go.Spot.Left : go.Spot.Right)
+          .bind("toSpot", "espelhado", (esp: boolean) => esp ? go.Spot.Left : go.Spot.Right)
       )
-
-      
-      // Porta de saída 1 (superior direita)
       .add(
         new go.Shape("Rectangle", {
           fill: "blue",
           stroke: "#E65100",
           desiredSize: new go.Size(34, 6),
           portId: "F13",
-          alignment: new go.Spot(1, 0.779, 8, 0),
-          fromSpot: go.Spot.Right,
-          toSpot: go.Spot.Right,
           fromLinkable: true,
           toLinkable: true,
           fromLinkableDuplicates: false,
           toLinkableDuplicates: false,
           cursor: "pointer"
         })
+          .bind("alignment", "espelhado", (esp: boolean) => esp ? new go.Spot(0, 0.779, -8, 0) : new go.Spot(1, 0.779, 8, 0))
+          .bind("fromSpot", "espelhado", (esp: boolean) => esp ? go.Spot.Left : go.Spot.Right)
+          .bind("toSpot", "espelhado", (esp: boolean) => esp ? go.Spot.Left : go.Spot.Right)
       )
-      // Porta de saída 2 (inferior direita)
       .add(
         new go.Shape("Rectangle", {
           fill: "green",
           stroke: "#E65100",
           desiredSize: new go.Size(34, 6),
           portId: "F14",
-          alignment: new go.Spot(1, 0.841, 8, 0),
-          fromSpot: go.Spot.Right,
-          toSpot: go.Spot.Right,
           fromLinkable: true,
           toLinkable: true,
           fromLinkableDuplicates: false,
           toLinkableDuplicates: false,
           cursor: "pointer"
         })
+          .bind("alignment", "espelhado", (esp: boolean) => esp ? new go.Spot(0, 0.841, -8, 0) : new go.Spot(1, 0.841, 8, 0))
+          .bind("fromSpot", "espelhado", (esp: boolean) => esp ? go.Spot.Left : go.Spot.Right)
+          .bind("toSpot", "espelhado", (esp: boolean) => esp ? go.Spot.Left : go.Spot.Right)
       )
-
       .add(
         new go.Shape("Rectangle", {
           fill: "brown",
           stroke: "#E65100",
           desiredSize: new go.Size(34, 6),
           portId: "F15",
-          alignment: new go.Spot(1, 0.903, 8, 0),
-          fromSpot: go.Spot.Right,
-          toSpot: go.Spot.Right,
           fromLinkable: true,
           toLinkable: true,
           fromLinkableDuplicates: false,
           toLinkableDuplicates: false,
           cursor: "pointer"
         })
+          .bind("alignment", "espelhado", (esp: boolean) => esp ? new go.Spot(0, 0.903, -8, 0) : new go.Spot(1, 0.903, 8, 0))
+          .bind("fromSpot", "espelhado", (esp: boolean) => esp ? go.Spot.Left : go.Spot.Right)
+          .bind("toSpot", "espelhado", (esp: boolean) => esp ? go.Spot.Left : go.Spot.Right)
       )
-      // Porta de saída 2 (inferior direita)
       .add(
         new go.Shape("Rectangle", {
           fill: "#99e89d",
           stroke: "#E65100",
           desiredSize: new go.Size(34, 6),
           portId: "F16",
-          alignment: new go.Spot(1, 0.962, 8, 0),
-          fromSpot: go.Spot.Right,
-          toSpot: go.Spot.Right,
           fromLinkable: true,
           toLinkable: true,
           fromLinkableDuplicates: false,
           toLinkableDuplicates: false,
           cursor: "pointer"
         })
+          .bind("alignment", "espelhado", (esp: boolean) => esp ? new go.Spot(0, 0.962, -8, 0) : new go.Spot(1, 0.962, 8, 0))
+          .bind("fromSpot", "espelhado", (esp: boolean) => esp ? go.Spot.Left : go.Spot.Right)
+          .bind("toSpot", "espelhado", (esp: boolean) => esp ? go.Spot.Left : go.Spot.Right)
       );
 
 
@@ -399,7 +397,8 @@ export class Splitter116Component {
       category: "splitter116",
       labelText: "Sp 1:16",
       key: "Splitter1P16",
-      loc: "600 800"
+      loc: "600 800",
+      espelhado: false
     };
   }
 }

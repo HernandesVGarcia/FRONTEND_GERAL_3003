@@ -38,7 +38,51 @@ export class Cabo4FNacComponent implements OnInit {
 
   // Novo método para obter a definição do nodeTemplate
   getNodeTemplate() {
-    return new go.Node(go.Panel.Spot)
+    return new go.Node(go.Panel.Spot, {
+      contextMenu: go.GraphObject.build('ContextMenu', {
+        alignment: go.Spot.Left,
+        alignmentFocus: go.Spot.Right
+      })
+        .add(
+          go.GraphObject.build('ContextMenuButton', {
+            click: (e, obj) => {
+              const contextmenu = obj.part;
+              if (contextmenu && contextmenu.data) {
+                const cableData = contextmenu.data;
+                window.dispatchEvent(new CustomEvent('caboContextMenu', {
+                  detail: { action: 'visualizarFibras', data: cableData }
+                }));
+              }
+            }
+          }).add(new go.TextBlock(' 👁 Visualizar fibras', { textAlign: 'left', alignment: go.Spot.Left }))
+        )
+        .add(
+          go.GraphObject.build('ContextMenuButton', {
+            click: (e, obj) => {
+              const contextmenu = obj.part;
+              if (contextmenu && contextmenu.data) {
+                const cableData = contextmenu.data;
+                window.dispatchEvent(new CustomEvent('caboContextMenu', {
+                  detail: { action: 'powerMeter', data: cableData }
+                }));
+              }
+            }
+          }).add(new go.TextBlock(' 🔌 Power Meter', { textAlign: 'left', alignment: go.Spot.Left }))
+        )
+        .add(
+          go.GraphObject.build('ContextMenuButton', {
+            click: (e, obj) => {
+              const contextmenu = obj.part;
+              if (contextmenu && contextmenu.data) {
+                const cableData = contextmenu.data;
+                window.dispatchEvent(new CustomEvent('caboContextMenu', {
+                  detail: { action: 'espelhar', data: cableData }
+                }));
+              }
+            }
+          }).add(new go.TextBlock(' ⇄ Espelhar', { textAlign: 'left', alignment: go.Spot.Left }))
+        )
+    })
       .add(
         new go.Shape("RoundedRectangle", {
           fill: "#666666",//"#e3f2fd", 

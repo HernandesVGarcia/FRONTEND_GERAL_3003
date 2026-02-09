@@ -5,6 +5,6 @@ export class Splitter {
     LABEL:string | undefined;
     X: string | any;
     Y: string | any;
-    
-                  
+    ESPELHAR: boolean | undefined;
+                      
     }

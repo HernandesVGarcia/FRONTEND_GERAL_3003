@@ -140,7 +140,7 @@ import { DestinoSigla } from '../modelo/DestinoSigla';
   standalone: true,
   imports: [CommonModule]
 })
-export class GoJSDemoComponent implements OnInit, AfterViewInit {
+export class GoJSDemoComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('diagramDiv') diagramDiv: ElementRef | null = null;
   
   public diagramInitialized = false;
@@ -304,7 +304,10 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit {
   private static globalListenerAdded = false;
   // Flag para listener do context menu de links (evita múltiplas chamadas ao excluir fusão)
   private static linkContextMenuListenerAdded = false;
-  
+  // Listener do context menu de cabos: por instância (removido no destroy) para não usar instância antiga ao reabrir o modal
+  private caboContextMenuListenerAdded = false;
+  private handleCaboContextMenu!: (event: any) => void;
+
   constructor(
      public dialogRef: MatDialogRef<GoJSDemoComponent>,
      @Inject(MAT_DIALOG_DATA) public data: any,
@@ -411,6 +414,12 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit {
         
   }
 
+  ngOnDestroy(): void {
+    if (this.caboContextMenuListenerAdded && this.handleCaboContextMenu) {
+      window.removeEventListener('caboContextMenu', this.handleCaboContextMenu);
+      this.caboContextMenuListenerAdded = false;
+    }
+  }
 
 //================================================================================================
 
@@ -566,6 +575,7 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit {
         loc: `${POSX} ${POSY}`,
         idmeta: splitter.IDMETA,
         tipoSplitter: splitter.TIPO_SPLITTER,
+        espelhado: !!splitter.ESPELHAR,
       };
       
       splitterNodes.push(splitterNode);
@@ -3282,13 +3292,16 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
               
               if (node.data.key && node.data.key.startsWith("Splitter")) {
               const apenasNumBoca = node.data.key.replace('Splitter','');
+              const idmeta = node.data.idmeta != null ? node.data.idmeta : Number(apenasNumBoca);
+              const espelhar = node.data.espelhado ? 1 : 0;
               console.log(`Splitter ${node.data.key} movido para POSIÇÃO:`, {
                 x: node.position.x,
-                y: node.position.y
+                y: node.position.y,
+                ESPELHAR: espelhar
               });
               const xboca= node.position.x;
               const yboca= node.position.y;
-              this.UpdateSPXYService.atualizar(xboca, yboca, apenasNumBoca).subscribe({next:(response)=>{console.log ('Coordenas Splitter atualizadas', response)}})
+              this.UpdateSPXYService.atualizar(xboca, yboca, idmeta, espelhar).subscribe({next:(response)=>{console.log ('Coordenas Splitter atualizadas', response)}})
               }
 
 
@@ -3364,6 +3377,18 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
                 break;
               case 'excluir':
                 this.excluirSplitter(data, nodeRef);
+                break;
+              case 'espelhar':
+                if (nodeRef && data && data.idmeta != null) {
+                  const x = nodeRef.position.x;
+                  const y = nodeRef.position.y;
+                  const espelhar = data.espelhado ? 1 : 0;
+                  console.log('🔀 [ESPELHAR] Salvando splitter na API:', { idmeta: data.idmeta, x, y, ESPELHAR: espelhar });
+                  this.UpdateSPXYService.atualizar(x, y, data.idmeta, espelhar).subscribe({
+                    next: () => {},
+                    error: (err) => console.error('Erro ao salvar ESPELHAR do splitter:', err)
+                  });
+                }
                 break;
               case 'info':
                 alert(`Splitter: ${data.labelText}\nID: ${data.idmeta}\nTipo: ${data.tipoSplitter}`);
@@ -3538,20 +3563,7 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
                 go.GraphObject.build("ContextMenuButton", {
                   click: (e, obj) => {
                     // Tentar acessar o link de diferentes formas
-                    let link: go.Link | null = null;
-                    
-                    // Método 1: obj.part pode ser o ContextMenu, então obj.part.part seria o Link
-                    if (obj.part && obj.part.part instanceof go.Link) {
-                      link = obj.part.part as go.Link;
-                    }
-                    // Método 2: Tentar através do diagram selection
-                    else if (e.diagram && e.diagram.selection.first() instanceof go.Link) {
-                      link = e.diagram.selection.first() as go.Link;
-                    }
-                    // Método 3: Tentar obj.part diretamente
-                    else if (obj.part instanceof go.Link) {
-                      link = obj.part as go.Link;
-                    }
+                    const link = this.getLinkFromContextMenu(e, obj);
                     
                     if (link && link.fromNode && link.toNode) {
                       const fromNode = link.fromNode;
@@ -3770,7 +3782,16 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
         if (!GoJSDemoComponent.linkContextMenuListenerAdded) {
           this.handleLinkContextMenu = (event: any) => {
             const { action, link, fromCableKey, fromPortId, toCableKey, toPortId } = event.detail;
-            if (action === 'excluir' && link) {
+            if (action === 'visualizarFibras') {
+              console.log('🔗 [LINK-CONTEXT] Visualizar fibras', { fromCableKey, fromPortId, toCableKey, toPortId });
+              // TODO: implementar abertura de tela/modal de visualização de fibras
+            } else if (action === 'powerMeter') {
+              console.log('🔗 [LINK-CONTEXT] Power Meter', { fromCableKey, fromPortId, toCableKey, toPortId });
+              // TODO: implementar power meter para o cabo
+            } else if (action === 'espelhar') {
+              console.log('🔗 [LINK-CONTEXT] Espelhar', { fromCableKey, fromPortId, toCableKey, toPortId });
+              // TODO: implementar espelhar link/cabo
+            } else if (action === 'excluir' && link) {
               this.excluirFusaoInterna(
                 fromCableKey,
                 fromPortId,
@@ -3784,10 +3805,23 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
           GoJSDemoComponent.linkContextMenuListenerAdded = true;
         }
 
-        
-
-
-        
+        // Listener para context menu dos cabos (por instância: removido em ngOnDestroy para funcionar ao reabrir o modal)
+        if (!this.caboContextMenuListenerAdded) {
+          this.handleCaboContextMenu = (event: any) => {
+            const { action, data } = event.detail;
+            if (action === 'visualizarFibras') {
+              console.log('🔗 [CABO-CONTEXT] Visualizar fibras', data);
+              // TODO: abrir modal/tela de visualização de fibras do cabo
+            } else if (action === 'powerMeter') {
+              console.log('🔗 [CABO-CONTEXT] Power Meter', data);
+              // TODO: abrir power meter para o cabo
+            } else if (action === 'espelhar') {
+              this.espelharNode(data);
+            }
+          };
+          window.addEventListener('caboContextMenu', this.handleCaboContextMenu);
+          this.caboContextMenuListenerAdded = true;
+        }
 
         console.log('Diagrama criado com dois cabos do modelo Cabo_12F_NAC com suporte a conexões específicas de porta');
         
@@ -3943,6 +3977,25 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
     }
     
     console.warn(`⚠️ [FUSAO-ENTRADA-SP] Não foi possível extrair ID do splitter de: ${splitterKey}`);
+    return null;
+  }
+
+  /**
+   * Obtém o Link do diagrama a partir do evento e do objeto do context menu (cabos).
+   */
+  private getLinkFromContextMenu(e: go.InputEvent, obj: go.GraphObject): go.Link | null {
+    if (obj.part && (obj.part as go.Adornment).adornedPart instanceof go.Link) {
+      return (obj.part as go.Adornment).adornedPart as go.Link;
+    }
+    if (obj.part && obj.part.part instanceof go.Link) {
+      return obj.part.part as go.Link;
+    }
+    if (e.diagram && e.diagram.selection.first() instanceof go.Link) {
+      return e.diagram.selection.first() as go.Link;
+    }
+    if (obj.part instanceof go.Link) {
+      return obj.part as go.Link;
+    }
     return null;
   }
 
@@ -5434,42 +5487,29 @@ private restaurarCursor(): void {
     }, 300); // Aumentei o tempo inicial também
   }
 
-//=========================================================== FUNÇÃO ESPELHAR BOCAS ==============================
-espelhar(): void {
-    if (!this.diagram) {
-      console.log('❌ Diagrama não inicializado');
-      return;
-    }
-
-    const selectedNode = this.diagram.selection.first();
-  
-    if (!(selectedNode instanceof go.Node)) {
-      console.log('❌ Nenhum node selecionado');
-      return;
-    }
-
-    const nodeData = selectedNode.data;
+//=========================================================== FUNÇÃO ESPELHAR BOCAS (via context menu do cabo) ==============================
+  /**
+   * Espelha o cabo (Boca) no diagrama: inverte lado D/E, persiste via API e redesenha.
+   * Chamado pelo context menu do cabo (opção "Espelhar").
+   */
+  private espelharNode(nodeData: any): void {
     if (!nodeData || !nodeData.key) {
       console.log('❌ Node sem dados válidos');
       return;
     }
-
-    let lado = ''
-
-    console.log('🔄 === FUNÇÃO ESPELHAR DISPARADA ===', nodeData.key);
+    if (!this.VetorBocas || !this.VetorBocas[0]) {
+      console.log('❌ VetorBocas não disponível');
+      return;
+    }
 
     const bocaNumber = nodeData.key.replace('Boca', '');
+    const ldValue = this.VetorBocas[0][`LD${bocaNumber}` as keyof typeof this.VetorBocas[0]];
+    const lado = ldValue === 'D' ? 'E' : 'D';
 
-    const ldValue = this.VetorBocas[0][`LD${bocaNumber}` as keyof typeof this.VetorBocas[0]]; 
+    console.log('🔄 Espelhar cabo (Boca):', bocaNumber, 'LD atual:', ldValue, '→ novo lado:', lado);
 
-    console.log('🔄 === FUNÇÃO ESPELHAR BOCA:', bocaNumber);
-
-    if (ldValue === "D") {lado='E'} else {lado='D'}
-        
     this.UpdateBCLadoService.atualizar(lado, bocaNumber).subscribe();
-
-    setTimeout(() => {this.redesenharDiagrama();},500)
-
+    setTimeout(() => this.redesenharDiagrama(), 500);
   }
 
   /**

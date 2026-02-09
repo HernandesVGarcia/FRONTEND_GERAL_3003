@@ -23,15 +23,15 @@ export class Splitter132Component {
       stroke: '#E65100',
       desiredSize: new go.Size(34, 5),
       portId: `F${portIndex}`,
-      alignment: new go.Spot(1, y, 8, 0),
-      fromSpot: go.Spot.Right,
-      toSpot: go.Spot.Right,
       fromLinkable: true,
       toLinkable: true,
       fromLinkableDuplicates: false,
       toLinkableDuplicates: false,
       cursor: 'pointer'
-    });
+    })
+      .bind('alignment', 'espelhado', (esp: boolean) => esp ? new go.Spot(0, y, -8, 0) : new go.Spot(1, y, 8, 0))
+      .bind('fromSpot', 'espelhado', (esp: boolean) => esp ? go.Spot.Left : go.Spot.Right)
+      .bind('toSpot', 'espelhado', (esp: boolean) => esp ? go.Spot.Left : go.Spot.Right);
   }
 
   getNodeTemplate(): go.Node {
@@ -85,17 +85,33 @@ export class Splitter132Component {
           })
           .add(new go.TextBlock('🔌 Power Meter', { textAlign: 'left', alignment: go.Spot.Left }))
         )
+        .add(
+          go.GraphObject.build('ContextMenuButton', {
+            click: (e, obj) => {
+              const adorno = obj.part as go.Adornment;
+              const node = adorno?.adornedPart;
+              const diagram = node?.diagram;
+              if (diagram && node?.data) {
+                const esp = !node.data.espelhado;
+                diagram.model.commit((m: go.Model) => (m as go.GraphLinksModel).setDataProperty(node.data, 'espelhado', esp), 'espelhar');
+                window.dispatchEvent(new CustomEvent('splitterContextMenu', { detail: { action: 'espelhar', data: node.data, node } }));
+              }
+            }
+          })
+          .add(new go.TextBlock(' ⇄ Espelhar', { textAlign: 'left', alignment: go.Spot.Left }))
+        )
     })
       .add(
-        new go.Panel('Spot')
+        new go.Panel('Spot', { desiredSize: new go.Size(453, 480) })
           .add(
-            new go.Shape('Triangle', {
+            new go.Shape({
               fill: '#9FFFFF',
               stroke: '#0097A9',
               strokeWidth: 3,
-              desiredSize: new go.Size(680, 480),
-              angle: -90
-            })
+              geometry: go.Geometry.parse('F M 0 240 L 453 0 L 453 480 Z'),
+              geometryStretch: go.GraphObject.None
+            }).bind('geometry', 'espelhado', (esp: boolean) =>
+              esp ? go.Geometry.parse('F M 453 240 L 0 0 L 0 480 Z') : go.Geometry.parse('F M 0 240 L 453 0 L 453 480 Z'))
           )
           .add(
             new go.TextBlock({
@@ -113,15 +129,15 @@ export class Splitter132Component {
           stroke: '#0D47A1',
           desiredSize: new go.Size(12, 10),
           portId: 'ENTRADA',
-          alignment: new go.Spot(0, 0.5, -4, 0),
-          fromSpot: go.Spot.Left,
-          toSpot: go.Spot.Left,
           fromLinkable: true,
           toLinkable: true,
           fromLinkableDuplicates: false,
           toLinkableDuplicates: false,
           cursor: 'pointer'
         })
+          .bind('alignment', 'espelhado', (esp: boolean) => esp ? new go.Spot(1, 0.5, 4, 0) : new go.Spot(0, 0.5, -4, 0))
+          .bind('fromSpot', 'espelhado', (esp: boolean) => esp ? go.Spot.Right : go.Spot.Left)
+          .bind('toSpot', 'espelhado', (esp: boolean) => esp ? go.Spot.Right : go.Spot.Left)
       );
 
     for (let i = 1; i <= 32; i++) {
@@ -136,7 +152,8 @@ export class Splitter132Component {
       category: 'splitter132',
       labelText: 'Sp 1:32',
       key: 'Splitter1P32',
-      loc: '600 800'
+      loc: '600 800',
+      espelhado: false
     };
   }
 }

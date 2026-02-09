@@ -31,7 +31,7 @@ export class UpdateSplitterXYService {
   
     // Método para Selecionar Caixa
     
-    atualizar(BCX:number,BCY:number,IDMETASP:number):Observable<UpdateCoordenadasResponse>{
+    atualizar(BCX:number,BCY:number,IDMETASP:number,ESPELHAR?:number):Observable<UpdateCoordenadasResponse>{
       const route = `/update_splitterxy`; 
       const url = `${this.baseUrl}${route}`;
       const token = this.authService.getToken();
@@ -53,6 +53,8 @@ export class UpdateSplitterXYService {
       console.error('ERRO: ID meta SPLITTER não encontrado');
       return throwError(() => 'ID da meta SPLITTER não encontrado');
     }
+
+    const espelhar = ESPELHAR ?? 0;
   
       const headers = new HttpHeaders()
   
@@ -67,7 +69,7 @@ export class UpdateSplitterXYService {
           IDMETA:IDMETASP,
           X:BCX,
           Y:BCY,
-          
+          ESPELHAR: espelhar
 
         };
 
