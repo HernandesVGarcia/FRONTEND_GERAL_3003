@@ -16,7 +16,10 @@ import {CidadesService} from '../servico/cidades.service';
 import {Cidades} from '../modelo/Cidades';
 import { AuthService } from '../servico/auth.service';
 import { Router } from '@angular/router';
+import { MatDialog } from '@angular/material/dialog';
+import { MatButtonModule } from '@angular/material/button';
 import { CitySelectModalComponent } from '../city-select-modal/city-select-modal.component';
+import { LogCidadeComponent } from '../log-cidade/log-cidade.component';
 //import { CaixaInternasyncComponent } from '../caixa-internasync/caixa-internasync.component';
 //import { AppComponent } from '../app.component';
 //import {CaixaInternaSyncComponent} from '../caixa-interna-sync/caixa-interna-sync.component'
@@ -29,14 +32,13 @@ import { CitySelectModalComponent } from '../city-select-modal/city-select-modal
     MatIconModule,
     MatFormFieldModule,
     MatSelectModule,
+    MatButtonModule,
     FormsModule,
     MatInputModule,
     MatAutocompleteModule,
     ReactiveFormsModule,
     CitySelectModalComponent,
     MatSelectModule,
-    //CaixaInternaSyncComponent,
-    //GoogleGpsComponent,
     MatTooltipModule],
   templateUrl: './toolbars.component.html',
   styleUrls: ['./toolbars.component.css'],
@@ -56,7 +58,7 @@ export class ToolbarsComponent {
     private cidadesService: CidadesService,
     private authService: AuthService,
     private router: Router,
-    
+    private dialog: MatDialog
   ) {
     console.log('Toolbar construída');
   }
@@ -142,6 +144,20 @@ export class ToolbarsComponent {
     // Dispara evento customizado que será capturado pelo GoogleMapsComponent
     const event = new CustomEvent('exportKML');
     window.dispatchEvent(event);
+  }
+
+  abrirLogCidade(): void {
+    const idCidade = this.authService.getIdCity();
+    const cidade = this.cities?.find((c: any) => c.id_cidade === idCidade || c.id === idCidade);
+    this.dialog.open(LogCidadeComponent, {
+      width: '1000px',
+      maxWidth: '100vw',
+      data: {
+        idCidade: idCidade ?? undefined,
+        nomeCidade: cidade?.nome ?? cidade?.nome_cidade
+      },
+      disableClose: false
+    });
   }
 
 

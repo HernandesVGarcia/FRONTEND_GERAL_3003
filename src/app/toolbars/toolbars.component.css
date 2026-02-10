@@ -29,12 +29,24 @@
 
 
 .kml-btn {
-  height: 30px;           /* igual ao ícone/cancel */
+  height: 30px;
   line-height: 25px;
-  padding: 0 5px;        /* ajuste horizontal */
-  min-width: 30px;        /* tamanho mínimo legível */
+  padding: 0 5px;
+  min-width: 30px;
   font-weight: 600;
-  color:rgb(2, 129, 2);
+  color: rgb(2, 129, 2);
+  border-radius: 2px;
+}
+
+.log-btn {
+  height: 30px;
+  line-height: 25px;
+  padding: 0 5px;
+  min-width: 30px;
+  font-weight: 600;
+  color: rgb(2, 129, 2);
+  border-radius: 2px;
+  margin-left: 8px;
 }
 
 

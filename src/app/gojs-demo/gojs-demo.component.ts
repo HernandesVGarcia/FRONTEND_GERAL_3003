@@ -121,6 +121,7 @@ import { UpdateExcluiFusaoSaidaEntradaSPService, ExcluiFusaoSaidaEntradaSPReques
 import { AuthService } from '../servico/auth.service'; // 🏠 NOVO: Import AuthService
 import { FiberApiService } from '../servico/fiber-api.service'; // 🏠 NOVO: Import FiberApiService
 import { PlotaSplitterComponent, PlotaSplitterData, PlotaSplitterResult } from '../plota-splitter/plota-splitter.component';
+import { LogCaixaComponent } from '../log-caixa/log-caixa.component';
 import { TiposService } from '../servico/tipos.service';
 import { InsertSplitterService, InsertSplitterRequest } from '../servico/insert-splitter.service'; // 🔀 NOVO: Import InsertSplitterService
 import { ExcluiSplitterService, ExcluiSplitterRequest } from '../servico/exclui-splitter.service'; // 🗑️ NOVO: Import ExcluiSplitterService
@@ -5346,6 +5347,21 @@ private restaurarCursor(): void {
       }, 1000);
     }
   }
+
+  /** Abre o modal Log Caixa (log da caixa atual). */
+  abrirLogCaixa(): void {
+    const idmetaCaixa = this.authService.getIDmetaCaixa();
+    this.dialog.open(LogCaixaComponent, {
+      width: '1000px',
+      maxWidth: '100vw',
+      data: {
+        idmetaCaixa: idmetaCaixa ?? undefined,
+        numerocx: this.caixaNumerocx !== 'N/A' ? this.caixaNumerocx : undefined
+      },
+      disableClose: false
+    });
+  }
+
    //=============================================função utilizada no redraw=================================================================
   // 🆕 NOVO - Função para resetar todos os estados
   private resetarEstados(): void {

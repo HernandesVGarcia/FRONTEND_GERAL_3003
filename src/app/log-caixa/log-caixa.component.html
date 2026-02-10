@@ -1,0 +1,43 @@
+<div class="log-caixa-modal">
+  <div class="modal-header">
+    <h3>Log Caixa {{ data.numerocx ? '(' + data.numerocx + ')' : '' }}</h3>
+    <button mat-dialog-close class="close-btn" (click)="fechar()">&times;</button>
+  </div>
+  <div class="modal-body">
+    <p *ngIf="data.idmetaCaixa" class="meta-info">ID Meta Caixa: {{ data.idmetaCaixa }}</p>
+
+    <div *ngIf="isLoading" class="loading-container">
+      <mat-spinner diameter="40"></mat-spinner>
+      <p>Carregando log...</p>
+    </div>
+
+    <div *ngIf="errorMessage" class="error-container">
+      <p class="error-message">{{ errorMessage }}</p>
+    </div>
+
+    <div *ngIf="!isLoading && !errorMessage" class="flexgrid-wrapper">
+      <div class="flexgrid-table">
+        <div class="flexgrid-header">
+          <div class="flexgrid-cell col-usuario">Usuário</div>
+          <div class="flexgrid-cell col-data">Data</div>
+          <div class="flexgrid-cell col-hora">Hora</div>
+          <div class="flexgrid-cell col-evento">Evento</div>
+          <div class="flexgrid-cell col-descricao">Descrição</div>
+        </div>
+        <div *ngFor="let row of logs" class="flexgrid-row">
+          <div class="flexgrid-cell col-usuario">{{ row.usuario ?? '-' }}</div>
+          <div class="flexgrid-cell col-data">{{ row.data ?? '-' }}</div>
+          <div class="flexgrid-cell col-hora">{{ row.hora ?? '-' }}</div>
+          <div class="flexgrid-cell col-evento">{{ row.evento ?? '-' }}</div>
+          <div class="flexgrid-cell col-descricao">{{ row.descricao ?? '-' }}</div>
+        </div>
+        <div *ngIf="logs.length === 0" class="flexgrid-empty">
+          Nenhum registro de log encontrado.
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button mat-button (click)="fechar()">Fechar</button>
+  </div>
+</div>
