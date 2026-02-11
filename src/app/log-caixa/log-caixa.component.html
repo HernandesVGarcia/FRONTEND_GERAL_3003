@@ -1,5 +1,5 @@
 <div class="log-caixa-modal">
-  <div class="modal-header">
+  <div class="modal-header" (mousedown)="onHeaderMouseDown($event)">
     <h3>Log Caixa {{ data.numerocx ? '(' + data.numerocx + ')' : '' }}</h3>
     <button mat-dialog-close class="close-btn" (click)="fechar()">&times;</button>
   </div>

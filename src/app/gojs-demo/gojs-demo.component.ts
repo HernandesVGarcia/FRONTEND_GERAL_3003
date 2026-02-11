@@ -122,6 +122,7 @@ import { AuthService } from '../servico/auth.service'; // 🏠 NOVO: Import Auth
 import { FiberApiService } from '../servico/fiber-api.service'; // 🏠 NOVO: Import FiberApiService
 import { PlotaSplitterComponent, PlotaSplitterData, PlotaSplitterResult } from '../plota-splitter/plota-splitter.component';
 import { LogCaixaComponent } from '../log-caixa/log-caixa.component';
+import { FusaoPorTubosComponent } from '../fusao-por-tubos/fusao-por-tubos.component';
 import { TiposService } from '../servico/tipos.service';
 import { InsertSplitterService, InsertSplitterRequest } from '../servico/insert-splitter.service'; // 🔀 NOVO: Import InsertSplitterService
 import { ExcluiSplitterService, ExcluiSplitterRequest } from '../servico/exclui-splitter.service'; // 🗑️ NOVO: Import ExcluiSplitterService
@@ -3619,21 +3620,17 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
                         }
                         
                         if (podeExcluir) {
-                          const confirmacao = confirm(mensagemConfirmacao);
-                          
-                          if (confirmacao) {
-                            // Disparar evento customizado para o componente processar
-                            window.dispatchEvent(new CustomEvent('linkContextMenu', { 
-                              detail: { 
-                                action: 'excluir', 
-                                link: link,
-                                fromCableKey: fromCableKey,
-                                fromPortId: fromPortId,
-                                toCableKey: toCableKey,
-                                toPortId: toPortId
-                              } 
-                            }));
-                          }
+                          // Confirmação de exclusão desabilitada: executa exclusão diretamente
+                          window.dispatchEvent(new CustomEvent('linkContextMenu', { 
+                            detail: { 
+                              action: 'excluir', 
+                              link: link,
+                              fromCableKey: fromCableKey,
+                              fromPortId: fromPortId,
+                              toCableKey: toCableKey,
+                              toPortId: toPortId
+                            } 
+                          }));
                         } else {
                           alert(mensagemConfirmacao);
                         }
@@ -3818,6 +3815,42 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
               // TODO: abrir power meter para o cabo
             } else if (action === 'espelhar') {
               this.espelharNode(data);
+            } else if (action === 'fusaoPorTubos') {
+              const idMetaCaixaStr = this.authService.getIDmetaCaixa();
+              const id_meta_caixa = idMetaCaixaStr ? parseInt(idMetaCaixaStr, 10) : undefined;
+              if (!id_meta_caixa || isNaN(id_meta_caixa)) {
+                console.warn('⚠️ [FUSAO-POR-TUBOS] id_meta_caixa não disponível');
+              }
+              const model = this.diagram?.model;
+              const nodeDataArray = model?.nodeDataArray ?? [];
+              const listaCabos = nodeDataArray
+                .filter((n: any) => n && typeof n.key === 'string' && n.key.startsWith('Boca'))
+                .map((n: any) => {
+                  const num = parseInt((n.key || '').replace('Boca', ''), 10);
+                  const tipo = (num >= 1 && num <= 18) ? this.VetorTipoCabos[num - 1] : undefined;
+                  return {
+                    key: n.key,
+                    labelText: n.labelText ?? n.key,
+                    capacidade: tipo?.capacidade ?? 12,
+                    fibras_portubo: tipo?.tubo ?? 12
+                  };
+                });
+              this.dialog.open(FusaoPorTubosComponent, {
+                width: '900px',
+                maxWidth: '95vw',
+                data: {
+                  cableData: data,
+                  listaCabos,
+                  id_meta_caixa,
+                  onFusaoConcluida: () => {
+                    this.ngZone.run(() => {
+                      setTimeout(() => this.redesenharDiagrama(), 300);
+                    });
+                  }
+                },
+                disableClose: false,
+                panelClass: 'fusao-por-tubos-dialog'
+              });
             }
           };
           window.addEventListener('caboContextMenu', this.handleCaboContextMenu);

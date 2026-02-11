@@ -98,6 +98,19 @@ export class Cabo144FIntDComponent implements OnInit {
               if (contextmenu && contextmenu.data) {
                 const cableData = contextmenu.data;
                 window.dispatchEvent(new CustomEvent('caboContextMenu', {
+                  detail: { action: 'fusaoPorTubos', data: cableData }
+                }));
+              }
+            }
+          }).add(new go.TextBlock(' 🔗 Fusão por tubos', { textAlign: 'left', alignment: go.Spot.Left }))
+        )
+        .add(
+          go.GraphObject.build('ContextMenuButton', {
+            click: (e, obj) => {
+              const contextmenu = obj.part;
+              if (contextmenu && contextmenu.data) {
+                const cableData = contextmenu.data;
+                window.dispatchEvent(new CustomEvent('caboContextMenu', {
                   detail: { action: 'powerMeter', data: cableData }
                 }));
               }
@@ -358,6 +371,8 @@ export class Cabo144FIntDComponent implements OnInit {
           cursor: "pointer",
           fromLinkable: true,
           toLinkable: true,
+          fromLinkableSelfNode: true,
+          toLinkableSelfNode: true,
           alignment: go.Spot.Center,
           toMaxLinks: 1,
           fromMaxLinks: 1,

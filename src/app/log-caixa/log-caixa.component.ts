@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, Inject, OnInit, OnDestroy, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
@@ -22,16 +22,19 @@ export interface LogCaixaData {
   templateUrl: './log-caixa.component.html',
   styleUrls: ['./log-caixa.component.css']
 })
-export class LogCaixaComponent implements OnInit {
+export class LogCaixaComponent implements OnInit, OnDestroy {
 
   logs: LeIdmetaLogEntry[] = [];
   isLoading = false;
   errorMessage: string | null = null;
 
+  private dragListeners: (() => void)[] = [];
+
   constructor(
     public dialogRef: MatDialogRef<LogCaixaComponent>,
     @Inject(MAT_DIALOG_DATA) public data: LogCaixaData,
-    private leIdmetaLogService: LeIdmetaLogService
+    private leIdmetaLogService: LeIdmetaLogService,
+    private elementRef: ElementRef<HTMLElement>
   ) {}
 
   ngOnInit(): void {
@@ -40,6 +43,53 @@ export class LogCaixaComponent implements OnInit {
     } else {
       this.errorMessage = 'ID da caixa não informado.';
     }
+  }
+
+  ngOnDestroy(): void {
+    this.removeDragListeners();
+  }
+
+  onHeaderMouseDown(event: MouseEvent): void {
+    if ((event.target as HTMLElement).closest('button')) return;
+    const container = this.elementRef.nativeElement.closest('.mat-mdc-dialog-container') as HTMLElement;
+    if (!container) return;
+    event.preventDefault();
+    const startX = event.clientX;
+    const startY = event.clientY;
+    const rect = container.getBoundingClientRect();
+    let currentLeft = rect.left;
+    let currentTop = rect.top;
+
+    const onMove = (e: MouseEvent): void => {
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      currentLeft = rect.left + dx;
+      currentTop = rect.top + dy;
+      container.style.position = 'fixed';
+      container.style.left = `${currentLeft}px`;
+      container.style.top = `${currentTop}px`;
+      container.style.margin = '0';
+      container.style.transform = 'none';
+      container.style.width = `${rect.width}px`;
+      container.style.height = `${rect.height}px`;
+      container.style.maxWidth = `${rect.width}px`;
+      container.style.maxHeight = `${rect.height}px`;
+    };
+    const onUp = (): void => {
+      this.removeDragListeners();
+    };
+
+    this.dragListeners = [
+      () => document.removeEventListener('mousemove', onMove),
+      () => document.removeEventListener('mouseup', onUp)
+    ];
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  }
+
+  private removeDragListeners(): void {
+    this.dragListeners.forEach(remove => remove());
+    this.dragListeners = [];
   }
 
   carregarLogs(): void {

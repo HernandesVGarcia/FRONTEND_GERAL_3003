@@ -1,0 +1,49 @@
+<div class="fusao-por-tubos-modal">
+  <div class="modal-header" (mousedown)="onHeaderMouseDown($event)">
+    <h3>Fusão por tubos</h3>
+    <button mat-dialog-close class="close-btn" (click)="fechar()">&times;</button>
+  </div>
+  <div class="modal-body">
+    <div class="layout-row">
+      <div class="combo-origen">
+        <mat-form-field appearance="outline">
+          <mat-label>Cabo origem</mat-label>
+          <mat-select [(ngModel)]="caboOrigemKey" (ngModelChange)="onCaboOrigemChange()" panelClass="fusao-por-tubos-select-panel">
+            <mat-option *ngFor="let c of listaCabosOrigem" [value]="c.key">
+              {{ c.labelText || c.key }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+      <div class="panel-tubos panel-origen">
+        <span class="panel-label">Tubos origem</span>
+        <span *ngIf="carregandoTubosOrigem" class="tubos-loading">Verificando...</span>
+        <button *ngFor="let t of tubosOrigem" mat-button class="tubo-btn" [class.tubo-btn-selected]="tuboOrigemSelecionado === t" [class.tubo-btn-blocked]="tubosOrigemBloqueados.has(t)" [disabled]="tubosOrigemBloqueados.has(t)" (click)="onTuboOrigemClick(t)">
+          {{ t }}
+        </button>
+      </div>
+      <div class="panel-tubos panel-destino">
+        <span class="panel-label">Tubos destino</span>
+        <span *ngIf="carregandoTubosDestino" class="tubos-loading">Verificando...</span>
+        <button *ngFor="let t of tubosDestino" mat-button class="tubo-btn" [class.tubo-btn-selected]="tuboDestinoSelecionado === t" [class.tubo-btn-blocked]="tubosDestinoBloqueados.has(t)" [disabled]="tubosDestinoBloqueados.has(t)" (click)="onTuboDestinoClick(t)">
+          {{ t }}
+        </button>
+      </div>
+      <div class="combo-destino">
+        <mat-form-field appearance="outline">
+          <mat-label>Cabo destino</mat-label>
+          <mat-select [(ngModel)]="caboDestinoKey" (ngModelChange)="onCaboDestinoChange()" panelClass="fusao-por-tubos-select-panel">
+            <mat-option value="">-- Selecionar --</mat-option>
+            <mat-option *ngFor="let c of listaCabosDestino" [value]="c.key">
+              {{ c.labelText || c.key }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button mat-raised-button color="primary" [disabled]="!podeFundirTubos || fundindo" (click)="fundirTubos()">{{ fundindo ? 'Fundindo...' : 'Fundir Tubos' }}</button>
+    <button mat-button (click)="fechar()">Fechar</button>
+  </div>
+</div>

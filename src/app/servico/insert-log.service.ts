@@ -118,7 +118,7 @@ export class InsertLogService {
       return { valido: false, erro: 'ID do usuário inválido' };
     }
 
-    if (!logData.id_evento || logData.id_evento <= 0 || logData.id_evento > 53) {
+    if (!logData.id_evento || logData.id_evento <= 0 || logData.id_evento > 54) {
       return { valido: false, erro: 'Número de evento inexistente' };
     }
 
