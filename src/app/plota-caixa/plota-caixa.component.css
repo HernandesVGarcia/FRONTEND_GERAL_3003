@@ -27,8 +27,8 @@
 :host ::ng-deep .modal-dialog {
   position: relative !important;
   margin: 1.75rem auto !important;
-  width: 800px !important;
-  max-width: 800px !important;
+  width: 550px !important;
+  max-width: 550px !important;
   z-index: 5002 !important;
   pointer-events: none !important;
   transition: none; /* Remover transição durante o arraste */
@@ -40,8 +40,8 @@
 
 /* Ajustes para o modal Bootstrap */
 .modal-dialog {
-  max-width: 900px !important;
-  width: 900px !important;
+  max-width: 550px !important;
+  width: 550px !important;
 }
 
 .modal-content {
@@ -95,16 +95,6 @@
   padding-right: 12px;
 }
 
-/* Forçar largura das colunas principais do modal para evitar que fiquem muito largas */
-.modal-body > .row > .col-md-5 {
-  max-width: 60.666667% !important;
-  flex: 0 0 60.666667% !important;
-}
-
-.modal-body > .row > .col-md-7 {
-  max-width: 38.333333% !important;
-  flex: 0 0 38.333333% !important;
-}
 
 /* Garantir que rows dentro dos cards usem flexbox corretamente */
 .card-body .row {
@@ -150,8 +140,7 @@
 
 
 /* Garantir que o card Tipagem tenha largura mínima suficiente */
-/* Aplicar apenas ao card Tipagem (primeiro card na coluna esquerda), não ao card Splitagem Balanceada */
-.modal-body > .row > .col-md-5 > .card.border-primary.mb-3:first-child {
+.modal-body > .row > .col-12 > .card.border-primary.mb-3:first-child {
   min-width: 480px;
 }
 
@@ -184,30 +173,18 @@
 }
 
 /* Remover altura 100% do card Informações Básicas para evitar extensão desnecessária */
-.modal-body > .row > .col-md-5 > .card.h-100 {
+.modal-body > .row > .col-12 > .card.h-100 {
   height: auto !important;
 }
 
-/* Cor de cabeçalho para Splitagem Balanceada */
-.card.border-primary.mb-3 .card-header {
-  background-color: #f1f4f7 !important; /* Cinza bem clarinho */
+/* Cor de cabeçalho e fundo para cards Tipagem e Informações Básicas */
+.card.border-primary .card-header {
+  background-color: #f1f4f7 !important;
   color: #333 !important;
 }
 
-/* Cor de cabeçalho para Splitagem Desbalanceada */
-.card.border-primary:not(.mb-3) .card-header {
-  background-color: #f1f4f7 !important; /* Cinza bem clarinho */
-  color: #333 !important;
-}
-
-/* Cor de fundo para Splitagem Balanceada */
-.card.border-primary.mb-3 .card-body {
+.card.border-primary .card-body {
   background-color: #eff3f5;
-}
-
-/* Cor de fundo para Splitagem Desbalanceada */
-.card.border-primary:not(.mb-3) .card-body {
-  background-color: #eaf0f3;
 }
 
 /* Ajustes para inputs Bootstrap */

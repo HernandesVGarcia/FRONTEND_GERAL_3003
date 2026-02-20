@@ -12,8 +12,7 @@
     <!-- Content -->
     <div class="modal-body">
       <div class="row g-3">
-        <!-- Coluna Esquerda -->
-        <div class="col-md-5">
+        <div class="col-12">
           <!-- Card Tipagem -->
           <div class="card mb-3 border-primary">
             <div class="card-header bg-light">
@@ -132,67 +131,6 @@
                   name="obs" 
                   rows="2"
                   class="form-control form-control-sm"></textarea>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Coluna Direita -->
-        <div class="col-md-7">
-          <!-- Splitagem Balanceada -->
-          <div class="card mb-3 border-primary">
-            <div class="card-header bg-secondary text-white">
-              <h6 class="mb-0 fw-semibold"> Splitagem Balanceada</h6>
-              <small class="opacity-75">opcional</small>
-            </div>
-            <div class="card-body">
-              <div class="radio-group">
-                <div class="row g-2" *ngFor="let row of getBalanceadaRows(); trackBy: trackByIndex">
-                  <div class="col-md-3" *ngFor="let option of row; trackBy: trackByOption">
-                    <div class="form-check" *ngIf="option">
-                      <input 
-                        class="form-check-input" 
-                        type="radio" 
-                        [value]="option"
-                        [checked]="form.splitagemBalanceada === option"
-                        (change)="form.splitagemBalanceada = option"
-                        name="splitagemBalanceada"
-                        [id]="'balanceada-' + option">
-                      <label class="form-check-label" [for]="'balanceada-' + option">
-                        <span class="badge bg-secondary-subtle text-success-emphasis">{{ option }}</span>
-                      </label>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Splitagem Desbalanceada -->
-          <div class="card border-primary">
-            <div class="card-header bg-warning text-dark">
-              <h6 class="mb-0 fw-semibold"> Splitagem Desbalanceada</h6>
-              <small class="opacity-75">opcional</small>
-            </div>
-            <div class="card-body">
-              <div class="radio-group">
-                <div class="row g-2" *ngFor="let row of getDesbalanceadaRows(); trackBy: trackByIndex">
-                  <div class="col-md-3" *ngFor="let option of row; trackBy: trackByOption">
-                    <div class="form-check" *ngIf="option">
-                      <input 
-                        class="form-check-input" 
-                        type="radio" 
-                        [value]="option"
-                        [checked]="form.splitagemDesbalanceada === option"
-                        (change)="form.splitagemDesbalanceada = option"
-                        name="splitagemDesbalanceada"
-                        [id]="'desbalanceada-' + option">
-                      <label class="form-check-label" [for]="'desbalanceada-' + option">
-                        <span class="badge bg-secondary-subtle text-warning-emphasis">{{ option }}</span>
-                      </label>
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
           </div>

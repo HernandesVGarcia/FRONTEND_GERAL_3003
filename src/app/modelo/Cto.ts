@@ -3,6 +3,7 @@ export class Cto {
     numero:string | undefined;
     LAT:Location | undefined;
     LONGI:Location | undefined;
+    ID_TIPO:string | undefined;
     
     
     

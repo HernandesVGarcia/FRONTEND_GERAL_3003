@@ -159,6 +159,7 @@
 .tooltip-finaliza-cabo::after,
 .tooltip-desenha-poligono::after,
 .tooltip-finaliza-poligono::after,
+.tooltip-redraw::after,
 .tooltip-minha-localizacao::after,
 .tooltip-selecionar-cidades::after,
 .tooltip-medir-distancia::after {

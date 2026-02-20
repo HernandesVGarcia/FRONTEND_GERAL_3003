@@ -43,10 +43,11 @@ import { InsertLogService } from '../servico/insert-log.service';
 import { ExcluiCaboService } from '../servico/exclui-cabo.service';
 import { ExcluiCaixaService, ExcluiCaixaRequest, ExcluiCaixaResponse } from '../servico/exclui-caixa.service';
 import { ExcluiDioService, ExcluiDioRequest, ExcluiDioResponse } from '../servico/exclui-dio.service';
+import { ExcluiEstacaoService, ExcluiEstacaoRequest, ExcluiEstacaoResponse } from '../servico/exclui-estacao.service';
 import { Subject, takeUntil } from 'rxjs';
 
 import { MatDialog } from '@angular/material/dialog';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, NgbModalModule } from '@ng-bootstrap/ng-bootstrap';
 import { PopInfoModalComponent } from '../pop-info-modal/pop-info-modal.component';
 import { PopEstacaoInfoModalComponent } from '../pop-estacao-info-modal/pop-estacao-info-modal.component';
 import { VisualizaDioComponent } from '../visualiza-dio/visualiza-dio.component';
@@ -55,7 +56,9 @@ import { GraphvizModalComponent } from '../graphviz-modal/graphviz-modal.compone
 import { ConexaoCaboCaixaEmendaComponent, ConexaoCaboCaixaEmendaData } from '../conexao-cabo-caixa-emenda/conexao-cabo-caixa-emenda.component';
 import { ConexaoCaboDioComponent, ConexaoCaboDioData } from '../conexao-cabo-dio/conexao-cabo-dio.component';
 import { PlotaCaixaComponent, PlotaCaixaData } from '../plota-caixa/plota-caixa.component';
+import { DetalhesCaixaComponent, DetalhesCaixaData } from '../detalhes-caixa/detalhes-caixa.component';
 import { PlotaDioComponent, PlotaDioData } from '../plota-dio/plota-dio.component';
+import { PlotaEstacaoComponent, PlotaEstacaoData } from '../plota-estacao/plota-estacao.component';
 import { BocasService } from '../servico/bocas.service';
 import { Bocas } from '../modelo/Bocas';
 import { BandejasService } from '../servico/bandejas.service';
@@ -150,7 +153,7 @@ import { BuscaObjetoConexPontaService, ObjetoConectado } from '../servico/busca-
   templateUrl: './google-maps.component.html',
   styleUrls: ['./google-maps.component.css'],
   standalone: true,
-  imports: [CommonModule, GoogleMapsModule, MapSearchButtonsComponent, MapTracerButtonsComponent, MapContextMenuComponent, TipagemCabosModalComponent, MatIconModule, MatButtonModule],
+  imports: [CommonModule, GoogleMapsModule, MapSearchButtonsComponent, MapTracerButtonsComponent, MapContextMenuComponent, TipagemCabosModalComponent, MatIconModule, MatButtonModule, NgbModalModule],
 })
 export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy {
   
@@ -382,6 +385,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
     private excluiCaboService: ExcluiCaboService,
     private excluiCaixaService: ExcluiCaixaService,
     private excluiDioService: ExcluiDioService,
+    private excluiEstacaoService: ExcluiEstacaoService,
     private buscaObjetoConexPontaService: BuscaObjetoConexPontaService
   ) {}
 
@@ -644,9 +648,9 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
             alert('Erro: Dados não disponíveis');
           }
         break;
-        case 'editar-caixa':
-      //this.editarCaixa();
-        break;
+        case 'detalhes-caixa':
+          this.abrirDetalhesCaixa();
+          break;
         case 'excluir-caixa':
           this.excluirCaixa();
           break;
@@ -707,9 +711,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
       lng: lng,
       labelCaixa: '', // Sempre vazio
       endereco: '',
-      obs: '',
-      splitagemBalanceada: undefined,
-      splitagemDesbalanceada: undefined
+      obs: ''
     };
 
     // Abrir modal com ng-bootstrap
@@ -795,7 +797,85 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
 
   private criarEstacao(): void {
     console.log('🗺️ [CONTEXT-MENU] Criando estação...');
-    alert('Funcionalidade de criar estação será implementada em breve!');
+
+    if (!this.ultimaCoordenadaContextMenu) {
+      alert('Erro: Coordenada do mapa não encontrada. Clique novamente no mapa.');
+      this.hideContextMenu();
+      return;
+    }
+
+    const lat = this.ultimaCoordenadaContextMenu.lat();
+    const lng = this.ultimaCoordenadaContextMenu.lng();
+    this.ultimaCoordenadaContextMenu = null;
+    console.log('🗺️ [CONTEXT-MENU] Coordenada capturada para estação:', { lat, lng });
+
+    const data: PlotaEstacaoData = {
+      lat,
+      lng,
+      nome: '',
+      logradouro: '',
+      complemento: '',
+      numero: '',
+      bairro: '',
+      cidade: '',
+      telefone: '',
+      observacoes: ''
+    };
+
+    try {
+      const modalRef = this.ngbModal.open(PlotaEstacaoComponent, {
+        size: 'lg',
+        backdrop: 'static',
+        keyboard: false
+      });
+
+      modalRef.componentInstance.data = data;
+      this.hideContextMenu();
+
+      modalRef.result.then(
+        (result: PlotaEstacaoData) => {
+          if (result && result.id_meta) {
+            console.log('📡 [PLOTA-ESTAÇÃO] Estação criada:', result);
+
+            this.destinoPopsEst.push({
+              id_meta: result.id_meta,
+              sigla: result.nome || 'S/N',
+              LAT: result.lat as any,
+              LNG: result.lng as any
+            } as any);
+            this.updateMarkersPopsEst();
+
+            console.log('✅ [PLOTA-ESTAÇÃO] Estação adicionada ao mapa');
+
+            const idUsuario = this.authService.getIdUser();
+            const idCity = this.authService.getIdCity();
+            if (idUsuario && idCity) {
+              this.insertLogService.inserirLog({
+                id_usuario: idUsuario,
+                id_evento: 6,
+                id_city: idCity,
+                id_meta_objeto: result.id_meta,
+                descricao: `Plota Estação: ${result.nome || result.id_meta}, ID_META: ${result.id_meta}`,
+                VERSION: 'Fiberworks WEB 1.0.0'
+              }).subscribe({
+                next: (logResponse) => {
+                  console.log('✅ Log de plotagem de estação inserido com sucesso:', logResponse);
+                },
+                error: (error) => {
+                  console.error('❌ Erro ao inserir log de plotagem de estação:', error);
+                }
+              });
+            }
+          }
+        },
+        (dismissReason) => {
+          console.log('📡 [PLOTA-ESTAÇÃO] Modal fechado:', dismissReason);
+        }
+      );
+    } catch (err) {
+      console.error('❌ [PLOTA-ESTAÇÃO] Erro ao abrir modal:', err);
+      alert('Erro ao abrir modal de plotar estação. Verifique o console.');
+    }
   }
 
   private criarCondominio(): void {
@@ -822,15 +902,98 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
     // Implementar lógica de visualização
   }
   
-  private editarCaixa(): void {
-    if (!this.clickedCaixaData) {
+  private abrirDetalhesCaixa(): void {
+    const caixa = this.clickedCTOSPData || this.clickedCTOData || this.clickedCaixaData;//caixa recebe qual nao for false
+    if (!caixa || !caixa.id_meta) {
       console.warn('🗺️ [CONTEXT-MENU] Nenhuma caixa selecionada');
+      alert('Erro: Dados da caixa não encontrados.');
       return;
     }
-    console.log('🗺️ [CONTEXT-MENU] Editando caixa:', this.clickedCaixaData);
-    // Implementar lógica de edição
+
+    // Capturar tipo ANTES de hideContextMenu (que limpa clickedCTOSPData/clickedCTOData/clickedCaixaData)
+    const tipoCaixa: 'ceo' | 'cto' | 'ctosp' = this.clickedCTOSPData ? 'ctosp' : this.clickedCTOData ? 'cto' : 'ceo';
+
+    const idCity = this.authService.getIdCity();
+    if (!idCity) {
+      alert('Cidade não encontrada. Selecione uma cidade no workspace.');
+      return;
+    }
+
+    const lat = caixa.LAT != null ? Number(caixa.LAT) : undefined;
+    const lng = caixa.LONGI != null ? Number(caixa.LONGI) : undefined;
+
+    const data: DetalhesCaixaData = {
+      id_meta: caixa.id_meta,
+      tipagem: caixa.tipagem || 'INDEFINIDO',
+      ID_TIPO: caixa.ID_TIPO || undefined,
+      lat,
+      lng,
+      labelCaixa: caixa.numero || caixa.labelCaixa || '',
+      endereco: caixa.endereco || caixa.LOCALIZACAO || '',
+      obs: caixa.obs || caixa.OBSERVACAO || ''
+      
+    };
+
+    const modalRef = this.ngbModal.open(DetalhesCaixaComponent, {
+      size: 'lg',
+      backdrop: 'static',
+      keyboard: false
+    });
+
+    modalRef.componentInstance.data = data;
+    this.hideContextMenu();
+
+    modalRef.result.then(
+      (result: DetalhesCaixaData & { tipagem?: string; labelCaixa?: string; endereco?: string; obs?: string; ID_TIPO?: string }) => {
+        if (result && result.id_meta) {
+          const idMeta = result.id_meta;
+          const updateItem = (item: any) => {
+            if (item.id_meta === idMeta) {
+              item.numero = result.labelCaixa ?? item.numero;
+              item.tipagem = result.tipagem ?? item.tipagem;
+              item.ID_TIPO = result.ID_TIPO ?? item.ID_TIPO;
+              item.endereco = result.endereco ?? item.endereco;
+              item.obs = result.obs ?? item.obs;
+            }
+          };
+
+          const idTipoNovo = parseInt(result.ID_TIPO || '1', 10);
+          const tipoNovo: 'ceo' | 'cto' | 'ctosp' = idTipoNovo >= 10 && idTipoNovo <= 13 ? 'cto' : idTipoNovo > 13 ? 'ctosp' : 'ceo';
+          
+          
+          if (tipoCaixa === 'ctosp') {
+            this.destinoCTOSP.forEach(updateItem);
+          } else if (tipoCaixa === 'cto') {
+            this.destinoCTO.forEach(updateItem);
+          } else {
+            this.destino.forEach(updateItem);
+          }
+
+          if (tipoNovo !== tipoCaixa) {
+            const getArray = (t: 'ceo' | 'cto' | 'ctosp') => t === 'ctosp' ? this.destinoCTOSP : t === 'cto' ? this.destinoCTO : this.destino;
+            const idx = getArray(tipoCaixa).findIndex((c: any) => c.id_meta === idMeta);
+            if (idx !== -1) {
+              const [item] = getArray(tipoCaixa).splice(idx, 1);
+              getArray(tipoNovo).push(item);
+            }
+          }
+
+          // redesenha todos os marcadores de caixa e ctos
+          this.updateMarkers();
+          this.updateMarkersCTO();
+          this.updateMarkersCTOSP();
+
+          this.cdr.detectChanges();
+
+          this.clickedCaixaData = null;
+          this.clickedCTOData = null;
+          this.clickedCTOSPData = null;
+        }
+      },
+      () => {}
+    );
   }
-  
+
   private excluirCaixa(): void {
     console.log('🔴 [CONTEXT-MENU] Excluindo caixa...', this.clickedCaixaData);
     
@@ -1620,7 +1783,8 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
               id_meta: ctoProxima.id_meta,
               numero: ctoProxima.numero,
               LAT: ctoProxima.LAT,
-              LONGI: ctoProxima.LONGI
+              LONGI: ctoProxima.LONGI,
+              ID_TIPO: ctoProxima.ID_TIPO
             };
             this.abrirModalConexao(qualPonta as 'A' | 'B', caixaFormatada);
             return; // Não continuar com a proteção se detectou conexão
@@ -1636,7 +1800,8 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
                 id_meta: ctospProxima.id_meta,
                 numero: ctospProxima.numero,
                 LAT: ctospProxima.LAT,
-                LONGI: ctospProxima.LONGI
+                LONGI: ctospProxima.LONGI,
+                ID_TIPO: ctospProxima.ID_TIPO
               };
               this.abrirModalConexao(qualPonta as 'A' | 'B', caixaFormatada);
               return; // Não continuar com a proteção se detectou conexão
@@ -3758,10 +3923,6 @@ polylineOptions144f: google.maps.PolylineOptions = {
 console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
 }
 
-
-
-
-
   ngOnChanges(changes: SimpleChanges): void {
     console.log('ngOnChanges detectou mudança em destino:', changes['destino']);
 
@@ -4659,7 +4820,8 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
         id_meta: caixa.id_meta,
         numero: caixa.numero,
         LAT: caixa.LAT,
-        LONGI: caixa.LONGI
+        LONGI: caixa.LONGI,
+        ID_TIPO: caixa.ID_TIPO || String(idTipo)
       } as any);
     } else if (isCTOSP) {
       this.markerCtosSP.push(marker);
@@ -4668,7 +4830,8 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
         id_meta: caixa.id_meta,
         numero: caixa.numero,
         LAT: caixa.LAT,
-        LONGI: caixa.LONGI
+        LONGI: caixa.LONGI,
+        ID_TIPO: caixa.ID_TIPO || String(idTipo)
       } as any);
     } else {
       this.markerCaixas.push(marker);
@@ -8265,31 +8428,98 @@ private criarDIO(): void {
  */
 private excluirEstacao(): void {
   console.log('🗑️ [CONTEXT-MENU] Excluindo estação...', this.clickedEstacaoData);
-  
+
   if (!this.clickedEstacaoData) {
     console.warn('⚠️ [EXCLUI-ESTACAO] Nenhuma estação selecionada');
     alert('❌ Erro: Dados da estação não encontrados.');
     return;
   }
 
+  let idMeta: number | undefined = this.clickedEstacaoData.id_meta;
+  if (!idMeta) {
+    const index = this.destinoPopsEst.indexOf(this.clickedEstacaoData);
+    if (index !== -1 && this.markerPopsEst[index]) {
+      const idMetaDoMarcador = this.markerPopsEst[index].get('id_meta');
+      if (idMetaDoMarcador) {
+        idMeta = Number(idMetaDoMarcador);
+      }
+    }
+  }
+  if (!idMeta || isNaN(idMeta) || idMeta <= 0) {
+    alert('❌ Erro: Não foi possível identificar o ID da estação.');
+    return;
+  }
+
+  const idCity = this.authService.getIdCity();
+  if (!idCity) {
+    alert('❌ Erro: ID da cidade não encontrado. Selecione uma cidade no workspace.');
+    return;
+  }
+
   const sigla = this.clickedEstacaoData.sigla || 'N/A';
-  
-  // Confirmação antes de excluir
+
   const confirmacao = confirm(`Tem certeza que deseja excluir esta estação?\n\n📋 Sigla: ${sigla}`);
-  
+
   if (!confirmacao) {
     return;
   }
 
-  // TODO: Implementar exclusão da estação via API
-  // Por enquanto, apenas mostrar mensagem
-  alert(`Funcionalidade de exclusão de estação será implementada em breve!\n\nEstação: ${sigla}`);
-  
-  // Limpar dados da estação
-  this.clickedEstacaoData = null;
-  
-  // Fechar context menu
-  this.hideContextMenu();
+  const request: ExcluiEstacaoRequest = {
+    id_meta: idMeta,
+    id_city: idCity
+  };
+
+  this.excluiEstacaoService.excluirEstacao(request).subscribe({
+    next: (response: ExcluiEstacaoResponse) => {
+      console.log('✅ [EXCLUI-ESTACAO] Resposta da API:', response);
+
+      if (response.success) {
+        const index = this.destinoPopsEst.findIndex(e => e.id_meta === idMeta);
+        if (index !== -1) {
+          const markerParaRemover = this.markerPopsEst[index];
+          if (markerParaRemover) {
+            markerParaRemover.setMap(null);
+            this.markerPopsEst.splice(index, 1);
+          }
+          this.destinoPopsEst.splice(index, 1);
+          console.log('🗑️ [EXCLUI-ESTACAO] Estação removida do mapa');
+        }
+
+        this.clickedEstacaoData = null;
+        this.hideContextMenu();
+
+        const idUsuario = this.authService.getIdUser();
+        if (idUsuario && idCity) {
+          this.insertLogService.inserirLog({
+            id_usuario: idUsuario,
+            id_evento: 48,
+            id_city: idCity,
+            id_meta_objeto: idMeta,
+            descricao: `Excluída Estação: ${sigla}, ID_META: ${idMeta}`,
+            VERSION: 'Fiberworks WEB 1.0.0'
+          }).subscribe({
+            next: (logResponse) => {
+              console.log('✅ Log de exclusão de estação inserido com sucesso:', logResponse);
+            },
+            error: (err) => {
+              console.error('❌ Erro ao inserir log de exclusão de estação:', err);
+            }
+          });
+        }
+      }
+    },
+    error: (err: any) => {
+      const errorObj = typeof err === 'object' ? err : {};
+      const flagConectada = errorObj?.error?.flagConectada;
+      const errorMsg = errorObj?.message || (typeof err === 'string' ? err : 'Erro ao excluir estação.');
+
+      if (flagConectada || (errorMsg && (errorMsg.includes('DIO') || errorMsg.includes('referenciado')))) {
+        alert('Estação possui DIO referenciado. Remova os DIOs antes de excluir.');
+      } else {
+        alert(`Erro ao excluir estação: ${errorMsg}`);
+      }
+    }
+  });
 }
 
   onCaixaInternaClose() {

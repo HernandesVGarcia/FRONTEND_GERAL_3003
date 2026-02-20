@@ -33,9 +33,9 @@
     <span>Visualizar Conectividade </span>
   </div>
   
-  <div class="menu-item" (click)="onAction('editar-caixa')">
-    <mat-icon>edit</mat-icon>
-    <span>Editar Caixa</span>
+  <div class="menu-item" (click)="onAction('detalhes-caixa')">
+    <mat-icon>info</mat-icon>
+    <span>Detalhes Caixa</span>
   </div>
   
   <div class="menu-divider"></div>
@@ -118,15 +118,15 @@
       
       <!-- Submenu Cria Ponto -->
       <div class="submenu" *ngIf="isSubmenuActive('ponto')">
-        <div class="submenu-item" (click)="onAction('cria-cliente')">
+        <div class="submenu-item" (click)="onAction('cria-cliente'); $event.stopPropagation()">
           <mat-icon>person</mat-icon>
           <span>Cria Cliente</span>
         </div>
-        <div class="submenu-item" (click)="onAction('cria-estacao')">
+        <div class="submenu-item" (click)="onAction('cria-estacao'); $event.stopPropagation()">
           <mat-icon>business</mat-icon>
           <span>Cria Estação</span>
         </div>
-        <div class="submenu-item" (click)="onAction('cria-condominio')">
+        <div class="submenu-item" (click)="onAction('cria-condominio'); $event.stopPropagation()">
           <mat-icon>apartment</mat-icon>
           <span>Cria Condomínio</span>
         </div>

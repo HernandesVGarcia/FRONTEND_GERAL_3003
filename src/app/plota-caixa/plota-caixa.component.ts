@@ -14,8 +14,6 @@ export interface PlotaCaixaData {
   labelCaixa?: string;
   endereco?: string;
   obs?: string;
-  splitagemBalanceada?: string;
-  splitagemDesbalanceada?: string;
 }
 
 @Component({
@@ -35,15 +33,6 @@ export class PlotaCaixaComponent implements OnInit, OnChanges {
   carregandoTipos: boolean = false;
   salvando: boolean = false;
   
-  // Opções de splitagem balanceada
-  splitagemBalanceadaOptions: string[] = ['1:2', '1:4', '1:8', '1:16', '1:32', '1:64', '1:128', '1:256'];
-  
-  // Opções de splitagem desbalanceada
-  splitagemDesbalanceadaOptions: string[] = [
-    '1/99', '2/98', '5/95', '10/90', '15/85', '20/80', '25/75', '30/70',
-    '35/65', '40/60', '45/55'
-  ];
-
   // Formulário
   form = {
     tipagem: 'INDEFINIDO',
@@ -51,9 +40,7 @@ export class PlotaCaixaComponent implements OnInit, OnChanges {
     lng: '',
     labelCaixa: '',
     endereco: '',
-    obs: '',
-    splitagemBalanceada: '',
-    splitagemDesbalanceada: ''
+    obs: ''
   };
 
   @Input() data: PlotaCaixaData = {};
@@ -103,9 +90,7 @@ export class PlotaCaixaComponent implements OnInit, OnChanges {
       this.form.labelCaixa = ''; // Sempre vazio
       this.form.endereco = this.data.endereco || '';
       this.form.obs = this.data.obs || '';
-      this.form.splitagemBalanceada = this.data.splitagemBalanceada || '';
-      this.form.splitagemDesbalanceada = this.data.splitagemDesbalanceada || '';
-      
+
       console.log('📝 [PLOTA-CAIXA] Formulário atualizado com coordenadas:', {
         lat: this.form.lat,
         lng: this.form.lng
@@ -173,21 +158,6 @@ export class PlotaCaixaComponent implements OnInit, OnChanges {
         this.carregandoTipos = false;
       }
     });
-  }
-
-  getBalanceadaRows(): string[][] {
-    return [
-      ['1:2', '1:4', '1:8', '1:16'],
-      ['1:32', '1:64', '1:128', '1:256']
-    ];
-  }
-
-  getDesbalanceadaRows(): string[][] {
-    return [
-      ['1/99', '2/98', '5/95', '10/90'],
-      ['15/85', '20/80', '25/75', '30/70'],
-      ['35/65', '40/60', '45/55', '']
-    ];
   }
 
   // TrackBy functions para evitar loops infinitos
@@ -352,9 +322,7 @@ export class PlotaCaixaComponent implements OnInit, OnChanges {
           lng: parseFloat(lng),
           labelCaixa: labelFinal, // Usa id_meta se label não foi informado
           endereco: this.form.endereco || undefined,
-          obs: this.form.obs || undefined,
-          splitagemBalanceada: this.form.splitagemBalanceada || undefined,
-          splitagemDesbalanceada: this.form.splitagemDesbalanceada || undefined
+          obs: this.form.obs || undefined
         };
 
         console.log('📦 [PLOTA-CAIXA] Label final usado:', labelFinal);

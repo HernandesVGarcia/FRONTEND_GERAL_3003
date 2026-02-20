@@ -114,10 +114,12 @@ export class MapContextMenuComponent implements OnInit, OnChanges {
 
   /**
    * 🎯 Executa uma ação do menu
+   * Usa setTimeout(0) para garantir que o parent processe a ação e capture a coordenada
+   * antes do hide() emitir close e o parent limpar ultimaCoordenadaContextMenu
    */
   onAction(action: string): void {
     this.action.emit(action);
-    this.hide();
+    setTimeout(() => this.hide(), 0);
   }
 
   /**
