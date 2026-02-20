@@ -465,6 +465,26 @@ export class VisualizaDioComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Atualiza equipamento ou dbm quando o usuário edita (modo edição)
+   */
+  onEquipamentoChange(rowIndex: number, field: 'equipamento' | 'dbm', value: string): void {
+    if (!this.dioEquipData) return;
+
+    const group = this.getCurrentGroup();
+    if (!group) return;
+
+    const realFiberIndex = group.start + rowIndex;
+    const obsField = `obs${realFiberIndex}` as keyof DioEquip;
+    const nField = `N${realFiberIndex}` as keyof DioEquip;
+
+    if (field === 'equipamento') {
+      (this.dioEquipData as any)[obsField] = value;
+    } else {
+      (this.dioEquipData as any)[nField] = value;
+    }
+  }
+
   getCurrentFiberNumber(rowIndex: number): number {
     const group = this.getCurrentGroup();
     if (group) {

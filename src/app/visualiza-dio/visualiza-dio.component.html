@@ -121,8 +121,9 @@
                   maxlength="25"
                   class="text-field field-1"
                   [value]="getEquipamentoData(rowIndex + 1).equipamento"
-                  placeholder=""
-                  readonly>
+                  (input)="onEquipamentoChange(rowIndex, 'equipamento', $any($event.target).value)"
+                  [readonly]="!isEditing"
+                  placeholder="">
               </div>
               <div class="text-field-container">
                 <input 
@@ -130,8 +131,9 @@
                   maxlength="5"
                   class="text-field field-2"
                   [value]="getEquipamentoData(rowIndex + 1).dbm"
-                  placeholder=""
-                  readonly>
+                  (input)="onEquipamentoChange(rowIndex, 'dbm', $any($event.target).value)"
+                  [readonly]="!isEditing"
+                  placeholder="">
               </div>
             </div>
           </div>
