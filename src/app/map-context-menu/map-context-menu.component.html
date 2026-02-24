@@ -102,7 +102,7 @@
       <!-- Cria Caixa -->
       <div class="menu-item" (click)="onAction('cria-caixa')">
         <mat-icon>inventory_2</mat-icon>
-        <span>Cria Caixa</span>
+        <span>Plota Caixa</span>
       </div>
 
       <!-- Cria DIO removido - agora só via context menu da estação -->
@@ -120,16 +120,23 @@
       <div class="submenu" *ngIf="isSubmenuActive('ponto')">
         <div class="submenu-item" (click)="onAction('cria-cliente'); $event.stopPropagation()">
           <mat-icon>person</mat-icon>
-          <span>Cria Cliente</span>
+          <span>Plota Cliente</span>
         </div>
         <div class="submenu-item" (click)="onAction('cria-estacao'); $event.stopPropagation()">
           <mat-icon>business</mat-icon>
-          <span>Cria Estação</span>
+          <span>Plota Estação</span>
         </div>
         <div class="submenu-item" (click)="onAction('cria-condominio'); $event.stopPropagation()">
           <mat-icon>apartment</mat-icon>
-          <span>Cria Condomínio</span>
+          <span>Plota Condomínio</span>
         </div>
+        <div class="submenu-item submenu-item-indented" (click)="onAction('cadastra-cliente'); $event.stopPropagation()">
+          <mat-icon>person_add</mat-icon>
+          <span>Cadastra Cliente</span>
+        </div>
+
+
+
       </div>
 
       <!-- Separador -->

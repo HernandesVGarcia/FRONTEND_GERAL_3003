@@ -59,6 +59,8 @@ import { PlotaCaixaComponent, PlotaCaixaData } from '../plota-caixa/plota-caixa.
 import { DetalhesCaixaComponent, DetalhesCaixaData } from '../detalhes-caixa/detalhes-caixa.component';
 import { PlotaDioComponent, PlotaDioData } from '../plota-dio/plota-dio.component';
 import { PlotaEstacaoComponent, PlotaEstacaoData } from '../plota-estacao/plota-estacao.component';
+import { PlotaClienteComponent, PlotaClienteData } from '../plota-cliente/plota-cliente.component';
+import { CadastroClienteComponent } from '../cadastro-cliente/cadastro-cliente.component';
 import { BocasService } from '../servico/bocas.service';
 import { Bocas } from '../modelo/Bocas';
 import { BandejasService } from '../servico/bandejas.service';
@@ -603,6 +605,9 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
       case 'cria-estacao':
         this.criarEstacao();
         break;
+      case 'cadastra-cliente':
+        this.abrirCadastroCliente();
+        break;
       case 'cria-condominio':
         this.criarCondominio();
         break;
@@ -791,8 +796,75 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
   }
 
   private criarCliente(): void {
-    console.log('🗺️ [CONTEXT-MENU] Criando cliente...');
-    alert('Funcionalidade de criar cliente será implementada em breve!');
+    console.log('🗺️ [CONTEXT-MENU] Plotando cliente...');
+
+    if (!this.ultimaCoordenadaContextMenu) {
+      alert('Erro: Coordenada do mapa não encontrada. Clique novamente no mapa.');
+      this.hideContextMenu();
+      return;
+    }
+
+    const lat = this.ultimaCoordenadaContextMenu.lat();
+    const lng = this.ultimaCoordenadaContextMenu.lng();
+    this.ultimaCoordenadaContextMenu = null;
+    console.log('🗺️ [CONTEXT-MENU] Coordenada capturada para cliente:', { lat, lng });
+
+    const data: PlotaClienteData = { lat, lng };
+
+    try {
+      const modalRef = this.ngbModal.open(PlotaClienteComponent, {
+        size: 'lg',
+        backdrop: 'static',
+        keyboard: false
+      });
+
+      modalRef.componentInstance.data = data;
+      this.hideContextMenu();
+
+      modalRef.result.then(
+        (result: { id_meta?: number; id_estacao?: number; sigla: string; lat: number; lng: number }) => {
+          if (result && result.id_meta) {
+            console.log('📡 [PLOTA-CLIENTE] Cliente plotado:', result);
+
+            this.destinoPopsCli.push({
+              id_meta: result.id_meta,
+              sigla: result.sigla || 'S/N',
+              LAT: result.lat as any,
+              LNG: result.lng as any
+            } as any);
+            this.updateMarkersPopsCli();
+
+            console.log('✅ [PLOTA-CLIENTE] Cliente adicionado ao mapa');
+
+            const idUsuario = this.authService.getIdUser();
+            const idCity = this.authService.getIdCity();
+            if (idUsuario && idCity) {
+              this.insertLogService.inserirLog({
+                id_usuario: idUsuario,
+                id_evento: 6,
+                id_city: idCity,
+                id_meta_objeto: result.id_meta,
+                descricao: `Plota Cliente: ${result.sigla || result.id_meta}, ID_META: ${result.id_meta}`,
+                VERSION: 'Fiberworks WEB 1.0.0'
+              }).subscribe({
+                next: (logResponse) => {
+                  console.log('✅ Log de plotagem de cliente inserido com sucesso:', logResponse);
+                },
+                error: (error) => {
+                  console.error('❌ Erro ao inserir log de plotagem de cliente:', error);
+                }
+              });
+            }
+          }
+        },
+        (dismissReason) => {
+          console.log('📡 [PLOTA-CLIENTE] Modal fechado:', dismissReason);
+        }
+      );
+    } catch (err) {
+      console.error('❌ [PLOTA-CLIENTE] Erro ao abrir modal:', err);
+      alert('Erro ao abrir modal de plotar cliente. Verifique o console.');
+    }
   }
 
   private criarEstacao(): void {
@@ -881,6 +953,34 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
   private criarCondominio(): void {
     console.log('🗺️ [CONTEXT-MENU] Criando condomínio...');
     alert('Funcionalidade de criar condomínio será implementada em breve!');
+  }
+
+  private abrirCadastroCliente(): void {
+    console.log('🗺️ [CONTEXT-MENU] Abrindo cadastro de cliente...');
+    this.hideContextMenu();
+
+    try {
+      const modalRef = this.ngbModal.open(CadastroClienteComponent, {
+        size: 'lg',
+        backdrop: 'static',
+        keyboard: false
+      });
+
+      modalRef.result.then(
+        (result) => {
+          if (result?.success) {
+            console.log('✅ [CADASTRO-CLIENTE] Cliente cadastrado com sucesso:', result);
+            alert('Cliente cadastrado com sucesso!');
+          }
+        },
+        (dismissReason) => {
+          console.log('📡 [CADASTRO-CLIENTE] Modal fechado:', dismissReason);
+        }
+      );
+    } catch (err) {
+      console.error('❌ [CADASTRO-CLIENTE] Erro ao abrir modal:', err);
+      alert('Erro ao abrir modal de cadastro de cliente. Verifique o console.');
+    }
   }
 
   private criarAnotacao(): void {

@@ -53,8 +53,8 @@
   border-radius: 8px 8px 0 0;
   padding: 12px 20px;
   border-bottom: 2px solid rgba(255, 255, 255, 0.2);
-  background-color: #dce8f3 !important; /* Cinza bem clarinho */
-  color: #333 !important; /* Cor do texto */
+  background-color: #629ef8 !important;
+  color: #fff !important;
   cursor: move;
   user-select: none; /* Prevenir seleção de texto durante o arraste */
 }

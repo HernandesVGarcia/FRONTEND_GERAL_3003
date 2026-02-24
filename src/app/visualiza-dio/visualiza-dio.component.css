@@ -414,6 +414,11 @@
   max-width: 40px;
 }
 
+/* Cor azul quando em modo edição */
+.text-field.text-field-editing {
+  color: #1976d2;
+}
+
 /* Estilos para botão Tracer Total */
 .tracer-total-container {
   border-bottom: 1px solid #eee;

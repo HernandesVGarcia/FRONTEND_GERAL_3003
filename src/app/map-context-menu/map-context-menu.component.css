@@ -105,6 +105,12 @@
   font-weight: 400;
 }
 
+.submenu-item-indented {
+  padding-left: 32px;
+  margin-left: 8px;
+  border-left: 2px solid #e0e0e0;
+}
+
 /* Animações */
 @keyframes slideIn {
   from {

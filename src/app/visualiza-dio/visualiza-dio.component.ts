@@ -19,6 +19,7 @@ import { FiberTraceUnifilarTotalService } from '../servico/fiber-trace-unifilar-
 import { DioEquip } from '../modelo/dioEquipamento';
 import { MatDialog } from '@angular/material/dialog';
 import { GraphvizModalComponent } from '../graphviz-modal/graphviz-modal.component';
+import { UpdateDioEquipamentoService, UpdateDioEquipamentoRequest } from '../servico/update-dio-equipamento.service';
 
 export interface VisualizaDioDialogData {
   id_meta: number;
@@ -103,7 +104,8 @@ export class VisualizaDioComponent implements OnInit, OnDestroy {
     private fiberTraceUnifilarService: FiberTraceUnifilarService,
     private fiberTraceUnifilarTotalService: FiberTraceUnifilarTotalService,
     private dialog: MatDialog,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private updateDioEquipamentoService: UpdateDioEquipamentoService
   ) {
     // Configuração padrão
     this.config = {
@@ -269,35 +271,61 @@ export class VisualizaDioComponent implements OnInit, OnDestroy {
   }
 
   saveChanges(): void {
-    if (!this.visualizaDioData || !this.visualizaDioForm.valid) return;
+    if (!this.dioEquipData || !this.data.id_meta) {
+      this.errorMessage = 'Dados do DIO não carregados ou id_meta ausente.';
+      return;
+    }
 
-    const formData = this.visualizaDioForm.value;
-    const updateData: Partial<VisualizaDioData> = {};
-
-    // Preparar dados para atualização
-    this.visibleFields.forEach(field => {
-      const value = formData[field];
-      if (value && value.trim() !== '') {
-        (updateData as any)[field] = value.trim();
-      }
-    });
+    const group = this.getCurrentGroup();
+    if (!group) {
+      this.errorMessage = 'Nenhum grupo de fibras selecionado.';
+      return;
+    }
 
     this.isLoading = true;
+    this.errorMessage = '';
 
-    // Simular salvamento para teste
-    setTimeout(() => {
-      console.log('Dados salvos (simulado):', updateData);
-      
-      // Atualizar dados locais
-      if (this.visualizaDioData) {
-        Object.assign(this.visualizaDioData, updateData);
-        this.populateForm(this.visualizaDioData);
-      }
-      
-      this.isEditing = false;
-      this.visualizaDioForm.disable();
-      this.isLoading = false;
-    }, 1500); // Simular delay de salvamento
+    const request = this.buildUpdateDioEquipamentoRequest(group);
+    this.updateDioEquipamentoService.atualizar(request)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.isEditing = false;
+          this.isLoading = false;
+          console.log('Equipamento e dBm atualizados com sucesso.');
+        },
+        error: (err) => {
+          this.isLoading = false;
+          this.errorMessage = err?.message || err || 'Erro ao salvar equipamento e dBm.';
+          console.error('Erro ao salvar:', err);
+        }
+      });
+  }
+
+  private buildUpdateDioEquipamentoRequest(group: { id: number; start: number; end: number }): UpdateDioEquipamentoRequest {
+    const dio = this.dioEquipData!;
+    const campos: string[] = [];
+    const ns: string[] = [];
+
+    for (let i = 0; i < 12; i++) {
+      const fiberIndex = group.start + i;
+      const obsField = `obs${fiberIndex}` as keyof DioEquip;
+      const nField = `N${fiberIndex}` as keyof DioEquip;
+      const obsVal = dio[obsField];
+      const nVal = dio[nField];
+      campos.push(obsVal != null ? String(obsVal) : '');
+      ns.push(nVal != null && nVal !== 'OFF' ? String(nVal) : '');
+    }
+
+    return {
+      grupo: group.id,
+      campo1: campos[0], campo2: campos[1], campo3: campos[2], campo4: campos[3],
+      campo5: campos[4], campo6: campos[5], campo7: campos[6], campo8: campos[7],
+      campo9: campos[8], campo10: campos[9], campo11: campos[10], campo12: campos[11],
+      n1: ns[0], n2: ns[1], n3: ns[2], n4: ns[3], n5: ns[4], n6: ns[5],
+      n7: ns[6], n8: ns[7], n9: ns[8], n10: ns[9], n11: ns[10], n12: ns[11],
+      id_meta_dio: this.data.id_meta
+    };
   }
 
   cancelEdit(): void {
