@@ -1,10 +1,6 @@
-
-import { Component, Inject, Output, EventEmitter, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+import { Component, HostListener, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { MatButtonModule } from '@angular/material/button';
-import { MatInputModule } from '@angular/material/input';
-import { MatFormFieldModule } from '@angular/material/form-field';
+import { NgbActiveModal, NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule } from '@angular/forms';
 import { EstacaoSearchService, EstacaoSearchResult } from '../servico/estacao-search.service';
@@ -15,24 +11,19 @@ import { CompartilhamentoService, EstacaoData } from '../servico/compartilhament
   standalone: true,
   imports: [
     CommonModule,
-    MatDialogModule,
-    MatButtonModule,
-    MatInputModule,
-    MatFormFieldModule,
+    NgbModule,
     MatIconModule,
     FormsModule
   ],
   templateUrl: './estacao-search-modal.component.html',
   styleUrls: ['./estacao-search-modal.component.css']
 })
-export class EstacaoSearchModalComponent implements AfterViewInit {
-  @ViewChild('draggableContainer') draggableContainer!: ElementRef;
-  @ViewChild('draggableHeader') draggableHeader!: ElementRef;
+export class EstacaoSearchModalComponent {
+  @ViewChild('modalDialog', { static: false }) modalDialog!: ElementRef;
 
-  @Output() estacaoSelecionada = new EventEmitter<EstacaoSearchResult>();
   siglaFilter: string = '';
   enderecoFilter: string = '';
-  
+
   filteredData: EstacaoSearchResult[] = [];
   isLoading: boolean = false;
   errorMessage: string = '';
@@ -47,71 +38,49 @@ export class EstacaoSearchModalComponent implements AfterViewInit {
   private yOffset = 0;
 
   constructor(
-    public dialogRef: MatDialogRef<EstacaoSearchModalComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: any,
+    public activeModal: NgbActiveModal,
     private estacaoSearchService: EstacaoSearchService,
     private compartilhamentoService: CompartilhamentoService
   ) {}
 
-  ngAfterViewInit(): void {
-    this.setupDragListeners();
-  }
-
-  private setupDragListeners(): void {
-    const header = this.draggableHeader.nativeElement;
-    const container = this.draggableContainer.nativeElement;
-
-    header.addEventListener('mousedown', this.dragStart.bind(this));
-    document.addEventListener('mousemove', this.dragMove.bind(this));
-    document.addEventListener('mouseup', this.dragEnd.bind(this));
-
-    // Touch events for mobile
-    header.addEventListener('touchstart', this.dragStart.bind(this));
-    document.addEventListener('touchmove', this.dragMove.bind(this));
-    document.addEventListener('touchend', this.dragEnd.bind(this));
-  }
-
-  private dragStart(e: MouseEvent | TouchEvent): void {
-    const clientX = e instanceof MouseEvent ? e.clientX : e.touches[0].clientX;
-    const clientY = e instanceof MouseEvent ? e.clientY : e.touches[0].clientY;
-
-    this.initialX = clientX - this.xOffset;
-    this.initialY = clientY - this.yOffset;
-
-    if ((e.target as HTMLElement).closest('.draggable-header')) {
-      this.isDragging = true;
+  onMouseDown(event: MouseEvent): void {
+    if (event.target instanceof HTMLElement) {
+      const header = event.target.closest('.modal-header');
+      if (header && !event.target.closest('.btn-close')) {
+        this.initialX = event.clientX - this.xOffset;
+        this.initialY = event.clientY - this.yOffset;
+        if (event.target === header || header.contains(event.target)) {
+          this.isDragging = true;
+          event.preventDefault();
+        }
+      }
     }
   }
 
-  private dragMove(e: MouseEvent | TouchEvent): void {
+  @HostListener('document:mousemove', ['$event'])
+  onMouseMove(event: MouseEvent): void {
     if (this.isDragging) {
-      e.preventDefault();
-      
-      const clientX = e instanceof MouseEvent ? e.clientX : e.touches[0].clientX;
-      const clientY = e instanceof MouseEvent ? e.clientY : e.touches[0].clientY;
-
-      this.currentX = clientX - this.initialX;
-      this.currentY = clientY - this.initialY;
-
+      event.preventDefault();
+      this.currentX = event.clientX - this.initialX;
+      this.currentY = event.clientY - this.initialY;
       this.xOffset = this.currentX;
       this.yOffset = this.currentY;
-
-      this.setTranslate(this.currentX, this.currentY);
+      if (this.modalDialog) {
+        this.modalDialog.nativeElement.style.transform = `translate(${this.currentX}px, ${this.currentY}px)`;
+      }
     }
   }
 
-  private dragEnd(): void {
+  @HostListener('document:mouseup')
+  onMouseUp(): void {
     this.initialX = this.currentX;
     this.initialY = this.currentY;
     this.isDragging = false;
   }
 
-  private setTranslate(xPos: number, yPos: number): void {
-    const container = this.draggableContainer.nativeElement;
-    // Combinar a posição central inicial com o offset do drag
-    container.style.transform = `translate(calc(-50% + ${xPos}px), calc(-50% + ${yPos}px))`;
+  isSelected(estacao: EstacaoSearchResult): boolean {
+    return this.selectedEstacao === estacao;
   }
-  
 
   onBuscaCompleta(): void {
     if (!this.siglaFilter.trim() && !this.enderecoFilter.trim()) {
@@ -122,6 +91,7 @@ export class EstacaoSearchModalComponent implements AfterViewInit {
     this.isLoading = true;
     this.errorMessage = '';
     this.filteredData = [];
+    this.selectedEstacao = null;
 
     const filtros = {
       sigla: this.siglaFilter.trim() || undefined,
@@ -135,7 +105,7 @@ export class EstacaoSearchModalComponent implements AfterViewInit {
         console.log('Resultado da busca:', resultado);
         this.filteredData = resultado;
         this.isLoading = false;
-        
+
         if (resultado.length === 0) {
           this.errorMessage = 'Nenhuma estação encontrada com os critérios informados.';
         }
@@ -152,8 +122,7 @@ export class EstacaoSearchModalComponent implements AfterViewInit {
   onSelectEstacao(estacao: EstacaoSearchResult): void {
     console.log('Estação selecionada:', estacao);
     this.selectedEstacao = estacao;
-    
-    // Converter EstacaoSearchResult para EstacaoData
+
     const estacaoData: EstacaoData = {
       LAT: estacao.LAT,
       LNG: estacao.LNG,
@@ -161,16 +130,11 @@ export class EstacaoSearchModalComponent implements AfterViewInit {
       ENDERECO: estacao.ENDERECO
     };
 
-    // Compartilhar dados da estação via service
     this.compartilhamentoService.compartilharEstacao(estacaoData);
-    
-    // Emitir evento para compatibilidade (opcional)
-    this.estacaoSelecionada.emit(estacao);
-    
     console.log('Dados da estação compartilhados via service:', estacaoData);
   }
 
   onCancel(): void {
-    this.dialogRef.close();
+    this.activeModal.close();
   }
 }

@@ -39,6 +39,7 @@ import { UpdateCaboService } from '../servico/update-cabo.service';
 import { UpdateCaixaService } from '../servico/update-caixa.service';
 import { UpdateDioService, UpdateDioData, UpdateDioResponse } from '../servico/update-dio.service';
 import { UpdateEstacaoService } from '../servico/update-estacao.service';
+import { UpdateClienteService } from '../servico/update-cliente.service';
 import { InsertLogService } from '../servico/insert-log.service';
 import { ExcluiCaboService } from '../servico/exclui-cabo.service';
 import { ExcluiCaixaService, ExcluiCaixaRequest, ExcluiCaixaResponse } from '../servico/exclui-caixa.service';
@@ -49,6 +50,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { NgbModal, NgbModalModule } from '@ng-bootstrap/ng-bootstrap';
 import { PopInfoModalComponent } from '../pop-info-modal/pop-info-modal.component';
+import { PopInfoUpdateService } from '../servico/pop-info-update.service';
 import { PopEstacaoInfoModalComponent } from '../pop-estacao-info-modal/pop-estacao-info-modal.component';
 import { VisualizaDioComponent } from '../visualiza-dio/visualiza-dio.component';
 import { VisualizaCaboComponent } from '../visualiza-cabo/visualiza-cabo.component';
@@ -314,6 +316,13 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
   private estacaoEmEdicaoOriginalIcon: google.maps.Icon | null = null; // Ícone original para restaurar
   private listenerMapaSalvarEstacao: google.maps.MapsEventListener | null = null; // Listener para salvar ao clicar no mapa
   private listenerEscCancelarEstacao: ((event: KeyboardEvent) => void) | null = null; // Listener para cancelar com ESC
+  private clienteEmEdicao: google.maps.Marker | null = null;
+  private clienteEmEdicaoIndex: number | null = null;
+  private clienteEmEdicaoTipo: 'cli' | 'cliat' | 'clides' | null = null;
+  private clienteEmEdicaoOriginalPosition: { lat: number, lng: number } | null = null;
+  private clienteEmEdicaoOriginalIcon: google.maps.Icon | null = null;
+  private listenerMapaSalvarCliente: google.maps.MapsEventListener | null = null;
+  private listenerEscCancelarCliente: ((event: KeyboardEvent) => void) | null = null;
   private listenerMapaSalvarDio: google.maps.MapsEventListener | null = null; // Listener para salvar ao clicar no mapa
   private listenerEscCancelarDio: any = null; // Listener para cancelar com ESC
   // 🔧 Propriedades para detectar long press (mobile)
@@ -388,7 +397,9 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
     private excluiCaixaService: ExcluiCaixaService,
     private excluiDioService: ExcluiDioService,
     private excluiEstacaoService: ExcluiEstacaoService,
-    private buscaObjetoConexPontaService: BuscaObjetoConexPontaService
+    private buscaObjetoConexPontaService: BuscaObjetoConexPontaService,
+    private popInfoUpdateService: PopInfoUpdateService,
+    private updateClienteService: UpdateClienteService
   ) {}
 
   // ============================================================================
@@ -962,8 +973,10 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
     try {
       const modalRef = this.ngbModal.open(CadastroClienteComponent, {
         size: 'lg',
-        backdrop: 'static',
-        keyboard: false
+        backdrop: false,
+        centered: true,
+        keyboard: false,
+        windowClass: 'cadastro-cliente-modal-window'
       });
 
       modalRef.result.then(
@@ -3991,6 +4004,53 @@ polylineOptions144f: google.maps.PolylineOptions = {
         this.centralizarNaEstacao(estacaoData);
       }
     });
+    //**************************** */
+      // trabalha em conjunto com pop-info-modal.component.ts
+     // quando o usuário salva as alterações na Sigla no pop-info-modal, o serviço popInfoUpdateService emite um evento com o id_meta e a sigla do cliente
+    // Subscription para atualizar marcador quando SIGLA do cliente é alterada no pop-info-modal
+    this.popInfoUpdateService.onClienteAtualizado.pipe(takeUntil(this.destroy$)).subscribe((event) => {
+      const idEvent = Number(event.id_meta);
+      const idMatch = (c: any) => Number(c?.id_meta ?? c?.ID_META ?? 0) === idEvent;
+      const siglaAtual = (c: any) => (c?.sigla ?? c?.SIGLA ?? '').toString().trim();
+
+      // destinoPopsCli
+      const idxCli = this.destinoPopsCli?.findIndex(idMatch) ?? -1;
+      if (idxCli >= 0) {
+        const cliente = this.destinoPopsCli![idxCli];
+        if (siglaAtual(cliente) !== event.sigla?.trim()) {
+          cliente.sigla = event.sigla;
+          (cliente as any).SIGLA = event.sigla;
+          const marker = this.markerPopsCli[idxCli];
+          if (marker) marker.setLabel({ text: event.sigla || 'S/N', color: 'gray', fontSize: '10px' });
+        }
+        return;
+      }
+
+      // destinoPopsCliDes
+      const idxDes = this.destinoPopsCliDes?.findIndex(idMatch) ?? -1;
+      if (idxDes >= 0) {
+        const cliente = this.destinoPopsCliDes![idxDes];
+        if (siglaAtual(cliente) !== event.sigla?.trim()) {
+          cliente.sigla = event.sigla;
+          (cliente as any).SIGLA = event.sigla;
+          const marker = this.markerPopsCliDes[idxDes];
+          if (marker) marker.setLabel({ text: event.sigla || 'S/N', color: 'gray', fontSize: '10px' });
+        }
+        return;
+      }
+
+      // destinoPopsCliAtv
+      const idxAtv = this.destinoPopsCliAtv?.findIndex(idMatch) ?? -1;
+      if (idxAtv >= 0) {
+        const cliente = this.destinoPopsCliAtv![idxAtv];
+        if (siglaAtual(cliente) !== event.sigla?.trim()) {
+          cliente.sigla = event.sigla;
+          (cliente as any).SIGLA = event.sigla;
+          const marker = this.markerPopsCliAtv[idxAtv];
+          if (marker) marker.setLabel({ text: event.sigla || 'S/N', color: 'blue', fontSize: '10px' });
+        }
+      }
+    });
 
   }
 
@@ -4432,13 +4492,14 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
 
     
 
+      const siglaTexto = (location as any).sigla || (location as any).SIGLA || 'S/N';
       const markerOptions: google.maps.MarkerOptions = {
         position: position,
-        title: location.sigla || 'Sem nome',
-        draggable: true,
-        opacity:20,
+        title: siglaTexto,
+        draggable: false,
+        opacity: 0.8,
         label: {
-          text: location.sigla || 'S/N',
+          text: siglaTexto,
           color: 'gray',
           fontSize: '10px'
         } as google.maps.MarkerLabel,
@@ -4466,21 +4527,12 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
       if (this.map) {
         marker.setMap(this.map);
       }
-      
-      marker.addListener('dragend', (event: google.maps.MapMouseEvent) => {
-        const index = this.markerPopsCli.indexOf(marker);
-        if (index !== -1) {
-          this.onMarkerDragEnd(event, index, true);
-        }
-      });
 
-      //this.addMarkerEventListeners(marker, true);//260825
+      this.addMarkerEventListeners(marker, false, false, true, false, false);
 
-      this.addMarkerEventListeners(marker, false,false,true,false,false);
-      
       this.markerPopsCli.push(marker);
     });
-      
+
       console.log('Clientes atualizados:', this.markerPopsCli);
     }
   }
@@ -4502,13 +4554,14 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
 
     
 
+      const siglaTexto = (location as any).sigla || (location as any).SIGLA || 'S/N';
       const markerOptions: google.maps.MarkerOptions = {
         position: position,
-        title: location.sigla || 'Sem nome',
-        draggable: true,
-        opacity:20,
+        title: siglaTexto,
+        draggable: false,
+        opacity: 0.8,
         label: {
-          text: location.sigla || 'S/N',
+          text: siglaTexto,
           color: 'gray',
           fontSize: '10px'
         } as google.maps.MarkerLabel,
@@ -4536,19 +4589,12 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
       if (this.map) {
         marker.setMap(this.map);
       }
-      
-      marker.addListener('dragend', (event: google.maps.MapMouseEvent) => {
-        const index = this.markerPopsCliDes.indexOf(marker);
-        if (index !== -1) {
-          this.onMarkerDragEnd(event, index, true);
-        }
-      });
 
-      this.addMarkerEventListeners(marker, false,false,false,false,true);
-      
+      this.addMarkerEventListeners(marker, false, false, false, false, true);
+
       this.markerPopsCliDes.push(marker);
     });
-      
+
       console.log('Clientes Desativados atualizados:', this.markerPopsCliDes);
     }
   }
@@ -4571,13 +4617,14 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
 
     
 
+      const siglaTexto = (location as any).sigla || (location as any).SIGLA || 'S/N';
       const markerOptions: google.maps.MarkerOptions = {
         position: position,
-        title: location.sigla || 'Sem nome',
-        draggable: true,
-        opacity:20,
+        title: siglaTexto,
+        draggable: false,
+        opacity: 0.8,
         label: {
-          text: location.sigla || 'S/N',
+          text: siglaTexto,
           color: 'blue',
           fontSize: '10px'
         } as google.maps.MarkerLabel,
@@ -4605,19 +4652,12 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
       if (this.map) {
         marker.setMap(this.map);
       }
-      
-      marker.addListener('dragend', (event: google.maps.MapMouseEvent) => {
-        const index = this.markerPopsCliAtv.indexOf(marker);
-        if (index !== -1) {
-          this.onMarkerDragEnd(event, index, true);
-        }
-      });
 
-      this.addMarkerEventListeners(marker, false,false,false,true,false);
-      
+      this.addMarkerEventListeners(marker, false, false, false, true, false);
+
       this.markerPopsCliAtv.push(marker);
     });
-      
+
       console.log('Clientes Ativados atualizados:', this.markerPopsCliAtv);
     }
   }
@@ -6437,11 +6477,25 @@ private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = fal
           this.onMarkerClick(event, index, false, true, false, false, false);
         }
       }
-    }
-    // 🔧 REMOVIDO: Duplo clique em clientes não abre mais o modal
-    // O modal agora é aberto apenas através do context menu (opção "Visualiza Cliente")
-      
-      else {
+    } else if (isCLI) {
+      const index = this.markerPopsCli.indexOf(marker);
+      if (index !== -1) {
+        if (this.currentMarkerInfoWindow) this.currentMarkerInfoWindow.close();
+        this.habilitarEdicaoCliente(index, 'cli');
+      }
+    } else if (isCLIAT) {
+      const index = this.markerPopsCliAtv.indexOf(marker);
+      if (index !== -1) {
+        if (this.currentMarkerInfoWindow) this.currentMarkerInfoWindow.close();
+        this.habilitarEdicaoCliente(index, 'cliat');
+      }
+    } else if (isCLIDES) {
+      const index = this.markerPopsCliDes.indexOf(marker);
+      if (index !== -1) {
+        if (this.currentMarkerInfoWindow) this.currentMarkerInfoWindow.close();
+        this.habilitarEdicaoCliente(index, 'clides');
+      }
+    } else {
       // É uma caixa
       const index = this.markerCaixas.indexOf(marker);
       if (index !== -1) {
@@ -6693,76 +6747,6 @@ private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = fal
     return 'ontouchstart' in window || 
            navigator.maxTouchPoints > 0 || 
            window.innerWidth <= 768;
-  }
-
-  /**
-   * 🔧 NOVO: Método auxiliar para tratar right-click em markers (reutilizável para desktop e mobile)
-   */
-  private handleRightClickOnMarker(
-    event: google.maps.MapMouseEvent, 
-    marker: google.maps.Marker,
-    isCTO: boolean,
-    isCTOSP: boolean,
-    isCLI: boolean,
-    isCLIAT: boolean,
-    isCLIDES: boolean
-  ): void {
-    console.log('🔴 [CONTEXT-MENU] Right-click detectado no marcador (desktop ou mobile)');
-    
-    // Prevenir menu padrão do navegador
-    if (event.domEvent) {
-      event.domEvent.preventDefault();
-      event.domEvent.stopPropagation();
-    }  
-
-    // Verificar se é uma CTO
-    if (isCTO) {
-      const index = this.markerCtos.indexOf(marker);
-      if (index !== -1) {
-        const cto = this.destinoCTO[index];
-        this.clickedCTOData = cto;
-        this.clickedCaixaData = null;
-        this.clickedCTOSPData = null;
-        this.contextMenuType = 'caixa';
-        
-        if (event.domEvent) {
-          const mouseEvent = event.domEvent as any;
-          this.showContextMenu(mouseEvent.clientX, mouseEvent.clientY);
-        }
-      }
-    }
-    // Verificar se é uma CTO_SP
-    else if (isCTOSP) {
-      const index = this.markerCtosSP.indexOf(marker);
-      if (index !== -1) {
-        const ctosp = this.destinoCTOSP[index];
-        this.clickedCTOSPData = ctosp;
-        this.clickedCaixaData = null;
-        this.clickedCTOData = null;
-        this.contextMenuType = 'caixa';
-        
-        if (event.domEvent) {
-          const mouseEvent = event.domEvent as any;
-          this.showContextMenu(mouseEvent.clientX, mouseEvent.clientY);
-        }
-      }
-    }
-    // Verificar se é uma caixa
-    else if (!isCLI && !isCLIAT && !isCLIDES) {
-      const index = this.markerCaixas.indexOf(marker);
-      if (index !== -1) {
-        const caixa = this.destino[index];
-        this.clickedCaixaData = caixa;
-        this.clickedCTOData = null;
-        this.clickedCTOSPData = null;
-        this.contextMenuType = 'caixa';
-        
-        if (event.domEvent) {
-          const mouseEvent = event.domEvent as any;
-          this.showContextMenu(mouseEvent.clientX, mouseEvent.clientY);
-        }
-      }
-    }
   }
 
   private checkGoogleMapsAPI() {
@@ -7842,6 +7826,205 @@ private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = fal
   }
 
   /**
+   * Habilita a edição de um cliente (torna arrastável)
+   */
+  private habilitarEdicaoCliente(index: number, tipo: 'cli' | 'cliat' | 'clides'): void {
+    const arrays = {
+      cli: { markers: this.markerPopsCli, destinos: this.destinoPopsCli },
+      cliat: { markers: this.markerPopsCliAtv, destinos: this.destinoPopsCliAtv },
+      clides: { markers: this.markerPopsCliDes, destinos: this.destinoPopsCliDes }
+    };
+    const arr = arrays[tipo];
+    if (!arr || index < 0 || index >= arr.markers.length) {
+      console.error('❌ [EDITAR-CLIENTE] Índice ou tipo inválido:', index, tipo);
+      return;
+    }
+
+    const marker = arr.markers[index];
+    const cliente = arr.destinos?.[index];
+
+    if (!marker || !cliente) {
+      console.error('❌ [EDITAR-CLIENTE] Marcador ou cliente não encontrados');
+      return;
+    }
+
+    if (this.clienteEmEdicao) {
+      this.desabilitarEdicaoCliente();
+    }
+
+    const position = marker.getPosition();
+    if (position) {
+      this.clienteEmEdicaoOriginalPosition = { lat: position.lat(), lng: position.lng() };
+    }
+    this.clienteEmEdicaoOriginalIcon = marker.getIcon() as google.maps.Icon;
+
+    const origIcon = marker.getIcon() as google.maps.Symbol;
+    const editIcon: google.maps.Symbol = {
+      ...origIcon,
+      scale: 6,
+      fillOpacity: 1.0
+    };
+    marker.setIcon(editIcon);
+    marker.setOpacity(1.0);
+    marker.setDraggable(true);
+
+    this.clienteEmEdicao = marker;
+    this.clienteEmEdicaoIndex = index;
+    this.clienteEmEdicaoTipo = tipo;
+
+    const sigla = (cliente as any).sigla || (cliente as any).SIGLA || 'N/A';
+    console.log('✅ [EDITAR-CLIENTE] Edição habilitada para cliente:', sigla);
+
+    if (this.map && !this.listenerMapaSalvarCliente) {
+      this.listenerMapaSalvarCliente = this.map.addListener('click', () => {
+        if (this.clienteEmEdicao) {
+          this.salvarEdicaoCliente();
+        }
+      });
+    }
+
+    if (!this.listenerEscCancelarCliente) {
+      this.listenerEscCancelarCliente = (event: KeyboardEvent) => {
+        if (event.key === 'Escape' && this.clienteEmEdicao) {
+          this.cancelarEdicaoCliente();
+        }
+      };
+      document.addEventListener('keydown', this.listenerEscCancelarCliente);
+    }
+  }
+
+  /**
+   * Desabilita a edição do cliente
+   */
+  private desabilitarEdicaoCliente(): void {
+    if (this.clienteEmEdicao) {
+      this.clienteEmEdicao.setDraggable(false);
+      this.clienteEmEdicao.setOpacity(0.8);
+      if (this.clienteEmEdicaoOriginalIcon) {
+        this.clienteEmEdicao.setIcon(this.clienteEmEdicaoOriginalIcon);
+      }
+    }
+
+    if (this.listenerMapaSalvarCliente) {
+      google.maps.event.removeListener(this.listenerMapaSalvarCliente);
+      this.listenerMapaSalvarCliente = null;
+    }
+
+    if (this.listenerEscCancelarCliente) {
+      document.removeEventListener('keydown', this.listenerEscCancelarCliente);
+      this.listenerEscCancelarCliente = null;
+    }
+
+    this.clienteEmEdicao = null;
+    this.clienteEmEdicaoIndex = null;
+    this.clienteEmEdicaoTipo = null;
+    this.clienteEmEdicaoOriginalPosition = null;
+    this.clienteEmEdicaoOriginalIcon = null;
+  }
+
+  /**
+   * Salva a edição do cliente
+   */
+  private salvarEdicaoCliente(): void {
+    if (!this.clienteEmEdicao || this.clienteEmEdicaoIndex === null || !this.clienteEmEdicaoTipo) {
+      return;
+    }
+
+    const position = this.clienteEmEdicao.getPosition();
+    if (!position) {
+      console.error('❌ [EDITAR-CLIENTE] Posição não disponível');
+      return;
+    }
+
+    const newLat = position.lat();
+    const newLng = position.lng();
+
+    const arrays = {
+      cli: { markers: this.markerPopsCli, destinos: this.destinoPopsCli },
+      cliat: { markers: this.markerPopsCliAtv, destinos: this.destinoPopsCliAtv },
+      clides: { markers: this.markerPopsCliDes, destinos: this.destinoPopsCliDes }
+    };
+    const arr = arrays[this.clienteEmEdicaoTipo];
+    const cliente = arr.destinos?.[this.clienteEmEdicaoIndex];
+
+    if (!cliente) {
+      console.error('❌ [EDITAR-CLIENTE] Cliente não encontrado');
+      return;
+    }
+
+    const idMeta = (cliente as any).id_meta ?? (cliente as any).ID_META;
+    if (!idMeta) {
+      console.error('❌ [EDITAR-CLIENTE] ID_META não encontrado no cliente');
+      alert('❌ Erro: ID_META do cliente não encontrado!');
+      return;
+    }
+
+    (cliente as any).LAT = newLat;
+    (cliente as any).LNG = newLng;
+
+    this.updateClienteService.atualizarCoordenadas({
+      ID_META: idMeta,
+      lat: newLat,
+      lng: newLng
+    }).subscribe({
+      next: (response) => {
+        console.log('✅ [EDITAR-CLIENTE] Coordenadas atualizadas com sucesso:', response);
+
+        const idUsuario = this.authService.getIdUser();
+        const idCity = this.authService.getIdCity();
+        const sigla = (cliente as any).sigla || (cliente as any).SIGLA || 'N/A';
+        if (idUsuario && idCity && idMeta) {
+          this.insertLogService.inserirLog({
+            id_usuario: idUsuario,
+            id_evento: 31,
+            id_city: idCity,
+            id_meta_objeto: idMeta,
+            descricao: `Move Cliente sigla: ${sigla} idmeta: ${idMeta}`,
+            VERSION: 'Fiberworks WEB 1.0.0'
+          }).subscribe({
+            next: (logResponse) => console.log('✅ Log de move cliente:', logResponse),
+            error: (error) => console.error('❌ Erro ao inserir log:', error)
+          });
+        }
+
+        this.desabilitarEdicaoCliente();
+      },
+      error: (error) => {
+        console.error('❌ [EDITAR-CLIENTE] Erro ao atualizar coordenadas:', error);
+        if (this.clienteEmEdicao && this.clienteEmEdicaoOriginalPosition) {
+          this.clienteEmEdicao.setPosition({
+            lat: this.clienteEmEdicaoOriginalPosition.lat,
+            lng: this.clienteEmEdicaoOriginalPosition.lng
+          });
+          (cliente as any).LAT = this.clienteEmEdicaoOriginalPosition.lat;
+          (cliente as any).LNG = this.clienteEmEdicaoOriginalPosition.lng;
+        }
+        alert(`❌ Erro ao atualizar coordenadas do cliente!\n\n🆔 ID_META: ${idMeta}\n\nErro: ${error.message}`);
+        this.desabilitarEdicaoCliente();
+      }
+    });
+  }
+
+  /**
+   * Cancela a edição do cliente
+   */
+  private cancelarEdicaoCliente(): void {
+    if (!this.clienteEmEdicao || !this.clienteEmEdicaoOriginalPosition) {
+      return;
+    }
+
+    this.clienteEmEdicao.setPosition({
+      lat: this.clienteEmEdicaoOriginalPosition.lat,
+      lng: this.clienteEmEdicaoOriginalPosition.lng
+    });
+
+    this.desabilitarEdicaoCliente();
+
+    console.log('❌ [EDITAR-CLIENTE] Edição cancelada, posição restaurada');
+    alert('Edição cancelada. Posição original restaurada.');
+  }
+
+  /**
    * 🔧 Desabilita a edição do DIO
    */
   private desabilitarEdicaoDio(): void {
@@ -8110,18 +8293,23 @@ private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = fal
   }
 
 openPopInfoModal(id_meta: number|undefined) {
-  const dialogRef = this.dialog.open(PopInfoModalComponent, {
-    width: '600px',
-    data: { id_meta }
+  if (id_meta == null) return;
+  const modalRef = this.ngbModal.open(PopInfoModalComponent, {
+    size: 'lg',
+    backdrop: 'static',
+    centered: true
   });
-
+  modalRef.componentInstance.data = { id_meta };
 }
 
 openPopEstacaoInfoModal(id_meta: number|undefined) {
-  const dialogRef = this.dialog.open(PopEstacaoInfoModalComponent, {
-    width: '600px',
-    data: { id_meta }
+  if (id_meta == null) return;
+  const modalRef = this.ngbModal.open(PopEstacaoInfoModalComponent, {
+    size: 'lg',
+    backdrop: 'static',
+    centered: true
   });
+  modalRef.componentInstance.data = { id_meta };
 }
 
 openVisualizaDioModal(id_meta: number, capacity?: number) {
@@ -9778,6 +9966,8 @@ openGoJSModal() {
    * 🧹 Limpa listeners quando o componente é destruído
    */
   ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
     // 🛡️ Remover listener de contextmenu do elemento do mapa
     if (this.listenerContextMenuDOM) {
       this.listenerContextMenuDOM();

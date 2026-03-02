@@ -139,3 +139,35 @@ body.modal-open .modal-content {
   pointer-events: auto !important;
 }
 
+/* Modais de pesquisa no mapa: sem backdrop, mapa interativo abaixo, só o conteúdo do modal recebe cliques */
+/* Caixa */
+.caixa-search-modal-window,
+.caixa-search-modal-window * { pointer-events: none !important; }
+.caixa-search-modal-window .modal-dialog > .modal-content { pointer-events: none !important; }
+.caixa-search-modal-window app-caixa-search-modal .modal-content,
+.caixa-search-modal-window app-caixa-search-modal .modal-content * { pointer-events: auto !important; }
+.caixa-search-modal-window app-caixa-search-modal .modal-content { user-select: none !important; }
+
+/* Cliente */
+.cliente-search-modal-window,
+.cliente-search-modal-window * { pointer-events: none !important; }
+.cliente-search-modal-window .modal-dialog > .modal-content { pointer-events: none !important; }
+.cliente-search-modal-window app-cliente-search-modal .modal-content,
+.cliente-search-modal-window app-cliente-search-modal .modal-content * { pointer-events: auto !important; }
+.cliente-search-modal-window app-cliente-search-modal .modal-content { user-select: none !important; }
+
+/* Estação */
+.estacao-search-modal-window,
+.estacao-search-modal-window * { pointer-events: none !important; }
+.estacao-search-modal-window .modal-dialog > .modal-content { pointer-events: none !important; }
+.estacao-search-modal-window app-estacao-search-modal .modal-content,
+.estacao-search-modal-window app-estacao-search-modal .modal-content * { pointer-events: auto !important; }
+.estacao-search-modal-window app-estacao-search-modal .modal-content { user-select: none !important; }
+
+/* Cadastro Cliente */
+.cadastro-cliente-modal-window,
+.cadastro-cliente-modal-window * { pointer-events: none !important; }
+.cadastro-cliente-modal-window .modal-dialog > .modal-content { pointer-events: none !important; }
+.cadastro-cliente-modal-window app-cadastro-cliente .modal-content,
+.cadastro-cliente-modal-window app-cadastro-cliente .modal-content * { pointer-events: auto !important; }
+.cadastro-cliente-modal-window app-cadastro-cliente .modal-content { user-select: none !important; }

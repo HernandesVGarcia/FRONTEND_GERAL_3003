@@ -1,147 +1,115 @@
-<div class="modal-container">
-  <!-- Header -->
-  <div class="modal-header">
-    <h2 mat-dialog-title class="modal-title">
-      <mat-icon>person</mat-icon>
-      Informações do Cliente/POP
-    </h2>
-    <button mat-icon-button class="close-button" (click)="closeModal()">
-      <mat-icon>close</mat-icon>
-    </button>
-  </div>
-
-  <!-- Loading State -->
-  <div *ngIf="isLoading" class="loading-container">
-    <mat-icon class="loading-icon">hourglass_empty</mat-icon>
-    <p>Carregando informações...</p>
-  </div>
-
-  <!-- Error Message -->
-  <div *ngIf="errorMessage" class="error-message">
-    <mat-icon color="warn">error</mat-icon>
-    <span>{{ errorMessage }}</span>
-  </div>
-
-  <!-- Content -->
-  <div *ngIf="!isLoading && !errorMessage" class="modal-content">
-    <!-- ID Field (Read-only) -->
-    <div class="field-group-ID">
-      <label class="field-label-ID">ID:</label>
-      <div class="field-value-ID">{{ popInfo?.id_meta || 'N/A' }}</div>
+<div class="modal-dialog modal-lg" #modalDialog>
+  <div class="modal-content shadow-lg">
+    <!-- Header -->
+    <div class="modal-header bg-primary text-white" (mousedown)="onMouseDown($event)" style="cursor: move;">
+      <h5 class="modal-title fw-bold">
+        <mat-icon class="me-2">person</mat-icon>
+        Informações do Cliente/POP
+      </h5>
+      <button type="button" class="btn-close btn-close-white" (click)="closeModal()" aria-label="Close"></button>
     </div>
 
-    <!-- SIGLA Field -->
-    <div class="field-group">
-      <label class="field-label">SIGLA:</label>
-      <div *ngIf="!isEditing" class="field-value">{{ popInfo?.SIGLA || 'N/A' }}</div>
-      <mat-form-field *ngIf="isEditing" class="edit-field">
-        <input matInput [(ngModel)]="editForm.SIGLA" placeholder="Digite a sigla">
-      </mat-form-field>
-    </div>
-
-    <!-- LOGRADOURO Field -->
-    <div class="field-group">
-      <label class="field-label">LOGRADOURO:</label>
-      <div *ngIf="!isEditing" class="field-value">{{ popInfo?.ENDERECO || 'N/A' }}</div>
-      <mat-form-field *ngIf="isEditing" class="edit-field">
-        <input matInput [(ngModel)]="editForm.ENDERECO" placeholder="Digite o logradouro">
-      </mat-form-field>
-    </div>
-
-    <!-- NUMERO e BAIRRO na mesma linha -->
-    <div class="field-row">
-      <!-- NUMERO Field -->
-      <div class="field-group-half">
-        <label class="field-label">NUMERO:</label>
-        <div *ngIf="!isEditing" class="field-value">{{ popInfo?.NUMERO || 'N/A' }}</div>
-        <mat-form-field *ngIf="isEditing" class="edit-field">
-          <input matInput [(ngModel)]="editForm.NUMERO" placeholder="Digite o número">
-        </mat-form-field>
-      </div>
-
-      <!-- BAIRRO Field -->
-      <div class="field-group-half">
-        <label class="field-label">BAIRRO:</label>
-        <div *ngIf="!isEditing" class="field-value">{{ popInfo?.BAIRRO || 'N/A' }}</div>
-        <mat-form-field *ngIf="isEditing" class="edit-field">
-          <input matInput [(ngModel)]="editForm.BAIRRO" placeholder="Digite o bairro">
-        </mat-form-field>
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="modal-body">
+      <div class="loading-container">
+        <mat-icon class="loading-icon">hourglass_empty</mat-icon>
+        <p>Carregando informações...</p>
       </div>
     </div>
 
-    <!-- COMPLEMENTO Field -->
-    <div class="field-group">
-      <label class="field-label">COMPLEMENTO:</label>
-      <div *ngIf="!isEditing" class="field-value">{{ popInfo?.COMPLEMENTO || 'N/A' }}</div>
-      <mat-form-field *ngIf="isEditing" class="edit-field">
-        <input matInput [(ngModel)]="editForm.COMPLEMENTO" placeholder="Digite o complemento">
-      </mat-form-field>
+    <!-- Error Message -->
+    <div *ngIf="errorMessage && !isLoading" class="modal-body">
+      <div class="error-message">
+        <mat-icon color="warn">error</mat-icon>
+        <span>{{ errorMessage }}</span>
+      </div>
     </div>
 
-    <!-- CONTATO Field -->
-    <div class="field-group">
-      <label class="field-label">CONTATO:</label>
-      <div *ngIf="!isEditing" class="field-value">{{ popInfo?.CONTATO || 'N/A' }}</div>
-      <mat-form-field *ngIf="isEditing" class="edit-field">
-        <input matInput [(ngModel)]="editForm.CONTATO" placeholder="Digite o contato">
-      </mat-form-field>
+    <!-- Content -->
+    <div *ngIf="!isLoading && !errorMessage" class="modal-body">
+      <div class="card border-primary">
+        <div class="card-header bg-light">
+          <h6 class="mb-0 fw-semibold">ID: {{ popInfo?.id_meta || 'N/A' }}</h6>
+        </div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">SIGLA</label>
+              <div *ngIf="!isEditing" class="field-value">{{ popInfo?.SIGLA || 'N/A' }}</div>
+              <input *ngIf="isEditing" type="text" class="form-control form-control-sm" [(ngModel)]="editForm.SIGLA" name="SIGLA" placeholder="Digite a sigla">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">NÚMERO/CONTRATO</label>
+              <div *ngIf="!isEditing" class="field-value">{{ popInfo?.CONTRATO_GPON || 'N/A' }}</div>
+              <input *ngIf="isEditing" type="text" class="form-control form-control-sm" [(ngModel)]="editForm.CONTRATO_GPON" name="CONTRATO_GPON" placeholder="Digite o número/contrato">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">CPF/CNPJ</label>
+              <div *ngIf="!isEditing" class="field-value">{{ popInfo?.CNPJ || 'N/A' }}</div>
+              <input *ngIf="isEditing" type="text" class="form-control form-control-sm" [(ngModel)]="editForm.CNPJ" name="CNPJ" placeholder="Digite CPF ou CNPJ">
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-semibold">LOGRADOURO</label>
+              <div *ngIf="!isEditing" class="field-value">{{ popInfo?.ENDERECO || 'N/A' }}</div>
+              <input *ngIf="isEditing" type="text" class="form-control form-control-sm" [(ngModel)]="editForm.ENDERECO" name="ENDERECO" placeholder="Digite o logradouro">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">NUMERO</label>
+              <div *ngIf="!isEditing" class="field-value">{{ popInfo?.NUMERO || 'N/A' }}</div>
+              <input *ngIf="isEditing" type="text" class="form-control form-control-sm" [(ngModel)]="editForm.NUMERO" name="NUMERO" placeholder="Digite o número">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">BAIRRO</label>
+              <div *ngIf="!isEditing" class="field-value">{{ popInfo?.BAIRRO || 'N/A' }}</div>
+              <input *ngIf="isEditing" type="text" class="form-control form-control-sm" [(ngModel)]="editForm.BAIRRO" name="BAIRRO" placeholder="Digite o bairro">
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-semibold">COMPLEMENTO</label>
+              <div *ngIf="!isEditing" class="field-value">{{ popInfo?.COMPLEMENTO || 'N/A' }}</div>
+              <input *ngIf="isEditing" type="text" class="form-control form-control-sm" [(ngModel)]="editForm.COMPLEMENTO" name="COMPLEMENTO" placeholder="Digite o complemento">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">CONTATO</label>
+              <div *ngIf="!isEditing" class="field-value">{{ popInfo?.CONTATO || 'N/A' }}</div>
+              <input *ngIf="isEditing" type="text" class="form-control form-control-sm" [(ngModel)]="editForm.CONTATO" name="CONTATO" placeholder="Digite o contato">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">TELEFONE</label>
+              <div *ngIf="!isEditing" class="field-value">{{ popInfo?.TELEFONE || 'N/A' }}</div>
+              <input *ngIf="isEditing" type="text" class="form-control form-control-sm" [(ngModel)]="editForm.TELEFONE" name="TELEFONE" placeholder="Digite o telefone">
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-semibold">OBSERVAÇÃO</label>
+              <div *ngIf="!isEditing" class="field-value">{{ popInfo?.OBS || 'N/A' }}</div>
+              <textarea *ngIf="isEditing" class="form-control form-control-sm" [(ngModel)]="editForm.OBS" name="OBS" rows="3" placeholder="Digite a observação"></textarea>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">PROJETISTA</label>
+              <div class="field-value">{{ popInfo?.USUARIO || 'N/A' }}</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">DATA</label>
+              <div class="field-value">{{ popInfo?.data || 'N/A' }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- TELEFONE Field -->
-    <div class="field-group">
-      <label class="field-label">TELEFONE:</label>
-      <div *ngIf="!isEditing" class="field-value">{{ popInfo?.TELEFONE || 'N/A' }}</div>
-      <mat-form-field *ngIf="isEditing" class="edit-field">
-        <input matInput [(ngModel)]="editForm.TELEFONE" placeholder="Digite o telefone">
-      </mat-form-field>
+    <!-- Footer -->
+    <div class="modal-footer bg-light">
+      <button *ngIf="isEditing" type="button" class="btn btn-secondary btn-sm me-2" (click)="cancelEdit()">
+        <mat-icon class="me-1" style="font-size: 18px; width: 18px; height: 18px;">cancel</mat-icon>
+        Cancelar
+      </button>
+      <button type="button" class="btn btn-primary btn-sm me-2" (click)="toggleEdit()" [disabled]="isLoading">
+        <mat-icon class="me-1" style="font-size: 18px; width: 18px; height: 18px;">{{ isEditing ? 'save' : 'edit' }}</mat-icon>
+        {{ isEditing ? 'Salvar' : 'Editar' }}
+      </button>
+      <button type="button" class="btn btn-secondary btn-sm" (click)="closeModal()">
+        <span class="me-1">✕</span>
+        Fechar
+      </button>
     </div>
-
-    <!-- OBSERVAÇÃO Field -->
-    <div class="field-group">
-      <label class="field-label">OBSERVAÇÃO:</label>
-      <div *ngIf="!isEditing" class="field-value">{{ popInfo?.OBS || 'N/A' }}</div>
-      <mat-form-field *ngIf="isEditing" class="edit-field">
-        <textarea matInput [(ngModel)]="editForm.OBS" placeholder="Digite a observação" rows="3"></textarea>
-      </mat-form-field>
-    </div>
-
-    <!-- PROJETISTA Field -->
-    <div class="field-group">
-      <label class="field-label">PROJETISTA:</label>
-      <div *ngIf="!isEditing" class="field-value">{{ popInfo?.USUARIO || 'N/A' }}</div>
-      <mat-form-field *ngIf="isEditing" class="edit-field">
-        <input matInput [(ngModel)]="editForm.USUARIO" placeholder="Digite o projetista">
-      </mat-form-field>
-    </div>
-
-    <!-- DATA Field -->
-    <div class="field-group">
-      <label class="field-label">DATA:</label>
-      <div *ngIf="!isEditing" class="field-value">{{ popInfo?.data || 'N/A' }}</div>
-      <mat-form-field *ngIf="isEditing" class="edit-field">
-        <input matInput [(ngModel)]="editForm.data" placeholder="Digite a data">
-      </mat-form-field>
-    </div>
-  </div>
-
-  <!-- Actions -->
-  <div class="modal-actions" mat-dialog-actions>
-    <button *ngIf="isEditing" mat-button (click)="cancelEdit()">
-      <mat-icon>cancel</mat-icon>
-      Cancelar
-    </button>
-    
-    <button mat-raised-button 
-            [color]="isEditing ? 'primary' : 'accent'"
-            (click)="toggleEdit()"
-            [disabled]="isLoading">
-      <mat-icon>{{ isEditing ? 'save' : 'edit' }}</mat-icon>
-      {{ isEditing ? 'Salvar' : 'Editar' }}
-    </button>
-    
-    <button mat-button (click)="closeModal()">
-      <mat-icon>close</mat-icon>
-      Fechar
-    </button>
   </div>
 </div>

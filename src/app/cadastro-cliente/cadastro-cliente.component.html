@@ -1,12 +1,12 @@
 <div class="modal-dialog modal-lg" #modalDialog>
   <div class="modal-content shadow-lg">
     <!-- Header -->
-    <div class="modal-header" (mousedown)="onMouseDown($event)" style="cursor: move;">
+    <div class="modal-header bg-primary text-white" (mousedown)="onMouseDown($event)" style="cursor: move;">
       <h5 class="modal-title fw-bold">
         <mat-icon class="me-2">person_add</mat-icon>
         Cadastro de Cliente
       </h5>
-      <button type="button" class="btn-close" (click)="fechar()" aria-label="Close"></button>
+      <button type="button" class="btn-close btn-close-white" (click)="fechar()" aria-label="Close"></button>
     </div>
 
     <!-- Content -->
@@ -83,7 +83,7 @@
     </div>
 
     <!-- Footer -->
-    <div class="modal-footer">
+    <div class="modal-footer bg-light">
       <button type="button" class="btn btn-secondary btn-sm me-2" (click)="fechar()" [disabled]="salvando">
         <span class="me-1">✕</span>
         Cancelar

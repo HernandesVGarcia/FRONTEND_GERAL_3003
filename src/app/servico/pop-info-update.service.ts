@@ -1,23 +1,30 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
+import { Observable, Subject, throwError } from 'rxjs';
 import { catchError, retry, timeout, map } from 'rxjs/operators';
 import { environment } from '../environments/environment';
 import { AuthService } from './auth.service';
 import { PopsInfo } from '../modelo/PopsInfo';
 
-interface PopInfoUpdateRequest {
+/** Evento emitido quando um cliente é atualizado (ex.: SIGLA alterada) */
+export interface ClienteAtualizadoEvent {
   id_meta: number;
+  sigla: string;
+}
+
+/** Formato esperado pela API update_cliente */
+interface UpdateClienteApiBody {
+  ID_META: number;
   SIGLA?: string;
-  ENDERECO?: string;
+  CONTRATO?: string;
+  LOGRADOURO?: string;
   NUMERO?: string;
   BAIRRO?: string;
   COMPLEMENTO?: string;
   CONTATO?: string;
   TELEFONE?: string;
-  OBS?: string;
-  USUARIO?: string;
-  data?: string;
+  OBSERVACAO?: string;
+  CPF_CNPJ?: string;
 }
 
 interface PopInfoUpdateResponse {
@@ -34,6 +41,11 @@ export class PopInfoUpdateService {
   private readonly RETRY_ATTEMPTS = 2;
   private baseUrl: string = environment.apiUrlAbsolute;
 
+  private clienteAtualizado$ = new Subject<ClienteAtualizadoEvent>();
+
+  /** Observable para escutar quando um cliente é atualizado (ex.: SIGLA alterada no modal) */
+  readonly onClienteAtualizado = this.clienteAtualizado$.asObservable();
+
   constructor(
     private http: HttpClient,
     private authService: AuthService
@@ -44,7 +56,7 @@ export class PopInfoUpdateService {
    * A rota utilizada será definida conforme especificação da API.
    */
   updatePopInfo(id_meta: number, updateData: Partial<PopsInfo>): Observable<PopInfoUpdateResponse> {
-    const route = `/clientes-update`; // Rota a ser confirmada com o backend
+    const route = `/update_cliente`;
     const token = this.authService.getToken();
 
     if (!token) {
@@ -58,10 +70,18 @@ export class PopInfoUpdateService {
 
     const url = `${this.baseUrl}${route}`;
 
-    // Preparar dados para envio
-    const body: PopInfoUpdateRequest = {
-      id_meta,
-      ...updateData
+    const body: UpdateClienteApiBody = {
+      ID_META: id_meta,
+      SIGLA: updateData.SIGLA,
+      CONTRATO: updateData.CONTRATO_GPON,
+      LOGRADOURO: updateData.ENDERECO,
+      NUMERO: updateData.NUMERO,
+      BAIRRO: updateData.BAIRRO,
+      COMPLEMENTO: updateData.COMPLEMENTO,
+      CONTATO: updateData.CONTATO,
+      TELEFONE: updateData.TELEFONE,
+      OBSERVACAO: updateData.OBS,
+      CPF_CNPJ: updateData.CNPJ
     };
 
     console.log('Enviando atualização para:', url);
@@ -103,5 +123,10 @@ export class PopInfoUpdateService {
     }
 
     return throwError(() => errorMessage);
+  }
+
+  /** Emite evento quando um cliente foi atualizado (para atualizar marcador no mapa) */
+  emitClienteAtualizado(event: ClienteAtualizadoEvent): void {
+    this.clienteAtualizado$.next(event);
   }
 }

@@ -1,11 +1,8 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, HostListener, ElementRef, ViewChild, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { MatButtonModule } from '@angular/material/button';
-import { MatInputModule } from '@angular/material/input';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
 import { FormsModule } from '@angular/forms';
+import { NgbActiveModal, NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { MatIconModule } from '@angular/material/icon';
 import { PopsInfo } from '../modelo/PopsInfo';
 import { PopInfoService } from '../servico/pop-info.service';
 import { PopInfoUpdateService } from '../servico/pop-info-update.service';
@@ -19,10 +16,7 @@ export interface PopInfoModalData {
   standalone: true,
   imports: [
     CommonModule,
-    MatDialogModule,
-    MatButtonModule,
-    MatInputModule,
-    MatFormFieldModule,
+    NgbModule,
     MatIconModule,
     FormsModule
   ],
@@ -30,14 +24,24 @@ export interface PopInfoModalData {
   styleUrls: ['./pop-info-modal.component.css']
 })
 export class PopInfoModalComponent implements OnInit {
+  private _data: PopInfoModalData = { id_meta: 0 };
+  get data(): PopInfoModalData { return this._data; }
+  set data(val: PopInfoModalData) {
+    this._data = val || { id_meta: 0 };
+    if (this._data.id_meta && !this.popInfo && !this.isLoading) {
+      this.loadPopInfo();
+    }
+  }
+
   popInfo: PopsInfo | null = null;
   isLoading = false;
   isEditing = false;
   errorMessage = '';
 
-  // Campos editáveis
   editForm = {
     SIGLA: '',
+    CONTRATO_GPON: '',
+    CNPJ: '',
     ENDERECO: '',
     NUMERO: '',
     BAIRRO: '',
@@ -49,22 +53,31 @@ export class PopInfoModalComponent implements OnInit {
     data: ''
   };
 
+  private isDragging = false;
+  private currentX = 0;
+  private currentY = 0;
+  private initialX = 0;
+  private initialY = 0;
+  private xOffset = 0;
+  private yOffset = 0;
+
+  @ViewChild('modalDialog', { static: false }) modalDialog!: ElementRef;
+
   constructor(
-    public dialogRef: MatDialogRef<PopInfoModalComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: PopInfoModalData,
+    public activeModal: NgbActiveModal,
     private popInfoService: PopInfoService,
     private popInfoUpdateService: PopInfoUpdateService
   ) {}
 
   ngOnInit(): void {
-    this.loadPopInfo();
+    if (this.data?.id_meta) {
+      this.loadPopInfo();
+    }
   }
 
   loadPopInfo(): void {
     this.isLoading = true;
     this.errorMessage = '';
-
-
 
     this.popInfoService.getPopInfo(this.data.id_meta).subscribe({
       next: (info) => {
@@ -83,9 +96,10 @@ export class PopInfoModalComponent implements OnInit {
   }
 
   populateEditForm(info: PopsInfo): void {
-
     this.editForm = {
       SIGLA: info.SIGLA || '',
+      CONTRATO_GPON: info.CONTRATO_GPON || '',
+      CNPJ: info.CNPJ || '',
       ENDERECO: info.ENDERECO || '',
       NUMERO: info.NUMERO || '',
       BAIRRO: info.BAIRRO || '',
@@ -100,10 +114,8 @@ export class PopInfoModalComponent implements OnInit {
 
   toggleEdit(): void {
     if (this.isEditing) {
-      // Salvar alterações
       this.saveChanges();
     } else {
-      // Entrar em modo de edição
       this.isEditing = true;
     }
   }
@@ -111,31 +123,29 @@ export class PopInfoModalComponent implements OnInit {
   saveChanges(): void {
     if (!this.popInfo) return;
 
-    console.log('Salvando alterações:', this.editForm);
-    
-    // Chamar o serviço de atualização
-    this.popInfoUpdateService.updatePopInfo(this.data.id_meta, this.editForm).subscribe({
+    const { USUARIO, data, ...payload } = this.editForm;
+    this.popInfoUpdateService.updatePopInfo(this.data.id_meta, payload).subscribe({
       next: (response) => {
-        console.log('Atualização realizada com sucesso:', response);
-        
-        // Atualizar os dados locais se a resposta incluir dados atualizados
         if (response.data) {
           this.popInfo = response.data;
           this.populateEditForm(response.data);
         }
-        
-        // Sair do modo de edição
+        const novaSigla = response?.data?.SIGLA ?? payload.SIGLA ?? this.editForm.SIGLA;
+        if (novaSigla !== undefined && novaSigla !== '') {
+          this.popInfoUpdateService.emitClienteAtualizado({
+            id_meta: this.data.id_meta,
+            sigla: novaSigla
+          });
+        }
         this.isEditing = false;
-        
-        // TODO: Mostrar mensagem de sucesso para o usuário
+        this.activeModal.close(); // Fecha o modal após salvar as alterações 27022026
       },
       error: (error) => {
         console.error('Erro ao salvar alterações:', error);
         this.errorMessage = typeof error === 'string' ? error : 'Erro ao salvar alterações';
-        
-        // TODO: Mostrar mensagem de erro para o usuário
       }
-    });
+    }
+  );
   }
 
   cancelEdit(): void {
@@ -146,6 +156,41 @@ export class PopInfoModalComponent implements OnInit {
   }
 
   closeModal(): void {
-    this.dialogRef.close();
+    this.activeModal.dismiss();
+  }
+
+  onMouseDown(event: MouseEvent): void {
+    if (event.target instanceof HTMLElement) {
+      const header = event.target.closest('.modal-header');
+      if (header && !event.target.closest('.btn-close')) {
+        this.initialX = event.clientX - this.xOffset;
+        this.initialY = event.clientY - this.yOffset;
+        if (event.target === header || header.contains(event.target)) {
+          this.isDragging = true;
+          event.preventDefault();
+        }
+      }
+    }
+  }
+
+  @HostListener('document:mousemove', ['$event'])
+  onMouseMove(event: MouseEvent): void {
+    if (this.isDragging) {
+      event.preventDefault();
+      this.currentX = event.clientX - this.initialX;
+      this.currentY = event.clientY - this.initialY;
+      this.xOffset = this.currentX;
+      this.yOffset = this.currentY;
+      if (this.modalDialog) {
+        this.modalDialog.nativeElement.style.transform = `translate(${this.currentX}px, ${this.currentY}px)`;
+      }
+    }
+  }
+
+  @HostListener('document:mouseup')
+  onMouseUp(): void {
+    this.initialX = this.currentX;
+    this.initialY = this.currentY;
+    this.isDragging = false;
   }
 }

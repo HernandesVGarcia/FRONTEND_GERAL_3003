@@ -18,7 +18,8 @@
   justify-content: space-between;
   align-items: center;
   padding: 10px 20px; /* Dobrado de 5px para 10px */
-  background: #abebb6;
+  background-color: #629ef8 !important;
+  color: #fff !important;
   border-bottom: 1px solid #e0e0e0;
   height: 2%; /* Dobrado de 1% para 2% */
   cursor: move;
@@ -34,7 +35,7 @@
   margin: 0;
   font-size: 1.2rem; /* Aumentado de 1rem para 1.2rem */
   font-weight: 500;
-  color: #333;
+  color: #fff ;
 }
 
 .header-actions {

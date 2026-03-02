@@ -1,10 +1,6 @@
-
-import { Component, Inject,Output, EventEmitter, ViewChild, ElementRef, AfterViewInit, signal } from '@angular/core';
+import { Component, HostListener, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { MatButtonModule } from '@angular/material/button';
-import { MatInputModule } from '@angular/material/input';
-import { MatFormFieldModule } from '@angular/material/form-field';
+import { NgbActiveModal, NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule } from '@angular/forms';
 import { ClienteSearchService, ClienteSearchResult } from '../servico/cliente-search.service';
@@ -15,24 +11,19 @@ import { CompartilhamentoService, ClienteData } from '../servico/compartilhament
   standalone: true,
   imports: [
     CommonModule,
-    MatDialogModule,
-    MatButtonModule,
-    MatInputModule,
-    MatFormFieldModule,
+    NgbModule,
     MatIconModule,
     FormsModule
   ],
   templateUrl: './cliente-search-modal.component.html',
   styleUrls: ['./cliente-search-modal.component.css']
 })
-export class ClienteSearchModalComponent implements AfterViewInit {
-  @ViewChild('draggableContainer') draggableContainer!: ElementRef;
-  @ViewChild('draggableHeader') draggableHeader!: ElementRef;
+export class ClienteSearchModalComponent {
+  @ViewChild('modalDialog', { static: false }) modalDialog!: ElementRef;
 
-  @Output() clienteSelecionada= new EventEmitter<ClienteSearchResult>()
   siglaFilter: string = '';
   enderecoFilter: string = '';
-  
+
   filteredData: ClienteSearchResult[] = [];
   isLoading: boolean = false;
   errorMessage: string = '';
@@ -47,71 +38,49 @@ export class ClienteSearchModalComponent implements AfterViewInit {
   private yOffset = 0;
 
   constructor(
-    public dialogRef: MatDialogRef<ClienteSearchModalComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: any,
+    public activeModal: NgbActiveModal,
     private clienteSearchService: ClienteSearchService,
     private compartilhamentoService: CompartilhamentoService
   ) {}
 
-  ngAfterViewInit(): void {
-    this.setupDragListeners();
-  }
-
-  private setupDragListeners(): void {
-    const header = this.draggableHeader.nativeElement;
-    const container = this.draggableContainer.nativeElement;
-
-    header.addEventListener('mousedown', this.dragStart.bind(this));
-    document.addEventListener('mousemove', this.dragMove.bind(this));
-    document.addEventListener('mouseup', this.dragEnd.bind(this));
-
-    // Touch events for mobile
-    header.addEventListener('touchstart', this.dragStart.bind(this));
-    document.addEventListener('touchmove', this.dragMove.bind(this));
-    document.addEventListener('touchend', this.dragEnd.bind(this));
-  }
-
-  private dragStart(e: MouseEvent | TouchEvent): void {
-    const clientX = e instanceof MouseEvent ? e.clientX : e.touches[0].clientX;
-    const clientY = e instanceof MouseEvent ? e.clientY : e.touches[0].clientY;
-
-    this.initialX = clientX - this.xOffset;
-    this.initialY = clientY - this.yOffset;
-
-    if ((e.target as HTMLElement).closest('.draggable-header')) {
-      this.isDragging = true;
+  onMouseDown(event: MouseEvent): void {
+    if (event.target instanceof HTMLElement) {
+      const header = event.target.closest('.modal-header');
+      if (header && !event.target.closest('.btn-close')) {
+        this.initialX = event.clientX - this.xOffset;
+        this.initialY = event.clientY - this.yOffset;
+        if (event.target === header || header.contains(event.target)) {
+          this.isDragging = true;
+          event.preventDefault();
+        }
+      }
     }
   }
 
-  private dragMove(e: MouseEvent | TouchEvent): void {
+  @HostListener('document:mousemove', ['$event'])
+  onMouseMove(event: MouseEvent): void {
     if (this.isDragging) {
-      e.preventDefault();
-      
-      const clientX = e instanceof MouseEvent ? e.clientX : e.touches[0].clientX;
-      const clientY = e instanceof MouseEvent ? e.clientY : e.touches[0].clientY;
-
-      this.currentX = clientX - this.initialX;
-      this.currentY = clientY - this.initialY;
-
+      event.preventDefault();
+      this.currentX = event.clientX - this.initialX;
+      this.currentY = event.clientY - this.initialY;
       this.xOffset = this.currentX;
       this.yOffset = this.currentY;
-
-      this.setTranslate(this.currentX, this.currentY);
+      if (this.modalDialog) {
+        this.modalDialog.nativeElement.style.transform = `translate(${this.currentX}px, ${this.currentY}px)`;
+      }
     }
   }
 
-  private dragEnd(): void {
+  @HostListener('document:mouseup')
+  onMouseUp(): void {
     this.initialX = this.currentX;
     this.initialY = this.currentY;
     this.isDragging = false;
   }
 
-  private setTranslate(xPos: number, yPos: number): void {
-    const container = this.draggableContainer.nativeElement;
-    // Combinar a posição central inicial com o offset do drag
-    container.style.transform = `translate(calc(-50% + ${xPos}px), calc(-50% + ${yPos}px))`;
+  isSelected(cliente: ClienteSearchResult): boolean {
+    return this.selectedCliente === cliente;
   }
-  
 
   onBuscaCompleta(): void {
     if (!this.siglaFilter.trim() && !this.enderecoFilter.trim()) {
@@ -122,6 +91,7 @@ export class ClienteSearchModalComponent implements AfterViewInit {
     this.isLoading = true;
     this.errorMessage = '';
     this.filteredData = [];
+    this.selectedCliente = null;
 
     const filtros = {
       sigla: this.siglaFilter.trim() || undefined,
@@ -135,7 +105,7 @@ export class ClienteSearchModalComponent implements AfterViewInit {
         console.log('Resultado da busca:', resultado);
         this.filteredData = resultado;
         this.isLoading = false;
-        
+
         if (resultado.length === 0) {
           this.errorMessage = 'Nenhum cliente encontrado com os critérios informados.';
         }
@@ -149,11 +119,10 @@ export class ClienteSearchModalComponent implements AfterViewInit {
     });
   }
 
-  onSelectCliente(cliente: ClienteSearchResult): void { // o valor de CaixaSerachResult vem de caixaSearchService.buscarCaixas
-    console.log('Cliente selecionada:', cliente);
+  onSelectCliente(cliente: ClienteSearchResult): void {
+    console.log('Cliente selecionado:', cliente);
     this.selectedCliente = cliente;
-    
-    // Converter ClienteSearchResult para ClienteData
+
     const clienteData: ClienteData = {
       LAT: cliente.LAT,
       LNG: cliente.LNG,
@@ -161,16 +130,11 @@ export class ClienteSearchModalComponent implements AfterViewInit {
       ENDERECO: cliente.ENDERECO
     };
 
-    // Compartilhar dados da cliente via service
     this.compartilhamentoService.compartilharCliente(clienteData);
-    
-    // Emitir evento para compatibilidade (opcional)
-    this.clienteSelecionada.emit(cliente);
-    
-    console.log('Dados da cliente compartilhados via service:', clienteData);
+    console.log('Dados do cliente compartilhados via service:', clienteData);
   }
 
   onCancel(): void {
-    this.dialogRef.close();
+    this.activeModal.close();
   }
 }

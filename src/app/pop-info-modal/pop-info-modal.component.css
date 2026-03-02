@@ -1,39 +1,164 @@
-.modal-container {
-  padding: 0;
-  max-width: 800px;
-  width: 100%;
-  max-height: 80vh;
-  overflow-y: auto;
+/* Bootstrap CSS - Importado apenas para este componente */
+@import 'bootstrap/dist/css/bootstrap.min.css';
+
+/* ng-bootstrap modal - position fixed para aparecer como overlay */
+:host ::ng-deep .modal-backdrop {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 5000 !important;
+}
+
+:host ::ng-deep .modal {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  z-index: 5001 !important;
+  display: block !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+
+:host ::ng-deep .modal-dialog {
+  position: relative !important;
+  margin: 1.75rem auto !important;
+  width: 700px !important;
+  max-width: 700px !important;
+  z-index: 5002 !important;
+  pointer-events: none !important;
+  transition: none;
+}
+
+:host ::ng-deep .modal-content {
+  pointer-events: auto !important;
+}
+
+.modal-content {
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2) !important;
+  display: flex;
+  flex-direction: column;
+  max-height: 89vh;
+  width: 100% !important;
+  max-width: 100% !important;
 }
 
 .modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 16px;
-  background-color: #bbc7dd;
-  border-bottom: 1px solid #e0e0e0;
-  border-radius: 4px 4px 0 0;
+  border-radius: 8px 8px 0 0;
+  padding: 12px 20px;
+  cursor: move;
+  user-select: none;
+  background-color: #629ef8 !important;
+  color: #fff !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .modal-title {
-  margin: 0;
   display: flex;
   align-items: center;
-  gap: 8px;
-  color: #333;
-  font-size: 1.25rem;
-  font-weight: 500;
+  margin: 0;
+  font-size: 1.1rem;
 }
 
-.close-button {
-  color: #666;
+.modal-title mat-icon {
+  font-size: 1.5rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  vertical-align: middle;
 }
 
-.close-button:hover {
-  background-color: #e0e0e0;
+.modal-body {
+  padding: 15px 20px;
+  background: linear-gradient(to bottom, #f8f9fa, #ffffff);
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex: 0 1 auto;
+  max-height: calc(89vh - 120px);
 }
 
+.modal-body .row {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.modal-body .row > [class*="col-"] {
+  padding-left: 12px;
+  padding-right: 12px;
+}
+
+.modal-footer {
+  border-top: 2px solid #dee2e6;
+  padding: 12px 20px;
+  border-radius: 0 0 8px 8px;
+  background-color: #f8f9fa !important;
+}
+
+/* Field value (read-only display) */
+.field-value {
+  padding: 8px 12px;
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 4px;
+  color: #495057;
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  font-size: 0.875rem;
+}
+
+/* Cards */
+.card {
+  border-radius: 6px;
+}
+
+.card-header {
+  border-radius: 6px 6px 0 0 !important;
+  font-weight: 400;
+  padding: 10px 15px;
+}
+
+.card-body {
+  padding: 15px;
+}
+
+.card.border-primary .card-header {
+  background-color: #f1f4f7 !important;
+  color: #333 !important;
+}
+
+.card.border-primary .card-body {
+  background-color: #eff3f5;
+}
+
+/* Form labels */
+.form-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 6px;
+}
+
+.form-control-sm {
+  height: 32px;
+  padding: 4px 10px;
+  font-size: 0.875rem;
+  border: 1.5px solid #ced4da;
+  border-radius: 4px;
+}
+
+textarea.form-control-sm {
+  height: auto;
+  min-height: 60px;
+  resize: vertical;
+  padding-top: 6px;
+}
+
+/* Loading */
 .loading-container {
   display: flex;
   flex-direction: column;
@@ -56,148 +181,54 @@
   100% { transform: rotate(360deg); }
 }
 
+/* Error */
 .error-message {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 16px 24px;
+  padding: 16px;
   background-color: #ffebee;
   color: #c62828;
   border-radius: 4px;
-  margin: 16px 24px;
 }
 
-.modal-content {
-  padding: 34px;
-  
-}
-
-.field-group {
-  margin-bottom: 20px;
-  display: flex;
-  flex-direction: column;
-}
-
-.field-row {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
-}
-
-.field-group-half {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.field-group-ID {
-  margin-bottom: 20px;
-  max-width: 20px;
-  font-size: 0.85rem;
-}
-
-.field-label {
-  font-weight: 600;
-  color: #333;
-  margin-bottom: 8px;
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.field-value {
-  padding: 12px;
-  background-color: #f8f9fa;
-  border: 1px solid #e9ecef;
-  border-radius: 4px;
-  color: #495057;
-  min-height: 20px;
-  display: flex;
-  align-items: center;
-  font-size: 0.80rem;
-  
-}
-
-.field-value-ID {
-  padding: 12px;
-  background-color: #f8f9fa;
-  border: 1px solid #e9ecef;
-  border-radius: 4px;
-  color: #495057;
-  min-height: 20px;
-  display: flex;
-  align-items: center;
-  width:50px;
-  
-  
-}
-
-
-
-.edit-field {
-  width: 100%;
-}
-
-.edit-field .mat-mdc-form-field {
-  width: 90%;
-  font-size:0.55rem;
-  background-color:#8894ac;
-}
-
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  padding: 16px 24px;
-  background-color: #f5f5f5;
-  border-top: 1px solid #e0e0e0;
-  border-radius: 0 0 4px 4px;
-}
-
-.modal-actions button {
+/* Buttons */
+.btn-sm {
+  padding: 8px 16px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 6px;
   min-width: 100px;
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-  .modal-container {
-    max-width: 95vw;
-    margin: 10px;
-  }
-  
-  .modal-content {
-    padding: 16px;
-  }
-  
-  .modal-header {
-    padding: 12px 16px;
-  }
-  
-  .modal-actions {
-    padding: 12px 16px;
-    flex-direction: column;
-  }
-  
-  .modal-actions button {
-    width: 100%;
-  }
-  
-  .field-row {
-    flex-direction: column;
-    gap: 0;
-  }
+.btn-primary {
+  background: linear-gradient(135deg, #345677 0%, #345677 100%);
+  border: none;
 }
 
-@media (max-width: 480px) {
-  .modal-title {
-    font-size: 1.1rem;
+.btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #345677 0%, #345677 100%);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: linear-gradient(135deg, #6c757d 0%, #5c636a 100%);
+  border: none;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #5c636a 0%, #495057 100%);
+  transform: translateY(-1px);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  :host ::ng-deep .modal-dialog {
+    width: 95% !important;
+    max-width: 95% !important;
   }
-  
-  .field-group {
-    margin-bottom: 16px;
-  }
-  
-  .field-label {
-    font-size: 0.8rem;
+
+  .modal-body {
+    padding: 15px;
   }
 }

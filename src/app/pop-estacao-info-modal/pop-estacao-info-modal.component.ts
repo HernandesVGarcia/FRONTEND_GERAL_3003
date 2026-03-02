@@ -1,12 +1,8 @@
-
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, HostListener, ElementRef, ViewChild, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { MatButtonModule } from '@angular/material/button';
-import { MatInputModule } from '@angular/material/input';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
 import { FormsModule } from '@angular/forms';
+import { NgbActiveModal, NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { MatIconModule } from '@angular/material/icon';
 import { PopsInfo } from '../modelo/PopsInfo';
 import { PopInfoService } from '../servico/pop-info.service';
 import { PopInfoUpdateService } from '../servico/pop-info-update.service';
@@ -20,10 +16,7 @@ export interface PopEstacaoInfoModalData {
   standalone: true,
   imports: [
     CommonModule,
-    MatDialogModule,
-    MatButtonModule,
-    MatInputModule,
-    MatFormFieldModule,
+    NgbModule,
     MatIconModule,
     FormsModule
   ],
@@ -31,12 +24,13 @@ export interface PopEstacaoInfoModalData {
   styleUrls: ['./pop-estacao-info-modal.component.css']
 })
 export class PopEstacaoInfoModalComponent implements OnInit {
+  data: PopEstacaoInfoModalData = { id_meta: 0 };
+
   popInfo: PopsInfo | null = null;
   isLoading = false;
   isEditing = false;
   errorMessage = '';
 
-  // Campos editáveis
   editForm = {
     SIGLA: '',
     ENDERECO: '',
@@ -50,15 +44,26 @@ export class PopEstacaoInfoModalComponent implements OnInit {
     data: ''
   };
 
+  private isDragging = false;
+  private currentX = 0;
+  private currentY = 0;
+  private initialX = 0;
+  private initialY = 0;
+  private xOffset = 0;
+  private yOffset = 0;
+
+  @ViewChild('modalDialog', { static: false }) modalDialog!: ElementRef;
+
   constructor(
-    public dialogRef: MatDialogRef<PopEstacaoInfoModalComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: PopEstacaoInfoModalData,
+    public activeModal: NgbActiveModal,
     private popInfoService: PopInfoService,
     private popInfoUpdateService: PopInfoUpdateService
   ) {}
 
   ngOnInit(): void {
-    this.loadPopInfo();
+    if (this.data?.id_meta) {
+      this.loadPopInfo();
+    }
   }
 
   loadPopInfo(): void {
@@ -98,10 +103,8 @@ export class PopEstacaoInfoModalComponent implements OnInit {
 
   toggleEdit(): void {
     if (this.isEditing) {
-      // Salvar alterações
       this.saveChanges();
     } else {
-      // Entrar em modo de edição
       this.isEditing = true;
     }
   }
@@ -109,17 +112,12 @@ export class PopEstacaoInfoModalComponent implements OnInit {
   saveChanges(): void {
     if (!this.popInfo) return;
 
-    console.log('Salvando alterações:', this.editForm);
-
     this.popInfoUpdateService.updatePopInfo(this.data.id_meta, this.editForm).subscribe({
       next: (response) => {
-        console.log('Atualização realizada com sucesso:', response);
-
         if (response.data) {
           this.popInfo = response.data;
           this.populateEditForm(response.data);
         }
-
         this.isEditing = false;
       },
       error: (error) => {
@@ -137,7 +135,41 @@ export class PopEstacaoInfoModalComponent implements OnInit {
   }
 
   closeModal(): void {
-    this.dialogRef.close();
+    this.activeModal.dismiss();
+  }
+
+  onMouseDown(event: MouseEvent): void {
+    if (event.target instanceof HTMLElement) {
+      const header = event.target.closest('.modal-header');
+      if (header && !event.target.closest('.btn-close')) {
+        this.initialX = event.clientX - this.xOffset;
+        this.initialY = event.clientY - this.yOffset;
+        if (event.target === header || header.contains(event.target)) {
+          this.isDragging = true;
+          event.preventDefault();
+        }
+      }
+    }
+  }
+
+  @HostListener('document:mousemove', ['$event'])
+  onMouseMove(event: MouseEvent): void {
+    if (this.isDragging) {
+      event.preventDefault();
+      this.currentX = event.clientX - this.initialX;
+      this.currentY = event.clientY - this.initialY;
+      this.xOffset = this.currentX;
+      this.yOffset = this.currentY;
+      if (this.modalDialog) {
+        this.modalDialog.nativeElement.style.transform = `translate(${this.currentX}px, ${this.currentY}px)`;
+      }
+    }
+  }
+
+  @HostListener('document:mouseup')
+  onMouseUp(): void {
+    this.initialX = this.currentX;
+    this.initialY = this.currentY;
+    this.isDragging = false;
   }
 }
-
