@@ -6,5 +6,6 @@ export class Splitter {
     X: string | any;
     Y: string | any;
     ESPELHAR: boolean | undefined;
+    ROT:number | undefined;
                       
     }

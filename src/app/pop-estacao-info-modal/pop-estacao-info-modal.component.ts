@@ -5,7 +5,7 @@ import { NgbActiveModal, NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { MatIconModule } from '@angular/material/icon';
 import { PopsInfo } from '../modelo/PopsInfo';
 import { PopInfoService } from '../servico/pop-info.service';
-import { PopInfoUpdateService } from '../servico/pop-info-update.service';
+import { PopInfoEstacaoUpdateService } from '../servico/pop-info-estacao-update.service';
 
 export interface PopEstacaoInfoModalData {
   id_meta: number;
@@ -57,7 +57,7 @@ export class PopEstacaoInfoModalComponent implements OnInit {
   constructor(
     public activeModal: NgbActiveModal,
     private popInfoService: PopInfoService,
-    private popInfoUpdateService: PopInfoUpdateService
+    private popInfoEstacaoUpdateService: PopInfoEstacaoUpdateService
   ) {}
 
   ngOnInit(): void {
@@ -112,13 +112,29 @@ export class PopEstacaoInfoModalComponent implements OnInit {
   saveChanges(): void {
     if (!this.popInfo) return;
 
-    this.popInfoUpdateService.updatePopInfo(this.data.id_meta, this.editForm).subscribe({
+    const sigla = (this.editForm.SIGLA ?? '').toString().trim();
+    if (!sigla) {
+      this.errorMessage = 'SIGLA é obrigatório.';
+      return;
+    }
+
+    const { USUARIO, data, ...payload } = this.editForm;
+
+    this.popInfoEstacaoUpdateService.updateEstacaoInfo(this.data.id_meta, payload).subscribe({
       next: (response) => {
         if (response.data) {
           this.popInfo = response.data;
           this.populateEditForm(response.data);
         }
+        const novaSigla = response?.data?.SIGLA ?? payload.SIGLA ?? this.editForm.SIGLA;
+        if (novaSigla !== undefined && novaSigla !== '') {
+          this.popInfoEstacaoUpdateService.emitEstacaoAtualizado({
+            id_meta: this.data.id_meta,
+            sigla: novaSigla
+          });
+        }
         this.isEditing = false;
+        this.activeModal.close();
       },
       error: (error) => {
         console.error('Erro ao salvar alterações:', error);

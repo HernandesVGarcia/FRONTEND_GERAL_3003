@@ -45,12 +45,14 @@ import { ExcluiCaboService } from '../servico/exclui-cabo.service';
 import { ExcluiCaixaService, ExcluiCaixaRequest, ExcluiCaixaResponse } from '../servico/exclui-caixa.service';
 import { ExcluiDioService, ExcluiDioRequest, ExcluiDioResponse } from '../servico/exclui-dio.service';
 import { ExcluiEstacaoService, ExcluiEstacaoRequest, ExcluiEstacaoResponse } from '../servico/exclui-estacao.service';
+import { ExcluiClienteService, ExcluiClienteRequest, ExcluiClienteResponse } from '../servico/exclui-cliente.service';
 import { Subject, takeUntil } from 'rxjs';
 
 import { MatDialog } from '@angular/material/dialog';
 import { NgbModal, NgbModalModule } from '@ng-bootstrap/ng-bootstrap';
 import { PopInfoModalComponent } from '../pop-info-modal/pop-info-modal.component';
 import { PopInfoUpdateService } from '../servico/pop-info-update.service';
+import { PopInfoEstacaoUpdateService } from '../servico/pop-info-estacao-update.service';
 import { PopEstacaoInfoModalComponent } from '../pop-estacao-info-modal/pop-estacao-info-modal.component';
 import { VisualizaDioComponent } from '../visualiza-dio/visualiza-dio.component';
 import { VisualizaCaboComponent } from '../visualiza-cabo/visualiza-cabo.component';
@@ -397,8 +399,10 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
     private excluiCaixaService: ExcluiCaixaService,
     private excluiDioService: ExcluiDioService,
     private excluiEstacaoService: ExcluiEstacaoService,
+    private excluiClienteService: ExcluiClienteService,
     private buscaObjetoConexPontaService: BuscaObjetoConexPontaService,
     private popInfoUpdateService: PopInfoUpdateService,
+    private popInfoEstacaoUpdateService: PopInfoEstacaoUpdateService,
     private updateClienteService: UpdateClienteService
   ) {}
 
@@ -4048,6 +4052,20 @@ polylineOptions144f: google.maps.PolylineOptions = {
           (cliente as any).SIGLA = event.sigla;
           const marker = this.markerPopsCliAtv[idxAtv];
           if (marker) marker.setLabel({ text: event.sigla || 'S/N', color: 'blue', fontSize: '10px' });
+        }
+      }
+    });
+
+    // Subscription para atualizar marcador quando SIGLA da estação é alterada no pop-estacao-info-modal
+    this.popInfoEstacaoUpdateService.onEstacaoAtualizado.pipe(takeUntil(this.destroy$)).subscribe((event) => {
+      const idx = this.destinoPopsEst?.findIndex(e => Number(e?.id_meta ?? 0) === Number(event.id_meta)) ?? -1;
+      if (idx >= 0) {
+        const estacao = this.destinoPopsEst![idx];
+        if ((estacao.sigla ?? (estacao as any).SIGLA ?? '').toString().trim() !== event.sigla?.trim()) {
+          estacao.sigla = event.sigla;
+          (estacao as any).SIGLA = event.sigla;
+          const marker = this.markerPopsEst[idx];
+          if (marker) marker.setLabel({ text: event.sigla || 'S/N', color: 'red', fontSize: '13px' });
         }
       }
     });
@@ -7824,7 +7842,11 @@ private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = fal
     this.estacaoEmEdicaoOriginalPosition = null;
     this.estacaoEmEdicaoOriginalIcon = null;
   }
-
+   /***********************conjunto de funções para edição cliente no mapa ************************ */
+   /* -> habilitaEdiçãoCliente 
+      -> desabilitaEdicaoCliente
+      -> salvarEdicaoCliente
+      -> cancelarEdicaoCliente  */
   /**
    * Habilita a edição de um cliente (torna arrastável)
    */
@@ -8023,7 +8045,7 @@ private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = fal
     console.log('❌ [EDITAR-CLIENTE] Edição cancelada, posição restaurada');
     alert('Edição cancelada. Posição original restaurada.');
   }
-
+    /**************************************************ate aqui edição cliente no mapa*********** */
   /**
    * 🔧 Desabilita a edição do DIO
    */
@@ -8407,12 +8429,130 @@ private visualizarCliente(): void {
 }
 
 /**
- * 🗑️ Exclui um cliente (funcionalidade ainda não implementada)
+ * 🗑️ Exclui um cliente
  */
 private excluirCliente(): void {
   console.log('🗑️ [CONTEXT-MENU] Excluindo Cliente...');
-  alert('Funcionalidade de exclusão de cliente será implementada em breve!');
-  this.hideContextMenu();
+
+  let cliente: PopsCli | undefined;
+  let tipoCliente: 'cli' | 'cliat' | 'clides' | null = null;
+
+  if (this.clickedCliData) {
+    cliente = this.clickedCliData;
+    tipoCliente = 'cli';
+  } else if (this.clickedCliAtData) {
+    cliente = this.clickedCliAtData;
+    tipoCliente = 'cliat';
+  } else if (this.clickedCliDesData) {
+    cliente = this.clickedCliDesData;
+    tipoCliente = 'clides';
+  }
+
+  if (!cliente || !tipoCliente) {
+    console.warn('⚠️ [EXCLUI-CLIENTE] Nenhum cliente selecionado');
+    alert('❌ Erro: Dados do cliente não encontrados.');
+    this.hideContextMenu();
+    return;
+  }
+
+  let idMeta: number | undefined = cliente.id_meta;
+  if (!idMeta || isNaN(idMeta) || idMeta <= 0) {
+    alert('❌ Erro: Não foi possível identificar o ID do cliente.');
+    this.hideContextMenu();
+    return;
+  }
+
+  const idCity = this.authService.getIdCity();
+  if (!idCity) {
+    alert('❌ Erro: ID da cidade não encontrado. Selecione uma cidade no workspace.');
+    this.hideContextMenu();
+    return;
+  }
+
+  const sigla = (cliente as any).sigla || (cliente as any).SIGLA || 'N/A';
+
+  const confirmacao = confirm(`Tem certeza que deseja excluir este cliente?\n\n📋 Sigla: ${sigla}`);
+
+  if (!confirmacao) {
+    return;
+  }
+
+  const request: ExcluiClienteRequest = {
+    id_meta: idMeta,
+    id_city: idCity
+  };
+
+  this.excluiClienteService.excluirCliente(request).subscribe({
+    next: (response: ExcluiClienteResponse) => {
+      console.log('✅ [EXCLUI-CLIENTE] Resposta da API:', response);
+
+      if (response.success) {
+        let index = -1;
+        let markers: google.maps.Marker[];
+        let destinos: PopsCli[];
+
+        if (tipoCliente === 'cli') {
+          index = this.destinoPopsCli.findIndex(c => c.id_meta === idMeta);
+          markers = this.markerPopsCli;
+          destinos = this.destinoPopsCli;
+        } else if (tipoCliente === 'cliat') {
+          index = this.destinoPopsCliAtv.findIndex(c => c.id_meta === idMeta);
+          markers = this.markerPopsCliAtv;
+          destinos = this.destinoPopsCliAtv;
+        } else {
+          index = this.destinoPopsCliDes.findIndex(c => c.id_meta === idMeta);
+          markers = this.markerPopsCliDes;
+          destinos = this.destinoPopsCliDes;
+        }
+
+        if (index !== -1) {
+          const markerParaRemover = markers[index];
+          if (markerParaRemover) {
+            markerParaRemover.setMap(null);
+            markers.splice(index, 1);
+          }
+          destinos.splice(index, 1);
+          console.log('🗑️ [EXCLUI-CLIENTE] Cliente removido do mapa');
+        }
+
+        this.clickedCliData = null;
+        this.clickedCliAtData = null;
+        this.clickedCliDesData = null;
+        this.hideContextMenu();
+
+        const idUsuario = this.authService.getIdUser();
+        if (idUsuario && idCity) {
+          this.insertLogService.inserirLog({
+            id_usuario: idUsuario,
+            id_evento: 22,
+            id_city: idCity,
+            id_meta_objeto: idMeta,
+            descricao: `Excluído Cliente: ${sigla}, ID_META: ${idMeta}`,
+            VERSION: 'Fiberworks WEB 1.0.0'
+          }).subscribe({
+            next: (logResponse) => {
+              console.log('✅ Log de exclusão de cliente inserido com sucesso:', logResponse);
+            },
+            error: (err) => {
+              console.error('❌ Erro ao inserir log de exclusão de cliente:', err);
+            }
+          });
+        }
+      }
+    },
+    error: (err: any) => {
+      const errorObj = typeof err === 'object' ? err : {};
+      const flagConectada = errorObj?.error?.flagConectada;
+      const errorMsg = errorObj?.message || (typeof err === 'string' ? err : 'Erro ao excluir cliente.');
+
+      if (flagConectada || (errorMsg && (errorMsg.includes('DIO') || errorMsg.includes('cabo') || errorMsg.includes('OLT') || errorMsg.includes('referenciado')))) {
+        alert('Cliente possui DIO, cabo ou recurso OLT referenciado. Remova as conexões antes de excluir.');
+      } else {
+        alert(`Erro ao excluir cliente: ${errorMsg}`);
+      }
+      this.hideContextMenu();
+    }
+  });
 }
 
 /**

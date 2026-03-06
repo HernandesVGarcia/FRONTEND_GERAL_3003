@@ -129,6 +129,7 @@ import { ExcluiSplitterService, ExcluiSplitterRequest } from '../servico/exclui-
 import { InsertLogService, InsertLogData } from '../servico/insert-log.service'; // 📝 NOVO: Import InsertLogService
 import { UpdateSplitterXYService} from '../servico/update-splitter-xy.service';
 import { UpdateBocaAngleService} from '../servico/update-boca-angle.service';
+import { UpdateSplitterAngleService } from '../servico/update-splitter-angle.service';
 import { UpdateBocaLadoService} from '../servico/update-boca-lado.service';
 import { PesquisaSiglaService } from '../servico/pesquisa-sigla.service';
 import jsPDF from 'jspdf';
@@ -328,6 +329,7 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnDestroy {
      private UpdateBCXYService: UpdateBocaXYService,
      private UpdateSPXYService: UpdateSplitterXYService,
      private UpdateBCAngleService:UpdateBocaAngleService,
+     private UpdateSplitterAngleService: UpdateSplitterAngleService,
      private UpdateBCLadoService:UpdateBocaLadoService,    
      private popClienteService: PopClienteService,
      private pesquisaSiglaService: PesquisaSiglaService,
@@ -516,7 +518,7 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnDestroy {
     
     const model = this.diagram.model as go.GraphLinksModel;
     const splitterNodes: go.ObjectData[] = [];
-    const posicoesSplitters: {id: string, x: number, y: number}[] = [];
+    const posicoesSplitters: {id: string, x: number, y: number, angle?: number}[] = [];
     let POSX=0;
     let POSY=0;
     
@@ -538,7 +540,8 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnDestroy {
       posicoesSplitters.push({
         id: `Splitter${splitter.IDMETA || index}`,
         x: POSX,//posX,
-        y: POSY //posy,
+        y: POSY, //posy,
+        angle: splitter.ROT
       });
       
       let splitterModelDefinition: go.ObjectData;
@@ -594,6 +597,9 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnDestroy {
             node.rotatable = true;
             node.movable = true;
             node.position = new go.Point(posicao.x, posicao.y);
+            if (posicao.angle !== undefined && posicao.angle !== null) {
+              node.angle = parseFloat(String(posicao.angle));
+            }
           }
         });
       }
@@ -3354,13 +3360,18 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
             // Detectar se é um splitter
             if (node.data.key.startsWith("Splitter")) {
               const apenasNumSplitter = node.data.key.replace('Splitter','');
+              const idmeta = node.data.idmeta != null ? node.data.idmeta : Number(apenasNumSplitter);
               console.log(`🔄 Splitter ${node.data.key} rotacionado:`, {
                 de: originalAngleDegrees.toFixed(1) + '°',
                 para: currentAngleDegrees.toFixed(1) + '°',
-                radianos: currentAngleRadians
+                radianos: currentAngleRadians,
+                idmeta
               });
 
-              // this.UpdateSPAngleService.atualizar(currentAngleRadians, apenasNumSplitter)
+              this.UpdateSplitterAngleService.atualizar(idmeta, currentAngleRadians).subscribe({
+                next: () => console.log('✅ Ângulo do splitter atualizado'),
+                error: (err) => console.error('❌ Erro ao salvar ângulo do splitter:', err)
+              });
             }
           }
         });

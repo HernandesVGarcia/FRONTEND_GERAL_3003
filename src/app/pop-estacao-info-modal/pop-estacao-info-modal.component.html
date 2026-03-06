@@ -75,13 +75,11 @@
             </div>
             <div class="col-md-6">
               <label class="form-label fw-semibold">PROJETISTA</label>
-              <div *ngIf="!isEditing" class="field-value">{{ popInfo?.USUARIO || 'N/A' }}</div>
-              <input *ngIf="isEditing" type="text" class="form-control form-control-sm" [(ngModel)]="editForm.USUARIO" name="USUARIO" placeholder="Digite o projetista">
+              <div class="field-value">{{ popInfo?.USUARIO || 'N/A' }}</div>
             </div>
             <div class="col-md-6">
               <label class="form-label fw-semibold">DATA</label>
-              <div *ngIf="!isEditing" class="field-value">{{ popInfo?.data || 'N/A' }}</div>
-              <input *ngIf="isEditing" type="text" class="form-control form-control-sm" [(ngModel)]="editForm.data" name="data" placeholder="Digite a data">
+              <div class="field-value">{{ popInfo?.data || 'N/A' }}</div>
             </div>
           </div>
         </div>
