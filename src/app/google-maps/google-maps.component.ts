@@ -42,6 +42,7 @@ import { UpdateEstacaoService } from '../servico/update-estacao.service';
 import { UpdateClienteService } from '../servico/update-cliente.service';
 import { InsertLogService } from '../servico/insert-log.service';
 import { ExcluiCaboService } from '../servico/exclui-cabo.service';
+import { DivideCaboService } from '../servico/divide-cabo.service';
 import { ExcluiCaixaService, ExcluiCaixaRequest, ExcluiCaixaResponse } from '../servico/exclui-caixa.service';
 import { ExcluiDioService, ExcluiDioRequest, ExcluiDioResponse } from '../servico/exclui-dio.service';
 import { ExcluiEstacaoService, ExcluiEstacaoRequest, ExcluiEstacaoResponse } from '../servico/exclui-estacao.service';
@@ -79,30 +80,30 @@ import { BuscaObjetoConexPontaService, ObjetoConectado } from '../servico/busca-
  * ============================================================================
  * ÍNDICE DE SEÇÕES DO COMPONENTE GOOGLE MAPS
  * ============================================================================
- * 
+ *
  * PROPRIEDADES:
- * - Linha ~59:  @Input() - Dados de entrada (destinos, cabos, caixas, etc)
- * - Linha ~95:  Propriedades do Mapa (center, zoom, title, etc)
- * - Linha ~109: Marcadores (markerCaixas, markerCtos, markerPopsCli, etc)
- * - Linha ~142: Paths de Polylines (polylinePaths1f, polylinePaths2f, etc)
- * - Linha ~159: Polylines (polylines1f, polylines2f, etc)
- * - Linha ~171: InfoWindows (infoWindows1f, infoWindows2f, etc)
- * - Linha ~184: Controle de Destaque de Cabos
- * - Linha ~188: Context Menu
- * - Linha ~192: EDIÇÃO DE CABOS (clickedPolyline, isEditingCabo, pontasOriginais, etc)
- * - Linha ~214: DESENHO DE CABOS (isDesenhandoCabo, caboEmDesenho, etc)
- * - Linha ~222: Modal de Tipagem
- * 
+ * - Linha ~167: @Input() - Dados de entrada (destinos, cabos, caixas, etc)
+ * - Linha ~253: Propriedades do Mapa (center, zoom, title, etc)
+ * - Linha ~267: Marcadores (markerCaixas, markerCtos, markerPopsCli, etc)
+ * - Linha ~300: Paths de Polylines (polylinePaths1f, polylinePaths2f, etc)
+ * - Linha ~317: Polylines (polylines1f, polylines2f, etc)
+ * - Linha ~329: InfoWindows (infoWindows1f, infoWindows2f, etc)
+ * - Linha ~342: Controle de Destaque de Cabos
+ * - Linha ~346: Context Menu
+ * - Linha ~350: EDIÇÃO DE CABOS (clickedPolyline, isEditingCabo, pontasOriginais, etc)
+ * - Linha ~372: DESENHO DE CABOS (isDesenhandoCabo, caboEmDesenho, etc)
+ * - Linha ~380: Modal de Tipagem
+ *
  * MÉTODOS:
- * - Linha ~226: CONTEXT MENU
+ * - Linha ~426: CONTEXT MENU
  *   - setupContextMenuListener()
  *   - showContextMenu()
  *   - hideContextMenu()
  *   - onContextMenuAction()
- * 
- * - Linha ~354: AÇÕES DO CONTEXT MENU (criarCaixa, criarDIO, etc)
- * 
- * - Linha ~390: EDIÇÃO DE CABOS
+ *
+ * - Linha ~512: AÇÕES DO CONTEXT MENU (criarCaixa, criarDIO, etc)
+ *
+ * - Linha ~1590: EDIÇÃO DE CABOS
  *   - editarCabo()
  *   - verificarConexoesPontas()
  *   - iniciarEdicaoCabo()
@@ -110,26 +111,39 @@ import { BuscaObjetoConexPontaService, ObjetoConectado } from '../servico/busca-
  *   - cancelarEdicaoCabo()
  *   - adicionarListenerProtecaoPontas()
  *   - adicionarListenerRemoverVertice()
- * 
- * - Linha ~977: DETECÇÃO DE CONEXÃO CABO-CAIXA
+ *   - removerVertice()
+ *   - dividirCaboNoVertice()
+ *
+ * - Linha ~1804: DIVISÃO DE CABOS (context menu no vértice)
+ *   - adicionarListenerRemoverVertice() - right-click no vértice
+ *   - removerVertice() - remove ponto do path
+ *   - dividirCaboNoVertice() - divide cabo no vértice, chama API divide_cabo
+ *
+ * - Linha ~1980: AUXILIARES DE CABOS
+ *   - normalizarTipoFibra()
+ *   - getArraysPorCapacidade()
+ *   - adicionarListenersCaboPolyline()
+ *
+ * - Linha ~2511: DETECÇÃO DE CONEXÃO CABO-CAIXA
  *   - abrirModalConexao()
+ *   - abrirModalConexaoDio()
  *   - encontrarCaixaProxima()
- *   - (A verificação de conexão é feita no listener set_at em tempo real)
- * 
- * - Linha ~1085: GESTÃO DE EVENTOS DE CABOS
+ *   - (Verificação de conexão no listener set_at em tempo real)
+ *
+ * - Linha ~3108: GESTÃO DE EVENTOS DE CABOS
  *   - processarRightClickCabo()
  *   - recriarListenerRightClick()
  *   - recriarListenerRightClickMapa()
- * 
- * - Linha ~1362: AÇÕES DE CABOS (liberarCabo, excluirCabo)
- * 
- * - Linha ~1386: DESTAQUE DE CABOS
+ *
+ * - Linha ~3505: AÇÕES DE CABOS (liberarCabo, excluirCabo)
+ *
+ * - Linha ~3681: DESTAQUE DE CABOS
  *   - setupCabosHighlightListeners()
  *   - highlightCabos()
  *   - highlightCabosInArray()
  *   - clearCabosHighlight()
- * 
- * - Linha ~2237: GESTÃO DE MARCADORES
+ *
+ * - Linha ~5117: GESTÃO DE MARCADORES
  *   - updateMarkers()
  *   - updateMarkersCTO()
  *   - updateMarkersCTOSP()
@@ -137,20 +151,20 @@ import { BuscaObjetoConexPontaService, ObjetoConectado } from '../servico/busca-
  *   - updateMarkersCondominios()
  *   - updateMarkersPopsCli()
  *   - etc...
- * 
- * - Linha ~2861: GESTÃO DE POLYLINES
+ *
+ * - Linha ~5605: GESTÃO DE POLYLINES
  *   - updatePolylinesCabos1f()
  *   - updatePolylinesCabos2f()
  *   - etc...
- * 
- * - Linha ~4186: CRIAÇÃO DE POLYLINES
+ *
+ * - Linha ~9323: CRIAÇÃO DE POLYLINES
  *   - createCaboPolylines()
  *   - createCabo1fPolylines()
  *   - etc...
- * 
- * - Linha ~4810: CRIAÇÃO DE CABOS
+ *
+ * - Linha ~10011: CRIAÇÃO DE CABOS
  *   - criarCaboComTipagemEIdMeta()
- * 
+ *
  * ============================================================================
  */
 
@@ -283,7 +297,8 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
   // 🎯 Propriedades para context menu
   contextMenuVisible = false;
   contextMenuPosition = { x: 0, y: 0 };
-  contextMenuType: 'caixa' | 'map' | 'cabo' | 'dio' | 'cliente' | 'estacao' = 'map'; // 🆕 Tipo de contexto do menu
+  contextMenuType: 'caixa' | 'map' | 'cabo' | 'dio' | 'cliente' | 'estacao' | 'vertice' = 'map'; // 🆕 Tipo de contexto do menu
+  private clickedVertexIndex: number | null = null; // 🆕 Índice do vértice clicado (para menu vertice)
   private contextMenuListenerAdded = false; // Flag para evitar listeners duplicados
   private clickedCaboData: any = null; // 🆕 Armazena dados do cabo clicado
   private clickedCaixaData: any = null; // 🆕 Armazena dados da caixa clicada
@@ -396,6 +411,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
     private ngbModal: NgbModal,
     private insertLogService: InsertLogService,
     private excluiCaboService: ExcluiCaboService,
+    private divideCaboService: DivideCaboService,
     private excluiCaixaService: ExcluiCaixaService,
     private excluiDioService: ExcluiDioService,
     private excluiEstacaoService: ExcluiEstacaoService,
@@ -571,6 +587,9 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
    */
   public hideContextMenu(): void {
     this.contextMenuVisible = false;
+    if (this.contextMenuType === 'vertice') {
+      this.clickedVertexIndex = null;
+    }
     this.contextMenuType = 'map'; // 🔄 Reseta para tipo 'map'
     
     // 🆕 Não limpar se estiver em modo de edição ou iniciando edição (deixar editar)
@@ -641,6 +660,14 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
         break;
       case 'excluir-cabo':
         this.excluirCabo();
+        break;
+
+      // 🆕 Ações para VÉRTICE (durante edição de cabo)
+      case 'remover-vertice':
+        this.removerVertice();
+        break;
+      case 'dividir-cabo':
+        this.dividirCaboNoVertice();
         break;
         case 'visualizar-caixa':
           // 🔧 NOVO: Abrir gojs-demo quando selecionar "Visualizar Conectividade"
@@ -1793,34 +1820,24 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
     // Listener de rightclick na polyline durante edição
     const listenerRightClick = this.clickedPolyline.addListener('rightclick', (event: google.maps.PolyMouseEvent) => {
       if (event.vertex !== undefined) {
-        // Clique em um vértice
+        // Clique em um vértice - mostrar menu com opções
         console.log('🎯 Right-click em vértice:', event.vertex);
         
-        // Prevenir menu do navegador
         if (event.domEvent) {
           event.domEvent.preventDefault();
           event.domEvent.stopPropagation();
         }
         
-        // Confirmar remoção
-        const confirmar = confirm(`🗑️ Remover este ponto?\n\nVértice: ${event.vertex + 1}`);
-        
-        if (confirmar && this.clickedPolyline) {
-          const path = this.clickedPolyline.getPath();
-          
-          // Verificar se tem pontos suficientes (mínimo 2)
-          if (path.getLength() > 2) {
-            path.removeAt(event.vertex);
-            console.log('✅ Vértice removido:', event.vertex);
-          } else {
-            alert('⚠️ Não é possível remover. O cabo precisa ter no mínimo 2 pontos.');
-          }
-        }
+        this.clickedVertexIndex = event.vertex;
+        this.contextMenuType = 'vertice';
+        const domEv = event.domEvent as MouseEvent | undefined;
+        const x = domEv?.clientX ?? 0;
+        const y = domEv?.clientY ?? 0;
+        this.showContextMenu(x, y);
       } else {
         // Clique na linha (não em vértice)
         console.log('🎯 Right-click na linha (não é vértice)');
         
-        // Prevenir menu do navegador
         if (event.domEvent) {
           event.domEvent.preventDefault();
         }
@@ -1830,7 +1847,295 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
     // Armazenar o listener para remover depois (opcional)
     this.clickedPolyline.set('listenerRemoverVertice', listenerRightClick);
     
-    // 🆕 Adicionar listener temporário no MAPA durante edição
+    // Adicionar listener temporário no MAPA durante edição
+    this.adicionarListenerMapaTempEdicao();
+  }
+
+  /**
+   * 🗑️ Remove o vértice clicado (chamado pelo context menu)
+   */
+  private removerVertice(): void {
+    if (this.clickedVertexIndex === null || !this.clickedPolyline) return;
+    
+    const path = this.clickedPolyline.getPath();
+    if (path.getLength() > 2) {
+      path.removeAt(this.clickedVertexIndex);
+      console.log('✅ Vértice removido:', this.clickedVertexIndex);
+    } else {
+      alert('⚠️ Não é possível remover. O cabo precisa ter no mínimo 2 pontos.');
+    }
+    this.clickedVertexIndex = null;
+  }
+  /*2026_03_09*********************************************************** */
+  /* inicio do bloco de dividir cabos  */
+
+  /**
+   * ✂️ Divide o cabo no vértice clicado (chamado pelo context menu)
+   */
+  private dividirCaboNoVertice(): void {
+    if (this.clickedVertexIndex === null || !this.clickedPolyline || !this.map) return;
+    
+    const vertexIndex = this.clickedVertexIndex;
+    const path = this.clickedPolyline.getPath();
+    const totalPontos = path.getLength();
+    
+    // Validar: vértice não pode ser 0 nem último (mín. 3 pontos em cada parte)
+    if (vertexIndex <= 0 || vertexIndex >= totalPontos - 1) {
+      alert('⚠️ Para dividir, escolha um vértice intermediário (não o primeiro nem o último).');
+      this.clickedVertexIndex = null;
+      return;
+    }
+    if (vertexIndex < 2 || (totalPontos - vertexIndex) < 2) {
+      alert('⚠️ Cada parte do cabo precisa ter no mínimo 2 pontos. Use um vértice mais ao centro.');
+      this.clickedVertexIndex = null;
+      return;
+    }
+    
+    const idMeta = this.clickedPolyline.get('id_meta') || this.clickedCaboData?.id_meta;
+    if (!idMeta) {
+      alert('❌ Erro: ID do cabo não encontrado.');
+      this.clickedVertexIndex = null;
+      return;
+    }
+    
+    const parte1: { lat: number; lng: number }[] = [];
+    const parte2: { lat: number; lng: number }[] = [];
+    
+    for (let i = 0; i <= vertexIndex; i++) {
+      const p = path.getAt(i);
+      parte1.push({ lat: p.lat(), lng: p.lng() });
+    }
+    for (let i = vertexIndex; i < totalPontos; i++) {
+      const p = path.getAt(i);
+      parte2.push({ lat: p.lat(), lng: p.lng() });
+    }
+
+    // Gap de 1m na ponta cortada: encurtar parte1 para dar impressão visual de corte
+    if (parte1.length >= 2) {
+      const pontoCorte = new google.maps.LatLng(parte1[parte1.length - 1].lat, parte1[parte1.length - 1].lng);
+      const pontoAnterior = new google.maps.LatLng(parte1[parte1.length - 2].lat, parte1[parte1.length - 2].lng);
+      const dist = google.maps.geometry.spherical.computeDistanceBetween(pontoAnterior, pontoCorte);
+      const offsetMetros = Math.min(1, Math.max(0, dist - 0.1));
+      if (offsetMetros > 0) {
+        const heading = google.maps.geometry.spherical.computeHeading(pontoCorte, pontoAnterior);
+        const novoPonto = google.maps.geometry.spherical.computeOffset(pontoCorte, offsetMetros, heading);
+        parte1[parte1.length - 1] = { lat: novoPonto.lat(), lng: novoPonto.lng() };
+      }
+    }
+
+    this.divideCaboService.dividirCabo({
+      id_meta_original: typeof idMeta === 'string' ? parseInt(idMeta, 10) : idMeta,
+      GOOGLE_LATLNG_parte1: parte1,
+      GOOGLE_LATLNG_parte2: parte2
+    }).subscribe({
+      next: (response) => {
+        if (response.success && response.id_meta_novo && this.clickedPolyline) {
+          // Atualizar path da polyline original (parte 1)
+          path.clear();
+          parte1.forEach(pt => path.push(new google.maps.LatLng(pt.lat, pt.lng)));
+          
+          // Criar nova polyline (parte 2) e adicionar ao array correto
+          const tipoFibraNorm = this.normalizarTipoFibra(
+            this.clickedPolyline.get('capacidade') || this.clickedCaboData?.capacidade || '12f'
+          );
+          const opts = this.getDefaultPolylineOptions(tipoFibraNorm);
+          
+          const novaPolyline = new google.maps.Polyline({
+            path: parte2.map(pt => ({ lat: pt.lat, lng: pt.lng })),
+            ...opts,
+            map: this.map,
+            editable: false,
+            draggable: false,
+            clickable: true
+          });
+          
+          novaPolyline.set('id_meta', response.id_meta_novo);
+          novaPolyline.set('capacidade', tipoFibraNorm);
+          novaPolyline.set('label', this.clickedCaboData?.Label_cabo || '');
+          novaPolyline.set('tipo', this.clickedCaboData?.tipo || 'CABO');
+          novaPolyline.set('GOOGLE_LATLNG', parte2);
+          novaPolyline.set('cabo_data', {
+            ...this.clickedCaboData,
+            id_meta: response.id_meta_novo,
+            GOOGLE_LATLNG: parte2
+          });
+          
+          const { polylinesArray, pathsArray, destinoArray, infoWindowsArray } = this.getArraysPorCapacidade(tipoFibraNorm);
+          if (polylinesArray && pathsArray) {
+            polylinesArray.push(novaPolyline);
+            pathsArray.push(parte2);
+            if (destinoArray) {
+              destinoArray.push({
+                id_meta: response.id_meta_novo,
+                capacidade: tipoFibraNorm,
+                Label_cabo: this.clickedCaboData?.Label_cabo,
+                GOOGLE_LATLNG: parte2
+              });
+            }
+          }
+          
+          // InfoWindow + click/dblclick (editar) + rightclick (context menu)
+          this.adicionarListenersCaboPolyline(novaPolyline, tipoFibraNorm, {
+            id_meta: response.id_meta_novo,
+            Label_cabo: this.clickedCaboData?.Label_cabo,
+            capacidade: tipoFibraNorm,
+            tipo: this.clickedCaboData?.tipo || 'CABO',
+            GOOGLE_LATLNG: parte2,
+            cabo_data: { ...this.clickedCaboData, id_meta: response.id_meta_novo, GOOGLE_LATLNG: parte2 }
+          }, infoWindowsArray);
+          this.recriarListenerRightClick(novaPolyline);
+          
+          this.cdr.detectChanges();
+          alert(`✅ Cabo dividido com sucesso!\n\nOriginal (parte 1): ${response.id_meta_original}\nNovo (parte 2): ${response.id_meta_novo}`);
+          
+          // Finalizar edição e sair do modo de edição
+          this.finalizarEdicaoCabo();
+        }
+        this.clickedVertexIndex = null;
+      },
+      error: (err) => {
+        console.error('❌ [DIVIDE-CABO] Erro:', err);
+        alert('❌ Erro ao dividir cabo. Verifique o console.');
+        this.clickedVertexIndex = null;
+      }
+    });
+  }
+
+  /**
+   * Normaliza string de capacidade para formato 'Xf' (ex: '12F' ou '12' -> '12f').
+   * O modal de tipagem retorna '12F' (uppercase); o resto do código espera '12f'.
+   */
+  private normalizarTipoFibra(capacidade: string | number): string {
+    const str = String(capacidade ?? '12').trim();
+    const num = str.match(/(\d+)/)?.[1] || '12';
+    return `${num}f`;
+  }
+
+  /**
+   * Retorna arrays (polylines, paths, destino, infoWindows) conforme capacidade
+   */
+  private getArraysPorCapacidade(capacidade: string | number): {
+    polylinesArray: google.maps.Polyline[];
+    pathsArray: google.maps.LatLngLiteral[][];
+    destinoArray: any[] | null;
+    infoWindowsArray: google.maps.InfoWindow[];
+  } {
+    const cap = typeof capacidade === 'number' ? `${capacidade}f` : capacidade;
+    switch (cap) {
+      case '1f': return { polylinesArray: this.polylines1f, pathsArray: this.polylinePaths1f, destinoArray: this.destinoCabos1f, infoWindowsArray: this.infoWindows1f };
+      case '2f': return { polylinesArray: this.polylines2f, pathsArray: this.polylinePaths2f, destinoArray: this.destinoCabos2f, infoWindowsArray: this.infoWindows2f };
+      case '4f': return { polylinesArray: this.polylines4f, pathsArray: this.polylinePaths4f, destinoArray: this.destinoCabos4f, infoWindowsArray: this.infoWindows4f };
+      case '6f': return { polylinesArray: this.polylines6f, pathsArray: this.polylinePaths6f, destinoArray: this.destinoCabos6f, infoWindowsArray: this.infoWindows6f };
+      case '8f': return { polylinesArray: this.polylines8f, pathsArray: this.polylinePaths8f, destinoArray: this.destinoCabos8f, infoWindowsArray: this.infoWindows8f };
+      case '12f': return { polylinesArray: this.polylines12f, pathsArray: this.polylinePaths12f, destinoArray: this.destinoCabos12f, infoWindowsArray: this.infoWindows12f };
+      case '24f': return { polylinesArray: this.polylines24f, pathsArray: this.polylinePaths24f, destinoArray: this.destinoCabos24f, infoWindowsArray: this.infoWindows24f };
+      case '36f': return { polylinesArray: this.polylines36f, pathsArray: this.polylinePaths36f, destinoArray: this.destinoCabos36f, infoWindowsArray: this.infoWindows36f };
+      case '48f': return { polylinesArray: this.polylines48f, pathsArray: this.polylinePaths48f, destinoArray: this.destinoCabos48f, infoWindowsArray: this.infoWindows48f };
+      case '72f': return { polylinesArray: this.polylines72f, pathsArray: this.polylinePaths72f, destinoArray: this.destinoCabos72f, infoWindowsArray: this.infoWindows72f };
+      case '144f': return { polylinesArray: this.polylines144f, pathsArray: this.polylinePaths144f, destinoArray: this.destinoCabos144f, infoWindowsArray: this.infoWindows144f };
+      default: return { polylinesArray: this.polylines12f, pathsArray: this.polylinePaths12f, destinoArray: this.destinoCabos12f, infoWindowsArray: this.infoWindows12f };
+    }
+  }
+
+  /**
+   * Adiciona InfoWindow e listeners de click/dblclick a uma polyline de cabo (ex.: trecho criado ao dividir)
+   * esse trecho é usado só na divisao de cabos, para nao confundir com os listeners de cabos do banco de dados
+   */
+  private adicionarListenersCaboPolyline(
+    polyline: google.maps.Polyline,
+    tipoFibra: string,
+    caboData: { id_meta: number; Label_cabo?: string; capacidade?: string; tipo?: string; GOOGLE_LATLNG?: any; cabo_data?: any },
+    infoWindowsArray?: google.maps.InfoWindow[]
+  ): void {
+    const infoWindow = new google.maps.InfoWindow({
+      content: `
+        <div style="padding: 10px;">
+          <h4 style="margin: 0 0 8px 0; color: #333;">Cabo ${tipoFibra.toUpperCase()}</h4>
+          <p style="margin: 4px 0;"><strong>ID:</strong> ${caboData.id_meta || 'N/A'}</p>
+          <p style="margin: 4px 0;"><strong>Fibras:</strong> ${tipoFibra.replace('f', '')}</p>
+          <p style="margin: 4px 0;"><strong>Label:</strong> ${caboData.Label_cabo || 'N/A'}</p>
+          <p style="margin: 4px 0; font-size: 12px; color: #666;">Duplo-clique para editar</p>
+        </div>
+      `
+    });
+
+    let clickTimeout: any;
+    polyline.addListener('click', (event: google.maps.MapMouseEvent) => {
+      if (clickTimeout) {
+        clearTimeout(clickTimeout);
+        clickTimeout = null;
+      }
+      clickTimeout = setTimeout(() => {
+        if (event.latLng && this.map) {
+          infoWindow.setPosition(event.latLng);
+          infoWindow.open(this.map);
+        }
+      }, 300);
+    });
+
+    polyline.addListener('dblclick', (event: google.maps.MapMouseEvent) => {
+      if (clickTimeout) {
+        clearTimeout(clickTimeout);
+        clickTimeout = null;
+      }
+      infoWindow.close();
+      if (this.isMobile()) {
+        this.contextMenuType = 'cabo';
+        this.clickedPolyline = polyline;
+        this.clickedCaboData = {
+          id_meta: caboData.id_meta,
+          capacidade: caboData.capacidade || polyline.get('capacidade'),
+          tipo: caboData.tipo || polyline.get('tipo') || tipoFibra,
+          Label_cabo: caboData.Label_cabo || polyline.get('label') || polyline.get('Label_cabo'),
+          GOOGLE_LATLNG: caboData.GOOGLE_LATLNG || polyline.get('GOOGLE_LATLNG'),
+          cabo_data: caboData.cabo_data || polyline.get('cabo_data')
+        };
+        const domEv = event.domEvent as MouseEvent | undefined;
+        if (domEv) this.showContextMenu(domEv.clientX, domEv.clientY);
+        return;
+      }
+      if (this.isEditingCabo || this.isIniciandoEdicao) {
+        const caboEmEdicaoId = this.clickedPolyline?.get('id_meta');
+        const novoCaboId = caboData.id_meta;
+        if (caboEmEdicaoId !== novoCaboId) {
+          this.finalizarEdicaoCabo();
+          setTimeout(() => {
+            this.isFinalizandoEdicao = false;
+            this.clickedPolyline = polyline;
+            this.clickedCaboData = {
+              id_meta: caboData.id_meta,
+              capacidade: caboData.capacidade || polyline.get('capacidade'),
+              tipo: caboData.tipo || polyline.get('tipo') || tipoFibra,
+              Label_cabo: caboData.Label_cabo || polyline.get('label') || polyline.get('Label_cabo'),
+              GOOGLE_LATLNG: caboData.GOOGLE_LATLNG || polyline.get('GOOGLE_LATLNG'),
+              cabo_data: caboData.cabo_data || polyline.get('cabo_data')
+            };
+            this.editarCabo();
+          }, 100);
+          return;
+        }
+      }
+      this.clickedPolyline = polyline;
+      this.clickedCaboData = {
+        id_meta: caboData.id_meta,
+        capacidade: caboData.capacidade || polyline.get('capacidade'),
+        tipo: caboData.tipo || polyline.get('tipo') || tipoFibra,
+        Label_cabo: caboData.Label_cabo || polyline.get('label') || polyline.get('Label_cabo'),
+        GOOGLE_LATLNG: caboData.GOOGLE_LATLNG || polyline.get('GOOGLE_LATLNG'),
+        cabo_data: caboData.cabo_data || polyline.get('cabo_data')
+      };
+      this.editarCabo();
+    });
+
+    if (infoWindowsArray) {
+      infoWindowsArray.push(infoWindow);
+    }
+  }
+
+  /* até aqui bloco de edição de dividir cabos  */
+  /***2026_03_09********************************************************************************************/
+
+  private adicionarListenerMapaTempEdicao(): void {
     if (this.map) {
       const listenerMapaTemp = this.map.addListener('rightclick', (event: google.maps.MapMouseEvent) => {
         console.log('🚫 Right-click no mapa durante edição');
@@ -3652,8 +3957,8 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
     if (this.destinoCabos72f?.includes(cabo)) return this.polylineOptions72f;
     if (this.destinoCabos144f?.includes(cabo)) return this.polylineOptions144f;
     
-    // Fallback para opções padrão
-    return this.polylineOptions12f;
+    // 2026_03_09Fallback: usar capacidade do cabo (ex.: trecho novo após dividir não está em destinoCabos por referência)
+    return this.getDefaultPolylineOptions(cabo?.capacidade || '12f');
   }
 
   /**
@@ -9744,10 +10049,12 @@ openGoJSModal() {
 
     console.log('🗺️ [TIPAGEM] Criando polyline final com pontos:', pontosFinais);
     
+    // Normalizar capacidade para 'Xf' (modal retorna '12F' - uppercase; resto do código usa '12f')
+    const capacidadeNorm = this.normalizarTipoFibra(tipagemData.capacidade);
     // Criar objeto com dados completos do cabo (igual aos outros cabos)
     const caboData = {
       id_meta: idMeta.toString(),
-      capacidade: tipagemData.capacidade,
+      capacidade: capacidadeNorm,
       tipo: 'CABO_DESENHADO',
       Label_cabo: tipagemData.label,
       fibrasPorTubo: tipagemData.fibrasPorTubo,
@@ -9757,7 +10064,7 @@ openGoJSModal() {
     };
     
     // 🎨 Obter opções de polyline baseadas na capacidade
-    const polylineOptions = this.getPolylineOptionsPorCapacidade(tipagemData.capacidade);
+    const polylineOptions = this.getPolylineOptionsPorCapacidade(capacidadeNorm);
     
     // Criar polyline final com as opções corretas da capacidade
     this.caboDesenhado = new google.maps.Polyline({
@@ -9775,7 +10082,7 @@ openGoJSModal() {
     
     // 🆕 Salvar atributos na polyline (igual aos outros cabos)
     this.caboDesenhado.set('id_meta', idMeta);
-    this.caboDesenhado.set('capacidade', tipagemData.capacidade);
+    this.caboDesenhado.set('capacidade', capacidadeNorm);
     this.caboDesenhado.set('tipo', 'CABO_DESENHADO');
     this.caboDesenhado.set('label', tipagemData.label);
     this.caboDesenhado.set('fibrasPorTubo', tipagemData.fibrasPorTubo);
@@ -9784,13 +10091,13 @@ openGoJSModal() {
     this.caboDesenhado.set('cabo_data', caboData); // Dados completos do cabo
     
     // 🆕 Adicionar cabo ao array correto baseado na capacidade
-    const arrayPolylines = this.getPolylinesArrayPorCapacidade(tipagemData.capacidade);
+    const arrayPolylines = this.getPolylinesArrayPorCapacidade(capacidadeNorm);
     arrayPolylines.push(this.caboDesenhado);
-    console.log(`✅ [TIPAGEM] Cabo adicionado ao array de polylines (${tipagemData.capacidade})`);
+    console.log(`✅ [TIPAGEM] Cabo adicionado ao array de polylines (${capacidadeNorm})`);
     
     console.log('🗺️ [TIPAGEM] Polyline criada com atributos:', {
       id_meta: idMeta,
-      capacidade: tipagemData.capacidade,
+      capacidade: capacidadeNorm,
       label: tipagemData.label,
       fibrasPorTubo: tipagemData.fibrasPorTubo,
       codigoCores: tipagemData.codigoCores,

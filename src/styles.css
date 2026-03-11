@@ -154,9 +154,7 @@ body.modal-open .modal-content {
 .cliente-search-modal-window .modal-dialog > .modal-content { pointer-events: none !important; }
 .cliente-search-modal-window app-cliente-search-modal .modal-content,
 .cliente-search-modal-window app-cliente-search-modal .modal-content * { pointer-events: auto !important; }
-.cliente-search-modal-window app-cliente-search-modal .modal-content { user-select: none !important; }
-
-/* Estação */
+.cliente-search-modal-window app-cliente-search-modal .modal-content { user-select: none !important; }/* Estação */
 .estacao-search-modal-window,
 .estacao-search-modal-window * { pointer-events: none !important; }
 .estacao-search-modal-window .modal-dialog > .modal-content { pointer-events: none !important; }

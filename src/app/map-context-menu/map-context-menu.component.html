@@ -6,6 +6,18 @@
        [style.top.px]="getAdjustedPosition().y"
        (click)="$event.stopPropagation()">
     
+    <!-- 🆕 Menu para VÉRTICE (durante edição de cabo) -->
+    <ng-container *ngIf="contextType === 'vertice'">
+      <div class="menu-item" (click)="onAction('remover-vertice')">
+        <mat-icon>remove_circle_outline</mat-icon>
+        <span>Remover ponto</span>
+      </div>
+      <div class="menu-item" (click)="onAction('dividir-cabo')">
+        <mat-icon>content_cut</mat-icon>
+        <span>Dividir cabo neste ponto</span>
+      </div>
+    </ng-container>
+
     <!-- 🆕 Menu específico para CABOS -->
     <ng-container *ngIf="contextType === 'cabo'">
       <div class="menu-item" (click)="onAction('visualizar-cabo')">

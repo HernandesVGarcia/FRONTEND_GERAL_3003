@@ -4,12 +4,14 @@ import { Observable, throwError } from 'rxjs';
 import { map, catchError, retry, timeout } from 'rxjs/operators';
 import { VisualizaDioData, VisualizaDioResponse } from '../modelo/VisualizaDioData';
 import { AuthService } from './auth.service';
+import { environment } from '../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class VisualizaDioService {
-  private baseUrl = 'https://www.fiberworks-api.com:3002';
+  //private baseUrl = 'https://www.fiberworks-api.com:3001';
+  private baseUrl = environment.apiUrl;
 
   constructor(
     private http: HttpClient,

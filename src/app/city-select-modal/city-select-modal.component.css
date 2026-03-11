@@ -15,7 +15,7 @@
   }
   
   .modal-content {
-    background-color: rgb(170, 203, 223);
+    background-color: rgb(206, 214, 219);
     border-radius: 8px;
     width: 90%;
     max-width: 300px;
@@ -39,17 +39,20 @@
   .modal-header {
     border-bottom: 1px solid #e0e0e0;
     padding: 5px 10px;
+    background-color: steelblue;
+    
+    
   }
   
   .modal-header h1 {
     margin: 0;
     font-size: 1.0rem;
-    color: #333;
+    color: #fff;
   }
   
   .modal-body {
-    padding: 3px;
-    height: 130px;
+    padding: 16px;
+    min-height: 120px;
     font-size: 15px;
   }
   
@@ -60,22 +63,10 @@
     justify-content: flex-end;
     gap: 8px;
   }
-  
-  .full-width {
-    width: 100%;
-  }
-  
+
   .loading-indicator {
     text-align: center;
     padding: 20px;
     color: #666;
-  }
-  
-  .error-message {
-    color: #f44336;
-    padding: 10px;
-    margin-bottom: 15px;
-    border-radius: 4px;
-    background-color: rgba(244, 67, 54, 0.1);
   }
   

@@ -1,49 +1,49 @@
 <div class="modal-overlay">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h1>Workspace</h1>
+  <div class="modal-content">
+    <div class="modal-header">
+      <h1>Workspace</h1>
+    </div>
+
+    <div class="modal-body">
+      <p>Selecione uma cidade:</p>
+
+      <div *ngIf="loading" class="loading-indicator">
+        Carregando cidades...
       </div>
-      
-      <div class="modal-body">
-        <p>Por favor, selecione uma cidade:</p>
-        
-        <div *ngIf="loading" class="loading-indicator">
-          Carregando cidades...
+
+      <div *ngIf="error" class="alert alert-danger" role="alert">
+        {{ error }}
+      </div>
+
+      <form *ngIf="!loading && !error" class="mb-0">
+        <div class="mb-3">
+          <label for="cidadeSelect" class="form-label">Cidades-></label>
+          <select class="form-select"
+                  id="cidadeSelect"
+                  [(ngModel)]="idCidadeSelecionado"
+                  name="cidadeSelect"
+                  (ngModelChange)="onCidadeChange($event)">
+            <option [ngValue]="null">Selecione uma cidade</option>
+            <option *ngFor="let cidade of listaCidades"
+                    [ngValue]="cidade.IDCIDADES">
+              {{ cidade.CIDADE }}
+            </option>
+          </select>
         </div>
-        
-        <div *ngIf="error" class="error-message">
-          {{ error }}
-        </div>
-        
-        <form *ngIf="!loading && !error">
-          <mat-form-field class="full-width">
-            <mat-label>Cidade</mat-label>
-            <input type="text"
-                   placeholder="Digite para buscar"
-                   aria-label="Cidade"
-                   matInput
-                   [formControl]="myControl"
-                   [matAutocomplete]="auto">
-            <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn">
-              <mat-option *ngFor="let cidade of filteredOptions | async" [value]="cidade">
-                {{cidade.CIDADE}}
-              </mat-option>
-            </mat-autocomplete>
-          </mat-form-field>
-        </form>
-      </div>
-      
-      <div class="modal-footer">
-        <button mat-button (click)="fecharModal()">Cancelar</button>
-        <button mat-raised-button 
-                color="primary" 
-                (click)="confirmarSelecao()" 
-                [disabled]="!cidadeSelecionada">
-          Confirmar
-        </button>
-      </div>
+      </form>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" (click)="fecharModal()">Cancelar</button>
+      <button type="button"
+              class="btn btn-primary"
+              (click)="confirmarSelecao()"
+              [disabled]="!cidadeSelecionada">
+        Confirmar
+      </button>
     </div>
   </div>
+</div>
 
 
   
