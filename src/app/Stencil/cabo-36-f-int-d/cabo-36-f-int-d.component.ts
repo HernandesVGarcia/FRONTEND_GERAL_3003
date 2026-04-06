@@ -1,6 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import * as go from 'gojs';
+import { buildPortPowerMeterContextClick } from '../cabo-port-power-meter-direct';
 
 @Component({
   selector: 'app-cabo-36f-int-d',
@@ -103,19 +104,6 @@ export class Cabo36FIntDComponent implements OnInit {
               }
             }
           }).add(new go.TextBlock(' 🔗 Fusão por tubos', { textAlign: 'left', alignment: go.Spot.Left }))
-        )
-        .add(
-          go.GraphObject.build('ContextMenuButton', {
-            click: (e, obj) => {
-              const contextmenu = obj.part;
-              if (contextmenu && contextmenu.data) {
-                const cableData = contextmenu.data;
-                window.dispatchEvent(new CustomEvent('caboContextMenu', {
-                  detail: { action: 'powerMeter', data: cableData }
-                }));
-              }
-            }
-          }).add(new go.TextBlock(' 🔌 Power Meter', { textAlign: 'left', alignment: go.Spot.Left }))
         )
         .add(
           go.GraphObject.build('ContextMenuButton', {
@@ -282,6 +270,7 @@ export class Cabo36FIntDComponent implements OnInit {
           alignment: go.Spot.Center,
           toMaxLinks: 1,
           fromMaxLinks: 1,
+          contextClick: buildPortPowerMeterContextClick(`F${i}`),
           name: `cabo36F_D_port_F${i}`
         })
       );

@@ -174,12 +174,13 @@ async function limpaPontaBOriginal(conn, idmeta_velho, idmeta_novo, capacidade, 
     const CABO_ORIG = `cabo${idmeta_velho}B`;
     const CABO_NOVO = `cabo${idmeta_novo}B`;
 
-    // Caixa: FIBRA_1LABEL contém "PROP.BOCA" - ex: "12345!PROP.BOCA_1.LABEL"
+    // Caixa: FIBRA_1LABEL ex: "=TST333254!PROP.BOCA2_1.VALUE"
     if (fibra1.includes('PROP.BOCA')) {
         const matchBoca = fibra1.match(/!PROP\.([^.]+)/);
-        const matchId = fibra1.match(/^(\d+)/);
+        const matchId = fibra1.match(/TST(\d+)/);
         if (matchBoca && matchId) {
-            const BOCA = matchBoca[1]; // ex: BOCA_1
+            let BOCA = matchBoca[1]; // ex: BOCA1_1
+            BOCA = BOCA.replace(/_\d+$/, ''); // coluna na caixa é BOCA1, BOCA2, etc.
             const ID_Caixa = matchId[1];
             await executarQuery(conn, `UPDATE tstmeta.caixa SET \`${BOCA}\` = ? WHERE ID_META = ?`, [CABO_NOVO, ID_Caixa]);
             await replaceIdCaboNaBoca(conn, BOCA, ID_Caixa, idmeta_velho, idmeta_novo, capacidade);

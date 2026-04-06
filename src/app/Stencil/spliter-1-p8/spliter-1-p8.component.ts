@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import * as go from 'gojs';
+import { buildSplitterPortPowerMeterContextClick } from '../splitter-port-power-meter-direct';
 
 @Component({
   selector: 'app-splitter-1-p8',
@@ -68,7 +69,9 @@ export class Splitter18Component {
               if (contextmenu && contextmenu.data) {
                 const splitterData = contextmenu.data;
                 console.log('🔀 [SPLITTER-TEMPLATE] Power Meter clicado:', splitterData);
-                alert(`Splitter: ${splitterData.labelText}\nID: ${splitterData.idmeta}\nTipo: ${splitterData.tipoSplitter}`);
+                window.dispatchEvent(new CustomEvent('splitterContextMenu', {
+                  detail: { action: 'powerMeter', data: splitterData }
+                }));
               }
             }
           })
@@ -131,7 +134,9 @@ export class Splitter18Component {
           toLinkable: true,
           fromLinkableDuplicates: false,
           toLinkableDuplicates: false,
-          cursor: "pointer"
+          cursor: "pointer",
+          click: buildSplitterPortPowerMeterContextClick('ENTRADA'),
+          contextClick: buildSplitterPortPowerMeterContextClick('ENTRADA'),
         })
           .bind("alignment", "espelhado", (esp: boolean) => esp ? new go.Spot(1, 0.5, 4, 0) : new go.Spot(0, 0.5, -4, 0))
           .bind("fromSpot", "espelhado", (esp: boolean) => esp ? go.Spot.Right : go.Spot.Left)
@@ -147,7 +152,9 @@ export class Splitter18Component {
           toLinkable: true,
           fromLinkableDuplicates: false,
           toLinkableDuplicates: false,
-          cursor: "pointer"
+          cursor: "pointer",
+          click: buildSplitterPortPowerMeterContextClick('F1'),
+          contextClick: buildSplitterPortPowerMeterContextClick('F1'),
         })
           .bind("alignment", "espelhado", (esp: boolean) => esp ? new go.Spot(0, 0.15, -4, 0) : new go.Spot(1, 0.15, 4, 0))
           .bind("fromSpot", "espelhado", (esp: boolean) => esp ? go.Spot.Left : go.Spot.Right)
@@ -163,7 +170,9 @@ export class Splitter18Component {
           toLinkable: true,
           fromLinkableDuplicates: false,
           toLinkableDuplicates: false,
-          cursor: "pointer"
+          cursor: "pointer",
+          click: buildSplitterPortPowerMeterContextClick('F2'),
+          contextClick: buildSplitterPortPowerMeterContextClick('F2'),
         })
           .bind("alignment", "espelhado", (esp: boolean) => esp ? new go.Spot(0, 0.25, -4, 0) : new go.Spot(1, 0.25, 4, 0))
           .bind("fromSpot", "espelhado", (esp: boolean) => esp ? go.Spot.Left : go.Spot.Right)
@@ -180,7 +189,9 @@ export class Splitter18Component {
           toLinkable: true,
           fromLinkableDuplicates: false,
           toLinkableDuplicates: false,
-          cursor: "pointer"
+          cursor: "pointer",
+          click: buildSplitterPortPowerMeterContextClick('F3'),
+          contextClick: buildSplitterPortPowerMeterContextClick('F3'),
         })
           .bind("alignment", "espelhado", (esp: boolean) => esp ? new go.Spot(0, 0.35, -4, 0) : new go.Spot(1, 0.35, 4, 0))
           .bind("fromSpot", "espelhado", (esp: boolean) => esp ? go.Spot.Left : go.Spot.Right)
@@ -196,7 +207,9 @@ export class Splitter18Component {
           toLinkable: true,
           fromLinkableDuplicates: false,
           toLinkableDuplicates: false,
-          cursor: "pointer"
+          cursor: "pointer",
+          click: buildSplitterPortPowerMeterContextClick('F4'),
+          contextClick: buildSplitterPortPowerMeterContextClick('F4'),
         })
           .bind("alignment", "espelhado", (esp: boolean) => esp ? new go.Spot(0, 0.45, -4, 0) : new go.Spot(1, 0.45, 4, 0))
           .bind("fromSpot", "espelhado", (esp: boolean) => esp ? go.Spot.Left : go.Spot.Right)
@@ -214,7 +227,9 @@ export class Splitter18Component {
           toLinkable: true,
           fromLinkableDuplicates: false,
           toLinkableDuplicates: false,
-          cursor: "pointer"
+          cursor: "pointer",
+          click: buildSplitterPortPowerMeterContextClick('F5'),
+          contextClick: buildSplitterPortPowerMeterContextClick('F5'),
         })
           .bind("alignment", "espelhado", (esp: boolean) => esp ? new go.Spot(0, 0.55, -4, 0) : new go.Spot(1, 0.55, 4, 0))
           .bind("fromSpot", "espelhado", (esp: boolean) => esp ? go.Spot.Left : go.Spot.Right)
@@ -230,7 +245,9 @@ export class Splitter18Component {
           toLinkable: true,
           fromLinkableDuplicates: false,
           toLinkableDuplicates: false,
-          cursor: "pointer"
+          cursor: "pointer",
+          click: buildSplitterPortPowerMeterContextClick('F6'),
+          contextClick: buildSplitterPortPowerMeterContextClick('F6'),
         })
           .bind("alignment", "espelhado", (esp: boolean) => esp ? new go.Spot(0, 0.65, -4, 0) : new go.Spot(1, 0.65, 4, 0))
           .bind("fromSpot", "espelhado", (esp: boolean) => esp ? go.Spot.Left : go.Spot.Right)
@@ -247,7 +264,9 @@ export class Splitter18Component {
           toLinkable: true,
           fromLinkableDuplicates: false,
           toLinkableDuplicates: false,
-          cursor: "pointer"
+          cursor: "pointer",
+          click: buildSplitterPortPowerMeterContextClick('F7'),
+          contextClick: buildSplitterPortPowerMeterContextClick('F7'),
         })
           .bind("alignment", "espelhado", (esp: boolean) => esp ? new go.Spot(0, 0.75, -4, 0) : new go.Spot(1, 0.75, 4, 0))
           .bind("fromSpot", "espelhado", (esp: boolean) => esp ? go.Spot.Left : go.Spot.Right)
@@ -263,7 +282,9 @@ export class Splitter18Component {
           toLinkable: true,
           fromLinkableDuplicates: false,
           toLinkableDuplicates: false,
-          cursor: "pointer"
+          cursor: "pointer",
+          click: buildSplitterPortPowerMeterContextClick('F8'),
+          contextClick: buildSplitterPortPowerMeterContextClick('F8'),
         })
           .bind("alignment", "espelhado", (esp: boolean) => esp ? new go.Spot(0, 0.85, -4, 0) : new go.Spot(1, 0.85, 4, 0))
           .bind("fromSpot", "espelhado", (esp: boolean) => esp ? go.Spot.Left : go.Spot.Right)

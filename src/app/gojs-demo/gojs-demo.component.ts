@@ -10,7 +10,8 @@ import { Component,
   AfterViewInit, 
   OnDestroy } from '@angular/core';
 import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { firstValueFrom } from 'rxjs';  
+import { firstValueFrom, merge } from 'rxjs';
+import { take } from 'rxjs/operators';  
 import { CommonModule } from '@angular/common';
 import * as go from 'gojs';
 
@@ -135,13 +136,16 @@ import { PesquisaSiglaService } from '../servico/pesquisa-sigla.service';
 import jsPDF from 'jspdf';
 import { Cabo_destino_CX } from '../modelo/Cabo_destino_CX';
 import { DestinoSigla } from '../modelo/DestinoSigla';
+import { NgbModal, NgbModalModule, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
+import { PowerMeterModalComponent } from '../power-meter-modal/power-meter-modal.component';
+import { buildCableAnalisaRequest } from '../servico/analisa-conexao-nivel.service';
 
 @Component({
   selector: 'app-gojs-demo',
   templateUrl: './gojs-demo.component.html',
   styleUrls: ['./gojs-demo.component.css'],
   standalone: true,
-  imports: [CommonModule]
+  imports: [CommonModule, NgbModalModule],
 })
 export class GoJSDemoComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('diagramDiv') diagramDiv: ElementRef | null = null;
@@ -311,6 +315,9 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnDestroy {
   private caboContextMenuListenerAdded = false;
   private handleCaboContextMenu!: (event: any) => void;
 
+  /** Último Power Meter aberto; fechado ao abrir outro para não empilhar modais. */
+  private powerMeterModalRef: NgbModalRef | null = null;
+
   constructor(
      public dialogRef: MatDialogRef<GoJSDemoComponent>,
      @Inject(MAT_DIALOG_DATA) public data: any,
@@ -336,6 +343,7 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnDestroy {
     private authService: AuthService, // 🏠 NOVO: Injetar AuthService
     private fiberApiService: FiberApiService, // 🏠 NOVO: Injetar FiberApiService
     private dialog: MatDialog, // 🔀 NOVO: Injetar MatDialog para context menu
+    private ngbModal: NgbModal,
     private tiposService: TiposService, // 🔗 NOVO: Injetar TiposService para buscar tipos de splitter
     private updateFusaoService: UpdateFusaoService, // 🔗 NOVO: Serviço para realizar fusões internas
     private updateExcluiFusaoService: UpdateExcluiFusaoService, // 🗑️ NOVO: Serviço para excluir fusões
@@ -350,6 +358,32 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnDestroy {
     private insertLogService: InsertLogService // 📝 NOVO: Serviço para inserir logs
    ) {}
 
+  /** Modal Bootstrap (ng-bootstrap) com imagem do power meter — cabo ou splitter. */
+  private abrirPowerMeterModal(opts: { context: 'cabo' | 'splitter'; data?: unknown }): void {
+    this.ngZone.run(() => {
+      if (this.powerMeterModalRef) {
+        this.powerMeterModalRef.dismiss();
+      }
+      const ref = this.ngbModal.open(PowerMeterModalComponent, {
+        centered: true,
+        backdrop: true,
+        backdropClass: 'power-meter-modal-backdrop',
+        keyboard: true,
+        size: 'lg',
+        windowClass: 'power-meter-modal-window',
+      });
+      ref.componentInstance.context = opts.context;
+      ref.componentInstance.extraData = opts.data;
+      this.powerMeterModalRef = ref;
+      merge(ref.closed, ref.dismissed)
+        .pipe(take(1))
+        .subscribe(() => {
+          if (this.powerMeterModalRef === ref) {
+            this.powerMeterModalRef = null;
+          }
+        });
+    });
+  }
 
   //==============================================================================================================  
 
@@ -1277,7 +1311,8 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnDestroy {
             capacidade: 0,
             codigo: 0,
             tubo: 0,
-            Label_cabo:''
+            Label_cabo:'',
+            id_meta_cabo: undefined,
           });
         }
         
@@ -1286,7 +1321,8 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnDestroy {
           capacidade: tipos[0].capacidade,
           codigo: tipos[0].codigo,
           tubo: tipos[0].tubo,
-          Label_cabo: tipos[0].Label_cabo
+          Label_cabo: tipos[0].Label_cabo,
+          id_meta_cabo: idmeta_cabo,
         };
         
         console.log(`Tipo de cabo para boca ${bocaNumero} armazenado no índice ${targetIndex}:`, 
@@ -3383,8 +3419,22 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
           
           this.handleSplitterContextMenu = (event: any) => {
             const { action, data, node: nodeRef } = event.detail;
-            
+            const portId = event.detail?.portId as string | undefined;
+
             switch (action) {
+              case 'powerMeter': {
+                const payload =
+                  portId != null &&
+                  data !== null &&
+                  typeof data === 'object' &&
+                  !Array.isArray(data)
+                    ? { ...(data as Record<string, unknown>), portId }
+                    : portId != null
+                      ? { data, portId }
+                      : data;
+                this.abrirPowerMeterModal({ context: 'splitter', data: payload });
+                break;
+              }
               case 'mapear':
                 this.abrirModalSplitter(data);
                 break;
@@ -3795,8 +3845,20 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
               console.log('🔗 [LINK-CONTEXT] Visualizar fibras', { fromCableKey, fromPortId, toCableKey, toPortId });
               // TODO: implementar abertura de tela/modal de visualização de fibras
             } else if (action === 'powerMeter') {
-              console.log('🔗 [LINK-CONTEXT] Power Meter', { fromCableKey, fromPortId, toCableKey, toPortId });
-              // TODO: implementar power meter para o cabo
+              const fromNum = parseInt(String(fromCableKey || '').replace(/^Boca/i, ''), 10);
+              const analisaRequest =
+                Number.isFinite(fromNum) && fromNum >= 1 && fromNum <= 18
+                  ? buildCableAnalisaRequest({
+                      bocaKey: String(fromCableKey),
+                      portId: String(fromPortId ?? ''),
+                      bocaValue: this.getBocaValue(fromNum),
+                      idMetaCabo: this.VetorTipoCabos[fromNum - 1]?.id_meta_cabo,
+                    })
+                  : null;
+              this.abrirPowerMeterModal({
+                context: 'cabo',
+                data: { fromCableKey, fromPortId, toCableKey, toPortId, analisaRequest },
+              });
             } else if (action === 'espelhar') {
               console.log('🔗 [LINK-CONTEXT] Espelhar', { fromCableKey, fromPortId, toCableKey, toPortId });
               // TODO: implementar espelhar link/cabo
@@ -3818,12 +3880,42 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
         if (!this.caboContextMenuListenerAdded) {
           this.handleCaboContextMenu = (event: any) => {
             const { action, data } = event.detail;
+            const portId = event.detail?.portId as string | undefined;
             if (action === 'visualizarFibras') {
               console.log('🔗 [CABO-CONTEXT] Visualizar fibras', data);
               // TODO: abrir modal/tela de visualização de fibras do cabo
             } else if (action === 'powerMeter') {
-              console.log('🔗 [CABO-CONTEXT] Power Meter', data);
-              // TODO: abrir power meter para o cabo
+              const payload =
+                portId != null &&
+                data !== null &&
+                typeof data === 'object' &&
+                !Array.isArray(data)
+                  ? { ...(data as Record<string, unknown>), portId }
+                  : portId != null
+                    ? { data, portId }
+                    : data;
+              const keyStr =
+                payload !== null &&
+                typeof payload === 'object' &&
+                !Array.isArray(payload) &&
+                'key' in payload
+                  ? String((payload as { key?: unknown }).key ?? '')
+                  : '';
+              const bocaNum = parseInt(keyStr.replace(/^Boca/i, ''), 10);
+              const analisaRequest =
+                Number.isFinite(bocaNum) && bocaNum >= 1 && bocaNum <= 18 && portId != null
+                  ? buildCableAnalisaRequest({
+                      bocaKey: keyStr,
+                      portId: String(portId),
+                      bocaValue: this.getBocaValue(bocaNum),
+                      idMetaCabo: this.VetorTipoCabos[bocaNum - 1]?.id_meta_cabo,
+                    })
+                  : null;
+              const payloadWithAnalisa =
+                payload !== null && typeof payload === 'object' && !Array.isArray(payload)
+                  ? { ...(payload as Record<string, unknown>), analisaRequest }
+                  : { data: payload, analisaRequest };
+              this.abrirPowerMeterModal({ context: 'cabo', data: payloadWithAnalisa });
             } else if (action === 'espelhar') {
               this.espelharNode(data);
             } else if (action === 'fusaoPorTubos') {

@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import * as go from 'gojs';
+import { buildSplitterPortPowerMeterContextClick } from '../splitter-port-power-meter-direct';
 
 const PORT_COLORS = [
   '#4169e1', '#ff9c4a', '#73c883', '#aa7444', 'gray', '#ffffff', 'red', 'black',
@@ -18,16 +19,20 @@ export class Splitter164Component {
   private createOutputPort(portIndex: number): go.Shape {
     const y = portIndex / 65;
     const fill = PORT_COLORS[(portIndex - 1) % PORT_COLORS.length];
+    const portId = `F${portIndex}`;
+    const openPm = buildSplitterPortPowerMeterContextClick(portId);
     return new go.Shape('Rectangle', {
       fill,
       stroke: '#E65100',
       desiredSize: new go.Size(34, 5),
-      portId: `F${portIndex}`,
+      portId,
       fromLinkable: true,
       toLinkable: true,
       fromLinkableDuplicates: false,
       toLinkableDuplicates: false,
-      cursor: 'pointer'
+      cursor: 'pointer',
+      click: openPm,
+      contextClick: openPm,
     })
       .bind('alignment', 'espelhado', (esp: boolean) => esp ? new go.Spot(0, y, -8, 0) : new go.Spot(1, y, 8, 0))
       .bind('fromSpot', 'espelhado', (esp: boolean) => esp ? go.Spot.Left : go.Spot.Right)
@@ -79,7 +84,9 @@ export class Splitter164Component {
               if (contextmenu && contextmenu.data) {
                 const splitterData = contextmenu.data;
                 console.log('🔀 [SPLITTER-TEMPLATE] Power Meter clicado:', splitterData);
-                alert(`Splitter: ${splitterData.labelText}\nID: ${splitterData.idmeta}\nTipo: ${splitterData.tipoSplitter}`);
+                window.dispatchEvent(new CustomEvent('splitterContextMenu', {
+                  detail: { action: 'powerMeter', data: splitterData }
+                }));
               }
             }
           })
@@ -136,7 +143,9 @@ export class Splitter164Component {
           toLinkable: true,
           fromLinkableDuplicates: false,
           toLinkableDuplicates: false,
-          cursor: 'pointer'
+          cursor: 'pointer',
+          click: buildSplitterPortPowerMeterContextClick('ENTRADA'),
+          contextClick: buildSplitterPortPowerMeterContextClick('ENTRADA'),
         })
       );
 

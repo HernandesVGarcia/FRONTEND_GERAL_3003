@@ -146,9 +146,7 @@ body.modal-open .modal-content {
 .caixa-search-modal-window .modal-dialog > .modal-content { pointer-events: none !important; }
 .caixa-search-modal-window app-caixa-search-modal .modal-content,
 .caixa-search-modal-window app-caixa-search-modal .modal-content * { pointer-events: auto !important; }
-.caixa-search-modal-window app-caixa-search-modal .modal-content { user-select: none !important; }
-
-/* Cliente */
+.caixa-search-modal-window app-caixa-search-modal .modal-content { user-select: none !important; }/* Cliente */
 .cliente-search-modal-window,
 .cliente-search-modal-window * { pointer-events: none !important; }
 .cliente-search-modal-window .modal-dialog > .modal-content { pointer-events: none !important; }
@@ -169,3 +167,16 @@ body.modal-open .modal-content {
 .cadastro-cliente-modal-window app-cadastro-cliente .modal-content,
 .cadastro-cliente-modal-window app-cadastro-cliente .modal-content * { pointer-events: auto !important; }
 .cadastro-cliente-modal-window app-cadastro-cliente .modal-content { user-select: none !important; }
+
+/* Power Meter (diagrama GoJS / caixa) */
+.power-meter-modal-window,
+.power-meter-modal-window * { pointer-events: none !important; }
+.power-meter-modal-window .modal-dialog > .modal-content { pointer-events: none !important; }
+.power-meter-modal-window app-power-meter-modal .modal-content,
+.power-meter-modal-window app-power-meter-modal .modal-content * { pointer-events: auto !important; }
+.power-meter-modal-window app-power-meter-modal .modal-content { user-select: none !important; }
+
+/* Backdrop do Power Meter: não bloqueia cliques no diagrama GoJS por baixo */
+.modal-backdrop.power-meter-modal-backdrop {
+  pointer-events: none !important;
+}

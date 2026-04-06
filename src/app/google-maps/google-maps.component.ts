@@ -21,6 +21,7 @@ import { PopsCli } from '../modelo/PopsCli';
 import { PopsEst } from '../modelo/popsEst';
 import { Condominios } from '../modelo/Condominios';
 import { Dios } from '../modelo/dios';
+import { Anotacoes } from '../modelo/Anotacoes';
 
 //import { CaixaInternaComponent } from '../caixa-interna/caixa-interna.component';
 import { ChangeDetectorRef } from '@angular/core'; /// ============novo
@@ -180,6 +181,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
   // ============================================================================
   // 📥 SEÇÃO: INPUTS - Dados de entrada do componente
   // ============================================================================
+  @Input() destinoAnotacoes: Anotacoes[]=[];
   @Input() destinoCondominios: Condominios[]=[];
   @Input() destinoDios: Dios[] = [];
   @Input() destinoPopsCli: PopsCli[] = [];
@@ -234,6 +236,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
   };
 
   // Arrays de marcadores
+  markerAnotacoes: google.maps.Marker[] = [];
   markerDios: google.maps.Marker[] = [];
   markerCondominios: google.maps.Marker[] = [];
   markerPopsCli: google.maps.Marker[] = [];
@@ -4006,6 +4009,7 @@ private ZOOM_LEVEL_CLIENTES_DISABLES = 19;   // pops visíveis em zoom >= 19
 private ZOOM_LEVEL_CLIENTES_ATIVOS = 17;   // pops visíveis em zoom >= 17
 private ZOOM_LEVEL_CONDOMINIOS = 17;   // CTOs visíveis em zoom >= 17
 private ZOOM_LEVEL_DIOS = 18;   // DIOS visíveis em zoom >= 117
+private ZOOM_LEVEL_ANOTACOES = 18;   // DIOS visíveis em zoom >= 117
 
 private destroy$ = new Subject<void>();
 
@@ -4034,6 +4038,7 @@ private map?: (google.maps.Map);
  private MAX_VISIBLE_MARKERS_POPs = 30; // Ajuste este valor conforme necessário
  private MAX_VISIBLE_MARKERS_CONDOMINIOS = 100; // Ajuste este valor conforme necessário
  private MAX_VISIBLE_MARKERS_DIOS = 100; // Ajuste este valor conforme necessário
+ private MAX_VISIBLE_MARKERS_ANOTACOES = 100; // Ajuste este valor conforme necessário
  
 // **********************************************************************************************inserido
 
@@ -4414,6 +4419,10 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
     console.log('Número da caixa alterado para');
   }
      
+    if (changes['destinoAnotacoes'] && changes['destinoAnotacoes'].currentValue) {
+      console.log('Atualizando marcadores de Anotacoes ',this.destinoAnotacoes);
+      this.updateMarkersAnotacoes();
+    }
 
     if (changes['destinoDios'] && changes['destinoDios'].currentValue) {
       console.log('Atualizando marcadores de Dios ',this.destinoDios);
@@ -4624,11 +4633,89 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
       return this.markerDios;
     }
     return [];
+  }  
+  
+  getVisibleMarkerAnotacoes(): google.maps.Marker[] {
+    if (this.currentZoom >= this.ZOOM_LEVEL_ANOTACOES) {
+      return this.markerAnotacoes;
+    }
+    return [];
   }   
 
 
+// função para carregar anotacoes no mapa==============================
+  private updateMarkersAnotacoes() {
+    if (this.destinoAnotacoes && this.destinoAnotacoes.length > 0 && this.map) {
+      this.markerAnotacoes.forEach(marker => marker.setMap(null));
+      this.markerAnotacoes = [];
+    }
+    
+    this.destinoAnotacoes.forEach(location => {
+      const position = {
+        lat: Number(location.LAT),
+        lng: Number(location.LNG)
+      };
 
+      const markerOptions: google.maps.MarkerOptions = {
+        position: position,
+        title: location.label_rabicho || 'Sem nome',
+        draggable: false,
+        opacity: 1,
+        label: {
+          text: 'Obs: ' + (location.label_rabicho || 'S/N'),
+          color: 'black',
+          fontSize: '12px'
+        } as google.maps.MarkerLabel,
+        icon: {
+          path: google.maps.SymbolPath.CIRCLE,
+          fillColor: '#000000',
+          fillOpacity: 1,
+          strokeColor: '#000000',
+          strokeWeight: 1,
+          scale: 5,
+          labelOrigin: new google.maps.Point(0, -2),
+        },
+        visible: this.currentZoom >= this.ZOOM_LEVEL_ANOTACOES
+        ///visible: false
+      };
 
+      const marker = new google.maps.Marker(markerOptions);
+      if (this.map) {
+        marker.setMap(this.map);
+      }
+      
+      // Variáveis para controlar cliques
+      let clickTimeout: any;
+      
+      // Adicionar listener de clique simples para abrir InfoWindow
+      marker.addListener('click', (event: google.maps.MapMouseEvent) => {
+        // Limpar timeout anterior se existir
+        if (clickTimeout) {
+          clearTimeout(clickTimeout);
+          clickTimeout = null;
+        }
+        
+        // Definir timeout para clique simples
+        clickTimeout = setTimeout(() => {
+          // Clique simples - mostrar InfoWindow
+          console.log('🔍 [Anotacao] Clique simples detectada na Anotacao:', location.label_rabicho);
+          this.showMarkerInfoWindow(marker, event, 'anotacao', location);
+        }, 300); // Delay de 300ms para distinguir de duplo clique
+      }); 
+
+      
+      //this.markerAnotacoes.addListener('rightclick', (event: google.maps.MapMouseEvent) => {
+       // console.log('🔴 [Anotacao] Right-click na Anotacao:', location.label);
+      //});
+
+      this.markerAnotacoes.push(marker);
+    });
+    console.log('Anotacoes atualizadas final:', this.markerAnotacoes);
+    }
+
+    
+
+// função para carregar dios no mapa==============================
   private updateMarkersDios() {
     if (this.destinoDios && this.destinoDios.length > 0 && this.map) {
       this.markerDios.forEach(marker => marker.setMap(null));
@@ -6527,7 +6614,7 @@ private updateVisibleMarkers() {
    
 
 
-  // Atualizar visibilidade de Condominios  //----------------- Visibilidade de Condominios ----------------------------
+  // Atualizar visibilidade de dios  //----------------- Visibilidade de dios ----------------------------
   let visibleDiosCount = 0;
   console.log ('atualiza Dios visibles')
   this.markerDios.forEach(marker => {
@@ -6551,6 +6638,32 @@ private updateVisibleMarkers() {
   });
 
   console.log(` Dios visíveis: ${visibleDiosCount}`);
+
+
+  // Atualizar visibilidade de dios  //----------------- Visibilidade de dios ----------------------------
+  let visibleAnotacoesCount = 0;
+  console.log ('atualiza Anotacoes visibles')
+  this.markerAnotacoes.forEach(marker => {
+    if (marker) {
+      const position = marker.getPosition();
+      if (position && 
+          bounds.contains(position) && 
+          this.currentZoom >= this.ZOOM_LEVEL_ANOTACOES &&
+          visibleAnotacoesCount < this.MAX_VISIBLE_MARKERS_ANOTACOES) {
+        
+        if (this.map) {marker.setMap(this.map)};//xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+        marker.setVisible(true);
+        visibleAnotacoesCount++;
+      } else {
+        marker.setVisible(false);
+        marker.setMap(null);
+      }
+
+      //console.log ('caixas visiveis', visibleCTOsCount)
+    }
+  });
+
+  console.log(` Anotações visíveis: ${visibleAnotacoesCount}`);
 
 } 
 

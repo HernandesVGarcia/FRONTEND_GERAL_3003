@@ -7,6 +7,9 @@
 <div class="container">
 
 
+    <!-- Lista de Anotacoes -->
+    <app-lista-anotacoes (AnotacoesSelecionada)="onAnotacoesSelecionada($event)"></app-lista-anotacoes>
+
     <!-- Lista de Dios -->
     <app-lista-dios (DiosSelecionada)="onDiosSelecionada($event)"></app-lista-dios>
 
@@ -70,6 +73,7 @@
   </div>
   
   <app-google-maps
+  [destinoAnotacoes]="anotacoes"
   [destinoCondominios]="Condominios" 
   [destinoDios]="Dios"
   [destinoPopsCli]="popCLI"
