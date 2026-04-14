@@ -1,0 +1,198 @@
+/* Alinhado a detalhes-caixa: Bootstrap + largura fixa do diálogo interno */
+@import 'bootstrap/dist/css/bootstrap.min.css';
+
+:host ::ng-deep .modal-backdrop {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 5000 !important;
+}
+
+:host ::ng-deep .modal {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  z-index: 5001 !important;
+  display: block !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+
+:host ::ng-deep .modal-dialog {
+  position: relative !important;
+  margin: 1.75rem auto !important;
+  width: 450px !important;
+  max-width: 450px !important;
+  z-index: 5002 !important;
+  pointer-events: none !important;
+  transition: none; /* arraste */
+}
+
+:host ::ng-deep .modal-content {
+  pointer-events: auto !important;
+}
+
+.modal-dialog {
+  max-width: 450px !important;
+  width: 450px !important;
+  transition: none; /* arrastar pelo header, como detalhes-caixa */
+}
+
+.modal-content {
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2) !important;
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.modal-header {
+  border-radius: 8px 8px 0 0;
+  padding: 6px 10px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+  background-color: #629ef8 !important;
+  color: #fff !important;
+  user-select: none;
+}
+
+.modal-title {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.icon {
+  font-size: 10px;
+}
+
+.modal-body {
+  padding: 15px 20px;
+  background: linear-gradient(to bottom, #f8f9fa, #ffffff);
+  overflow-y: auto;
+  flex: 0 1 auto;
+  max-height: calc(90vh - 120px);
+}
+
+.modal-footer {
+  border-top: 2px solid #dee2e6;
+  padding: 12px 20px;
+  border-radius: 0 0 8px 8px;
+  background-color: #ffffff !important;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.form-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.form-control-sm,
+.form-select-sm {
+  height: 32px;
+  padding: 4px 10px;
+  font-size: 0.875rem;
+  border: 1.5px solid #ced4da;
+  border-radius: 4px;
+  transition: all 0.2s;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.form-control-sm:focus,
+.form-select-sm:focus {
+  border-color: #3b6c9c;
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+  transform: translateY(-1px);
+}
+
+.form-control-sm[readonly] {
+  background-color: #e9ecef;
+  cursor: default;
+  border-color: #ced4da;
+}
+
+.badge {
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  font-weight: 600;
+}
+
+.btn-sm {
+  padding: 8px 16px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 6px;
+  transition: all 0.2s;
+  min-width: 100px;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #345677 0%, #345677 100%);
+  border: none;
+  box-shadow: 0 2px 4px rgba(13, 110, 253, 0.3);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #345677 0%, #345677 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(13, 110, 253, 0.4);
+}
+
+.btn-secondary {
+  background: linear-gradient(135deg, #6c757d 0%, #5c636a 100%);
+  border: none;
+  box-shadow: 0 2px 4px rgba(108, 117, 125, 0.3);
+}
+
+.btn-secondary:hover {
+  background: linear-gradient(135deg, #5c636a 0%, #495057 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(108, 117, 125, 0.4);
+}
+
+.modal-body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.modal-body::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.modal-body::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+@media (max-width: 768px) {
+  .modal-dialog {
+    max-width: 95%;
+  }
+
+  .modal-body {
+    padding: 15px;
+  }
+}

@@ -129,6 +129,12 @@ body.modal-open .modal-dialog {
   pointer-events: none !important;
 }
 
+/* Label Cabo: diálogo exterior é filho direto de ngb-modal-window (o host já é .modal); left/top no TS */
+body.modal-open ngb-modal-window.label-cabo-modal-window > .modal-dialog {
+  position: fixed !important;
+  margin: 0 !important;
+}
+
 /* Forçar largura do conteúdo do modal ng-bootstrap */
 body.modal-open .modal-content {
   width: 100% !important;

@@ -39,7 +39,11 @@
     <mat-icon>refresh</mat-icon>
     Reset
   </button>
-  <button mat-button (click)="onPrintPDF()" [disabled]="isGeneratingPDF">
+  <button mat-button (click)="exportDiagramSvg()" [disabled]="isGeneratingPDF || isExportingSvg">
+    <mat-icon>image</mat-icon>
+    {{ isExportingSvg ? 'A gerar SVG...' : 'Descarregar SVG' }}
+  </button>
+  <button mat-button (click)="onPrintPDF()" [disabled]="isGeneratingPDF || isExportingSvg">
     <mat-icon>print</mat-icon>
     {{isGeneratingPDF ? 'Gerando PDF...' : 'Imprimir PDF'}}
   </button>

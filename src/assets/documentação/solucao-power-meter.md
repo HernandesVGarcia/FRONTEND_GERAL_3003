@@ -42,11 +42,8 @@ Após `ngAfterViewInit`, chama-se `carregarAnalisaConexaoNivelSeAplicavel()` par
 
 | Origem | Evento / mecanismo | Notas |
 |--------|-------------------|--------|
-| **Cabo** (menu de contexto do nó) | `caboContextMenu` com `detail.action === 'powerMeter'` | O `gojs-demo` monta `analisaRequest` com `buildCableAnalisaRequest` e passa em `extraData`. |
-| **Porta de cabo** (clique direto) | `buildPortPowerMeterContextClick` em `src/app/Stencil/cabo-port-power-meter-direct.ts` | Dispara o mesmo `caboContextMenu` com `action: 'powerMeter'`, `data` do nó e `portId` (ex. `F1`). |
-| **Link entre cabos** | `linkContextMenu` com `action: 'powerMeter'` | Constrói `analisaRequest` a partir da boca/porta de **origem** do link. |
-| **Splitter** (menu do corpo) | `splitterContextMenu` com `action: 'powerMeter'` | Pode vir **sem** `portId` (só dados do nó). |
-| **Splitter** (portas) | `buildSplitterPortPowerMeterContextClick` em `src/app/Stencil/splitter-port-power-meter-direct.ts` | Dispara `splitterContextMenu` com `portId`: `ENTRADA`, `F1`, `F2`, … conforme o stencil. |
+| **Cabo** (botão direito na fibra / porta) | `caboContextMenu` com `detail.action === 'powerMeter'` | `buildPortPowerMeterContextClick` em `src/app/Stencil/cabo-port-power-meter-direct.ts` dispara o evento com `data` do nó e `portId` (ex. `F1`). O `gojs-demo` monta `analisaRequest` com `buildCableAnalisaRequest` e passa em `extraData`. |
+| **Splitter** (entradas e saídas) | `splitterContextMenu` | Apenas clique nas portas via `buildSplitterPortPowerMeterContextClick` em `src/app/Stencil/splitter-port-power-meter-direct.ts` (`portId`: `ENTRADA`, `F1`, `F2`, …). |
 
 O `gojs-demo` trata `splitterContextMenu` juntando `portId` ao payload quando existir, para o modal saber se é entrada ou saída.
 
@@ -134,7 +131,7 @@ flowchart LR
   subgraph ui [Diagrama GoJS]
     A[Clique menu ou porta port]
   end
-  A --> B[CustomEvent caboContextMenu ou splitterContextMenu ou linkContextMenu]
+  A --> B[CustomEvent caboContextMenu ou splitterContextMenu]
   B --> C[gojs-demo abrirPowerMeterModal]
   C --> D[PowerMeterModalComponent]
   D --> E{context}

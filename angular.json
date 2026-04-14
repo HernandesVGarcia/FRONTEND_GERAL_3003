@@ -34,7 +34,6 @@
             ],
             "scripts": [],
             "allowedCommonJsDependencies": [
-              "html2canvas",
               "jspdf",
               "rgbcolor",
               "raf"

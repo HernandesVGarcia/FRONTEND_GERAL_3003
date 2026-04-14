@@ -66,24 +66,6 @@ export class SplitterDesbComponent {
         .add(
           go.GraphObject.build("ContextMenuButton", {
             click: (e, obj) => {
-              const contextmenu = obj.part;
-              if (contextmenu && contextmenu.data) {
-                const splitterData = contextmenu.data;
-                console.log('🔀 [SPLITTER-TEMPLATE] Power Meter clicado:', splitterData);
-                window.dispatchEvent(new CustomEvent('splitterContextMenu', {
-                  detail: { action: 'powerMeter', data: splitterData }
-                }));
-              }
-            }
-          })
-          .add(new go.TextBlock("🔌 Power Meter", { 
-            textAlign: "left",
-            alignment: go.Spot.Left
-          }))
-        )
-        .add(
-          go.GraphObject.build("ContextMenuButton", {
-            click: (e, obj) => {
               const adorno = obj.part as go.Adornment;
               const node = adorno?.adornedPart;
               const diagram = node?.diagram;

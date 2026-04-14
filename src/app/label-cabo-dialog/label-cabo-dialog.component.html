@@ -1,0 +1,57 @@
+<div class="modal-dialog modal-lg" #modalDialog>
+  <div class="modal-content shadow-lg">
+    <div
+      class="modal-header bg-primary text-white"
+      (mousedown)="onMouseDown($event)"
+      style="cursor: move;"
+    >
+      <h5 class="modal-title fw-bold">
+        <span class="icon me-2"></span>
+        Label Cabo
+      </h5>
+      <button type="button" class="btn-close btn-close-white" (click)="cancelar()" aria-label="Fechar"></button>
+    </div>
+
+    <div class="modal-body">
+      <div class="mb-3">
+        <label class="form-label fw-semibold">
+          <span class="badge bg-secondary me-1"></span>
+          ID (id_meta)
+        </label>
+        <input
+          type="text"
+          class="form-control form-control-sm"
+          [value]="data.id_meta"
+          readonly
+          tabindex="-1"
+        />
+      </div>
+      <div class="mb-3">
+        <label class="form-label fw-semibold" for="labelCaboInput">
+          <span class="badge bg-warning text-dark me-1"></span>
+          Nome / label
+        </label>
+        <input
+          id="labelCaboInput"
+          type="text"
+          class="form-control form-control-sm"
+          [(ngModel)]="texto"
+          maxlength="500"
+          autocomplete="off"
+        />
+      </div>
+      <div *ngIf="erro" class="alert alert-danger py-2 mb-0" role="alert">{{ erro }}</div>
+    </div>
+
+    <div class="modal-footer bg-light">
+      <button type="button" class="btn btn-secondary btn-sm me-2" (click)="cancelar()" [disabled]="salvando">
+        <span class="me-1">✕</span>
+        Cancelar
+      </button>
+      <button type="button" class="btn btn-primary btn-sm" (click)="guardar()" [disabled]="salvando">
+        <span class="me-1">✓</span>
+        {{ salvando ? 'Salvando…' : 'Salvar' }}
+      </button>
+    </div>
+  </div>
+</div>

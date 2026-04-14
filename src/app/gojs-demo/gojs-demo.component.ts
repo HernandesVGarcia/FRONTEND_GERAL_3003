@@ -3844,21 +3844,6 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
             if (action === 'visualizarFibras') {
               console.log('🔗 [LINK-CONTEXT] Visualizar fibras', { fromCableKey, fromPortId, toCableKey, toPortId });
               // TODO: implementar abertura de tela/modal de visualização de fibras
-            } else if (action === 'powerMeter') {
-              const fromNum = parseInt(String(fromCableKey || '').replace(/^Boca/i, ''), 10);
-              const analisaRequest =
-                Number.isFinite(fromNum) && fromNum >= 1 && fromNum <= 18
-                  ? buildCableAnalisaRequest({
-                      bocaKey: String(fromCableKey),
-                      portId: String(fromPortId ?? ''),
-                      bocaValue: this.getBocaValue(fromNum),
-                      idMetaCabo: this.VetorTipoCabos[fromNum - 1]?.id_meta_cabo,
-                    })
-                  : null;
-              this.abrirPowerMeterModal({
-                context: 'cabo',
-                data: { fromCableKey, fromPortId, toCableKey, toPortId, analisaRequest },
-              });
             } else if (action === 'espelhar') {
               console.log('🔗 [LINK-CONTEXT] Espelhar', { fromCableKey, fromPortId, toCableKey, toPortId });
               // TODO: implementar espelhar link/cabo
@@ -3884,6 +3869,7 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
             if (action === 'visualizarFibras') {
               console.log('🔗 [CABO-CONTEXT] Visualizar fibras', data);
               // TODO: abrir modal/tela de visualização de fibras do cabo
+              // abre o power meter atraves do port, trabalha junto com o cabo-port-power-meter-direct.ts
             } else if (action === 'powerMeter') {
               const payload =
                 portId != null &&
@@ -5307,6 +5293,9 @@ private restaurarCursor(): void {
 
  //==========================================================IMPRIME PDF=====================================================
 
+  /** Limite por lado no bitmap GoJS (canvas do browser; alinhado ao fluxo Graphviz). */
+  private static readonly GOJS_PDF_EXPORT_MAX_PX = 16384;
+
   exportarDiagramaParaPDF(): void {
     if (!this.diagram) {
       console.log('Diagrama não está disponível para exportação');
@@ -5315,15 +5304,28 @@ private restaurarCursor(): void {
 
     try {
       console.log('Iniciando exportação do diagrama para PDF...');
-      
-      // 🎯 CONFIGURAÇÃO PARA MANTER TAMANHO ORIGINAL:
-      const imageData = this.diagram.makeImageData({
-        scale: 1,                    // 🔧 Escala 1:1 - sem ampliar
-        type: "image/png",
-        background: "white",
-        returnType: "string",
-        size: new go.Size(NaN, NaN)    // 🔧 Usa tamanho natural do diagrama
-      }) as string; // 🔧 CORRIGIDO: Cast explícito para string
+
+      const bounds = this.diagram.documentBounds;
+      const rawW = Math.max(1, Math.ceil(bounds.width) + 4);
+      const rawH = Math.max(1, Math.ceil(bounds.height) + 4);
+      const cap = GoJSDemoComponent.GOJS_PDF_EXPORT_MAX_PX;
+
+      const imageOpts: go.ImageRendererOptions = {
+        type: 'image/png',
+        background: 'white',
+        returnType: 'string',
+        size: new go.Size(NaN, NaN),
+      };
+
+      if (rawW <= cap && rawH <= cap) {
+        imageOpts.scale = 1;
+        imageOpts.maxSize = new go.Size(rawW, rawH);
+      } else {
+        imageOpts.scale = Number.NaN;
+        imageOpts.maxSize = new go.Size(cap, cap);
+      }
+
+      const imageData = this.diagram.makeImageData(imageOpts) as string;
 
       if (!imageData) {
         console.error('Falha ao gerar imagem do diagrama');
@@ -5333,68 +5335,61 @@ private restaurarCursor(): void {
       const pdf = new jsPDF('portrait', 'mm', 'a4');
       const pageWidth = 210;
       const pageHeight = 297;
-      const margin = 10; // 🔧 Margem maior para não encostar nas bordas
-      
-      // 🎯 SEM ESTICAMENTO - Usa tamanho natural da imagem:
+      const margin = 10;
+      const headerReserveMm = 22;
+      const footerReserveMm = 18;
+
       const tempImg = new Image();
       tempImg.onload = () => {
         const imgWidth = tempImg.width;
         const imgHeight = tempImg.height;
-        
-        // 🔧 Converte pixels para mm (72 DPI padrão)
+
         const widthMM = imgWidth * 0.264583;
         const heightMM = imgHeight * 0.264583;
-        
-        // 🔧 Calcula escala APENAS se a imagem for maior que a página
-        const maxWidth = pageWidth - (margin * 2);
-        const maxHeight = pageHeight - 20; // Espaço para título e rodapé
-        
+
+        const maxWidth = pageWidth - margin * 2;
+        const maxHeight = pageHeight - headerReserveMm - footerReserveMm;
+
         let finalWidth = widthMM;
         let finalHeight = heightMM;
-        
-        // 🔧 Só reduz se necessário, nunca aumenta
+
         if (widthMM > maxWidth || heightMM > maxHeight) {
           const scaleX = maxWidth / widthMM;
           const scaleY = maxHeight / heightMM;
-          const scale = Math.min(scaleX, scaleY);
-          
-          finalWidth = widthMM * scale;
-          finalHeight = heightMM * scale;
+          const s = Math.min(scaleX, scaleY);
+
+          finalWidth = widthMM * s;
+          finalHeight = heightMM * s;
         }
-        
-        // 🔧 Centraliza na página
+
         const x = (pageWidth - finalWidth) / 2;
-        const y = 10 + (maxHeight - finalHeight) / 2;
-        
-        // Adiciona título
+        const contentTop = headerReserveMm;
+        const y = contentTop + (maxHeight - finalHeight) / 2;
+
         pdf.setFontSize(12);
-        pdf.text('Diagrama de Conexões - FiberWorks', pageWidth / 2, 15, { align: 'center' });
-        
-        // 🎯 Adiciona imagem com tamanho calculado (sem esticar)
+        pdf.text('Diagrama de Conexões - FiberWorks', pageWidth / 2, 15, {
+          align: 'center',
+        });
+
         pdf.addImage(imageData, 'PNG', x, y, finalWidth, finalHeight);
-        
-        // Adiciona rodapé
+
         pdf.setFontSize(10);
         const dataAtual = new Date().toLocaleDateString('pt-BR');
         pdf.text(`Gerado em: ${dataAtual}`, margin, pageHeight - 10);
-        
+
         const nomeArquivo = `diagrama-conexoes-${new Date().getTime()}.pdf`;
         pdf.save(nomeArquivo);
-        
-        console.log(`PDF exportado sem esticamento: ${nomeArquivo}`);
-        console.log(`Tamanho original: ${imgWidth}x${imgHeight}px`);
+
+        console.log(`PDF exportado: ${nomeArquivo}`);
+        console.log(`Bounds DOC ~${rawW}x${rawH}px, PNG ${imgWidth}x${imgHeight}px`);
         console.log(`Tamanho no PDF: ${finalWidth.toFixed(1)}x${finalHeight.toFixed(1)}mm`);
       };
-      
+
       tempImg.src = imageData;
-      
     } catch (error) {
       console.error('Erro ao exportar diagrama para PDF:', error);
     }
-
-
-
-    }
+  }
   //===============================================================================================================
   // 🎨 Função para aplicar cor do port de origem na conexão
   private aplicarCorDoPortNaConexao(link: go.Link): void {

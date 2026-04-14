@@ -10,9 +10,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Graphviz } from "@hpcc-js/wasm-graphviz";
-import html2canvas from 'html2canvas';
-import { jsPDF } from 'jspdf';
 import { FiberTraceUnifilarSplitterService } from '../servico/fiber-trace-unifilar-splitter.service';
+import { saveGraphvizPdfFromDot } from '../graphviz-pdf-from-dot';
 import { SplitterModalService } from '../servico/splitter-modal.service';
 
 @Component({
@@ -27,6 +26,8 @@ export class GraphvizSplitterModalComponent implements OnInit, AfterViewInit {
   isLoading: boolean = true;
   error: string = '';
   isGeneratingPDF: boolean = false;
+  /** Descarga do ficheiro SVG (vetorial). */
+  isExportingSvg: boolean = false;
   splitterInfo: any = null;
   containerId: string = ''; // 🆕 NOVO: ID único do container baseado no IDMETA
   
@@ -485,99 +486,58 @@ export class GraphvizSplitterModalComponent implements OnInit, AfterViewInit {
     this.isPanning = false;
   }
 
-  // Método para gerar PDF do diagrama
+  /**
+   * Exporta SVG vetorial gerado a partir do DOT (sem zoom/pan do DOM).
+   */
+  async exportDiagramSvg(): Promise<void> {
+    try {
+      this.isExportingSvg = true;
+      this.error = '';
+      if (!this.dotContent?.trim()) {
+        throw new Error('Conteúdo DOT não disponível');
+      }
+      const graphviz = await Graphviz.load();
+      const svg = await graphviz.layout(this.dotContent, 'svg', 'dot');
+      const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const now = new Date();
+      const base =
+        this.data?.title != null && String(this.data.title).trim() !== ''
+          ? `diagrama_${String(this.data.title).replace(/[^a-zA-Z0-9]/g, '_')}_${now.getTime()}.svg`
+          : `diagrama_graphviz_${now.getTime()}.svg`;
+
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = base;
+      a.rel = 'noopener';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      console.log('✅ [SVG] Ficheiro exportado:', base);
+    } catch (error) {
+      console.error('❌ [SVG] Erro ao exportar:', error);
+      this.error = 'Erro ao exportar SVG: ' + (error as Error).message;
+    } finally {
+      this.isExportingSvg = false;
+    }
+  }
+
   async onPrintPDF(): Promise<void> {
     try {
       this.isGeneratingPDF = true;
-      console.log('🖨️ [PDF] Iniciando geração de PDF...');
-
-      // Aguardar um pouco para garantir que o SVG está renderizado
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      const container = document.getElementById(this.containerId);
-      if (!container) {
-        throw new Error(`Container do diagrama não encontrado: ${this.containerId}`);
-      }
-
-      const svg = container.querySelector('svg');
-      if (!svg) {
-        throw new Error('SVG do diagrama não encontrado');
-      }
-
-      console.log('🖨️ [PDF] Capturando SVG com html2canvas...');
-
-      // Capturar o SVG como canvas
-      const canvas = await html2canvas(container, {
-        backgroundColor: '#ffffff',
-        scale: 2, // Maior resolução
-        useCORS: true,
-        allowTaint: true,
-        logging: false,
-        width: container.scrollWidth,
-        height: container.scrollHeight
-      });
-
-      console.log('🖨️ [PDF] Canvas capturado:', canvas.width, 'x', canvas.height);
-
-      // Criar PDF
-      const pdf = new jsPDF({
-        orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
-        unit: 'mm',
-        format: 'a4'
-      });
-
-      // Calcular dimensões para ajustar ao PDF
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      const imgWidth = canvas.width;
-      const imgHeight = canvas.height;
-      
-      // Calcular escala para ajustar a imagem ao PDF
-      const scaleX = pdfWidth / imgWidth;
-      const scaleY = pdfHeight / imgHeight;
-      const scale = Math.min(scaleX, scaleY) * 0.9; // 90% para margem
-
-      const finalWidth = imgWidth * scale;
-      const finalHeight = imgHeight * scale;
-
-      // Centralizar a imagem no PDF
-      const x = (pdfWidth - finalWidth) / 2;
-      const y = (pdfHeight - finalHeight) / 2;
-
-      console.log('🖨️ [PDF] Adicionando imagem ao PDF...');
-      console.log('🖨️ [PDF] Dimensões:', finalWidth, 'x', finalHeight);
-      console.log('🖨️ [PDF] Posição:', x, ',', y);
-
-      // Adicionar título se disponível
-      if (this.data?.title) {
-        pdf.setFontSize(16);
-        pdf.setFont('helvetica', 'bold');
-        pdf.text(this.data.title, pdfWidth / 2, 20, { align: 'center' });
-      }
-
-      // Adicionar data de geração
+      this.error = '';
       const now = new Date();
-      const dateStr = now.toLocaleDateString('pt-BR') + ' ' + now.toLocaleTimeString('pt-BR');
-      pdf.setFontSize(10);
-      pdf.setFont('helvetica', 'normal');
-      pdf.text(`Gerado em: ${dateStr}`, pdfWidth / 2, 30, { align: 'center' });
-
-      // Adicionar a imagem do diagrama
-      const imgData = canvas.toDataURL('image/png');
-      pdf.addImage(imgData, 'PNG', x, y + 10, finalWidth, finalHeight);
-
-      // Gerar nome do arquivo
-      const fileName = this.data?.title 
+      const fileName = this.data?.title
         ? `diagrama_${this.data.title.replace(/[^a-zA-Z0-9]/g, '_')}_${now.getTime()}.pdf`
         : `diagrama_graphviz_${now.getTime()}.pdf`;
-
-      console.log('🖨️ [PDF] Salvando arquivo:', fileName);
-
-      // Salvar o PDF
-      pdf.save(fileName);
-
+      await saveGraphvizPdfFromDot({
+        dotContent: this.dotContent,
+        title: this.data?.title,
+        fileName,
+      });
       console.log('✅ [PDF] PDF gerado com sucesso!');
-      
     } catch (error) {
       console.error('❌ [PDF] Erro ao gerar PDF:', error);
       this.error = 'Erro ao gerar PDF: ' + (error as Error).message;

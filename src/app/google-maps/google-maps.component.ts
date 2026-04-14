@@ -41,6 +41,10 @@ import { UpdateCaixaService } from '../servico/update-caixa.service';
 import { UpdateDioService, UpdateDioData, UpdateDioResponse } from '../servico/update-dio.service';
 import { UpdateEstacaoService } from '../servico/update-estacao.service';
 import { UpdateClienteService } from '../servico/update-cliente.service';
+import {
+  LabelCaboDialogComponent,
+  LabelCaboDialogData,
+} from '../label-cabo-dialog/label-cabo-dialog.component';
 import { InsertLogService } from '../servico/insert-log.service';
 import { ExcluiCaboService } from '../servico/exclui-cabo.service';
 import { DivideCaboService } from '../servico/divide-cabo.service';
@@ -657,6 +661,9 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
       // 🆕 Ações para CABOS
       case 'visualizar-cabo':
         this.visualizarCabo();
+        break;
+      case 'label-cabo':
+        this.abrirLabelCaboDialog();
         break;
       case 'liberar-cabo':
         this.liberarCabo();
@@ -9456,6 +9463,112 @@ openGoJSModal() {
 
  
 
+  /** HTML do InfoWindow do cabo (mapa); reutilizado após atualizar label. */
+  private buildCaboInfoWindowHtml(
+    tipoFibra: string,
+    cabo: { id_meta: number; Label_cabo?: string },
+  ): string {
+    const label = cabo.Label_cabo ?? '';
+    return `
+            <div style="padding: 10px;">
+              <h4 style="margin: 0 0 8px 0; color: #333;">Cabo ${tipoFibra.toUpperCase()}</h4>
+              <p style="margin: 4px 0;"><strong>ID:</strong> ${cabo.id_meta ?? 'N/A'}</p>
+              <p style="margin: 4px 0;"><strong>Fibras:</strong> ${tipoFibra.replace('f', '')}</p>
+              <p style="margin: 4px 0;"><strong>Label:</strong> ${label}</p>
+              <p style="margin: 4px 0; font-size: 12px; color: #666;">Duplo-clique para abrir diagrama</p>
+            </div>
+          `;
+  }
+
+  private atualizarLabelCaboEmDestinos(id_meta: number, novoLabel: string): void {
+    const listas: { id_meta?: number; Label_cabo?: string }[][] = [
+      this.destinoCabos1f,
+      this.destinoCabos2f,
+      this.destinoCabos4f,
+      this.destinoCabos6f,
+      this.destinoCabos8f,
+      this.destinoCabos12f,
+      this.destinoCabos24f,
+      this.destinoCabos36f,
+      this.destinoCabos48f,
+      this.destinoCabos72f,
+      this.destinoCabos144f,
+    ];
+    for (const arr of listas) {
+      if (!arr?.length) {
+        continue;
+      }
+      const c = arr.find((x) => x?.id_meta === id_meta);
+      if (c) {
+        c.Label_cabo = novoLabel;
+        break;
+      }
+    }
+  }
+
+  private aplicarNovoLabelCaboNoMapa(
+    polyline: google.maps.Polyline | null,
+    id_meta: number,
+    novoLabel: string,
+  ): void {
+    this.atualizarLabelCaboEmDestinos(id_meta, novoLabel);
+    if (polyline) {
+      polyline.set('label', novoLabel);
+      polyline.set('Label_cabo', novoLabel);
+      const caboData = polyline.get('cabo_data');
+      if (caboData && typeof caboData === 'object') {
+        (caboData as { Label_cabo?: string }).Label_cabo = novoLabel;
+      }
+      const iw = polyline.get('infoWindow') as google.maps.InfoWindow | undefined;
+      if (iw) {
+        const tipoFibra = String(polyline.get('capacidade') || '12f');
+        iw.setContent(
+          this.buildCaboInfoWindowHtml(tipoFibra, { id_meta, Label_cabo: novoLabel }),
+        );
+      }
+    }
+    if (this.clickedCaboData?.id_meta === id_meta) {
+      this.clickedCaboData.Label_cabo = novoLabel;
+    }
+    this.cdr.detectChanges();
+  }
+
+  private abrirLabelCaboDialog(): void {
+    if (!this.clickedCaboData?.id_meta) {
+      alert('Erro: dados do cabo não encontrados.');
+      this.hideContextMenu();
+      return;
+    }
+    const id_meta = this.clickedCaboData.id_meta as number;
+    const Label_cabo =
+      this.clickedCaboData.Label_cabo ??
+      this.clickedPolyline?.get('label') ??
+      this.clickedPolyline?.get('Label_cabo') ??
+      '';
+    const polyRef = this.clickedPolyline;
+    const anchorX = this.contextMenuPosition.x;
+    const anchorY = this.contextMenuPosition.y;
+    this.hideContextMenu();
+    const data: LabelCaboDialogData = { id_meta, Label_cabo, anchorX, anchorY };
+    const ref = this.ngbModal.open(LabelCaboDialogComponent, {
+      size: 'lg',
+      backdrop: 'static',
+      keyboard: false,
+      windowClass: 'label-cabo-modal-window',
+    });
+    ref.componentInstance.data = data;
+    ref.result.then(
+      (result) => {
+        if (typeof result === 'string') {
+          this.aplicarNovoLabelCaboNoMapa(polyRef, id_meta, result);
+        }
+      },
+      () => {
+        /* dismissed */
+      },
+    );
+  }
+
   //=============================================================================================================================
 // Método genérico para criar polylines com clique simples e duplo clique
   private createCaboPolylines(
@@ -9521,6 +9634,7 @@ openGoJSModal() {
         polyline.set('capacidade', tipoFibra);
         polyline.set('tipo', cabo.tipo || 'CABO');
         polyline.set('label', cabo.Label_cabo || '');
+        polyline.set('Label_cabo', cabo.Label_cabo || '');
         polyline.set('cabo_data', cabo); // Dados completos do cabo
         
         /*console.log(`🗺️ [POLYLINE-DATA] Armazenando dados na polyline ${tipoFibra}:`, {
@@ -9532,17 +9646,12 @@ openGoJSModal() {
         
         // Criar InfoWindow para este cabo
         const infoWindow = new google.maps.InfoWindow({
-          content: `
-            <div style="padding: 10px;">
-              <h4 style="margin: 0 0 8px 0; color: #333;">Cabo ${tipoFibra.toUpperCase()}</h4>
-              <p style="margin: 4px 0;"><strong>ID:</strong> ${cabo.id_meta || 'N/A'}</p>
-              <p style="margin: 4px 0;"><strong>Fibras:</strong> ${tipoFibra.replace('f', '')}</p>
-              <p style="margin: 4px 0;"><strong>Label:</strong> ${cabo.Label_cabo}</p>
-              <p style="margin: 4px 0; font-size: 12px; color: #666;">Duplo-clique para abrir diagrama</p>
-              
-            </div>
-          `
+          content: this.buildCaboInfoWindowHtml(tipoFibra, {
+            id_meta: cabo.id_meta,
+            Label_cabo: cabo.Label_cabo,
+          }),
         });
+        polyline.set('infoWindow', infoWindow);
 
         // Variáveis para controlar cliques
         let clickTimeout: any;
