@@ -1,0 +1,301 @@
+Dim id_cabo_selecionado As String
+Dim TABELA As String
+Dim TABLE As String
+Dim TABELA_LABEL As String
+Dim ID_META_CABO_SELECIONADO As String
+
+
+Dim registro As String
+Dim FIBER As String
+Dim METRAGEM As Double
+Dim ATENUACAO As Double
+Dim NIVEL As Double
+
+
+
+
+Public Function parametros_power(ByVal ID_CABO As String)
+
+On Error GoTo FIM
+
+'If Caixa_Carregada = "sim" Then MsgBox " Ja existe uma caixa aberta !!! ": Me.SetFocus: Me.Refresh: Me.ZOrder: GoTo fim
+
+
+
+
+
+id_cabo_selecionado = ID_CABO
+
+
+Form_carrega
+
+
+FIM:
+
+End Function
+
+
+
+Private Sub Form_carrega()
+
+Dim rs_cabo_sel As Recordset
+
+
+If InStr(1, id_cabo_selecionado, "cabo", 1) Then GoTo Cabo Else GoTo splitter
+
+'------------
+Cabo:
+'------------
+If Right(id_cabo_selecionado, 1) = "A" Then TABELA = "cabopa": TABLE = "caboa_"
+If Right(id_cabo_selecionado, 1) = "B" Then TABELA = "cabopb": TABLE = "cabob_"
+
+Set rs_cabo_sel = VIEW_PROJETO_CONEXOES_CAIXA_VISIO_CADASTRO.connMETA.Execute("select capacidade,ID_META from " & TABELA & " where id_visio ='" & id_cabo_selecionado & "';")
+
+    ID_META_CABO_SELECIONADO = rs_cabo_sel!ID_META
+
+
+Combo_fibra.Clear
+
+For i = 1 To rs_cabo_sel!CAPACIDADE
+
+    Combo_fibra.AddItem (i)
+
+Next i
+
+
+Exit Sub
+
+'------------
+splitter:
+'------------
+
+Combo_fibra.Clear
+
+ID_META_CABO_SELECIONADO = id_cabo_selecionado
+
+Combo_fibra.AddItem ("Entrada")
+Combo_fibra.AddItem ("Saida")
+
+
+
+
+End Sub
+
+Private Sub Combo_fibra_CLICK()
+
+
+Dim ID_META_CX As String
+
+
+METRAGEM = 0
+ATENUACAO = 0
+NIVEL = 0
+
+
+'--- testa pra ver se é splitter ---
+If InStr(1, Combo_fibra, "Entrada", vbTextCompare) Then GoTo SPLITTER_ENTRADA
+
+If InStr(1, Combo_fibra, "Saida", vbTextCompare) Then GoTo SPLITTER_ENTRADA
+
+
+
+'-----------------------------------
+
+
+FIBER = Combo_fibra.Text
+registro = "FIBRA_" & Combo_fibra.Text
+
+If Right(id_cabo_selecionado, 1) = "A" Then TABELA = "cabopa": TABLE = "caboa_"
+If Right(id_cabo_selecionado, 1) = "B" Then TABELA = "cabopb": TABLE = "cabob_"
+
+Set rs_cabo_sel = VIEW_PROJETO_CONEXOES_CAIXA_VISIO_CADASTRO.connMETA.Execute("select capacidade,ID_META from " & TABELA & " where id_visio ='" & id_cabo_selecionado & "';")
+ID_META_CABO_SELECIONADO = rs_cabo_sel!ID_META
+
+
+
+
+If FIBER <= 12 Then TABELA_LABEL = "t1"
+If FIBER > 12 Then TABELA_LABEL = "t2"
+If FIBER > 24 Then TABELA_LABEL = "t3"
+If FIBER > 36 Then TABELA_LABEL = "t4"
+If FIBER > 48 Then TABELA_LABEL = "t5"
+If FIBER > 60 Then TABELA_LABEL = "t6"
+If FIBER > 72 Then TABELA_LABEL = "t7"
+If FIBER > 84 Then TABELA_LABEL = "t8"
+If FIBER > 96 Then TABELA_LABEL = "t9"
+If FIBER > 108 Then TABELA_LABEL = "t10"
+If FIBER > 120 Then TABELA_LABEL = "t11"
+If FIBER > 132 Then TABELA_LABEL = "t12"
+
+
+
+'If FIBER <= 12 Then TABLE = TABLE & "t1"
+'If FIBER > 12 Then TABLE = TABLE & "t2"
+'If FIBER > 24 Then TABLE = TABLE & "t3"
+'If FIBER > 36 Then TABLE = TABLE & "t4"
+'If FIBER > 48 Then TABLE = TABLE & "t5"
+'If FIBER > 60 Then TABLE = TABLE & "t6"
+'If FIBER > 72 Then TABLE = TABLE & "t7"
+'If FIBER > 84 Then TABLE = TABLE & "t8"
+'If FIBER > 96 Then TABLE = TABLE & "t9"
+'If FIBER > 108 Then TABLE = TABLE & "t10"
+'If FIBER > 120 Then TABLE = TABLE & "t11"
+'If FIBER > 132 Then TABLE = TABLE & "t12"
+
+TABLE = TABLE & TABELA_LABEL
+
+
+
+ANALISA_TABELA_INI_CAIXA registro, TABLE, ID_META_CABO_SELECIONADO, FIBER, METRAGEM, ATENUACAO, NIVEL   ' DENTRO DO MODULO LE_CONEX_CAIXA
+
+
+PREENCHE_POWER_METER
+
+'=======================nivel de saida splitter============================================
+
+   ' Set RS_DB_SPLITTER = VIEW_PROJETO_CONEXOES_CAIXA_VISIO_CADASTRO.conn.Execute("select perda_P1 from tipo_splitter where id = " & TIPOsplitter & ";")
+
+   ' Text_ATENUAÇAO.Caption = Text_ATENUAÇAO.Caption + RS_DB_SPLITTER!perda_P1
+    
+   ' Text_NIVEL.Caption = Text_NIVEL.Caption - RS_DB_SPLITTER!perda_P1
+
+
+'==========================================================================================
+
+Exit Sub
+
+
+
+'=================
+SPLITTER_ENTRADA:
+'=================
+
+
+
+
+Set rsfbativa = VIEW_PROJETO_CONEXOES_CAIXA_VISIO_CADASTRO.connMETA.Execute("select entrada,TIPO_SPLITTER,ID_META_CAIXA from splitter_e where idmeta ='" & id_cabo_selecionado & "';")
+If rsfbativa!ENTRADA = "" Then GoTo SEM_NIVEL
+
+
+TIPOsplitter = rsfbativa!TIPO_SPLITTER
+
+FIBER = rsfbativa!ENTRADA
+POS_1 = InStr(1, FIBER, ".b") + 1 ' campo  exemplo prop.boca1_6.label
+POS_2 = InStr(1, FIBER, "_")
+DIGITOS = POS_2 - POS_1
+BOCA = Mid(FIBER, POS_1, DIGITOS)
+
+'extraindo a fibra da caixa
+FIBER = rsfbativa!ENTRADA
+POS_1 = InStr(1, FIBER, "_") + 1 ' campo  exemplo prop.boca1_6.label
+POS_2 = InStr(1, FIBER, ".l")
+DIGITOS = POS_2 - POS_1
+FIBER = Mid(FIBER, POS_1, DIGITOS)
+
+
+If FIBER <= 12 Then TUBO_LABEL = "t1"
+If FIBER > 12 Then TUBO_LABEL = "t2"
+If FIBER > 24 Then TUBO_LABEL = "t3"
+If FIBER > 36 Then TUBO_LABEL = "t4"
+If FIBER > 48 Then TUBO_LABEL = "t5"
+If FIBER > 60 Then TUBO_LABEL = "t6"
+If FIBER > 72 Then TUBO_LABEL = "t7"
+If FIBER > 84 Then TUBO_LABEL = "t8"
+If FIBER > 96 Then TUBO_LABEL = "t9"
+If FIBER > 108 Then TUBO_LABEL = "t10"
+If FIBER > 120 Then TUBO_LABEL = "t11"
+If FIBER > 132 Then TUBO_LABEL = "t12"
+
+
+TABLE = "cx" & BOCA & "_" & TUBO_LABEL
+registro = "f" & FIBER & "l"
+ID_META_CX = rsfbativa!ID_META_CAIXA
+
+
+Set rsfbativa = VIEW_PROJETO_CONEXOES_CAIXA_VISIO_CADASTRO.connMETA.Execute("select f" & FIBER & "l as cabel from " & TABLE & " where idmeta = " & ID_META_CX & ";")
+
+
+CABOSP = rsfbativa!cabel
+POS_1 = InStr(1, CABOSP, "=") + 1 ' campo  cabo
+POS_2 = InStr(1, CABOSP, "!")
+DIGITOS = POS_2 - POS_1
+BOCA = Mid(CABOSP, POS_1, DIGITOS)
+
+
+ANALISA_TABELA_INI_CAIXA registro, TABLE, ID_META_CX, FIBER, METRAGEM, ATENUACAO, NIVEL
+
+
+If InStr(1, Combo_fibra, "Entrada", vbTextCompare) Then PREENCHE_POWER_METER: Exit Sub
+
+
+
+'=================
+SPLITTER_SAIDA:
+'=================
+
+
+
+
+If TABLE <> "DIO" Then Text_NIVEL.Caption = "--.-- dBm": Text_metragem.Text = Int(METRAGEM) & " metros": Exit Sub
+Text_metragem.Text = Int(METRAGEM) & " metros"
+
+Text_ATENUAÇAO.Caption = ATENUACAO + ((METRAGEM / 1000) * 0.23)
+
+Text_ATENUAÇAO.Caption = Format$(Text_ATENUAÇAO.Caption, "00.00")
+
+
+If NIVEL = -399 Then Text_NIVEL.Caption = "OFF": Exit Sub
+
+Text_NIVEL.Caption = NIVEL - Text_ATENUAÇAO.Caption
+
+
+
+'=======================nivel de saida splitter============================================
+
+    Set RS_DB_SPLITTER = VIEW_PROJETO_CONEXOES_CAIXA_VISIO_CADASTRO.conn.Execute("select perda_P1 from tipo_splitter where id = " & TIPOsplitter & ";")
+
+    Text_ATENUAÇAO.Caption = Text_ATENUAÇAO.Caption + RS_DB_SPLITTER!perda_P1
+    
+    Text_NIVEL.Caption = Text_NIVEL.Caption - RS_DB_SPLITTER!perda_P1
+
+
+'==========================================================================================
+
+Text_NIVEL.Caption = Format$(Text_NIVEL.Caption, "00.00") & "dBm"
+
+
+
+
+
+SEM_NIVEL:
+
+
+
+End Sub
+
+
+Private Function PREENCHE_POWER_METER()
+
+
+
+If TABLE <> "DIO" Then Text_NIVEL.Caption = "--.-- dBm": Text_metragem.Text = Int(METRAGEM) & " metros": Exit Function
+Text_metragem.Text = Int(METRAGEM) & " metros"
+
+Text_ATENUAÇAO.Caption = ATENUACAO + ((METRAGEM / 1000) * 0.23)
+
+Text_ATENUAÇAO.Caption = Format$(Text_ATENUAÇAO.Caption, "00.00")
+
+
+If NIVEL = -399 Then Text_NIVEL.Caption = "OFF": Exit Function
+
+Text_NIVEL.Caption = NIVEL - Text_ATENUAÇAO.Caption
+
+Text_NIVEL.Caption = Format$(Text_NIVEL.Caption, "00.00") & "dBm"
+
+
+
+
+
+
+End Function
+

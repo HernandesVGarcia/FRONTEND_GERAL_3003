@@ -277,18 +277,19 @@ export class PowerMeterModalComponent implements AfterViewInit, OnDestroy {
     res: AnalisaConexaoNivelResponse,
     perda: number,
   ): string {
-    if (res.nivels === -399) {
+    if (
+      res.nivels === -399 ||
+      String(res.nivels ?? '').trim().toUpperCase() === 'OFF'
+    ) {
       return 'Nível: OFF';
     }
-    if (
-      res.motivo === 'DIO' &&
-      res.nivels != null &&
-      !Number.isNaN(Number(res.nivels))
-    ) {
+    if (res.motivo === 'DIO' && res.nivels != null) {
       const nivelDio = Number(res.nivels);
-      const atenuacao = Number(res.atenuacao ?? 0);
-      const exibido = nivelDio - atenuacao - perda;
-      return `Nível: ${(Number.isFinite(exibido) ? exibido : nivelDio).toFixed(2)} dBm`;
+      if (!Number.isNaN(nivelDio)) {
+        const atenuacao = Number(res.atenuacao ?? 0);
+        const exibido = nivelDio - atenuacao - perda;
+        return `Nível: ${(Number.isFinite(exibido) ? exibido : nivelDio).toFixed(2)} dBm`;
+      }
     }
     return 'Nível: --.-- dBm';
   }
@@ -297,18 +298,19 @@ export class PowerMeterModalComponent implements AfterViewInit, OnDestroy {
    * VB: com destino DIO e nível válido mostra dBm; OFF (-399); caso contrário overflow "--.-- dBm".
    */
   private formatarLinhaNivel(res: AnalisaConexaoNivelResponse): string {
-    if (res.nivels === -399) {
+    if (
+      res.nivels === -399 ||
+      String(res.nivels ?? '').trim().toUpperCase() === 'OFF'
+    ) {
       return 'Nível: OFF';
     }
-    if (
-      res.motivo === 'DIO' &&
-      res.nivels != null &&
-      !Number.isNaN(Number(res.nivels))
-    ) {
+    if (res.motivo === 'DIO' && res.nivels != null) {
       const nivelDio = Number(res.nivels);
-      const atenuacao = Number(res.atenuacao ?? 0);
-      const exibido = nivelDio - (Number.isFinite(atenuacao) ? atenuacao : 0);
-      return `Nível: ${(Number.isFinite(exibido) ? exibido : nivelDio).toFixed(2)} dBm`;
+      if (!Number.isNaN(nivelDio)) {
+        const atenuacao = Number(res.atenuacao ?? 0);
+        const exibido = nivelDio - (Number.isFinite(atenuacao) ? atenuacao : 0);
+        return `Nível: ${(Number.isFinite(exibido) ? exibido : nivelDio).toFixed(2)} dBm`;
+      }
     }
     return 'Nível: --.-- dBm';
   }

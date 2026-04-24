@@ -44,10 +44,11 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   overflow: hidden !important;
 }
 
-/* 🆕 NOVO: Estilos para drag do GoJS MatDialog */
+/* GoJS MatDialog (gojs-demo, gojs-dio): classe .dragging aplicada no contentor ao arrastar pelo header */
 .mat-mdc-dialog-container.dragging {
-  cursor: move !important;
+  cursor: grabbing !important;
   user-select: none !important;
+  opacity: 0.98;
 }
 
 .mat-mdc-dialog-container .modal-header {
@@ -145,6 +146,11 @@ body.modal-open .modal-content {
   pointer-events: auto !important;
 }
 
+/* Google Places Autocomplete: .pac-container é filho do body (fora do componente; encapsulamento não aplica z-index no modal). Acima de modais Ngb (5001–5002) e MatDialog/Cdk (~2000–4000). */
+.pac-container {
+  z-index: 10050 !important;
+}
+
 /* Modais de pesquisa no mapa: sem backdrop, mapa interativo abaixo, só o conteúdo do modal recebe cliques */
 /* Caixa */
 .caixa-search-modal-window,
@@ -165,6 +171,14 @@ body.modal-open .modal-content {
 .estacao-search-modal-window app-estacao-search-modal .modal-content,
 .estacao-search-modal-window app-estacao-search-modal .modal-content * { pointer-events: auto !important; }
 .estacao-search-modal-window app-estacao-search-modal .modal-content { user-select: none !important; }
+
+/* Logradouro (Places Autocomplete + Geocoder) */
+.logradouro-search-modal-window,
+.logradouro-search-modal-window * { pointer-events: none !important; }
+.logradouro-search-modal-window .modal-dialog > .modal-content { pointer-events: none !important; }
+.logradouro-search-modal-window app-logradouro-search-modal .modal-content,
+.logradouro-search-modal-window app-logradouro-search-modal .modal-content * { pointer-events: auto !important; }
+.logradouro-search-modal-window app-logradouro-search-modal .modal-content { user-select: none !important; }
 
 /* Cadastro Cliente */
 .cadastro-cliente-modal-window,

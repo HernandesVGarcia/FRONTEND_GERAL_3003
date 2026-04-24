@@ -96,6 +96,29 @@ function atenuacaoComPerdaPorMetragem(metragem, atenuacao) {
     return (Number(atenuacao) || 0) + ((Number(metragem) || 0) / 1000) * 0.23;
 }
 
+// =============================================================================
+// [ALTERAÇÃO] Nível DIO com vírgula decimal (PT): função nova + 2 usos no ficheiro.
+//   1) Bloco leitura coluna N* quando motivo DIO (procurar "[ALTERAÇÃO] leitura N* DIO").
+//   2) Estado inicial nivels em analisaTabelaIniCaixa (procurar "[ALTERAÇÃO] state nivels").
+// =============================================================================
+/**
+ * Coluna N* do DIO pode vir como texto com vírgula decimal (PT). `Number("3,3")` é NaN e no JSON vira null.
+ */
+function parseNivelDbmDesdeStringBruto(nvStr) {
+    const s = String(nvStr == null ? '' : nvStr).trim().replace(/\s/g, '');
+    if (s === '' || s.toUpperCase() === 'OFF') return NaN;
+    let t = s;
+    const commaCount = (t.match(/,/g) || []).length;
+    if (commaCount === 1) {
+        t = t.replace(',', '.');
+    } else if (commaCount > 1) {
+        const last = t.lastIndexOf(',');
+        t = `${t.slice(0, last).replace(/,/g, '')}.${t.slice(last + 1)}`;
+    }
+    const n = Number(t);
+    return Number.isFinite(n) ? n : NaN;
+}
+
 function calcularDbSplitter(capacidade, tipoSplitter, fibraSaida) {
     let dB = 0;
     const cap = Number(capacidade);
@@ -602,8 +625,15 @@ async function vbUmaVoltaDoLoop(conn, s) {
         );
         const nv = rNiv && rNiv[0] ? rNiv[0].nv : '';
         const nvStr = String(nv == null ? '' : nv).trim();
-        if (nvStr !== '' && nvStr !== 'OFF') nivels = Number(nvStr);
-        else nivels = -399;
+        // [ALTERAÇÃO] leitura N* DIO — Antes: if (...) nivels = Number(nvStr); só ponto decimal.
+        //    Com "3,3" na BD, Number devolvia NaN → na resposta JSON nivels vinha null.
+        const nvUpper = nvStr.toUpperCase();
+        if (nvStr !== '' && nvUpper !== 'OFF') {
+            const parsed = parseNivelDbmDesdeStringBruto(nvStr);
+            nivels = Number.isFinite(parsed) ? parsed : NaN;
+        } else {
+            nivels = -399;
+        }
 
         return out({
             status: 'fim',
@@ -634,7 +664,14 @@ async function analisaTabelaIniCaixa(conn, params) {
         idmeta: params.idmeta,
         metragem: Number(params.metragem) || 0,
         atenuacao: Number(params.atenuacao) || 0,
-        nivels: params.nivels != null ? Number(params.nivels) : 0,
+        // [ALTERAÇÃO] state nivels — Antes: params.nivels != null ? Number(params.nivels) : 0
+        //    (mesma questão vírgula no body se vier string).
+        nivels: params.nivels != null
+            ? (() => {
+                const p = parseNivelDbmDesdeStringBruto(params.nivels);
+                return Number.isFinite(p) ? p : 0;
+            })()
+            : 0,
         fiber: 0,
     };
 

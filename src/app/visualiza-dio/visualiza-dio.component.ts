@@ -365,6 +365,24 @@ export class VisualizaDioComponent implements OnInit, OnDestroy {
     this.dialogRef.close();
   }
 
+  /** Abre o modal Bandeja (gojs-dio): bandejas C1–C6 e cabos à direita. */
+  async abrirBandeja(): Promise<void> {
+    const { GojsDioComponent } = await import('../gojs-dio/gojs-dio.component');
+    this.dialog.open(GojsDioComponent, {
+      width: '95vw',
+      height: '90vh',
+      maxWidth: 'none',
+      maxHeight: 'none',
+      data: {
+        id_meta: this.data.id_meta,
+        dioFiberCapacity: this.capacity,
+      },
+      disableClose: false,
+      hasBackdrop: false,
+      panelClass: 'gojs-modal-container',
+    });
+  }
+
   // Métodos para controle de grupos de fibras
   selectGroup(groupId: number): void {
     this.selectedGroup = groupId;
@@ -857,10 +875,15 @@ export class VisualizaDioComponent implements OnInit, OnDestroy {
     }
 
     const lastStep = traceResult.trace[traceResult.trace.length - 1];
-    
+
+    // Primeiro passo em dio_tX sem valor: face DIO / bandeja (não confundir com cabo aberto genérico)
+    if (lastStep.tipo === 'dio_bandeja_aberta') {
+      return 'Aberto na Bandeja do DIO';
+    }
+
     // Se parou em cabo aberto
     if (lastStep.tipo === 'cabo_aberto') {
-      return 'CABO ABERTO';
+      return 'Cabo aberto';
     }
 
     // Se atingiu o limite de passos

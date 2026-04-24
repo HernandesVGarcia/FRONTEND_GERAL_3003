@@ -29,41 +29,45 @@ export class BandejasService {
     // Método para Selecionar Caixa
     
     selecionar():Observable<Bandejas[]>{
-      
       const route = `/bandejas`;
       const token = this.authService.getToken();
       const idcidade = this.authService.getIdCity();
       const idmetadio = this.authService.getIDmetaDio();
-  
-      const headers = new HttpHeaders()
-  
-      
-  
-  
-      
-        .set('Content-Type', 'application/json')
-        //.set('Access-Control-Allow-Origin', '*')
-        //.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE')
-        //.set('Access-Control-Allow-Headers', 'X-Requested-With,content-type')
-        .set('Authorization',`Bearer ${token}`);
-  
-        const body = {
-          idcidades: idcidade,
-          idmeta:idmetadio
-        };
+      return this.postBandejas(route, token, idcidade, idmetadio);
+  }
 
-      const url = `${this.baseUrl}${route}`;  
-  
-  
-      return this.http.post<Bandejas[]>(url,body,{ headers }).pipe(
-        
-        timeout(this.TIMEOUT),
-        retry(this.RETRY_ATTEMPTS),
-        catchError(this.handleError),
-        
-        
-      );
-      
+  /**
+   * POST /bandejas com cidade e DIO explícitos (ex.: modal Bandeja / gojs-dio).
+   */
+  selecionarPorDio(idcidades: number, idmeta: number): Observable<Bandejas[]> {
+    const route = `/bandejas`;
+    const token = this.authService.getToken();
+    return this.postBandejas(route, token, idcidades, idmeta);
+  }
+
+  private postBandejas(
+    route: string,
+    token: string | null,
+    idcidades: number | null,
+    /** Compatível com `getIDmetaDio()` (string) e chamadas explícitas (number). */
+    idmeta: number | string | null,
+  ): Observable<Bandejas[]> {
+    const headers = new HttpHeaders()
+      .set('Content-Type', 'application/json')
+      .set('Authorization', `Bearer ${token}`);
+
+    const body = {
+      idcidades,
+      idmeta,
+    };
+
+    const url = `${this.baseUrl}${route}`;
+
+    return this.http.post<Bandejas[]>(url, body, { headers }).pipe(
+      timeout(this.TIMEOUT),
+      retry(this.RETRY_ATTEMPTS),
+      catchError(this.handleError),
+    );
   }
   
   private handleError(error: HttpErrorResponse) {

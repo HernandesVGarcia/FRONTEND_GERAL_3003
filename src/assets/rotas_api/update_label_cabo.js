@@ -72,7 +72,7 @@ router.post('/', login, async (req, res) => {
             await rollbackAsync();
             console.warn('⚠️ Nenhum cabo encontrado com id_meta:', id_meta);
             return res.status(404).send({
-                error: 'Cabopa não encontrado',
+                error: 'Cabopb não encontrado',
                 message: `Nenhum cabo encontrado com id_meta ${id_meta}`,
             });
         }
@@ -87,7 +87,7 @@ router.post('/', login, async (req, res) => {
         return res.status(200).send({
             success: true,
             id_meta: id_meta,
-            message: `Cabopb id_meta ${id_meta} editado com sucesso`,
+            message: `Cabo id_meta ${id_meta} editado com sucesso`,
             affectedRows: resultadoCabopb.affectedRows,
         });
     } catch (error) {

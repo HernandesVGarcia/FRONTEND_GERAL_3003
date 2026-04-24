@@ -9,9 +9,9 @@ import { FiberMapComponent } from './fiber-map/fiber-map.component';
 import {GoJSDemoComponent}from './gojs-demo/gojs-demo.component'
 
 export const routes: Routes =[
-{path:'login', component:LoginComponent},
-{path:'mapa', component:MapPageComponent},
-{path:'fibermap', component: FiberMapComponent },
+{path:'login', component:LoginComponent}, //rota para login.component
+{path:'mapa', component:MapPageComponent}, //rota para map-page.component
+{path:'fibermap', component: FiberMapComponent }, //rota para fiber-map.component
 //comentei em 10072025{path:'caixaInterna', component: CaixaInternaComponent },
 //{path:'go',component:GoJSDemoComponent},
 {path:'', redirectTo:'/login', pathMatch:'full'},

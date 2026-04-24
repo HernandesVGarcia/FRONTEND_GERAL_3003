@@ -1,0 +1,72 @@
+<div class="modal-dialog modal-lg" #modalDialog>
+  <div class="modal-content shadow-lg">
+    <div
+      class="modal-header bg-primary text-white"
+      (mousedown)="onMouseDown($event)"
+      style="cursor: move"
+    >
+      <h5 class="modal-title fw-bold">
+        <span class="title-icon" aria-hidden="true">&#128205;</span>
+        Pesquisar logradouro
+      </h5>
+      <button
+        type="button"
+        class="btn-close btn-close-white"
+        (click)="onCancel()"
+        aria-label="Fechar"
+      ></button>
+    </div>
+
+    <div class="modal-body">
+      <p class="text-muted small mb-3">
+        Digite o endereço; escolha uma sugestão do Google ou clique em
+        <strong>Pesquisar</strong> para localizar o texto.
+      </p>
+
+      <div *ngIf="errorMessage" class="error-message p-3" role="alert">
+        <span class="error-glyph" aria-hidden="true">&#9888;</span>
+        <span>{{ errorMessage }}</span>
+      </div>
+
+      <div class="card card-compact mb-3 border-primary">
+        <div class="card-body card-body-compact">
+          <label class="form-label fw-semibold form-label-compact" for="enderecoInput"
+            >Endereço</label
+          >
+          <input
+            #enderecoInput
+            type="text"
+            id="enderecoInput"
+            class="form-control form-control-sm input-compact"
+            name="enderecoTexto"
+            [(ngModel)]="enderecoTexto"
+            placeholder="Ex.: Rua das Flores, 100, Curitiba"
+            [disabled]="isSearching"
+            autocomplete="off"
+          />
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer bg-light">
+      <button
+        type="button"
+        class="btn btn-secondary btn-sm me-2"
+        (click)="onCancel()"
+        [disabled]="isSearching"
+      >
+        <span class="me-1">✕</span>
+        Cancelar
+      </button>
+      <button
+        type="button"
+        class="btn btn-primary btn-sm"
+        (click)="onPesquisarGeocode()"
+        [disabled]="isSearching"
+      >
+        <span *ngIf="isSearching" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+        {{ isSearching ? 'A pesquisar...' : 'Pesquisar' }}
+      </button>
+    </div>
+  </div>
+</div>

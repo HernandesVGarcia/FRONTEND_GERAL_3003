@@ -8,6 +8,7 @@ export interface FiberTraceStep {
   fiber: number | string; // 🆕 NOVO: Permitir string para conector
   tabela: string;
   registro: string;
+  /** Ex.: cabo_aberto, dio_bandeja_aberta (1.º passo dio_tX sem conexão), caixa_parada, ... */
   tipo: string;
   status: 'processando' | 'fim' | 'continua' | 'erro';
 }
@@ -87,9 +88,18 @@ export class FiberTraceService {
       
       // Verificar se encontrou conexão
       if (!registroResponse || !registroResponse.success || !registroResponse.valor) {
-        console.log(`❌ [FIM] Cabo aberto - sem conexão encontrada`);
+        const isPrimeiroPassoDioTx =
+          stepCount === 0 && /^dio_t\d+$/i.test(tabela);
+        if (isPrimeiroPassoDioTx) {
+          console.log(
+            `❌ [FIM] Bandeja do DIO aberta (dio_tX, 1.º passo) - sem conexão no registo`,
+          );
+          currentStep.tipo = 'dio_bandeja_aberta';
+        } else {
+          console.log(`❌ [FIM] Cabo aberto - sem conexão encontrada`);
+          currentStep.tipo = 'cabo_aberto';
+        }
         currentStep.status = 'fim';
-        currentStep.tipo = 'cabo_aberto';
         tracePath.push(currentStep);
         observer.next({ success: true, trace: tracePath, status: 'fim' });
         observer.complete();

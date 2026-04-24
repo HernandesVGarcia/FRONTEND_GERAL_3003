@@ -33,7 +33,13 @@ import { MapSearchButtonsComponent } from '../map-search-buttons/map-search-butt
 import { MapTracerButtonsComponent } from '../map-tracer-buttons/map-tracer-buttons.component';
 import { MapContextMenuComponent } from '../map-context-menu/map-context-menu.component';
 import { TipagemCabosModalComponent, TipagemCabosData } from '../tipagem-cabos-modal/tipagem-cabos-modal.component';
-import { CompartilhamentoService, CaixaData, ClienteData, EstacaoData } from '../servico/compartilhamento.service';
+import {
+  CompartilhamentoService,
+  CaixaData,
+  ClienteData,
+  EstacaoData,
+  LogradouroPesquisaData,
+} from '../servico/compartilhamento.service';
 import { KmlExportService } from '../servico/kml-export.service';
 import { InsertCaboService } from '../servico/insert-cabo.service';
 import { UpdateCaboService } from '../servico/update-cabo.service';
@@ -319,6 +325,9 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
   private clickedPolyline: google.maps.Polyline | null = null; // 🆕 Armazena a polyline clicada
   private ultimaCoordenadaClique: google.maps.LatLng | null = null; // 🆕 Armazena coordenada do último clique para identificar ponta
   private ultimaCoordenadaContextMenu: google.maps.LatLng | null = null; // 🆕 Armazena coordenada do context menu do mapa
+  /** Marcador temporário no ponto da pesquisa de logradouro (endereço) */
+  private marcadorLogradouroPesquisa: google.maps.Marker | null = null;
+  private infoWindowLogradouroPesquisa: google.maps.InfoWindow | null = null;
   // 🔧 Propriedades para edição de caixa/CTO/CTO_SP
   private caixaEmEdicao: google.maps.Marker | null = null; // Marcador em edição (caixa, CTO ou CTO_SP)
   private caixaEmEdicaoIndex: number | null = null; // Índice do item em edição
@@ -4325,6 +4334,25 @@ polylineOptions144f: google.maps.PolylineOptions = {
         this.centralizarNaEstacao(estacaoData);
       }
     });
+
+    this.compartilhamentoService.logradouroPesquisa$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((ponto: LogradouroPesquisaData | null) => {
+        if (ponto && this.map) {
+          const center = new google.maps.LatLng(ponto.lat, ponto.lng);
+          this.map.setCenter(center);
+          this.map.setZoom(18);
+          this.exibirMarcadorLogradouroPesquisa(ponto);
+          console.log(
+            'Mapa centralizado (logradouro):',
+            ponto.endereco,
+            ponto.lat,
+            ponto.lng,
+          );
+        } else if (ponto === null) {
+          this.limparMarcadorLogradouroPesquisa();
+        }
+      });
     //**************************** */
       // trabalha em conjunto com pop-info-modal.component.ts
      // quando o usuário salva as alterações na Sigla no pop-info-modal, o serviço popInfoUpdateService emite um evento com o id_meta e a sigla do cliente
@@ -9968,12 +9996,6 @@ openGoJSModal() {
     alert('Funcionalidade de Pesquisa Estação será implementada');
   }
 
-  pesquisarLogradouro(): void {
-    console.log('Pesquisar Logradouro clicado');
-    // Implementar lógica de pesquisa de logradouro
-    alert('Funcionalidade de Pesquisa Logradouro será implementada');
-  }
-
   verificarViabilidade(): void {
     console.log('Verificar Viabilidade clicado');
     // Implementar lógica de verificação de viabilidade
@@ -10014,6 +10036,42 @@ openGoJSModal() {
       console.log(`Mapa centralizado na estação ${estacaoData.SIGLA} - Coordenadas: ${estacaoData.LAT}, ${estacaoData.LNG}`);
     } 
     
+  }
+
+  private limparMarcadorLogradouroPesquisa(): void {
+    if (this.marcadorLogradouroPesquisa) {
+      this.marcadorLogradouroPesquisa.setMap(null);
+      this.marcadorLogradouroPesquisa = null;
+    }
+    if (this.infoWindowLogradouroPesquisa) {
+      this.infoWindowLogradouroPesquisa.close();
+      this.infoWindowLogradouroPesquisa = null;
+    }
+  }
+
+  private exibirMarcadorLogradouroPesquisa(ponto: LogradouroPesquisaData): void {
+    if (!this.map) {
+      return;
+    }
+    this.limparMarcadorLogradouroPesquisa();
+    this.marcadorLogradouroPesquisa = new google.maps.Marker({
+      position: { lat: ponto.lat, lng: ponto.lng },
+      map: this.map,
+      title: ponto.endereco,
+      zIndex: 5000,
+      animation: google.maps.Animation.DROP,
+    });
+    const el = document.createElement('div');
+    el.style.maxWidth = '280px';
+    el.style.padding = '6px 8px';
+    el.style.fontSize = '12px';
+    el.style.lineHeight = '1.4';
+    el.textContent = ponto.endereco;
+    this.infoWindowLogradouroPesquisa = new google.maps.InfoWindow({ content: el });
+    this.infoWindowLogradouroPesquisa.open({
+      map: this.map,
+      anchor: this.marcadorLogradouroPesquisa,
+    });
   }
 
   /**
@@ -10635,6 +10693,7 @@ openGoJSModal() {
    * 🧹 Limpa listeners quando o componente é destruído
    */
   ngOnDestroy(): void {
+    this.limparMarcadorLogradouroPesquisa();
     this.destroy$.next();
     this.destroy$.complete();
     // 🛡️ Remover listener de contextmenu do elemento do mapa

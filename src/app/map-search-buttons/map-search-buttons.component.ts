@@ -6,6 +6,7 @@ import { NgbModal, NgbModalModule } from '@ng-bootstrap/ng-bootstrap';
 import { CaixaSearchModalComponent } from '../caixa-search-modal/caixa-search-modal.component';
 import { ClienteSearchModalComponent } from '../cliente-search-modal/cliente-search-modal.component';
 import { EstacaoSearchModalComponent } from '../estacao-search-modal/estacao-search-modal.component';
+import { LogradouroSearchModalComponent } from '../logradouro-search-modal/logradouro-search-modal.component';
 
 @Component({
   selector: 'app-map-search-buttons',
@@ -61,8 +62,12 @@ export class MapSearchButtonsComponent {
   }
 
   onPesquisarLogradouro(): void {
-    console.log('Pesquisar Logradouro clicado');
-    // Abrir modal quando implementado; comunicação via service
+    this.ngbModal.open(LogradouroSearchModalComponent, {
+      size: 'lg',
+      backdrop: false,
+      centered: true,
+      windowClass: 'logradouro-search-modal-window',
+    });
   }
 
   onVerificarViabilidade(): void {

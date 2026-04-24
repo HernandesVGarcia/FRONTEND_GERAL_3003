@@ -122,6 +122,7 @@ export class DetalhesCaixaComponent implements OnInit, OnChanges {
     return option || `empty-${index}`;
   }
 
+  //getimage é chamdo no template para mostrar a imagem da caixa
   getImagemCaixa(): string {
     if (!this.form.tipagem) return 'assets/BLOCO.png';
     const mapeamentoImagens: { [key: string]: string } = {

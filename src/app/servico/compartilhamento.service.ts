@@ -26,6 +26,12 @@ export interface EstacaoData {
   [key: string]: any;
 }
 
+export interface LogradouroPesquisaData {
+  lat: number;
+  lng: number;
+  endereco: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -40,6 +46,10 @@ export class CompartilhamentoService {
 
   private estacaoSubject = new BehaviorSubject<EstacaoData | null>(null);
   public estacao$: Observable<EstacaoData | null> = this.estacaoSubject.asObservable();
+
+  private logradouroPesquisaSubject = new BehaviorSubject<LogradouroPesquisaData | null>(null);
+  public logradouroPesquisa$: Observable<LogradouroPesquisaData | null> =
+    this.logradouroPesquisaSubject.asObservable();
 
   constructor() {
     console.log('CompartilhamentoService inicializado');
@@ -110,5 +120,17 @@ export class CompartilhamentoService {
     console.log('=== Estado Atual do CompartilhamentoService ===');
     console.log('Estação atual:', this.obterEstacaoAtual());
     console.log('===============================================');
+  }
+
+  compartilharLogradouroPesquisa(ponto: LogradouroPesquisaData): void {
+    this.logradouroPesquisaSubject.next(ponto);
+  }
+
+  obterLogradouroPesquisaAtual(): LogradouroPesquisaData | null {
+    return this.logradouroPesquisaSubject.value;
+  }
+
+  limparLogradouroPesquisa(): void {
+    this.logradouroPesquisaSubject.next(null);
   }
 }

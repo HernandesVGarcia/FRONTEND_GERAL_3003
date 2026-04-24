@@ -183,6 +183,15 @@
     </div>
     
     <div class="footer-right" *ngIf="config.isEditable">
+      <button
+        *ngIf="!isEditing"
+        mat-raised-button
+        color="primary"
+        type="button"
+        (click)="abrirBandeja()"
+        class="close-button">
+        Bandeja
+      </button>
       <button 
         *ngIf="!isEditing" 
         mat-raised-button 

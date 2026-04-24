@@ -1,0 +1,48 @@
+<div class="gojs-dio-modal-content gojs-modal-content">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Bandeja — DIO id_meta {{ data.id_meta }}</h3>
+    </div>
+    <span class="close-button" (click)="close($event)">&times;</span>
+
+    <div class="gojs-container" *ngIf="!loading && !error">
+      <div class="instruction-panel"></div>
+      <div class="diagram-container">
+        <div class="watermark-cover">
+          <button
+            type="button"
+            class="export-pdf-button"
+            [disabled]="redrawBusy"
+            (click)="exportarDiagramaParaPDF()"
+          >
+            📄 Imprimir PDF
+          </button>
+          <button
+            type="button"
+            class="redraw-button"
+            [disabled]="redrawBusy"
+            (click)="redesenharDiagrama()"
+          >
+            🔄 Redraw
+          </button>
+          <button type="button" class="log-button" [disabled]="redrawBusy" (click)="abrirLogDio()">
+            📋 Log
+          </button>
+        </div>
+        <div #diagramDiv class="diagram-div"></div>
+      </div>
+
+      <div class="diagram-error" *ngIf="initializationError">
+        <p>Erro ao inicializar diagrama: {{ initializationError }}</p>
+      </div>
+    </div>
+
+    <div class="diagram-error" *ngIf="error">
+      <p>{{ error }}</p>
+    </div>
+
+    <div class="loading-wrap" *ngIf="loading">
+      <p>A carregar bandejas e diagrama…</p>
+    </div>
+  </div>
+</div>
