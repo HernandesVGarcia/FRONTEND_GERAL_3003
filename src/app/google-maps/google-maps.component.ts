@@ -39,6 +39,9 @@ import {
   ClienteData,
   EstacaoData,
   LogradouroPesquisaData,
+  ViabilidadePontoMapaData,
+  ViabilidadeCentrarEquipamentoData,
+  ViabilidadeCirculoCaixaData,
 } from '../servico/compartilhamento.service';
 import { KmlExportService } from '../servico/kml-export.service';
 import { InsertCaboService } from '../servico/insert-cabo.service';
@@ -328,6 +331,11 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
   /** Marcador temporário no ponto da pesquisa de logradouro (endereço) */
   private marcadorLogradouroPesquisa: google.maps.Marker | null = null;
   private infoWindowLogradouroPesquisa: google.maps.InfoWindow | null = null;
+  /** Marcador da pesquisa de viabilidade (cruz verde) */
+  private marcadorViabilidadePesquisa: google.maps.Marker | null = null;
+  /** Contorno fino azul em cada CEO/CTO-SP da lista de viabilidade (metros no terreno). */
+  private static readonly VIABILIDADE_CIRCULO_RAIO_METROS = 14;
+  private circulosViabilidadeCaixas: google.maps.Circle[] = [];
   // 🔧 Propriedades para edição de caixa/CTO/CTO_SP
   private caixaEmEdicao: google.maps.Marker | null = null; // Marcador em edição (caixa, CTO ou CTO_SP)
   private caixaEmEdicaoIndex: number | null = null; // Índice do item em edição
@@ -370,6 +378,8 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
   private isIniciandoEdicao: boolean = false; // 🆕 Flag para saber se está iniciando edição (protege clickedPolyline)
   private isFinalizandoEdicao: boolean = false; // 🛡️ Flag para saber se está finalizando edição (proteção adicional)
   private clickedPolylineOriginalColor: string = ''; // 🆕 Para restaurar a cor original
+  private clickedPolylineOriginalStrokeWeight = 3;
+  private clickedPolylineOriginalStrokeOpacity = 0.7;
   private listenerMapaFinalizarEdicao: google.maps.MapsEventListener | null = null; // 🆕 Listener para finalizar edição
   private listenerMapaRightClick: google.maps.MapsEventListener | null = null; // 🆕 Listener de rightclick do mapa
   private pontasOriginais: { // 🛡️ Armazena pontas originais para proteção
@@ -1776,8 +1786,22 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
     
     console.log('🎯 [INICIAR-EDIÇÃO] Iniciando configuração da edição...');
     
-    // Salvar a cor original
-    this.clickedPolylineOriginalColor = this.clickedPolyline.get('strokeColor') || '#808080';
+    // Salvar estilo original (cor, espessura, opacidade) — evita perder transparência do 1f etc. após edição
+    const capEdicao = this.normalizarTipoFibra(
+      this.clickedPolyline.get('capacidade') ?? this.clickedCaboData?.capacidade ?? '12',
+    );
+    const defStroke = this.getDefaultPolylineOptions(capEdicao);
+    const cor = this.clickedPolyline.get('strokeColor');
+    this.clickedPolylineOriginalColor =
+      cor != null && String(cor) !== '' ? String(cor) : String(defStroke.strokeColor ?? '#808080');
+    const w0 = Number(this.clickedPolyline.get('strokeWeight'));
+    this.clickedPolylineOriginalStrokeWeight = Number.isFinite(w0)
+      ? w0
+      : Number(defStroke.strokeWeight ?? 3);
+    const o0 = Number(this.clickedPolyline.get('strokeOpacity'));
+    this.clickedPolylineOriginalStrokeOpacity = Number.isFinite(o0)
+      ? o0
+      : Number(defStroke.strokeOpacity ?? 0.7);
     
     // 🆕 Remover listener de rightclick da polyline
     google.maps.event.clearListeners(this.clickedPolyline, 'rightclick');
@@ -2225,7 +2249,8 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
               numero: ctoProxima.numero,
               LAT: ctoProxima.LAT,
               LONGI: ctoProxima.LONGI,
-              ID_TIPO: ctoProxima.ID_TIPO
+              ID_TIPO: ctoProxima.ID_TIPO,
+              
             };
             this.abrirModalConexao(qualPonta as 'A' | 'B', caixaFormatada);
             return; // Não continuar com a proteção se detectou conexão
@@ -2428,8 +2453,8 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
             draggable: false,
             clickable: true, // 🆕 Reabilitar cliques
             strokeColor: this.clickedPolylineOriginalColor, // Restaurar cor original
-            strokeWeight: 4, // Restaurar largura
-            strokeOpacity: 0.9
+            strokeWeight: this.clickedPolylineOriginalStrokeWeight,
+            strokeOpacity: this.clickedPolylineOriginalStrokeOpacity,
           });
           
           // 🆕 Remover listeners temporários de edição
@@ -2490,8 +2515,8 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
               draggable: false,
               clickable: true, // 🆕 Reabilitar cliques
               strokeColor: this.clickedPolylineOriginalColor,
-              strokeWeight: 4,
-              strokeOpacity: 0.9
+              strokeWeight: this.clickedPolylineOriginalStrokeWeight,
+              strokeOpacity: this.clickedPolylineOriginalStrokeOpacity,
             });
             
             // 🛡️ Remover listener de proteção de pontas
@@ -3392,8 +3417,8 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
         draggable: false,
         clickable: true, // Reabilitar cliques
         strokeColor: this.clickedPolylineOriginalColor, // Restaurar cor original
-        strokeWeight: 4, // Restaurar largura
-        strokeOpacity: 0.9
+        strokeWeight: this.clickedPolylineOriginalStrokeWeight,
+        strokeOpacity: this.clickedPolylineOriginalStrokeOpacity,
       });
       
       // 🆕 Remover listeners temporários de edição
@@ -4060,68 +4085,35 @@ private map?: (google.maps.Map);
 
   polylineOptions1f: google.maps.PolylineOptions = {
     strokeColor: 'blue',
-    strokeOpacity: 0.7,
-    strokeWeight: 0.5,
+    strokeOpacity: 0.45,
+    strokeWeight: 3,
     clickable: true,
     visible: true,
     zIndex: 1,
     draggable: false,
     editable: false,
-    //traceja linha
-    icons: [{
-    icon: {
-      path: 'M 0,-1 0,1',
-      strokeOpacity: 0.7,
-      scale: 2
-    },
-    offset: '0',
-    repeat: '10px'
-  }]
-
   }
 
   polylineOptions2f: google.maps.PolylineOptions = {
     strokeColor: ' #00FFFF ',
     strokeOpacity: 0.7,
-    strokeWeight: 0.5,
+    strokeWeight: 3,
     clickable: true,
     visible: true,
     zIndex: 1,
     draggable: false,
     editable: false,
-    //traceja linha
-    icons: [{
-    icon: {
-      path: 'M 0,-1 0,1',
-      strokeOpacity: 0.7,
-      scale: 3
-    },
-    offset: '0',
-    repeat: '10px'
-  }]
-
   }
 
   polylineOptions4f: google.maps.PolylineOptions = {
     strokeColor: 'rgb(41, 161, 216) ',
     strokeOpacity: 0.7,
-    strokeWeight: 0.5,
+    strokeWeight: 3,
     clickable: true,
     visible: true,
     zIndex: 1,
     draggable: false,
     editable: false,
-    //traceja linha
-    icons: [{
-    icon: {
-      path: 'M 0,-1 0,1',
-      strokeOpacity: 0.7,
-      scale: 3
-    },
-    offset: '0',
-    repeat: '10px'
-  }] 
-
   }
 
 
@@ -4352,6 +4344,44 @@ polylineOptions144f: google.maps.PolylineOptions = {
         } else if (ponto === null) {
           this.limparMarcadorLogradouroPesquisa();
         }
+      });
+
+    this.compartilhamentoService.viabilidadePontoMapa$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((ponto: ViabilidadePontoMapaData | null) => {
+        if (ponto && this.map) {
+          const center = new google.maps.LatLng(ponto.lat, ponto.lng);
+          this.map.setCenter(center);
+          this.map.setZoom(18);
+          this.exibirMarcadorViabilidadePesquisa(ponto);
+        } else if (ponto === null) {
+          this.limparMarcadorViabilidadePesquisa();
+          this.limparCirculosViabilidadeCaixas();
+        }
+      });
+
+    this.compartilhamentoService.viabilidadeCirculosCaixas$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((pontos: ViabilidadeCirculoCaixaData[] | null) => {
+        if (!this.map) {
+          return;
+        }
+        if (pontos == null || pontos.length === 0) {
+          this.limparCirculosViabilidadeCaixas();
+          return;
+        }
+        this.exibirCirculosViabilidadeCaixas(pontos);
+      });
+
+    this.compartilhamentoService.viabilidadeCentrarEquipamento$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((dados: ViabilidadeCentrarEquipamentoData) => {
+        if (!this.map) {
+          return;
+        }
+        const center = new google.maps.LatLng(dados.lat, dados.lng);
+        this.map.panTo(center);
+        this.map.setZoom(dados.zoom ?? 19);
       });
     //**************************** */
       // trabalha em conjunto com pop-info-modal.component.ts
@@ -10049,6 +10079,68 @@ openGoJSModal() {
     }
   }
 
+  private limparMarcadorViabilidadePesquisa(): void {
+    if (this.marcadorViabilidadePesquisa) {
+      this.marcadorViabilidadePesquisa.setMap(null);
+      this.marcadorViabilidadePesquisa = null;
+    }
+  }
+
+  private limparCirculosViabilidadeCaixas(): void {
+    for (const c of this.circulosViabilidadeCaixas) {
+      c.setMap(null);
+    }
+    this.circulosViabilidadeCaixas = [];
+  }
+
+  private exibirCirculosViabilidadeCaixas(pontos: ViabilidadeCirculoCaixaData[]): void {
+    if (!this.map) {
+      return;
+    }
+    this.limparCirculosViabilidadeCaixas();
+    const r = GoogleMapsComponent.VIABILIDADE_CIRCULO_RAIO_METROS;
+    for (const p of pontos) {
+      const circle = new google.maps.Circle({
+        map: this.map,
+        center: { lat: p.lat, lng: p.lng },
+        radius: r,
+        strokeColor: '#1e88e5',
+        strokeOpacity: 1,
+        strokeWeight: 1,
+        fillOpacity: 0,
+        zIndex: 4999,
+      });
+      this.circulosViabilidadeCaixas.push(circle);
+    }
+  }
+
+  private iconeCruzVerdeViabilidade(): google.maps.Icon {
+    const svg =
+      '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">' +
+      '<path stroke="#1b5e20" stroke-width="3" stroke-linecap="round" fill="none" d="M16 4v24M4 16h24"/>' +
+      '</svg>';
+    return {
+      url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg),
+      scaledSize: new google.maps.Size(32, 32),
+      anchor: new google.maps.Point(16, 16),
+    };
+  }
+
+  private exibirMarcadorViabilidadePesquisa(ponto: ViabilidadePontoMapaData): void {
+    if (!this.map) {
+      return;
+    }
+    this.limparMarcadorViabilidadePesquisa();
+    this.marcadorViabilidadePesquisa = new google.maps.Marker({
+      position: { lat: ponto.lat, lng: ponto.lng },
+      map: this.map,
+      title: ponto.endereco,
+      zIndex: 5001,
+      icon: this.iconeCruzVerdeViabilidade(),
+      animation: google.maps.Animation.DROP,
+    });
+  }
+
   private exibirMarcadorLogradouroPesquisa(ponto: LogradouroPesquisaData): void {
     if (!this.map) {
       return;
@@ -10694,6 +10786,8 @@ openGoJSModal() {
    */
   ngOnDestroy(): void {
     this.limparMarcadorLogradouroPesquisa();
+    this.limparMarcadorViabilidadePesquisa();
+    this.limparCirculosViabilidadeCaixas();
     this.destroy$.next();
     this.destroy$.complete();
     // 🛡️ Remover listener de contextmenu do elemento do mapa

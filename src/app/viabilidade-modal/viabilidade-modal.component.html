@@ -1,0 +1,160 @@
+<div class="modal-dialog modal-lg" #modalDialog>
+  <div class="modal-content shadow-lg">
+    <div
+      class="modal-header bg-primary text-white"
+      (mousedown)="onMouseDown($event)"
+      style="cursor: move"
+    >
+      <h5 class="modal-title fw-bold">
+        <mat-icon class="title-mat-icon" aria-hidden="true">travel_explore</mat-icon>
+        Viabilidade
+      </h5>
+      <button
+        type="button"
+        class="btn-close btn-close-white"
+        (click)="onCancel()"
+        aria-label="Fechar"
+      ></button>
+    </div>
+
+    <div class="modal-body">
+      <p class="text-muted small mb-3">
+        Defina o <strong>raio em metros</strong> (predefinição 150) e informe o endereço da viabilidade.
+      </p>
+
+      <div *ngIf="errorMessage" class="error-message p-3" role="alert">
+        <span class="error-glyph" aria-hidden="true">&#9888;</span>
+        <span>{{ errorMessage }}</span>
+      </div>
+
+      <div class="card card-compact mb-3 border-primary">
+        <div class="card-body card-body-compact">
+          <div class="row g-2 align-items-end">
+            <div class="col-12 col-sm-8">
+              <label class="form-label fw-semibold form-label-compact" for="viabEnderecoInput"
+                >Endereço</label
+              >
+              <input
+                #enderecoInput
+                type="text"
+                id="viabEnderecoInput"
+                class="form-control form-control-sm input-compact"
+                name="enderecoTexto"
+                [(ngModel)]="enderecoTexto"
+                placeholder="Ex.: Rua das Flores, 100, Curitiba"
+                [disabled]="isSearching"
+                autocomplete="off"
+              />
+            </div>
+            <div class="col-12 col-sm-4">
+              <label class="form-label fw-semibold form-label-compact" for="viabRaioMetros"
+                >Raio (m)</label
+              >
+              <input
+                type="text"
+                id="viabRaioMetros"
+                class="form-control form-control-sm input-compact input-raio"
+                name="raioMetrosTexto"
+                [(ngModel)]="raioMetrosTexto"
+                inputmode="decimal"
+                placeholder="150"
+                [disabled]="isSearching"
+                autocomplete="off"
+                title="Distância máxima em metros a partir do endereço pesquisado"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div
+        *ngIf="mensagemSemResultado && !errorMessage"
+        class="viabilidade-sem-resultado small mb-3"
+        role="alert"
+      >
+        {{ mensagemSemResultado }}
+      </div>
+
+      <div *ngIf="resultadoArvore.length > 0" class="card border-secondary">
+        <div class="card-header py-2 px-3 small fw-semibold">
+          recursos próximos
+          <span class="fw-normal text-muted ms-1">— clique na caixa para localizar no mapa</span>
+        </div>
+        <div class="card-body p-2 viabilidade-tree-panel">
+          <ul class="viabilidade-tree list-unstyled mb-0" role="tree" aria-label="Pontos por distância">
+            <li *ngFor="let node of resultadoArvore" class="viabilidade-tree-node" role="treeitem">
+              <details class="viabilidade-details" (toggle)="onDetalhesViabilidadeToggle($event, node)">
+                <summary class="viabilidade-summary">
+                  <span
+                    class="viabilidade-summary-label viabilidade-summary-clicavel"
+                    (click)="onCentrarEquipamentoNaLista(node); $event.stopPropagation()"
+                    title="Centrar o mapa neste ponto (a cruz verde da pesquisa mantém-se)"
+                    role="button"
+                    tabindex="0"
+                    (keydown.enter)="onCentrarEquipamentoNaLista(node); $event.stopPropagation()"
+                    (keydown.space)="onCentrarEquipamentoNaLista(node); $event.preventDefault(); $event.stopPropagation()"
+                    >{{ rotuloLinhaViabilidade(node) }}</span
+                  >
+                </summary>
+                <ul class="viabilidade-tree-children list-unstyled">
+                  <li *ngIf="node.splittersLoading" class="viabilidade-splitter-row text-muted small">
+                    A carregar splitters…
+                  </li>
+                  <li *ngIf="node.splittersError" class="viabilidade-splitter-row viabilidade-splitter-erro small">
+                    {{ node.splittersError }}
+                  </li>
+                  <ng-container *ngIf="!node.splittersLoading && node.splitters !== undefined">
+                    <li *ngIf="node.splitters.length === 0" class="viabilidade-splitter-row text-muted small">
+                      Nenhum splitter.
+                    </li>
+                    <li *ngFor="let sp of node.splitters" class="viabilidade-splitter-row small">
+                      <details class="viabilidade-splitter-details" (click)="$event.stopPropagation()">
+                        <summary class="viabilidade-splitter-summary">
+                          <span class="viabilidade-splitter-label">{{ rotuloSplitterViabilidade(sp) }}</span>
+                        </summary>
+                        <ng-container *ngIf="indicesSaidasSplitter(sp) as saidas">
+                          <ul *ngIf="saidas.length > 0" class="list-unstyled viabilidade-splitter-saidas">
+                            <li *ngFor="let k of saidas" class="small">
+                              {{ rotuloLinhaSaida(k) }}
+                            </li>
+                          </ul>
+                          <p
+                            *ngIf="saidas.length === 0"
+                            class="viabilidade-splitter-saidas-empty text-muted small mb-0"
+                          >
+                            Capacidade indisponível ou zero.
+                          </p>
+                        </ng-container>
+                      </details>
+                    </li>
+                  </ng-container>
+                </ul>
+              </details>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer bg-light">
+      <button
+        type="button"
+        class="btn btn-secondary btn-sm me-2"
+        (click)="onCancel()"
+        [disabled]="isSearching"
+      >
+        <span class="me-1">✕</span>
+        Fechar
+      </button>
+      <button
+        type="button"
+        class="btn btn-primary btn-sm"
+        (click)="onPesquisarGeocode()"
+        [disabled]="isSearching"
+      >
+        <span *ngIf="isSearching" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+        {{ isSearching ? 'A pesquisar...' : 'Pesquisar' }}
+      </button>
+    </div>
+  </div>
+</div>

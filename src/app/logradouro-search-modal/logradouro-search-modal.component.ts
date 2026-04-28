@@ -9,6 +9,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { MatIconModule } from '@angular/material/icon';
 import { NgbActiveModal, NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import {
   CompartilhamentoService,
@@ -18,7 +19,7 @@ import {
 @Component({
   selector: 'app-logradouro-search-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, NgbModule],
+  imports: [CommonModule, FormsModule, MatIconModule, NgbModule],
   templateUrl: './logradouro-search-modal.component.html',
   styleUrls: ['./logradouro-search-modal.component.css'],
 })

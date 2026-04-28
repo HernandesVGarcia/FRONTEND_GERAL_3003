@@ -1,12 +1,18 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { NgbModal, NgbModalModule } from '@ng-bootstrap/ng-bootstrap';
+import { merge } from 'rxjs';
+import { take } from 'rxjs/operators';
+import { CompartilhamentoService } from '../servico/compartilhamento.service';
 import { CaixaSearchModalComponent } from '../caixa-search-modal/caixa-search-modal.component';
 import { ClienteSearchModalComponent } from '../cliente-search-modal/cliente-search-modal.component';
 import { EstacaoSearchModalComponent } from '../estacao-search-modal/estacao-search-modal.component';
 import { LogradouroSearchModalComponent } from '../logradouro-search-modal/logradouro-search-modal.component';
+import { ViabilidadeModalComponent } from '../viabilidade-modal/viabilidade-modal.component';
+import { Caixa } from '../modelo/Caixa';
+import { Cto_SP } from '../modelo/Cto_SP';
 
 @Component({
   selector: 'app-map-search-buttons',
@@ -16,8 +22,13 @@ import { LogradouroSearchModalComponent } from '../logradouro-search-modal/logra
   styleUrls: ['./map-search-buttons.component.css']
 })
 export class MapSearchButtonsComponent {
+  @Input() caixas: Caixa[] = [];
+  @Input() ctosSP: Cto_SP[] = [];
 
-  constructor(private ngbModal: NgbModal) {}
+  constructor(
+    private ngbModal: NgbModal,
+    private compartilhamentoService: CompartilhamentoService,
+  ) {}
 
   onPesquisarCaixa(): void {
     console.log('Pesquisar Caixa clicado');
@@ -71,7 +82,19 @@ export class MapSearchButtonsComponent {
   }
 
   onVerificarViabilidade(): void {
-    console.log('Verificar Viabilidade clicado');
-    // Abrir modal quando implementado; comunicação via service
+    const modalRef = this.ngbModal.open(ViabilidadeModalComponent, {
+      size: 'lg',
+      backdrop: false,
+      centered: true,
+      windowClass: 'viabilidade-modal-window',
+    });
+    modalRef.componentInstance.caixas = this.caixas;
+    modalRef.componentInstance.ctosSP = this.ctosSP;
+    merge(modalRef.closed, modalRef.dismissed)
+      .pipe(take(1))
+      .subscribe(() => {
+        this.compartilhamentoService.limparViabilidadeCirculosCaixas();
+        this.compartilhamentoService.limparViabilidadePontoMapa();
+      });
   }
 }

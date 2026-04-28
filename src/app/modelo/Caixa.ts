@@ -5,6 +5,7 @@ numero:string | undefined;
 LAT:Location | undefined;
 LONGI:Location | undefined;
 ID_TIPO:string | undefined;
+conta_splitter?:number | undefined;
 
 
 

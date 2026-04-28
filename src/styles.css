@@ -180,6 +180,14 @@ body.modal-open .modal-content {
 .logradouro-search-modal-window app-logradouro-search-modal .modal-content * { pointer-events: auto !important; }
 .logradouro-search-modal-window app-logradouro-search-modal .modal-content { user-select: none !important; }
 
+/* Viabilidade (caixas por raio) */
+.viabilidade-modal-window,
+.viabilidade-modal-window * { pointer-events: none !important; }
+.viabilidade-modal-window .modal-dialog > .modal-content { pointer-events: none !important; }
+.viabilidade-modal-window app-viabilidade-modal .modal-content,
+.viabilidade-modal-window app-viabilidade-modal .modal-content * { pointer-events: auto !important; }
+.viabilidade-modal-window app-viabilidade-modal .modal-content { user-select: none !important; }
+
 /* Cadastro Cliente */
 .cadastro-cliente-modal-window,
 .cadastro-cliente-modal-window * { pointer-events: none !important; }

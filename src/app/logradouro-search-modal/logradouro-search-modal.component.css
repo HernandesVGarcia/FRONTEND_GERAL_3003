@@ -62,17 +62,13 @@
   font-size: 1.1rem;
 }
 
-/* Este modal não usa mat-icon; ícone de título em texto/emoji */
-.modal-title .title-icon {
-  font-size: 1.5rem;
-  line-height: 1;
-  margin-right: 8px;
-}
-
-.modal-title mat-icon {
+.modal-title .title-mat-icon {
   font-size: 1.5rem;
   width: 1.5rem;
   height: 1.5rem;
+  margin-right: 8px;
+  color: inherit;
+  flex-shrink: 0;
 }
 
 .modal-body {

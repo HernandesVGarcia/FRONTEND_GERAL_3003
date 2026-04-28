@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, Subject } from 'rxjs';
 
 // Interface para dados de caixa
 export interface CaixaData {
@@ -32,6 +32,27 @@ export interface LogradouroPesquisaData {
   endereco: string;
 }
 
+/** Ponto da pesquisa de viabilidade a exibir no mapa (cruz verde). */
+export interface ViabilidadePontoMapaData {
+  lat: number;
+  lng: number;
+  endereco: string;
+}
+
+/** Centrar o mapa num CEO/CTO-SP escolhido na lista de viabilidade (não altera a cruz verde). */
+export interface ViabilidadeCentrarEquipamentoData {
+  lat: number;
+  lng: number;
+  /** Se omitido, o mapa usa 19. */
+  zoom?: number;
+}
+
+/** Centro de cada caixa/CTO-SP listado na viabilidade (círculo azul no mapa). */
+export interface ViabilidadeCirculoCaixaData {
+  lat: number;
+  lng: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -50,6 +71,19 @@ export class CompartilhamentoService {
   private logradouroPesquisaSubject = new BehaviorSubject<LogradouroPesquisaData | null>(null);
   public logradouroPesquisa$: Observable<LogradouroPesquisaData | null> =
     this.logradouroPesquisaSubject.asObservable();
+
+  private viabilidadePontoMapaSubject = new BehaviorSubject<ViabilidadePontoMapaData | null>(null);
+  public viabilidadePontoMapa$: Observable<ViabilidadePontoMapaData | null> =
+    this.viabilidadePontoMapaSubject.asObservable();
+
+  private viabilidadeCentrarEquipamentoSubject = new Subject<ViabilidadeCentrarEquipamentoData>();
+  public viabilidadeCentrarEquipamento$: Observable<ViabilidadeCentrarEquipamentoData> =
+    this.viabilidadeCentrarEquipamentoSubject.asObservable();
+
+  /** null ou [] = sem círculos (limpar mapa). */
+  private viabilidadeCirculosCaixasSubject = new BehaviorSubject<ViabilidadeCirculoCaixaData[] | null>(null);
+  public viabilidadeCirculosCaixas$: Observable<ViabilidadeCirculoCaixaData[] | null> =
+    this.viabilidadeCirculosCaixasSubject.asObservable();
 
   constructor() {
     console.log('CompartilhamentoService inicializado');
@@ -132,5 +166,25 @@ export class CompartilhamentoService {
 
   limparLogradouroPesquisa(): void {
     this.logradouroPesquisaSubject.next(null);
+  }
+
+  compartilharViabilidadePontoMapa(ponto: ViabilidadePontoMapaData): void {
+    this.viabilidadePontoMapaSubject.next(ponto);
+  }
+
+  limparViabilidadePontoMapa(): void {
+    this.viabilidadePontoMapaSubject.next(null);
+  }
+
+  compartilharViabilidadeCentrarEquipamento(dados: ViabilidadeCentrarEquipamentoData): void {
+    this.viabilidadeCentrarEquipamentoSubject.next(dados);
+  }
+
+  compartilharViabilidadeCirculosCaixas(pontos: ViabilidadeCirculoCaixaData[]): void {
+    this.viabilidadeCirculosCaixasSubject.next(pontos.length > 0 ? pontos : null);
+  }
+
+  limparViabilidadeCirculosCaixas(): void {
+    this.viabilidadeCirculosCaixasSubject.next(null);
   }
 }
