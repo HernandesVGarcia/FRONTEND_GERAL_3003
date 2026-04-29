@@ -6,6 +6,7 @@ import {
   Input,
   NgZone,
   OnDestroy,
+  OnInit,
   ViewChild,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -20,6 +21,11 @@ import {
   ViabilidadeCirculoCaixaData,
 } from '../servico/compartilhamento.service';
 import { SplitterViabilidadeService } from '../servico/splitter-viabilidade.service';
+import {
+  CONEX_SPL_VALOR_LIVRE,
+  ConexSplLinhaRow,
+  ConexSplitterOcupacaoService,
+} from '../servico/conex-splitter-ocupacao.service';
 
 /** Nó da árvore de viabilidade; splitters carregados ao expandir o details. */
 export type ViabilidadeItemNode =
@@ -42,8 +48,19 @@ export type ViabilidadeItemNode =
 
 const RAIO_PADRAO_METROS = 150;
 const RAIO_MAX_METROS = 100_000;
+
+interface SplOcupacaoVm {
+  loading: boolean;
+  done: boolean;
+  error?: string;
+  row?: ConexSplLinhaRow;
+  noRoute?: boolean;
+}
+
 /** Limite de linhas `saída(k)` por splitter (proteção contra valores absurdos da API). */
 const SPLITTER_VIABILIDADE_SAIDAS_CAP_MAX = 256;
+
+const LS_VIABILIDADE_ULTIMO_ENDERECO = 'fiberworks.web.viabilidade.ultimoEndereco';
 
 @Component({
   selector: 'app-viabilidade-modal',
@@ -52,7 +69,7 @@ const SPLITTER_VIABILIDADE_SAIDAS_CAP_MAX = 256;
   templateUrl: './viabilidade-modal.component.html',
   styleUrls: ['./viabilidade-modal.component.css'],
 })
-export class ViabilidadeModalComponent implements AfterViewInit, OnDestroy {
+export class ViabilidadeModalComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input() caixas: Caixa[] = [];
   @Input() ctosSP: Cto_SP[] = [];
 
@@ -69,6 +86,9 @@ export class ViabilidadeModalComponent implements AfterViewInit, OnDestroy {
   resultadoArvore: ViabilidadeItemNode[] = [];
   mensagemSemResultado = '';
 
+  /** Ocupação F1…FN por `id_meta` do splitter (lazy-load ao expandir o details do splitter). */
+  private ocupacaoSplPorIdMeta: Record<number, SplOcupacaoVm> = {};
+
   private isDragging = false;
   private currentX = 0;
   private currentY = 0;
@@ -84,13 +104,40 @@ export class ViabilidadeModalComponent implements AfterViewInit, OnDestroy {
     private ngZone: NgZone,
     private compartilhamentoService: CompartilhamentoService,
     private splitterViabilidadeService: SplitterViabilidadeService,
+    private conexSplitterOcupacaoService: ConexSplitterOcupacaoService,
   ) {}
+
+  ngOnInit(): void {
+    try {
+      const raw = typeof localStorage !== 'undefined' ? localStorage.getItem(LS_VIABILIDADE_ULTIMO_ENDERECO) : null;
+      if (raw != null) {
+        const t = raw.trim();
+        if (t.length > 0) {
+          this.enderecoTexto = t;
+        }
+      }
+    } catch {
+      // ignora quotas / modo privado
+    }
+  }
 
   ngAfterViewInit(): void {
     queueMicrotask(() => this.initAutocomplete());
   }
 
   ngOnDestroy(): void {
+    try {
+      const t = (this.enderecoTexto ?? '').trim();
+      if (typeof localStorage !== 'undefined') {
+        if (t.length > 0) {
+          localStorage.setItem(LS_VIABILIDADE_ULTIMO_ENDERECO, t);
+        } else {
+          localStorage.removeItem(LS_VIABILIDADE_ULTIMO_ENDERECO);
+        }
+      }
+    } catch {
+      // ignora quota / modo privado
+    }
     this.placeChangedListener = null;
     this.autocomplete = null;
     this.compartilhamentoService.limparViabilidadeCirculosCaixas();
@@ -348,8 +395,130 @@ export class ViabilidadeModalComponent implements AfterViewInit, OnDestroy {
     return Array.from({ length: n }, (_, i) => i + 1);
   }
 
-  rotuloLinhaSaida(k: number): string {
-    return `saída(${k}) : ______`;
+  private idMetaSplitter(sp: Splitter): number | null {
+    const raw = sp.id_meta ?? sp.IDMETA;
+    if (raw == null || String(raw).trim() === '') {
+      return null;
+    }
+    const n = Number(raw);
+    return Number.isFinite(n) && n > 0 ? n : null;
+  }
+
+  private capacidadeSplitterNum(sp: Splitter): number {
+    const raw = sp.capacidade ?? sp.CAPACIDADE;
+    return Math.floor(Number(raw));
+  }
+
+  private patchOcupSpl(id: number, patch: Partial<SplOcupacaoVm>): void {
+    const cur = this.ocupacaoSplPorIdMeta[id] ?? { loading: false, done: false };
+    this.ocupacaoSplPorIdMeta = {
+      ...this.ocupacaoSplPorIdMeta,
+      [id]: { ...cur, ...patch },
+    };
+  }
+
+  /** Estado de ocupação lazy para o template. */
+  ocupSpliterEstado(sp: Splitter): SplOcupacaoVm | undefined {
+    const id = this.idMetaSplitter(sp);
+    return id != null ? this.ocupacaoSplPorIdMeta[id] : undefined;
+  }
+
+  ocupSpliterCarregando(sp: Splitter): boolean {
+    return !!this.ocupSpliterEstado(sp)?.loading;
+  }
+
+  ocupSpliterSemRotaOcupacao(sp: Splitter): boolean {
+    const st = this.ocupSpliterEstado(sp);
+    return !!(st?.done && st.noRoute && !st.error);
+  }
+
+  ocupSpliterErroApiOcupacao(sp: Splitter): string | null {
+    const st = this.ocupSpliterEstado(sp);
+    if (st?.done && st.error) {
+      return String(st.error);
+    }
+    return null;
+  }
+
+  /** Livre | Ocupada | Indefinido — apenas quando `done` com linha válida/rota ok. */
+  textoStatusSaidaSpliter(sp: Splitter, k: number): string {
+    const st = this.ocupSpliterEstado(sp);
+    if (!st?.done || st.loading || st.noRoute || st.error) {
+      return '—';
+    }
+    const key = `F${k}`;
+    const raw = st.row?.[key];
+    const cell = typeof raw === 'string' ? raw.trim() : '';
+    if (cell === '') {
+      return 'Indefinido';
+    }
+    if (cell === CONEX_SPL_VALOR_LIVRE) {
+      return 'Livre';
+    }
+    return 'Ocupada';
+  }
+
+  prefixoLinhaSaidaViabilidade(k: number): string {
+    return `saída(${k}) : `;
+  }
+
+  /** Classes para cor do estado (Livre verde, Ocupada vermelho, resto neutro). */
+  classesCorStatusSaidaSpliter(sp: Splitter, k: number): Record<string, boolean> {
+    const s = this.textoStatusSaidaSpliter(sp, k);
+    return {
+      'viabilidade-saida-livre': s === 'Livre',
+      'viabilidade-saida-ocupada': s === 'Ocupada',
+      'viabilidade-saida-neutra': s === '—' || s === 'Indefinido',
+    };
+  }
+
+  onToggleSpliterOccDetails(ev: Event, sp: Splitter): void {
+    const details = (ev.currentTarget ?? ev.target) as HTMLDetailsElement;
+    if (!details.open) {
+      return;
+    }
+    const id = this.idMetaSplitter(sp);
+    if (id == null) {
+      return;
+    }
+    const prev = this.ocupacaoSplPorIdMeta[id];
+    if (prev?.done || prev?.loading) {
+      return;
+    }
+    const cap = this.capacidadeSplitterNum(sp);
+    if (!this.conexSplitterOcupacaoService.temRotaOcupacao(cap)) {
+      this.ngZone.run(() =>
+        this.patchOcupSpl(id, { loading: false, done: true, noRoute: true }),
+      );
+      return;
+    }
+
+    this.ngZone.run(() =>
+      this.patchOcupSpl(id, { loading: true, done: false, error: undefined, noRoute: false }),
+    );
+    this.conexSplitterOcupacaoService.consultarOcupacaoPorCapacidade(cap, id).subscribe({
+      next: (row) => {
+        this.ngZone.run(() =>
+          this.patchOcupSpl(id, {
+            loading: false,
+            done: true,
+            row: row ?? undefined,
+            noRoute: false,
+            error: undefined,
+          }),
+        );
+      },
+      error: (err: unknown) => {
+        const msg = typeof err === 'string' ? err : 'Erro ao consultar ocupação.';
+        this.ngZone.run(() =>
+          this.patchOcupSpl(id, {
+            loading: false,
+            done: true,
+            error: msg,
+          }),
+        );
+      },
+    });
   }
 
   onCentrarEquipamentoNaLista(node: ViabilidadeItemNode): void {

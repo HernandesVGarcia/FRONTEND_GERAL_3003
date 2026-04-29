@@ -108,14 +108,36 @@
                       Nenhum splitter.
                     </li>
                     <li *ngFor="let sp of node.splitters" class="viabilidade-splitter-row small">
-                      <details class="viabilidade-splitter-details" (click)="$event.stopPropagation()">
+                      <details
+                        class="viabilidade-splitter-details"
+                        (click)="$event.stopPropagation()"
+                        (toggle)="onToggleSpliterOccDetails($event, sp)"
+                      >
                         <summary class="viabilidade-splitter-summary">
                           <span class="viabilidade-splitter-label">{{ rotuloSplitterViabilidade(sp) }}</span>
                         </summary>
                         <ng-container *ngIf="indicesSaidasSplitter(sp) as saidas">
+                          <p *ngIf="ocupSpliterCarregando(sp)" class="viabilidade-splitter-ocup-loading text-muted small mb-1">
+                            A carregar ocupação…
+                          </p>
+                          <p
+                            *ngIf="ocupSpliterSemRotaOcupacao(sp)"
+                            class="small mb-1 text-muted ocup-spl-msg-aviso"
+                            role="status"
+                          >
+                            Consulta de ocupação não disponível para esta capacidade.
+                          </p>
+                          <p
+                            *ngIf="ocupSpliterErroApiOcupacao(sp) as erroOcup"
+                            class="small mb-1 ocup-spl-msg-erro"
+                            role="alert"
+                          >
+                            {{ erroOcup }}
+                          </p>
                           <ul *ngIf="saidas.length > 0" class="list-unstyled viabilidade-splitter-saidas">
-                            <li *ngFor="let k of saidas" class="small">
-                              {{ rotuloLinhaSaida(k) }}
+                            <li *ngFor="let k of saidas" class="small viabilidade-splitter-saida-linha">
+                              <span>{{ prefixoLinhaSaidaViabilidade(k) }}</span>
+                              <span [ngClass]="classesCorStatusSaidaSpliter(sp, k)">{{ textoStatusSaidaSpliter(sp, k) }}</span>
                             </li>
                           </ul>
                           <p

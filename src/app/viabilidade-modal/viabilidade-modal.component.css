@@ -197,6 +197,7 @@
   user-select: text;
   /* Preserva espaços múltiplos no texto (ex.: `CX_nome  :  (N Metros)`). */
   white-space: pre-wrap;
+  color: #1565c0;
 }
 
 .viabilidade-summary-clicavel {
@@ -258,9 +259,32 @@
   line-height: 1.35;
 }
 
-.viabilidade-splitter-saidas-empty {
-  margin: 4px 0 2px 0.75rem;
-  padding-bottom: 2px;
+.viabilidade-splitter-ocup-loading {
+  margin: 4px 0 0 0.75rem;
+  padding-bottom: 0;
+}
+
+.ocup-spl-msg-aviso {
+  margin: 4px 0 0 0.75rem;
+}
+
+.ocup-spl-msg-erro {
+  margin: 4px 0 0 0.75rem;
+  color: #c62828;
+}
+
+.viabilidade-saida-livre {
+  color: #2e7d32;
+  font-weight: 500;
+}
+
+.viabilidade-saida-ocupada {
+  color: #c62828;
+  font-weight: 500;
+}
+
+.viabilidade-saida-neutra {
+  color: #616161;
 }
 
 @media (max-width: 768px) {
