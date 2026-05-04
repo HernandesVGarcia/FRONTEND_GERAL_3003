@@ -33,10 +33,9 @@ export class ListaPopsCLIComponent implements OnInit {
       next: (retorno) => {
         console.log('========================>Dados Clientes recebidos:', retorno);
         if ('response' in retorno) {
-          this.vetorPOPSCLI = (retorno as any).response;
+          this.vetorPOPSCLI = (retorno as unknown as { response: PopsCli[] }).response;
         } else {
-          this.vetorPOPSCLI = retorno as PopsCli[]; //emite evento para fibermap
-  
+          this.vetorPOPSCLI = retorno as PopsCli[];
         }
         this.popsCliSelecionada.emit(this.vetorPOPSCLI);
       },

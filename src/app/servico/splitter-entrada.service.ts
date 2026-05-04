@@ -16,6 +16,7 @@ export interface SplitterEntradaRow {
   Y: string;
   ESPELHAR: number;
   ROT: number;
+  NUMERO_CX?: string;
 }
 
 @Injectable({

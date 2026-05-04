@@ -94,6 +94,65 @@ export class PesquisaSiglaService {
   }
 
   /**
+   * Consulta /pesquisa-dio para obter POP e sigla (primeiro item de response).
+   */
+  async pesquisarInfoDioAsync(
+    id_meta: string,
+  ): Promise<{ pop?: string; sigla?: string; capacidade?: number }> {
+    try {
+      const token = this.authService.getToken();
+      const headers = new HttpHeaders()
+        .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer ${token}`);
+
+      const body = { ID_META: id_meta };
+      const url = `${this.baseUrl}/pesquisa-dio`;
+
+      const response = await firstValueFrom(
+        this.http.post<any>(url, body, { headers }).pipe(
+          timeout(this.TIMEOUT),
+          retry(this.RETRY_ATTEMPTS),
+        ),
+      );
+
+      let dados: Record<string, unknown> | undefined;
+      if (
+        response &&
+        response.response &&
+        Array.isArray(response.response) &&
+        response.response.length > 0
+      ) {
+        dados = response.response[0] as Record<string, unknown>;
+      } else {
+        console.warn(`[pesquisa-dio] Nenhum dado para id_meta=${id_meta}`);
+        return {};
+      }
+
+      const popRaw = dados['POP'] ?? dados['pop'];
+      const siglaRaw = dados['sigla'] ?? dados['SIGLA'];
+      const capRaw = dados['CAPACIDADE'] ?? dados['capacidade'];
+      const pop = String(popRaw ?? '').trim();
+      const sigla = String(siglaRaw ?? '').trim();
+      let capacidade: number | undefined;
+      if (capRaw != null && String(capRaw).trim() !== '') {
+        const n = Math.floor(Number(String(capRaw).trim().replace(',', '.')));
+        if (Number.isFinite(n) && n > 0) {
+          capacidade = n;
+        }
+      }
+
+      return {
+        ...(pop ? { pop } : {}),
+        ...(sigla ? { sigla } : {}),
+        ...(capacidade != null ? { capacidade } : {}),
+      };
+    } catch (error) {
+      console.error(`[pesquisa-dio] Erro id_meta=${id_meta}:`, error);
+      return {};
+    }
+  }
+
+  /**
    * Cria um array de DestinoSigla baseado no VetorDestinoCabos
    * Mantém a mesma sequência para arrays paralelos
    */

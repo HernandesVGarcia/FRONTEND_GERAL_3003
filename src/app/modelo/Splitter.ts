@@ -11,5 +11,6 @@ export class Splitter {
     Y: string | any;
     ESPELHAR: boolean | undefined;
     ROT:number | undefined;
+    NUMERO_CX:string | undefined;
                       
     }

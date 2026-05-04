@@ -1,0 +1,394 @@
+/* Alinhado a viabilidade-modal.component.css */
+@import 'bootstrap/dist/css/bootstrap.min.css';
+
+:host ::ng-deep .modal-backdrop {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 5000 !important;
+}
+
+:host ::ng-deep .modal {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  z-index: 5001 !important;
+  display: block !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+
+:host ::ng-deep .modal-dialog {
+  position: relative !important;
+  margin: 1.75rem auto !important;
+  width: 700px !important;
+  max-width: 700px !important;
+  z-index: 5002 !important;
+  pointer-events: none !important;
+  transition: none;
+}
+
+:host ::ng-deep .modal-content {
+  pointer-events: auto !important;
+}
+
+.modal-content {
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2) !important;
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+}
+
+.modal-header {
+  border-radius: 8px 8px 0 0;
+  padding: 12px 20px;
+  cursor: move;
+  user-select: none;
+  background-color: #629ef8 !important;
+  color: #fff !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.modal-title {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.modal-title .title-mat-icon {
+  font-size: 1.5rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  margin-right: 8px;
+  color: inherit;
+  flex-shrink: 0;
+}
+
+.modal-body {
+  padding: 15px 20px;
+  background: linear-gradient(to bottom, #f8f9fa, #ffffff);
+  overflow-y: auto;
+  flex: 0 1 auto;
+  max-height: calc(90vh - 140px);
+}
+
+.card {
+  border-radius: 6px;
+}
+
+.card-compact .card-body-compact {
+  padding: 8px 12px;
+  background-color: #eff3f5;
+}
+
+/* Info do cliente — visível acima de qualquer aba */
+.ativ-cli-info-global {
+  font-size: 0.67rem;
+  color: #0d6efd;
+  border-bottom: 1px solid #dee2e6;
+  margin-bottom: 1rem;
+}
+
+/* Cabeçalho cliente aba A: metade do ~.small (0.875rem) e texto azul */
+.ativ-cli-cabecalho .ativ-cli-cabecalho-body { 
+  font-size: 0.68rem ;
+  line-height: 1.35;
+}
+
+.ativ-cli-cabecalho .ativ-cli-cabecalho-label,
+.ativ-cli-cabecalho .ativ-cli-cabecalho-valor {
+  color: #0d6efd;
+}
+
+.ativ-cli-cabecalho .ativ-cli-cabecalho-label {
+  opacity: 0.88;
+}
+
+.ativ-cli-cabecalho .ativ-cli-cabecalho-linha {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+}
+
+.ativ-cli-cabecalho .ativ-cli-cabecalho-linha + .ativ-cli-cabecalho-linha {
+  margin-top: 0.25rem;
+}
+/* aqui inicia a lista tipo flexgrid da aba B
+/* Aba B: nome do campo à esquerda, valor (input) à direita */
+.ativ-aba-b-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.ativ-aba-b-row {
+  display: grid;
+  grid-template-columns: minmax(8rem, auto) 1fr;
+  gap: 0.5rem 0.75rem;
+  align-items: center;
+}
+
+.ativ-aba-b-label .form-label-compact {
+  margin-bottom: 0;
+}
+
+.ativ-aba-b-value .input-compact,
+.ativ-aba-b-value .form-control-sm {
+  max-width: 100%;
+}
+/* aqui termina a lista tipo flexgrid da aba B */ 
+
+.form-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 6px;
+}
+
+.form-label-compact {
+  font-size: 0.85rem;
+  margin-bottom: 2px;
+}
+
+.form-control-sm {
+  height: 32px;
+  padding: 4px 10px;
+  font-size: 0.875rem;
+}
+
+.input-compact {
+  height: 28px;
+  padding: 2px 8px;
+  font-size: 0.8rem;
+  min-width: 90px;
+}
+
+.input-raio-ativ {
+  max-width: none;
+}
+
+.error-message {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #d32f2f;
+}
+
+.error-message .error-glyph {
+  flex-shrink: 0;
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.ativ-btn-ativar {
+  min-width: 320px;
+}
+
+.modal-footer {
+  border-top: 2px solid #dee2e6;
+  padding: 12px 20px;
+  border-radius: 0 0 8px 8px;
+  background-color: #f8f9fa !important;
+}
+
+.btn-sm {
+  padding: 8px 16px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 6px;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #345677 0%, #345677 100%);
+  border: none;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #345677 0%, #345677 100%);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: linear-gradient(135deg, #6c757d 0%, #5c636a 100%);
+  border: none;
+}
+
+.viabilidade-sem-resultado {
+  color: #c62828;
+  font-weight: 500;
+}
+
+.viabilidade-tree-panel {
+  max-height: 260px;
+  overflow-y: auto;
+  background: #fafbfc;
+}
+
+.viabilidade-tree-node {
+  margin-bottom: 2px;
+}
+
+.viabilidade-details {
+  border-radius: 4px;
+  background: #fff;
+  border: 1px solid #e8e8e8;
+}
+
+.viabilidade-summary {
+  cursor: pointer;
+  font-size: 0.7375rem;
+  padding: 3px 6px;
+  list-style: none;
+}
+
+.viabilidade-summary::-webkit-details-marker {
+  display: none;
+}
+
+.viabilidade-summary-label {
+  user-select: text;
+  white-space: pre-wrap;
+  color: #1565c0;
+}
+
+.viabilidade-summary-clicavel {
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 2px;
+}
+
+.viabilidade-summary-clicavel:hover {
+  color: #0d47a1;
+}
+
+.viabilidade-tree-children {
+  margin: 0 0 6px 0;
+  padding: 0 10px 4px 1.5rem;
+  min-height: 0;
+}
+
+.viabilidade-splitter-row {
+  padding: 2px 0;
+  line-height: 1.35;
+}
+
+.viabilidade-splitter-erro {
+  color: #c62828;
+}
+
+.viabilidade-splitter-label {
+  font-weight: 400;
+  font-size: 0.7375rem;
+}
+
+.viabilidade-splitter-details {
+  border-radius: 3px;
+  border: 1px solid #eee;
+  padding: 2px 4px;
+  background: #fafafa;
+}
+
+.viabilidade-splitter-details .viabilidade-splitter-summary {
+  cursor: pointer;
+  list-style: none;
+  font-size: 0.7375rem;
+  padding: 1px 0;
+}
+
+.viabilidade-splitter-details .viabilidade-splitter-summary::-webkit-details-marker {
+  display: none;
+}
+
+.viabilidade-splitter-saidas {
+  margin: 4px 0 2px 0;
+  padding: 0 0 2px 1rem;
+}
+
+.viabilidade-splitter-saidas li {
+  padding: 1px 0;
+  line-height: 1.35;
+}
+
+.viabilidade-saida-clique {
+  cursor: pointer;
+  border-radius: 2px;
+  padding: 2px 4px;
+  margin-left: -4px;
+}
+
+.viabilidade-saida-clique:hover {
+  background: rgba(52, 86, 119, 0.08);
+}
+
+.viabilidade-saida-clique.ativ-saida-ativacao-selecionada {
+  background: rgba(98, 158, 248, 0.22);
+  outline: 1px solid rgba(52, 86, 119, 0.45);
+  outline-offset: 0;
+}
+
+.viabilidade-splitter-ocup-loading {
+  margin: 4px 0 0 0.75rem;
+  padding-bottom: 0;
+}
+
+.ocup-spl-msg-aviso {
+  margin: 4px 0 0 0.75rem;
+}
+
+.ocup-spl-msg-erro {
+  margin: 4px 0 0 0.75rem;
+  color: #c62828;
+}
+
+.viabilidade-saida-livre {
+  color: #2e7d32;
+  font-weight: 500;
+}
+
+.viabilidade-saida-ocupada {
+  color: #c62828;
+  font-weight: 500;
+}
+
+.viabilidade-saida-neutra {
+  color: #616161;
+}
+
+/* Abas A / B */
+.ativ-modal-tabs {
+  border-bottom: 1px solid #dee2e6;
+}
+
+.ativ-modal-tabs .nav-link {
+  color: #495057;
+  font-weight: 600;
+  padding: 0.4rem 0.85rem;
+  border: 1px solid transparent;
+}
+
+.ativ-modal-tabs .nav-link:hover:not(.active) {
+  border-color: #dee2e6 #dee2e6 transparent;
+  color: #345677;
+}
+
+.ativ-modal-tabs .nav-link.active {
+  color: #345677;
+  background-color: #fff;
+  border-color: #dee2e6 #dee2e6 #fff;
+  margin-bottom: -1px;
+}
+
+@media (max-width: 768px) {
+  :host ::ng-deep .modal-dialog {
+    width: 95% !important;
+    max-width: 95% !important;
+  }
+}

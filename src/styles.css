@@ -188,6 +188,14 @@ body.modal-open .modal-content {
 .viabilidade-modal-window app-viabilidade-modal .modal-content * { pointer-events: auto !important; }
 .viabilidade-modal-window app-viabilidade-modal .modal-content { user-select: none !important; }
 
+/* Ativação Cliente (caixas por raio desde o marcador cliente) */
+.pop-info-ativacao-modal-window,
+.pop-info-ativacao-modal-window * { pointer-events: none !important; }
+.pop-info-ativacao-modal-window .modal-dialog > .modal-content { pointer-events: none !important; }
+.pop-info-ativacao-modal-window app-pop-info-ativacao-modal .modal-content,
+.pop-info-ativacao-modal-window app-pop-info-ativacao-modal .modal-content * { pointer-events: auto !important; }
+.pop-info-ativacao-modal-window app-pop-info-ativacao-modal .modal-content { user-select: none !important; }
+
 /* Cadastro Cliente */
 .cadastro-cliente-modal-window,
 .cadastro-cliente-modal-window * { pointer-events: none !important; }

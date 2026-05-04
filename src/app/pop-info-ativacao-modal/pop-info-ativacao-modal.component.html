@@ -1,0 +1,327 @@
+<div class="modal-dialog modal-lg" #modalDialog>
+  <div class="modal-content shadow-lg">
+    <div
+      class="modal-header bg-primary text-white"
+      (mousedown)="onMouseDown($event)"
+      style="cursor: move"
+    >
+      <h5 class="modal-title fw-bold">
+        <mat-icon class="title-mat-icon" aria-hidden="true">radar</mat-icon>
+        Ativação Cliente
+      </h5>
+      <button
+        type="button"
+        class="btn-close btn-close-white"
+        (click)="onCancel()"
+        aria-label="Fechar"
+      ></button>
+    </div>
+
+    <div class="modal-body">
+      <div class="ativ-cli-info-global px-3 pt-2 pb-1">
+        <span class="fw-semibold me-1">Cliente:</span>
+        <span class="me-3">{{ clienteNomeExibicao }}</span>
+        <span class="fw-semibold me-1">id_meta:</span>
+        <span>{{ clienteIdMetaExibicao }}</span>
+      </div>
+
+      <ul class="nav nav-tabs ativ-modal-tabs mb-3" role="tablist">
+        <li *ngIf="!temRecursoAtivo" class="nav-item" role="presentation">
+          <button
+            type="button"
+            class="nav-link active"
+            id="tab-panel-a"
+            role="tab"
+            aria-selected="true"
+            aria-controls="painel-ab-a"
+          >
+            ATIVAÇÃO
+          </button>
+        </li>
+        <li *ngIf="temRecursoAtivo" class="nav-item" role="presentation">
+          <button
+            type="button"
+            class="nav-link active"
+            id="tab-panel-b"
+            role="tab"
+            aria-selected="true"
+            aria-controls="painel-ab-b"
+          >
+            ATIVADO
+          </button>
+        </li>
+      </ul>
+
+      <div *ngIf="!temRecursoAtivo" id="painel-ab-a" role="tabpanel" aria-labelledby="tab-panel-a">
+        <p class="text-muted small mb-3">
+          Busca <strong>Recursos</strong> no raio a partir da
+          <strong>posição do cliente</strong> . Predefinição: 150 m.
+        </p>
+
+        <div *ngIf="errorMessage" class="error-message p-3" role="alert">
+          <span class="error-glyph" aria-hidden="true">&#9888;</span>
+          <span>{{ errorMessage }}</span>
+        </div>
+
+        <div class="card card-compact mb-3 border-primary">
+          <div class="card-body card-body-compact">
+            <div class="row g-2 align-items-end">
+              <div class="col-12 col-sm-8">
+                <label class="form-label fw-semibold form-label-compact" for="ativRaioMetros"
+                  >Raio (m)</label
+                >
+                <input
+                  type="text"
+                  id="ativRaioMetros"
+                  class="form-control form-control-sm input-compact input-raio-ativ"
+                  name="raioMetrosTexto"
+                  [(ngModel)]="raioMetrosTexto"
+                  inputmode="decimal"
+                  placeholder="150"
+                  autocomplete="off"
+                  title="Distância máxima em metros a partir do cliente"
+                />
+              </div>
+              <div class="col-12 col-sm-4 d-flex align-items-end">
+                <button
+                  type="button"
+                  class="btn btn-primary btn-sm w-45"
+                  (click)="onBuscar()"
+                >
+                  Buscar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          *ngIf="mensagemSemResultado && !errorMessage"
+          class="viabilidade-sem-resultado small mb-3"
+          role="alert"
+        >
+          {{ mensagemSemResultado }}
+        </div>
+
+        <div *ngIf="resultadoArvore.length > 0" class="card border-secondary">
+          <div class="card-header py-2 px-3 small fw-semibold">
+            recursos próximos
+            <span class="fw-normal text-muted ms-1">— Escolha uma caixa na lista abaixo </span>
+          </div>
+          <div class="card-body p-2 viabilidade-tree-panel">
+            <ul class="viabilidade-tree list-unstyled mb-0" role="tree" aria-label="Pontos por distância">
+              <li *ngFor="let node of resultadoArvore" class="viabilidade-tree-node" role="treeitem">
+                <details class="viabilidade-details" (toggle)="onDetalhesViabilidadeToggle($event, node)">
+                  <summary class="viabilidade-summary">
+                    <span
+                      class="viabilidade-summary-label viabilidade-summary-clicavel"
+                      (click)="onCentrarEquipamentoNaLista(node); $event.stopPropagation()"
+                      title="Centrar o mapa neste ponto (a cruz verde da pesquisa mantém-se)"
+                      role="button"
+                      tabindex="0"
+                      (keydown.enter)="onCentrarEquipamentoNaLista(node); $event.stopPropagation()"
+                      (keydown.space)="onCentrarEquipamentoNaLista(node); $event.preventDefault(); $event.stopPropagation()"
+                      >{{ rotuloLinhaViabilidade(node) }}</span
+                    >
+                  </summary>
+                  <ul class="viabilidade-tree-children list-unstyled">
+                    <li *ngIf="node.splittersLoading" class="viabilidade-splitter-row text-muted small">
+                      A carregar splitters…
+                    </li>
+                    <li *ngIf="node.splittersError" class="viabilidade-splitter-row viabilidade-splitter-erro small">
+                      {{ node.splittersError }}
+                    </li>
+                    <ng-container *ngIf="!node.splittersLoading && node.splitters !== undefined">
+                      <li *ngIf="node.splitters.length === 0" class="viabilidade-splitter-row text-muted small">
+                        Nenhum splitter.
+                      </li>
+                      <li *ngFor="let sp of node.splitters" class="viabilidade-splitter-row small">
+                        <details
+                          class="viabilidade-splitter-details"
+                          (click)="$event.stopPropagation()"
+                          (toggle)="onToggleSpliterOccDetails($event, sp)"
+                        >
+                          <summary class="viabilidade-splitter-summary">
+                            <span class="viabilidade-splitter-label">{{ rotuloSplitterViabilidade(sp) }}</span>
+                          </summary>
+                          <ng-container *ngIf="indicesSaidasSplitter(sp) as saidas">
+                            <p *ngIf="ocupSpliterCarregando(sp)" class="viabilidade-splitter-ocup-loading text-muted small mb-1">
+                              A carregar ocupação…
+                            </p>
+                            <p
+                              *ngIf="ocupSpliterSemRotaOcupacao(sp)"
+                              class="small mb-1 text-muted ocup-spl-msg-aviso"
+                              role="status"
+                            >
+                              Consulta de ocupação não disponível para esta capacidade.
+                            </p>
+                            <p
+                              *ngIf="ocupSpliterErroApiOcupacao(sp) as erroOcup"
+                              class="small mb-1 ocup-spl-msg-erro"
+                              role="alert"
+                            >
+                              {{ erroOcup }}
+                            </p>
+                            <ul *ngIf="saidas.length > 0" class="list-unstyled viabilidade-splitter-saidas">
+                              <li
+                                *ngFor="let k of saidas"
+                                class="small viabilidade-splitter-saida-linha viabilidade-saida-clique"
+                                [class.ativ-saida-ativacao-selecionada]="isSaidaAtivacaoSelecionada(node, sp, k)"
+                                role="button"
+                                tabindex="0"
+                                title="Seleccionar esta saída para Ativar; extrair entrada do splitter e consultar circuito no cabo"
+                                (click)="onClickSaidaExtrairFluxo(node, sp, k, $event)"
+                                (keydown.enter)="onClickSaidaExtrairFluxo(node, sp, k, $event)"
+                                (keydown.space)="
+                                  onClickSaidaExtrairFluxo(node, sp, k, $event);
+                                  $event.preventDefault()
+                                "
+                              >
+                                <span>{{ prefixoLinhaSaidaViabilidade(k) }}</span>
+                                <span [ngClass]="classesCorStatusSaidaSpliter(sp, k)">{{ textoStatusSaidaSpliter(sp, k) }}</span>
+                              </li>
+                            </ul>
+                            <p
+                              *ngIf="saidas.length === 0"
+                              class="viabilidade-splitter-saidas-empty text-muted small mb-0"
+                            >
+                              Capacidade indisponível ou zero.
+                            </p>
+                          </ng-container>
+                        </details>
+                      </li>
+                    </ng-container>
+                  </ul>
+                </details>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-center mt-3">
+          <button
+            type="button"
+            class="btn btn-primary btn-sm ativ-btn-ativar"
+            [disabled]="ativarEnviando || !selecaoAtivacao"
+            (click)="onAtivar()"
+          >
+            {{ ativarEnviando ? 'A enviar…' : 'Ativar' }}
+          </button>
+        </div>
+      </div>
+
+      <div *ngIf="temRecursoAtivo" id="painel-ab-b" role="tabpanel" aria-labelledby="tab-panel-b">
+        <p class="text-muted small mb-3">
+          Recursos Utilizados:
+        </p>
+        <div class="card card-compact mb-0 border-secondary">
+          <div class="card-body card-body-compact">
+            <div class="ativ-aba-b-grid" aria-label="Campos complementares">
+              <div class="ativ-aba-b-row">
+                <div class="ativ-aba-b-label">
+                  <label class="form-label fw-semibold form-label-compact mb-0" for="campoCaixaTxt">Caixa</label>
+                </div>
+                <div class="ativ-aba-b-value">
+                  <input
+                    id="campoCaixaTxt"
+                    type="text"
+                    class="form-control form-control-sm input-compact"
+                    [(ngModel)]="campoCaixa"
+                    name="campoCaixa"
+                    autocomplete="off"
+                  />
+                </div>
+              </div>
+              <div class="ativ-aba-b-row">
+                <div class="ativ-aba-b-label">
+                  <label class="form-label fw-semibold form-label-compact mb-0" for="campoSplitterTxt">Splitter</label>
+                </div>
+                <div class="ativ-aba-b-value">
+                  <input
+                    id="campoSplitterTxt"
+                    type="text"
+                    class="form-control form-control-sm input-compact"
+                    [(ngModel)]="campoSplitter"
+                    name="campoSplitter"
+                    autocomplete="off"
+                  />
+                </div>
+              </div>
+              <div class="ativ-aba-b-row">
+                <div class="ativ-aba-b-label">
+                  <label class="form-label fw-semibold form-label-compact mb-0" for="campoSaidaTxt">Saída</label>
+                </div>
+                <div class="ativ-aba-b-value">
+                  <input
+                    id="campoSaidaTxt"
+                    type="text"
+                    class="form-control form-control-sm input-compact"
+                    [(ngModel)]="campoSaida"
+                    name="campoSaida"
+                    autocomplete="off"
+                  />
+                </div>
+              </div>
+              <div class="ativ-aba-b-row">
+                <div class="ativ-aba-b-label">
+                  <label class="form-label fw-semibold form-label-compact mb-0" for="campoEstacaoDioTxt"
+                    >Estação_DIO</label
+                  >
+                </div>
+                <div class="ativ-aba-b-value">
+                  <input
+                    id="campoEstacaoDioTxt"
+                    type="text"
+                    class="form-control form-control-sm input-compact"
+                    [(ngModel)]="campoEstacaoDio"
+                    name="campoEstacaoDio"
+                    autocomplete="off"
+                  />
+                </div>
+              </div>
+              <div class="ativ-aba-b-row">
+                <div class="ativ-aba-b-label">
+                  <label class="form-label fw-semibold form-label-compact mb-0" for="campoPortaOltTxt"
+                    >Porta_OLT</label
+                  >
+                </div>
+                <div class="ativ-aba-b-value">
+                  <input
+                    id="campoPortaOltTxt"
+                    type="text"
+                    class="form-control form-control-sm input-compact"
+                    [(ngModel)]="campoPortaOlt"
+                    name="campoPortaOlt"
+                    autocomplete="off"
+                  />
+                </div>
+              </div>
+              <div class="ativ-aba-b-row">
+                <div class="ativ-aba-b-label">
+                  <label class="form-label fw-semibold form-label-compact mb-0" for="campoNivelTxt">Nível</label>
+                </div>
+                <div class="ativ-aba-b-value">
+                  <input
+                    id="campoNivelTxt"
+                    type="text"
+                    class="form-control form-control-sm input-compact"
+                    [(ngModel)]="campoNivel"
+                    name="campoNivel"
+                    autocomplete="off"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer bg-light d-flex justify-content-end flex-wrap gap-2">
+      <button type="button" class="btn btn-secondary btn-sm" (click)="onCancel()">
+        <span class="me-1">✕</span>
+        Fechar
+      </button>
+    </div>
+  </div>
+</div>

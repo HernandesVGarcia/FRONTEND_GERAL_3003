@@ -62,10 +62,13 @@ import { ExcluiDioService, ExcluiDioRequest, ExcluiDioResponse } from '../servic
 import { ExcluiEstacaoService, ExcluiEstacaoRequest, ExcluiEstacaoResponse } from '../servico/exclui-estacao.service';
 import { ExcluiClienteService, ExcluiClienteRequest, ExcluiClienteResponse } from '../servico/exclui-cliente.service';
 import { Subject, takeUntil } from 'rxjs';
+import { take } from 'rxjs/operators';
 
 import { MatDialog } from '@angular/material/dialog';
 import { NgbModal, NgbModalModule } from '@ng-bootstrap/ng-bootstrap';
 import { PopInfoModalComponent } from '../pop-info-modal/pop-info-modal.component';
+import { PopInfoAtivacaoModalComponent } from '../pop-info-ativacao-modal/pop-info-ativacao-modal.component';
+import { UpdateClienteAtivacaoResponse } from '../servico/update-cliente-ativacao.service';
 import { PopInfoUpdateService } from '../servico/pop-info-update.service';
 import { PopInfoEstacaoUpdateService } from '../servico/pop-info-estacao-update.service';
 import { PopEstacaoInfoModalComponent } from '../pop-estacao-info-modal/pop-estacao-info-modal.component';
@@ -324,6 +327,15 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
   private clickedCliData: any = null; // 🆕 Armazena dados do cliente clicado
   private clickedCliAtData: any = null; // 🆕 Armazena dados do cliente ativado clicado
   private clickedCliDesData: any = null; // 🆕 Armazena dados do cliente desativado clicado
+  /**
+   * Referência ao marcador do cliente no último menu de contexto (CLI / CLIAT / CLIDES).
+   * Usada para `extrairRecursosDoMarcadorCliente` na abertura do modal de ativação.
+   * Zera em `hideContextMenu` (normalmente após abrir o modal — os valores já foram lidos),
+   * no menu de estação, após excluir cliente, ou é substituída ao clicar noutro marcador de cliente.
+   */
+  private clickedClienteMarker: google.maps.Marker | null = null;
+  /** Cópia da ref do marcador ao abrir o modal de ativação (hideContextMenu zera clickedClienteMarker). */
+  private marcadorClienteAtivacaoModal: google.maps.Marker | null = null;
   private clickedEstacaoData: any = null; // 🆕 Armazena dados da estação clicada
   private clickedPolyline: google.maps.Polyline | null = null; // 🆕 Armazena a polyline clicada
   private ultimaCoordenadaClique: google.maps.LatLng | null = null; // 🆕 Armazena coordenada do último clique para identificar ponta
@@ -629,6 +641,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
       this.clickedCliData = null; // 🆕 Limpar dados de cliente
       this.clickedCliAtData = null; // 🆕 Limpar dados de cliente ativado
       this.clickedCliDesData = null; // 🆕 Limpar dados de cliente desativado
+      this.clickedClienteMarker = null; // marcador cliente: só válido enquanto o menu está ativo
       this.clickedDioData = null; // 🆕 Limpar dados do DIO
       this.clickedEstacaoData = null; // 🆕 Limpar dados da estação
       
@@ -742,6 +755,9 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
       // 🆕 Ações para Clientes
       case 'visualizar-cliente':
         this.visualizarCliente();
+        break;
+      case 'ativacao-cliente':
+        this.abrirAtivacaoClienteModal();
         break;
       case 'excluir-cliente':
         this.excluirCliente();
@@ -4951,6 +4967,176 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
     }
   }
 
+  /** id_meta e recurso_* no MVCObject do Marker (Google Maps). */
+  private gravarCamposClienteNoMarcador(marker: google.maps.Marker, location: PopsCli): void {
+    const idMeta = location.id_meta;
+    if (idMeta != null && Number.isFinite(Number(idMeta)) && Number(idMeta) > 0) {
+      marker.set('id_meta', idMeta);
+    }
+    this.marcarRecursosClienteNoMarcador(marker, {
+      recurso_caixa: location.recurso_caixa,
+      recurso_sp: location.recurso_sp,
+      recurso_sp_saida: location.recurso_sp_saida,
+    });
+  }
+
+  /** Grava só recurso_caixa / recurso_sp / recurso_sp_saida (números finitos >= 0). */
+  private marcarRecursosClienteNoMarcador(
+    marker: google.maps.Marker,
+    r: {
+      recurso_caixa?: number | null;
+      recurso_sp?: number | null;
+      recurso_sp_saida?: number | null;
+    },
+  ): void {
+    const setRecurso = (
+      chave: 'recurso_caixa' | 'recurso_sp' | 'recurso_sp_saida',
+      v: number | undefined | null,
+    ): void => {
+      if (v === undefined || v === null) {
+        return;
+      }
+      const n = typeof v === 'number' ? v : Number(v);
+      if (!Number.isFinite(n) || n < 0) {
+        return;
+      }
+      marker.set(chave, n);
+    };
+    setRecurso('recurso_caixa', r.recurso_caixa);
+    setRecurso('recurso_sp', r.recurso_sp);
+    setRecurso('recurso_sp_saida', r.recurso_sp_saida);
+  }
+
+  /** Une o PopsCli do vetor com recurso_* lidos do marcador (marker.get). */
+  private popsCliMesclandoRecursosMarcador(marker: google.maps.Marker, base: PopsCli): PopsCli {
+    const lerMarcadorNum = (k: string): number | undefined => {
+      const raw = marker.get(k);
+      if (raw === undefined || raw === null) {
+        return undefined;
+      }
+      const n = typeof raw === 'number' ? raw : Number(raw);
+      return Number.isFinite(n) && n >= 0 ? n : undefined;
+    };
+    const rc = lerMarcadorNum('recurso_caixa');
+    const rsp = lerMarcadorNum('recurso_sp');
+    const rsa = lerMarcadorNum('recurso_sp_saida');
+    return {
+      ...base,
+      recurso_caixa: rc !== undefined ? rc : base.recurso_caixa,
+      recurso_sp: rsp !== undefined ? rsp : base.recurso_sp,
+      recurso_sp_saida: rsa !== undefined ? rsa : base.recurso_sp_saida,
+    };
+  }
+
+  /** Lê recurso_caixa / recurso_sp / recurso_sp_saida do MVCObject do marcador (fonte fiável quando o vetor destino atrasa). */
+  private extrairRecursosDoMarcadorCliente(marker: google.maps.Marker | null): {
+    recurso_caixa?: number;
+    recurso_sp?: number;
+    recurso_sp_saida?: number;
+  } {
+    if (!marker) {
+      return {};
+    }
+    const num = (k: string): number | undefined => {
+      const raw = marker.get(k);
+      if (raw === undefined || raw === null) {
+        return undefined;
+      }
+      const n = typeof raw === 'number' ? raw : Number(raw);
+      return Number.isFinite(n) && n >= 0 ? n : undefined;
+    };
+    const out: {
+      recurso_caixa?: number;
+      recurso_sp?: number;
+      recurso_sp_saida?: number;
+    } = {};
+    const rc = num('recurso_caixa');
+    const rsp = num('recurso_sp');
+    const rsa = num('recurso_sp_saida');
+    if (rc !== undefined) {
+      out.recurso_caixa = rc;
+    }
+    if (rsp !== undefined) {
+      out.recurso_sp = rsp;
+    }
+    if (rsa !== undefined) {
+      out.recurso_sp_saida = rsa;
+    }
+    return out;
+  }
+
+  private findMarcadorClientePorIdMeta(idMeta: number): google.maps.Marker | null {
+    if (!Number.isFinite(idMeta) || idMeta <= 0) {
+      return null;
+    }
+    const pares: readonly (readonly [PopsCli[], google.maps.Marker[]])[] = [
+      [this.destinoPopsCli ?? [], this.markerPopsCli],
+      [this.destinoPopsCliAtv ?? [], this.markerPopsCliAtv],
+      [this.destinoPopsCliDes ?? [], this.markerPopsCliDes],
+    ];
+    for (const [dest, markers] of pares) {
+      const i = dest.findIndex((c) => c?.id_meta === idMeta);
+      if (i !== -1 && markers[i]) {
+        return markers[i];
+      }
+    }
+    return null;
+  }
+
+  private resolverMarcadorAtivacaoCliente(idMetaCliente: number | undefined): google.maps.Marker | null {
+    const guardado = this.marcadorClienteAtivacaoModal;
+    if (guardado != null && idMetaCliente != null) {
+      const mId = guardado.get('id_meta');
+      const n = typeof mId === 'number' ? mId : Number(mId);
+      if (Number.isFinite(n) && n === idMetaCliente) {
+        return guardado;
+      }
+    }
+    if (idMetaCliente != null) {
+      return this.findMarcadorClientePorIdMeta(idMetaCliente);
+    }
+    return guardado;
+  }
+
+  private aplicarRecursosAtivacaoNoMarcadorCliente(result: {
+    payload: UpdateClienteAtivacaoResponse;
+    idMetaCliente?: number;
+    recursoFormulario?: { caixa?: number; sp?: number; saida?: number };
+  }): void {
+    const marker = this.resolverMarcadorAtivacaoCliente(result.idMetaCliente);
+    if (!marker) {
+      console.warn('[ativacao-cliente] Marcador não encontrado para id_meta', result.idMetaCliente);
+      return;
+    }
+    const p = result.payload;
+    const form = result.recursoFormulario;
+    const numApi = (v: unknown): number | undefined => {
+      if (v === undefined || v === null) {
+        return undefined;
+      }
+      const n = typeof v === 'number' ? v : Number(v);
+      if (!Number.isFinite(n) || n < 0) {
+        return undefined;
+      }
+      return n;
+    };
+    const pick = (apiRaw: unknown, formVal: number | undefined): number | undefined => {
+      const fromApi = numApi(apiRaw);
+      if (fromApi !== undefined) {
+        return fromApi;
+      }
+      if (formVal != null && Number.isFinite(formVal) && formVal >= 0) {
+        return formVal;
+      }
+      return undefined;
+    };
+    this.marcarRecursosClienteNoMarcador(marker, {
+      recurso_caixa: pick(p.recurso_caixa, form?.caixa),
+      recurso_sp: pick(p.recurso_sp, form?.sp),
+      recurso_sp_saida: pick(p.recurso_sp_saida, form?.saida),
+    });
+  }
+
 //=====================================função para carregar as POPs na Tela================================
   private updateMarkersPopsCli() {
     
@@ -5002,6 +5188,8 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
       if (this.map) {
         marker.setMap(this.map);
       }
+
+      this.gravarCamposClienteNoMarcador(marker, location);
 
       this.addMarkerEventListeners(marker, false, false, true, false, false);
 
@@ -5065,6 +5253,8 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
         marker.setMap(this.map);
       }
 
+      this.gravarCamposClienteNoMarcador(marker, location);
+
       this.addMarkerEventListeners(marker, false, false, false, false, true);
 
       this.markerPopsCliDes.push(marker);
@@ -5127,6 +5317,8 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
       if (this.map) {
         marker.setMap(this.map);
       }
+
+      this.gravarCamposClienteNoMarcador(marker, location);
 
       this.addMarkerEventListeners(marker, false, false, false, true, false);
 
@@ -5244,6 +5436,8 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
           this.clickedCliData = null;
           this.clickedCliAtData = null;
           this.clickedCliDesData = null;
+          // Não misturar cliente/marcador anterior com o menu da estação.
+          this.clickedClienteMarker = null;
           
           // Definir tipo de contexto como 'estacao'
           this.contextMenuType = 'estacao';
@@ -7155,13 +7349,17 @@ private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = fal
       if (index !== -1) {
         const cliente = this.destinoPopsCli[index];
         
+        const clienteComMarcador =
+          cliente != null ? this.popsCliMesclandoRecursosMarcador(marker, cliente) : cliente;
+
         console.log('🔴 [CONTEXT-MENU] Cliente encontrado no índice:', index);
-        console.log('🔴 [CONTEXT-MENU] Dados do cliente:', cliente);
-        
-        // Armazenar dados do cliente clicado
-        this.clickedCliData = cliente;
+        console.log('🔴 [CONTEXT-MENU] Dados do cliente:', clienteComMarcador);
+
+        // Armazenar dados do cliente clicado (recurso_* preferindo valores no Marker)
+        this.clickedCliData = clienteComMarcador;
         this.clickedCliAtData = null; // Limpar dados de outros tipos
         this.clickedCliDesData = null;
+        this.clickedClienteMarker = marker;
         this.clickedCaixaData = null;
         this.clickedCTOData = null;
         this.clickedCTOSPData = null;
@@ -7183,13 +7381,19 @@ private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = fal
       if (index !== -1) {
         const clienteAt = this.destinoPopsCliAtv[index];
         
+        const clienteAtComMarcador =
+          clienteAt != null
+            ? this.popsCliMesclandoRecursosMarcador(marker, clienteAt)
+            : clienteAt;
+
         console.log('🔴 [CONTEXT-MENU] Cliente Ativado encontrado no índice:', index);
-        console.log('🔴 [CONTEXT-MENU] Dados do cliente ativado:', clienteAt);
-        
+        console.log('🔴 [CONTEXT-MENU] Dados do cliente ativado:', clienteAtComMarcador);
+
         // Armazenar dados do cliente ativado clicado
-        this.clickedCliAtData = clienteAt;
+        this.clickedCliAtData = clienteAtComMarcador;
         this.clickedCliData = null; // Limpar dados de outros tipos
         this.clickedCliDesData = null;
+        this.clickedClienteMarker = marker;
         this.clickedCaixaData = null;
         this.clickedCTOData = null;
         this.clickedCTOSPData = null;
@@ -7211,13 +7415,19 @@ private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = fal
       if (index !== -1) {
         const clienteDes = this.destinoPopsCliDes[index];
         
+        const clienteDesComMarcador =
+          clienteDes != null
+            ? this.popsCliMesclandoRecursosMarcador(marker, clienteDes)
+            : clienteDes;
+
         console.log('🔴 [CONTEXT-MENU] Cliente Desativado encontrado no índice:', index);
-        console.log('🔴 [CONTEXT-MENU] Dados do cliente desativado:', clienteDes);
-        
+        console.log('🔴 [CONTEXT-MENU] Dados do cliente desativado:', clienteDesComMarcador);
+
         // Armazenar dados do cliente desativado clicado
-        this.clickedCliDesData = clienteDes;
+        this.clickedCliDesData = clienteDesComMarcador;
         this.clickedCliData = null; // Limpar dados de outros tipos
         this.clickedCliAtData = null;
+        this.clickedClienteMarker = marker;
         this.clickedCaixaData = null;
         this.clickedCTOData = null;
         this.clickedCTOSPData = null;
@@ -8912,6 +9122,92 @@ private visualizarCliente(): void {
 }
 
 /**
+ * Caixas com splitters num raio desde a posição do cliente (menu contexto).
+ */
+private abrirAtivacaoClienteModal(): void {
+  let cliente: PopsCli | undefined;
+  if (this.clickedCliData) {
+    cliente = this.clickedCliData;
+  } else if (this.clickedCliAtData) {
+    cliente = this.clickedCliAtData;
+  } else if (this.clickedCliDesData) {
+    cliente = this.clickedCliDesData;
+  }
+
+  if (!cliente) {
+    alert('❌ Erro: Dados do cliente não encontrados.');
+    this.hideContextMenu();
+    return;
+  }
+
+  const lat = Number(cliente.LAT);
+  const lng = Number(cliente.LNG);
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+    alert('❌ Erro: Coordenadas do cliente inválidas.');
+    this.hideContextMenu();
+    return;
+  }
+
+  const rotulo =
+    (cliente.sigla && String(cliente.sigla).trim()) ||
+    (cliente.id_meta != null ? `Cliente #${cliente.id_meta}` : 'Cliente');
+
+  const modalRef = this.ngbModal.open(PopInfoAtivacaoModalComponent, {
+    size: 'lg',
+    backdrop: false,
+    centered: true,
+    windowClass: 'pop-info-ativacao-modal-window',
+  });
+
+  modalRef.componentInstance.caixas = this.destino;
+  modalRef.componentInstance.ctosSP = this.destinoCTOSP;
+  modalRef.componentInstance.clienteLat = lat;
+  modalRef.componentInstance.clienteLng = lng;
+  modalRef.componentInstance.clienteRotulo = rotulo;
+  modalRef.componentInstance.clienteNome =
+    (cliente.sigla && String(cliente.sigla).trim()) || '';
+  modalRef.componentInstance.clienteIdMeta = cliente.id_meta;
+  // Ler recurso_* do MVCObject antes de hideContextMenu() (que zera clickedClienteMarker).
+  const r = this.extrairRecursosDoMarcadorCliente(this.clickedClienteMarker);
+  modalRef.componentInstance.recursoCaixaMarcador = r.recurso_caixa;
+  modalRef.componentInstance.recursoSpMarcador = r.recurso_sp;
+  modalRef.componentInstance.recursoSpSaidaMarcador = r.recurso_sp_saida;
+
+  this.marcadorClienteAtivacaoModal = this.clickedClienteMarker;
+
+  const limparEstadoPosModalAtivacao = (): void => {
+    this.marcadorClienteAtivacaoModal = null;
+    this.compartilhamentoService.limparViabilidadeCirculosCaixas();
+    this.compartilhamentoService.limparViabilidadePontoMapa();
+  };
+
+  modalRef.closed.pipe(take(1)).subscribe((result: unknown) => {
+    if (
+      result != null &&
+      typeof result === 'object' &&
+      'ativar' in result &&
+      (result as { ativar?: boolean }).ativar === true &&
+      'payload' in result &&
+      (result as { payload?: unknown }).payload != null
+    ) {
+      const r = result as {
+        payload: UpdateClienteAtivacaoResponse;
+        idMetaCliente?: number;
+        recursoFormulario?: { caixa?: number; sp?: number; saida?: number };
+      };
+      this.aplicarRecursosAtivacaoNoMarcadorCliente(r);
+    }
+    limparEstadoPosModalAtivacao();
+  });
+
+  modalRef.dismissed.pipe(take(1)).subscribe(() => {
+    limparEstadoPosModalAtivacao();
+  });
+
+  this.hideContextMenu();
+}
+
+/**
  * 🗑️ Exclui um cliente
  */
 private excluirCliente(): void {
@@ -9001,6 +9297,7 @@ private excluirCliente(): void {
         this.clickedCliData = null;
         this.clickedCliAtData = null;
         this.clickedCliDesData = null;
+        this.clickedClienteMarker = null; // marcador já removido do mapa acima
         this.hideContextMenu();
 
         const idUsuario = this.authService.getIdUser();

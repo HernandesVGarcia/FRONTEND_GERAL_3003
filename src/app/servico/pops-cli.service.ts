@@ -1,11 +1,11 @@
 
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
-import {PopsEst} from '../modelo/popsEst';
-import {Observable, throwError } from 'rxjs';
-import { retry, timeout, catchError } from 'rxjs/operators';
+import { Observable, throwError } from 'rxjs';
+import { map, retry, timeout, catchError } from 'rxjs/operators';
 import { AuthService } from '../servico/auth.service';
 import { environment } from '../environments/environment';
+import { PopsCli } from '../modelo/PopsCli';
 
 
 
@@ -30,7 +30,11 @@ export class PopsCliService {
 
   // Método para Selecionar Caixa
   
-  selecionar(id_condominio?: number, status?: number, olt_filter?: string):Observable<PopsEst[]>{
+  selecionar(
+    id_condominio?: number,
+    status?: number,
+    olt_filter?: string,
+  ): Observable<PopsCli[]> {
     const route = `/clientes_coordenadas`;
     const token = this.authService.getToken();
     const idcidade = this.authService.getIdCity();
@@ -55,27 +59,24 @@ export class PopsCliService {
       const url = `${this.baseUrl}${route}`; 
 
 
-    return this.http.post<PopsEst[]>(url,body,{ headers }).pipe(
+    return this.http.post<{ response: PopsCli[] }>(url, body, { headers }).pipe(
+      map((payload) => payload?.response ?? []),
       timeout(this.TIMEOUT),
       retry(this.RETRY_ATTEMPTS),
-      catchError(this.handleError)
+      catchError((err) => this.handleError(err)),
     );
-    
-}
-
-private handleError(error: HttpErrorResponse) {
-  console.error('Erro na requisição:', error);
-  let errorMessage = 'Ocorreu um erro na requisição.';
-  
-  if (error.error instanceof ErrorEvent) {
-    // Erro do cliente
-    errorMessage = `Erro: ${error.error.message}`;
-  } else {
-    // Erro do servidor
-    errorMessage = `Código do erro: ${error.status}, mensagem: ${error.message}`;
   }
-  
-  return throwError(() => errorMessage);
-}   
 
+  private handleError(error: HttpErrorResponse) {
+    console.error('Erro na requisição:', error);
+    let errorMessage = 'Ocorreu um erro na requisição.';
+
+    if (error.error instanceof ErrorEvent) {
+      errorMessage = `Erro: ${error.error.message}`;
+    } else {
+      errorMessage = `Código do erro: ${error.status}, mensagem: ${error.message}`;
+    }
+
+    return throwError(() => errorMessage);
+  }
 }
