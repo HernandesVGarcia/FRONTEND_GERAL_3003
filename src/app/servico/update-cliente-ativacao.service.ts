@@ -19,6 +19,7 @@ export interface UpdateClienteAtivacaoResponse {
   recurso_caixa?: number;
   recurso_sp?: number;
   recurso_sp_saida?: number;
+  portas_olt?: number;
   [key: string]: unknown;
 }
 

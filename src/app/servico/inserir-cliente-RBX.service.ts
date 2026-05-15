@@ -41,6 +41,7 @@ export interface ClienteInsertRequest {
   TAMANHO: string;
   STATUS: string;
   POP_ESTACAO?: number;
+  ID_PROJETISTA?: number;
 }
 
 // Interface para a resposta da inserção
@@ -88,7 +89,8 @@ export class InserirClienteRBXService {
       LNG: clienteApi.MapsMarkLng || null,
       TAMANHO: '1',
       STATUS: status,
-      POP_ESTACAO: 0 // Valor padrão, ajuste se necessário
+      POP_ESTACAO: 0,
+      ID_PROJETISTA: 555   // Valor padrão, ajuste se necessário      
     };
   }
 

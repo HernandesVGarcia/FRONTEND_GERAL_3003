@@ -66,6 +66,10 @@
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "open": false,
+            "host": "127.0.0.1"
+          },
           "configurations": {
             "production": {
               "buildTarget": "angular-google-maps:build:production"

@@ -214,6 +214,10 @@
         <p class="text-muted small mb-3">
           Recursos Utilizados:
         </p>
+        <div *ngIf="errorMessageAtivado" class="error-message p-3 mb-3" role="alert">
+          <span class="error-glyph" aria-hidden="true">&#9888;</span>
+          <span>{{ errorMessageAtivado }}</span>
+        </div>
         <div class="card card-compact mb-0 border-secondary">
           <div class="card-body card-body-compact">
             <div class="ativ-aba-b-grid" aria-label="Campos complementares">
@@ -313,6 +317,24 @@
               </div>
             </div>
           </div>
+        </div>
+        <div class="d-flex justify-content-center gap-2 flex-wrap mt-3">
+          <button
+            type="button"
+            class="btn btn-outline-primary btn-sm ativ-btn-ocupar-olt"
+            [disabled]="ocuparOltEnviando || desativarEnviando || !podeClicarOcuparOlt"
+            (click)="onOcuparOlt()"
+          >
+            {{ ocuparOltEnviando ? 'A enviar…' : 'Ocupar OLT' }}
+          </button>
+          <button
+            type="button"
+            class="btn btn-outline-danger btn-sm"
+            [disabled]="desativarEnviando || ocuparOltEnviando"
+            (click)="onDesativar()"
+          >
+            {{ desativarEnviando ? 'A enviar…' : 'Desativar' }}
+          </button>
         </div>
       </div>
     </div>

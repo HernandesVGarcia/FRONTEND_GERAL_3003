@@ -1,11 +1,13 @@
 import {
   Component,
   ElementRef,
+  EventEmitter,
   HostListener,
   Input,
   NgZone,
   OnDestroy,
   OnInit,
+  Output,
   ViewChild,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -27,7 +29,8 @@ import {
   ConexSplitterOcupacaoService,
 } from '../servico/conex-splitter-ocupacao.service';
 import { ViabilidadeItemNode } from '../viabilidade-modal/viabilidade-modal.component';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, of } from 'rxjs';
+import { catchError, map, switchMap } from 'rxjs/operators';
 import { SplitterEntradaService } from '../servico/splitter-entrada.service';
 import { ExtraiCaboEntradaSpService } from '../servico/extrai-cabo-entrada-sp.service';
 import { FibraDestinoCaboService } from '../servico/fibra-destino-cabo.service';
@@ -38,6 +41,13 @@ import {
   UpdateClienteAtivacaoResponse,
   UpdateClienteAtivacaoService,
 } from '../servico/update-cliente-ativacao.service';
+import {
+  UpdateClienteDesativacaoRequest,
+  UpdateClienteDesativacaoResponse,
+  UpdateClienteDesativacaoService,
+} from '../servico/update-cliente-desativacao.service';
+import { ExcluiPosicaoOltService } from '../servico/exclui-posicao-olt.service';
+import { InsertPosicaoOltService } from '../servico/insert-posicao-olt.service';
 
 const RAIO_PADRAO_METROS = 150;
 const RAIO_MAX_METROS = 100_000;
@@ -53,6 +63,25 @@ interface SplOcupacaoVm {
 const SPLITTER_VIABILIDADE_SAIDAS_CAP_MAX = 256;
 /** Capacidade máxima de fibras em modelo DioEquip quando /pesquisa-dio não devolve CAPACIDADE. */
 const DIO_EQUIP_CAP_FALLBACK = 144;
+
+const MSG_DESATIVACAO_SUCESSO = 'Cliente desativado com sucesso.';
+
+function normalizarTextoAlerta(s: string): string {
+  return s.trim().toLowerCase().replace(/\s+/g, ' ').replace(/\.+$/u, '');
+}
+
+/** Uma linha fixa + detalhe da API, sem repetir quando `message` repete o padrão. */
+function textoAlertaDesativacaoSucesso(resp: UpdateClienteDesativacaoResponse): string {
+  const apiRaw =
+    typeof resp.message === 'string' && resp.message.trim() ? resp.message.trim() : '';
+  if (
+    !apiRaw ||
+    normalizarTextoAlerta(apiRaw) === normalizarTextoAlerta(MSG_DESATIVACAO_SUCESSO)
+  ) {
+    return MSG_DESATIVACAO_SUCESSO;
+  }
+  return `${MSG_DESATIVACAO_SUCESSO}\n\n${apiRaw}`;
+}
 
 @Component({
   selector: 'app-pop-info-ativacao-modal',
@@ -75,6 +104,11 @@ export class PopInfoAtivacaoModalComponent implements OnInit, OnDestroy {
   @Input() recursoCaixaMarcador?: number;
   @Input() recursoSpMarcador?: number;
   @Input() recursoSpSaidaMarcador?: number;
+  /** `portas_olt` no MVCObject do marcador (marker.get), igual à origem dos recurso_* . */
+  @Input() portasOltMarcador?: number;
+
+  /** Emitido quando `/insert_posicao_olt` devolve um `portas_olt_id` válido — o pai atualiza o marcador. */
+  @Output() portasOltOcupacaoRegistada = new EventEmitter<number>();
 
   @ViewChild('modalDialog', { static: false }) modalDialog!: ElementRef;
 
@@ -97,6 +131,8 @@ export class PopInfoAtivacaoModalComponent implements OnInit, OnDestroy {
 
   raioMetrosTexto = String(RAIO_PADRAO_METROS);
   errorMessage = '';
+  /** Erros só da aba ATIVADO (desativar); não misturar com `errorMessage` da pesquisa. */
+  errorMessageAtivado = '';
   resultadoArvore: ViabilidadeItemNode[] = [];
   mensagemSemResultado = '';
 
@@ -110,12 +146,40 @@ export class PopInfoAtivacaoModalComponent implements OnInit, OnDestroy {
       this.recursoCaixaMarcador,
       this.recursoSpMarcador,
       this.recursoSpSaidaMarcador,
+      this.portasOltMarcador,
     ].some((v) => v != null && Number.isFinite(Number(v)) && Number(v) > 0);
   }
 
   /** A = pesquisa de recursos; B = formulário complementar (mantido para compatibilidade de template) */
   get abaAtiva(): 'A' | 'B' {
     return this.temRecursoAtivo ? 'B' : 'A';
+  }
+
+  /** Permite «Ocupar OLT» quando o rastreio terminou num DIO com fibra e id_meta do cliente válidos. */
+  get podeClicarOcuparOlt(): boolean {
+    const raw = this.portasOltMarcador;
+    if (raw != null) {
+      const n = Number(raw);
+      if (Number.isFinite(n) && n !== 0) {
+        return false;
+      }
+    }
+    const out = this.ultimoFibraDestinoAtivado;
+    if (!out) {
+      return false;
+    }
+    if (this.normalizarTipoParaEstacaoDio(out.tipo_objeto) !== 'DIO') {
+      return false;
+    }
+    if (this.parseIndiceFibraDio(out.fibra) == null) {
+      return false;
+    }
+    const idDio = Number(String(out.id_meta ?? '').trim());
+    if (!Number.isFinite(idDio) || idDio <= 0 || !Number.isInteger(idDio)) {
+      return false;
+    }
+    const idPop = Number(this.clienteIdMeta);
+    return Number.isFinite(idPop) && idPop > 0 && Number.isInteger(idPop);
   }
   campoCaixa = '';
   campoSplitter = '';
@@ -127,6 +191,10 @@ export class PopInfoAtivacaoModalComponent implements OnInit, OnDestroy {
   /** Linha escolhida na árvore para o POST em Ativar */
   selecaoAtivacao: UpdateClienteAtivacaoRequest | null = null;
   ativarEnviando = false;
+  desativarEnviando = false;
+  ocuparOltEnviando = false;
+
+  private ultimoFibraDestinoAtivado: FibraDestino | null = null;
 
   private ocupacaoSplPorIdMeta: Record<number, SplOcupacaoVm> = {};
 
@@ -150,6 +218,9 @@ export class PopInfoAtivacaoModalComponent implements OnInit, OnDestroy {
     private pesquisaSiglaService: PesquisaSiglaService,
     private dioEquipamentoService: DioEquipamentoService,
     private updateClienteAtivacaoService: UpdateClienteAtivacaoService,
+    private updateClienteDesativacaoService: UpdateClienteDesativacaoService,
+    private excluiPosicaoOltService: ExcluiPosicaoOltService,
+    private insertPosicaoOltService: InsertPosicaoOltService,
   ) {}
 
   ngOnInit(): void {
@@ -183,6 +254,9 @@ export class PopInfoAtivacaoModalComponent implements OnInit, OnDestroy {
   }
 
   private async rastrearRecursoFibraAbaAtivado(): Promise<void> {
+    this.ngZone.run(() => {
+      this.ultimoFibraDestinoAtivado = null;
+    });
     const idMetaSpl = this.idMetaSplitterAbaAtivado();
     if (idMetaSpl == null) {
       console.warn('[pop-info-ativacao] aba ativado sem splitter válido para rastreamento.');
@@ -220,6 +294,9 @@ export class PopInfoAtivacaoModalComponent implements OnInit, OnDestroy {
         id_meta: out.id_meta,
         tipo_objeto: out.tipo_objeto,
         fibra: out.fibra,
+      });
+      this.ngZone.run(() => {
+        this.ultimoFibraDestinoAtivado = out;
       });
       void this.preencherEstacaoDioPorDestinoRastreio(out);
     } catch (e) {
@@ -415,6 +492,7 @@ export class PopInfoAtivacaoModalComponent implements OnInit, OnDestroy {
     const cx = this.textoRecursoSeValido(this.recursoCaixaMarcador);
     const sp = this.textoRecursoSeValido(this.recursoSpMarcador);
     const sd = this.textoRecursoSeValido(this.recursoSpSaidaMarcador);
+    // portasOltMarcador só para `/exclui_posicao_olt`; campoPortaOlt só pelo rótulo dio_equipamento.
 
     if (cx !== null) {
       this.campoCaixa = cx;
@@ -447,6 +525,127 @@ export class PopInfoAtivacaoModalComponent implements OnInit, OnDestroy {
       return undefined;
     }
     return { caixa, sp, saida };
+  }
+
+  /**
+   * Resolve `idmeta_caixa`: marcador (`recursoCaixaMarcador`) quando válido; senão `POST /splitter_entrada`.
+   */
+  private async resolverIdMetaCaixaParaDesativacao(): Promise<
+    { ok: true; idCaixa: number } | { ok: false; message: string }
+  > {
+    const cxM = this.recursoCaixaMarcador;
+    const marcadorCaixaOk =
+      cxM != null &&
+      Number.isFinite(Number(cxM)) &&
+      Number(cxM) > 0 &&
+      Number.isInteger(Number(cxM));
+    if (marcadorCaixaOk) {
+      return { ok: true, idCaixa: Number(cxM) };
+    }
+    const idSpl = this.idMetaSplitterAbaAtivado();
+    if (idSpl == null) {
+      return {
+        ok: false,
+        message:
+          'Não foi possível obter id da caixa: recurso_caixa ausente no marcador e splitter inválido. Verifique o id_meta do splitter.',
+      };
+    }
+    try {
+      const row = await firstValueFrom(
+        this.splitterEntradaService.buscarPorIdMetaSplitter(idSpl),
+      );
+      const idCx = row?.ID_META_CAIXA;
+      if (
+        idCx == null ||
+        !Number.isFinite(Number(idCx)) ||
+        !(Number(idCx) > 0) ||
+        !Number.isInteger(Number(idCx))
+      ) {
+        return {
+          ok: false,
+          message:
+            'Não foi possível obter id da caixa a partir do splitter (splitter_entrada não devolveu ID_META_CAIXA válido).',
+        };
+      }
+      return { ok: true, idCaixa: Number(idCx) };
+    } catch (e: unknown) {
+      const detail =
+        typeof e === 'string' ? e : e instanceof Error ? e.message : 'Erro desconhecido';
+      return {
+        ok: false,
+        message: `Erro ao consultar splitter_entrada: ${detail}`,
+      };
+    }
+  }
+
+  /**
+   * Body para `/update_cliente_desativação` com `idmeta_caixa` já resolvido.
+   * `campoCaixa` não substitui o id_meta (pode ser NUMERO_CX).
+   */
+  private montarPayloadDesativacaoComCaixa(idCaixa: number): UpdateClienteDesativacaoRequest | null {
+    const idCliente = Number(this.clienteIdMeta);
+    if (!Number.isFinite(idCliente) || idCliente <= 0 || !Number.isInteger(idCliente)) {
+      return null;
+    }
+    const spMarcador = this.recursoSpMarcador;
+    let idSpl: number | null =
+      spMarcador != null &&
+      Number.isFinite(Number(spMarcador)) &&
+      Number(spMarcador) > 0 &&
+      Number.isInteger(Number(spMarcador))
+        ? Number(spMarcador)
+        : null;
+    if (idSpl == null) {
+      idSpl = this.parseCampoInteiroPositivo(this.campoSplitter);
+    }
+    if (idSpl == null) {
+      return null;
+    }
+    const sdMarcador = this.recursoSpSaidaMarcador;
+    let saida: number | null =
+      sdMarcador != null &&
+      Number.isFinite(Number(sdMarcador)) &&
+      Number(sdMarcador) > 0 &&
+      Number.isInteger(Number(sdMarcador))
+        ? Number(sdMarcador)
+        : null;
+    if (saida == null) {
+      saida = this.parseCampoInteiroPositivo(this.campoSaida);
+    }
+    if (saida == null) {
+      return null;
+    }
+    return {
+      idmeta_cliente: idCliente,
+      idmeta_caixa: idCaixa,
+      idmeta_splitter: idSpl,
+      saida_splitter: saida,
+    };
+  }
+
+  private parseCampoInteiroPositivo(s: string): number | null {
+    const raw = (s ?? '').trim().replace(',', '.');
+    if (raw === '') {
+      return null;
+    }
+    const n = Number(raw);
+    if (!Number.isFinite(n) || n <= 0 || !Number.isInteger(n)) {
+      return null;
+    }
+    return n;
+  }
+
+  /** Body opcional para `POST /exclui_posicao_olt` (`id` = portas_olt, `id_pop` = id_meta cliente). */
+  private idsParaExclusaoPosicaoOlt(): { id: number; id_pop: number } | null {
+    const id = Number(this.portasOltMarcador);
+    const id_pop = Number(this.clienteIdMeta);
+    if (!Number.isFinite(id) || id <= 0 || !Number.isInteger(id)) {
+      return null;
+    }
+    if (!Number.isFinite(id_pop) || id_pop <= 0 || !Number.isInteger(id_pop)) {
+      return null;
+    }
+    return { id, id_pop };
   }
 
   onBuscar(): void {
@@ -907,6 +1106,153 @@ export class PopInfoAtivacaoModalComponent implements OnInit, OnDestroy {
         });
       },
     });
+  }
+
+  async onDesativar(): Promise<void> {
+    if (this.desativarEnviando || this.ocuparOltEnviando) {
+      return;
+    }
+    this.desativarEnviando = true;
+    this.errorMessageAtivado = '';
+
+    const resolved = await this.resolverIdMetaCaixaParaDesativacao();
+    if (!resolved.ok) {
+      this.ngZone.run(() => {
+        this.desativarEnviando = false;
+        this.errorMessageAtivado = resolved.message;
+      });
+      return;
+    }
+
+    const body = this.montarPayloadDesativacaoComCaixa(resolved.idCaixa);
+    if (!body) {
+      this.ngZone.run(() => {
+        this.desativarEnviando = false;
+        this.errorMessageAtivado =
+          'Não foi possível montar o pedido de desativação — verifique id_meta do cliente e os recursos da caixa, splitter e saída.';
+      });
+      return;
+    }
+
+    this.updateClienteDesativacaoService
+      .desativarCliente(body)
+      .pipe(
+        switchMap((respDesativacao) => {
+          const ids = this.idsParaExclusaoPosicaoOlt();
+          if (ids == null) {
+            return of({
+              respDesativacao,
+              oltErroMsg: undefined as string | undefined,
+            });
+          }
+          return this.excluiPosicaoOltService.excluir(ids).pipe(
+            map(() => ({
+              respDesativacao,
+              oltErroMsg: undefined as string | undefined,
+            })),
+            catchError((e: unknown) => {
+              const oltErroMsg =
+                e instanceof Error
+                  ? e.message
+                  : typeof e === 'string'
+                    ? e
+                    : 'Erro ao excluir posição OLT.';
+              return of({ respDesativacao, oltErroMsg });
+            }),
+          );
+        }),
+      )
+      .subscribe({
+        next: (x) => {
+          this.ngZone.run(() => {
+            this.desativarEnviando = false;
+            let mensagemAlerta = textoAlertaDesativacaoSucesso(x.respDesativacao);
+            if (x.oltErroMsg) {
+              mensagemAlerta += `\n\nAviso: ${x.oltErroMsg}`;
+            }
+            alert(mensagemAlerta);
+            this.activeModal.close({
+              desativar: true as const,
+              payload: x.respDesativacao,
+              idMetaCliente: this.clienteIdMeta,
+            });
+          });
+        },
+        error: (err: unknown) => {
+          const msg = err instanceof Error ? err.message : 'Erro ao desativar.';
+          this.ngZone.run(() => {
+            this.desativarEnviando = false;
+            this.errorMessageAtivado = msg;
+          });
+        },
+      });
+  }
+
+  onOcuparOlt(): void {
+    if (this.ocuparOltEnviando || this.desativarEnviando) {
+      return;
+    }
+    if (!this.podeClicarOcuparOlt) {
+      return;
+    }
+    const out = this.ultimoFibraDestinoAtivado;
+    if (!out) {
+      return;
+    }
+    const fibra_dio = this.parseIndiceFibraDio(out.fibra);
+    if (fibra_dio == null) {
+      return;
+    }
+    const idmeta_dio = Number(String(out.id_meta ?? '').trim());
+    const idmeta_pop = Number(this.clienteIdMeta);
+    if (
+      !Number.isFinite(idmeta_dio) ||
+      idmeta_dio <= 0 ||
+      !Number.isInteger(idmeta_dio) ||
+      !Number.isFinite(idmeta_pop) ||
+      idmeta_pop <= 0 ||
+      !Number.isInteger(idmeta_pop)
+    ) {
+      return;
+    }
+
+    this.errorMessageAtivado = '';
+    this.ocuparOltEnviando = true;
+    this.insertPosicaoOltService
+      .inserir({ idmeta_dio, fibra_dio, idmeta_pop })
+      .subscribe({
+        next: (resp) => {
+          this.ngZone.run(() => {
+            this.ocuparOltEnviando = false;
+            const api =
+              typeof resp.message === 'string' && resp.message.trim()
+                ? resp.message.trim()
+                : '';
+            const rawId = resp.portas_olt_id;
+            const pid = typeof rawId === 'number' ? rawId : Number(rawId);
+            const pidOk =
+              Number.isFinite(pid) &&
+              pid > 0 &&
+              Number.isInteger(pid);
+            if (pidOk) {
+              this.portasOltOcupacaoRegistada.emit(pid);
+            } else {
+              console.warn('[pop-info-ativacao] insert_posicao_olt sem portas_olt_id válido', resp);
+              this.errorMessageAtivado =
+                'A API não devolveu portas_olt_id válido; o marcador não foi atualizado.';
+            }
+            const avisoExtra = pidOk ? '' : '\n\nAviso: resposta sem portas_olt_id válido.';
+            alert((api || 'Posição OLT registada.') + avisoExtra);
+          });
+        },
+        error: (err: unknown) => {
+          const msg = err instanceof Error ? err.message : 'Erro ao registar posição OLT.';
+          this.ngZone.run(() => {
+            this.ocuparOltEnviando = false;
+            this.errorMessageAtivado = msg;
+          });
+        },
+      });
   }
 
   onMouseDown(event: MouseEvent): void {

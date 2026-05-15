@@ -205,6 +205,14 @@
   border-radius: 6px;
 }
 
+.ativ-btn-ocupar-olt:disabled,
+.ativ-btn-ocupar-olt[disabled] {
+  color: #6c757d;
+  background-color: #e9ecef;
+  border-color: #dee2e6;
+  opacity: 1;
+}
+
 .btn-primary {
   background: linear-gradient(135deg, #345677 0%, #345677 100%);
   border: none;

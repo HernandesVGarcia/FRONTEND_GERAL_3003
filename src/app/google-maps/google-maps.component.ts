@@ -61,7 +61,7 @@ import { ExcluiCaixaService, ExcluiCaixaRequest, ExcluiCaixaResponse } from '../
 import { ExcluiDioService, ExcluiDioRequest, ExcluiDioResponse } from '../servico/exclui-dio.service';
 import { ExcluiEstacaoService, ExcluiEstacaoRequest, ExcluiEstacaoResponse } from '../servico/exclui-estacao.service';
 import { ExcluiClienteService, ExcluiClienteRequest, ExcluiClienteResponse } from '../servico/exclui-cliente.service';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, Subscription, takeUntil } from 'rxjs';
 import { take } from 'rxjs/operators';
 
 import { MatDialog } from '@angular/material/dialog';
@@ -329,7 +329,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
   private clickedCliDesData: any = null; // 🆕 Armazena dados do cliente desativado clicado
   /**
    * Referência ao marcador do cliente no último menu de contexto (CLI / CLIAT / CLIDES).
-   * Usada para `extrairRecursosDoMarcadorCliente` na abertura do modal de ativação.
+   * Usada para `extrairRecursosDoMarcadorCliente` (recurso_* e portas_olt) na abertura do modal de ativação.
    * Zera em `hideContextMenu` (normalmente após abrir o modal — os valores já foram lidos),
    * no menu de estação, após excluir cliente, ou é substituída ao clicar noutro marcador de cliente.
    */
@@ -4967,7 +4967,7 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
     }
   }
 
-  /** id_meta e recurso_* no MVCObject do Marker (Google Maps). */
+  /** id_meta, recurso_* e portas_olt no MVCObject do Marker (Google Maps). */
   private gravarCamposClienteNoMarcador(marker: google.maps.Marker, location: PopsCli): void {
     const idMeta = location.id_meta;
     if (idMeta != null && Number.isFinite(Number(idMeta)) && Number(idMeta) > 0) {
@@ -4977,20 +4977,22 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
       recurso_caixa: location.recurso_caixa,
       recurso_sp: location.recurso_sp,
       recurso_sp_saida: location.recurso_sp_saida,
+      portas_olt: location.portas_olt,
     });
   }
 
-  /** Grava só recurso_caixa / recurso_sp / recurso_sp_saida (números finitos >= 0). */
+  /** Grava recurso_caixa / recurso_sp / recurso_sp_saida / portas_olt (números finitos >= 0). */
   private marcarRecursosClienteNoMarcador(
     marker: google.maps.Marker,
     r: {
       recurso_caixa?: number | null;
       recurso_sp?: number | null;
       recurso_sp_saida?: number | null;
+      portas_olt?: number | null;
     },
   ): void {
     const setRecurso = (
-      chave: 'recurso_caixa' | 'recurso_sp' | 'recurso_sp_saida',
+      chave: 'recurso_caixa' | 'recurso_sp' | 'recurso_sp_saida' | 'portas_olt',
       v: number | undefined | null,
     ): void => {
       if (v === undefined || v === null) {
@@ -5005,9 +5007,10 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
     setRecurso('recurso_caixa', r.recurso_caixa);
     setRecurso('recurso_sp', r.recurso_sp);
     setRecurso('recurso_sp_saida', r.recurso_sp_saida);
+    setRecurso('portas_olt', r.portas_olt);
   }
 
-  /** Une o PopsCli do vetor com recurso_* lidos do marcador (marker.get). */
+  /** Une o PopsCli do vetor com recurso_* e portas_olt lidos do marcador (marker.get). */
   private popsCliMesclandoRecursosMarcador(marker: google.maps.Marker, base: PopsCli): PopsCli {
     const lerMarcadorNum = (k: string): number | undefined => {
       const raw = marker.get(k);
@@ -5020,19 +5023,22 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
     const rc = lerMarcadorNum('recurso_caixa');
     const rsp = lerMarcadorNum('recurso_sp');
     const rsa = lerMarcadorNum('recurso_sp_saida');
+    const po = lerMarcadorNum('portas_olt');
     return {
       ...base,
       recurso_caixa: rc !== undefined ? rc : base.recurso_caixa,
       recurso_sp: rsp !== undefined ? rsp : base.recurso_sp,
       recurso_sp_saida: rsa !== undefined ? rsa : base.recurso_sp_saida,
+      portas_olt: po !== undefined ? po : base.portas_olt,
     };
   }
 
-  /** Lê recurso_caixa / recurso_sp / recurso_sp_saida do MVCObject do marcador (fonte fiável quando o vetor destino atrasa). */
+  /** Lê recurso_* e portas_olt do MVCObject do marcador (fonte fiável quando o vetor destino atrasa). */
   private extrairRecursosDoMarcadorCliente(marker: google.maps.Marker | null): {
     recurso_caixa?: number;
     recurso_sp?: number;
     recurso_sp_saida?: number;
+    portas_olt?: number;
   } {
     if (!marker) {
       return {};
@@ -5049,10 +5055,12 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
       recurso_caixa?: number;
       recurso_sp?: number;
       recurso_sp_saida?: number;
+      portas_olt?: number;
     } = {};
     const rc = num('recurso_caixa');
     const rsp = num('recurso_sp');
     const rsa = num('recurso_sp_saida');
+    const po = num('portas_olt');
     if (rc !== undefined) {
       out.recurso_caixa = rc;
     }
@@ -5061,6 +5069,9 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
     }
     if (rsa !== undefined) {
       out.recurso_sp_saida = rsa;
+    }
+    if (po !== undefined) {
+      out.portas_olt = po;
     }
     return out;
   }
@@ -5134,7 +5145,88 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
       recurso_caixa: pick(p.recurso_caixa, form?.caixa),
       recurso_sp: pick(p.recurso_sp, form?.sp),
       recurso_sp_saida: pick(p.recurso_sp_saida, form?.saida),
+      portas_olt: pick(p.portas_olt, undefined),
     });
+    marker.setIcon(this.iconeMarcadorClienteCirculoAtivo());
+    const textAtv = this.obterTextoLabelMarcadorCliente(marker);
+    marker.setLabel({ text: textAtv, color: 'blue', fontSize: '10px' });
+  }
+
+  private aplicarDesativacaoClienteNoMarcadorCliente(idMetaCliente?: number): void {
+    const marker = this.resolverMarcadorAtivacaoCliente(idMetaCliente);
+    if (!marker) {
+      console.warn('[ativacao-cliente] Marcador não encontrado para desativação id_meta', idMetaCliente);
+      return;
+    }
+    this.marcarRecursosClienteNoMarcador(marker, {
+      recurso_caixa: 0,
+      recurso_sp: 0,
+      recurso_sp_saida: 0,
+      portas_olt: 0,
+    });
+    marker.setIcon(this.iconeMarcadorClienteCirculoPadrao());
+    const text = this.obterTextoLabelMarcadorCliente(marker);
+    marker.setLabel({ text, color: 'gray', fontSize: '10px' });
+  }
+
+  private aplicarPortasOltOcupacaoNoMarcadorCliente(
+    portasOltId: number,
+    idMetaCliente?: number,
+  ): void {
+    if (!Number.isFinite(portasOltId) || portasOltId <= 0 || !Number.isInteger(portasOltId)) {
+      return;
+    }
+    const marker = this.resolverMarcadorAtivacaoCliente(idMetaCliente);
+    if (!marker) {
+      console.warn('[ativacao-cliente] Marcador não encontrado para portas_olt id_meta', idMetaCliente);
+      return;
+    }
+    this.marcarRecursosClienteNoMarcador(marker, { portas_olt: portasOltId });
+  }
+
+  /** Círculo vermelho padrão de `updateMarkersPopsCli` — reutilizado pós-desactivação no mapa. */
+  private iconeMarcadorClienteCirculoPadrao(): google.maps.Symbol {
+    return {
+      path: google.maps.SymbolPath.CIRCLE,
+      fillColor: 'red',
+      fillOpacity: 0.7,
+      strokeColor: 'darkred',
+      strokeWeight: 2,
+      scale: 4,
+      labelOrigin: new google.maps.Point(0, -2),
+    };
+  }
+
+  /** Círculo cyan/azul de `updateMarkersPopsCliAtv` — reutilizado pós-activação no modal. */
+  private iconeMarcadorClienteCirculoAtivo(): google.maps.Symbol {
+    return {
+      path: google.maps.SymbolPath.CIRCLE,
+      fillColor: 'cyan',
+      fillOpacity: 0.7,
+      strokeColor: 'blue',
+      strokeWeight: 2,
+      scale: 4,
+      labelOrigin: new google.maps.Point(0, -2),
+    };
+  }
+
+  /** Texto do rótulo do marcador cliente (para manter sigla ao mudar para estilo «base»). */
+  private obterTextoLabelMarcadorCliente(marker: google.maps.Marker): string {
+    const lbl = marker.getLabel();
+    if (typeof lbl === 'string' && lbl.trim()) {
+      return lbl.trim();
+    }
+    if (lbl != null && typeof lbl === 'object') {
+      const t = String((lbl as google.maps.MarkerLabel).text ?? '').trim();
+      if (t) {
+        return t;
+      }
+    }
+    const title = marker.getTitle?.();
+    if (typeof title === 'string' && title.trim()) {
+      return title.trim();
+    }
+    return 'S/N';
   }
 
 //=====================================função para carregar as POPs na Tela================================
@@ -5164,20 +5256,7 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
           color: 'gray',
           fontSize: '10px'
         } as google.maps.MarkerLabel,
-        icon: {
-          //url: '/assets/TORRE4.png',
-          path: google.maps.SymbolPath.CIRCLE,
-          fillColor: 'red', // Cor de preenchimento vermelha
-          fillOpacity: 0.7, // Opacidade do preenchimento
-          strokeColor: 'darkred', // Cor da borda
-          strokeWeight: 2, // Espessura da borda
-          scale: 4, // Tamanho do círculo
-          labelOrigin: new google.maps.Point(0, -2),
-          //scaledSize: new google.maps.Size(10, 10),
-          
-          
-          
-        },
+        icon: this.iconeMarcadorClienteCirculoPadrao(), // alterado para permitir na desativação do cliente mudar a cor do marcador
 
         visible: this.currentZoom >= this.ZOOM_LEVEL_CLIENTES
         ///visible: false
@@ -5293,20 +5372,7 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
           color: 'blue',
           fontSize: '10px'
         } as google.maps.MarkerLabel,
-        icon: {
-          
-          path: google.maps.SymbolPath.CIRCLE,
-          fillColor: 'cyan', // Cor de preenchimento vermelha
-          fillOpacity: 0.7, // Opacidade do preenchimento
-          strokeColor: 'blue', // Cor da borda
-          strokeWeight: 2, // Espessura da borda
-          scale: 4, // Tamanho do círculo
-          labelOrigin: new google.maps.Point(0, -2),
-          
-          
-          
-          
-        },
+        icon: this.iconeMarcadorClienteCirculoAtivo(), // alterado para permitir na ativação do cliente mudar a cor do marcador
 
         visible: this.currentZoom >= this.ZOOM_LEVEL_CLIENTES_ATIVOS
         ///visible: false
@@ -9172,10 +9238,19 @@ private abrirAtivacaoClienteModal(): void {
   modalRef.componentInstance.recursoCaixaMarcador = r.recurso_caixa;
   modalRef.componentInstance.recursoSpMarcador = r.recurso_sp;
   modalRef.componentInstance.recursoSpSaidaMarcador = r.recurso_sp_saida;
+  modalRef.componentInstance.portasOltMarcador = r.portas_olt;
+
+  let subPortasOlt: Subscription | undefined;
+  subPortasOlt = modalRef.componentInstance.portasOltOcupacaoRegistada.subscribe((portasOltId: number) => {
+    this.aplicarPortasOltOcupacaoNoMarcadorCliente(portasOltId, cliente.id_meta);
+    modalRef.componentInstance.portasOltMarcador = portasOltId;
+  });
 
   this.marcadorClienteAtivacaoModal = this.clickedClienteMarker;
 
   const limparEstadoPosModalAtivacao = (): void => {
+    subPortasOlt?.unsubscribe();
+    subPortasOlt = undefined;
     this.marcadorClienteAtivacaoModal = null;
     this.compartilhamentoService.limparViabilidadeCirculosCaixas();
     this.compartilhamentoService.limparViabilidadePontoMapa();
@@ -9196,6 +9271,14 @@ private abrirAtivacaoClienteModal(): void {
         recursoFormulario?: { caixa?: number; sp?: number; saida?: number };
       };
       this.aplicarRecursosAtivacaoNoMarcadorCliente(r);
+    } else if (
+      result != null &&
+      typeof result === 'object' &&
+      'desativar' in result &&
+      (result as { desativar?: boolean }).desativar === true
+    ) {
+      const dr = result as { idMetaCliente?: number };
+      this.aplicarDesativacaoClienteNoMarcadorCliente(dr.idMetaCliente);
     }
     limparEstadoPosModalAtivacao();
   });
