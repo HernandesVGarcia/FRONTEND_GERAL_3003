@@ -1,0 +1,37 @@
+<div class="modal-overlay" *ngIf="visible" (click)="fecharModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h1>Tipagem do polígono</h1>
+    </div>
+
+    <div class="modal-body">
+      <form>
+        <div class="radio-group">
+          <label class="radio-label">Cor / tipo *</label>
+          <mat-radio-group [(ngModel)]="selectedTipoCor" name="tipoCorPoligono" required>
+            <mat-radio-button *ngFor="let op of opcoesCor" [value]="op.valor" class="radio-button">
+              {{ op.rotulo }}
+            </mat-radio-button>
+          </mat-radio-group>
+        </div>
+
+        <mat-form-field class="full-width">
+          <mat-label>Label</mat-label>
+          <input
+            matInput
+            type="text"
+            [(ngModel)]="labelPoligono"
+            name="labelPoligono"
+            placeholder="Ex: Área residencial — Quadra A"
+          />
+          <mat-hint>Opcional — texto exibido no centro do polígono quando o zoom permitir</mat-hint>
+        </mat-form-field>
+      </form>
+    </div>
+
+    <div class="modal-footer">
+      <button mat-button type="button" (click)="fecharModal()">Cancelar</button>
+      <button mat-raised-button color="primary" type="button" (click)="confirmar()">Confirmar</button>
+    </div>
+  </div>
+</div>

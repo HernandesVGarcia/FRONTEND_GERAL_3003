@@ -52,4 +52,10 @@
   (modalClosed)="fecharTipagemCabosModal()">
 </app-tipagem-cabos-modal>
 
+<app-tipagem-poligono
+  [visible]="tipagemPoligonoModalVisible"
+  (polygonConfirmed)="onPoligonoTipagemConfirmada($event)"
+  (modalClosed)="fecharTipagemPoligonoModal()">
+</app-tipagem-poligono>
+
   

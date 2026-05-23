@@ -20,6 +20,7 @@ export class MapTracerButtonsComponent implements OnInit {
 
   showCityModal = false;
   modoMedicaoAtivo = false;
+  modoEdicaoPoligonoAtivo = false;
 
   constructor(
     private authService: AuthService,
@@ -30,6 +31,10 @@ export class MapTracerButtonsComponent implements OnInit {
     // Escutar evento de desativação da medição (via ESC ou outros)
     window.addEventListener('medicaoDesativada', () => {
       this.modoMedicaoAtivo = false;
+    });
+
+    window.addEventListener('edicaoPoligonoDesativada', () => {
+      this.modoEdicaoPoligonoAtivo = false;
     });
   }
 
@@ -46,6 +51,13 @@ export class MapTracerButtonsComponent implements OnInit {
     // Disparar evento para cancelar desenho de cabo se houver
     const cancelEvent = new CustomEvent('cancelarDesenhoCabo');
     window.dispatchEvent(cancelEvent);
+
+    const cancelPolEvent = new CustomEvent('cancelarDesenhoPoligono');
+    window.dispatchEvent(cancelPolEvent);
+
+    window.dispatchEvent(
+      new CustomEvent('stopModoEdicaoPoligono', { detail: { salvarGeometria: false } })
+    );
     
     console.log('🗺️ [TRACER-BUTTONS] Evento clearCabosHighlight disparado');
   }
@@ -81,9 +93,8 @@ export class MapTracerButtonsComponent implements OnInit {
    */
   onDesenhaPoligono(): void {
     console.log('🗺️ [TRACER-BUTTONS] Desenha Polígono clicado');
-    
-    // TODO: Implementar modo de desenho de polígono
-    alert('Funcionalidade de desenho de polígono será implementada em breve!');
+    window.dispatchEvent(new CustomEvent('startDesenhoPoligono'));
+    console.log('🗺️ [TRACER-BUTTONS] Evento startDesenhoPoligono disparado');
   }
 
   /**
@@ -91,9 +102,8 @@ export class MapTracerButtonsComponent implements OnInit {
    */
   onFinalizaPoligono(): void {
     console.log('🗺️ [TRACER-BUTTONS] Finaliza Polígono clicado');
-    
-    // TODO: Implementar finalização de polígono
-    alert('Funcionalidade de finalização de polígono será implementada em breve!');
+    window.dispatchEvent(new CustomEvent('finalizarDesenhoPoligono'));
+    console.log('🗺️ [TRACER-BUTTONS] Evento finalizarDesenhoPoligono disparado');
   }
 
   /**
@@ -161,6 +171,21 @@ export class MapTracerButtonsComponent implements OnInit {
     console.log('🗺️ [TRACER-BUTTONS] Modal fechado sem seleção');
     this.showCityModal = false;
     window.location.reload();
+  }
+
+  /**
+   * 🔷 Ativa modo de edição de polígono (duplo clique no polígono para mover vértices).
+   */
+  onEditarPoligono(): void {
+    console.log('🗺️ [TRACER-BUTTONS] Editar polígono (modo duplo clique)');
+    this.modoEdicaoPoligonoAtivo = !this.modoEdicaoPoligonoAtivo;
+    if (this.modoEdicaoPoligonoAtivo) {
+      window.dispatchEvent(new CustomEvent('startModoEdicaoPoligono'));
+    } else {
+      window.dispatchEvent(
+        new CustomEvent('stopModoEdicaoPoligono', { detail: { salvarGeometria: true } })
+      );
+    }
   }
 
   /**

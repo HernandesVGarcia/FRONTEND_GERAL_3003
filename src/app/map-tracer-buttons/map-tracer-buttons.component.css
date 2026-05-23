@@ -84,19 +84,19 @@
 }
 
 .map-tracer-button.desenha-poligono {
-  background-color: #7c2aa5; /* Roxo */
+  background-color: #38bdf8; /* Sky / azul claro */
 }
 
 .map-tracer-button.desenha-poligono:hover {
-  background-color: #7c3aed;
+  background-color: #0ea5e9;
 }
 
 .map-tracer-button.finaliza-poligono {
-  background-color: #7c2aa5; /* Laranja */
+  background-color: #38bdf8;
 }
 
 .map-tracer-button.finaliza-poligono:hover {
-  background-color: #7c3aed;
+  background-color: #0ea5e9;
 }
 
 .map-tracer-button.medir-distancia {
@@ -112,6 +112,19 @@
   box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.3);
 }
 
+.map-tracer-button.editar-poligono {
+  background-color: #38bdf8;
+}
+
+.map-tracer-button.editar-poligono:hover {
+  background-color: #0ea5e9;
+}
+
+.map-tracer-button.editar-poligono.ativo {
+  background-color: #7dd3fc;
+  box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.35);
+}
+
 
 
 /* Tooltip styles */
@@ -122,6 +135,7 @@
 .tooltip-finaliza-poligono,
 .tooltip-minha-localizacao,
 .tooltip-selecionar-cidades,
+.tooltip-editar-poligono,
 .tooltip-medir-distancia {
   position: absolute;
   top: calc(100% + 12px);
@@ -148,6 +162,7 @@
 .group:hover .tooltip-finaliza-poligono,
 .group:hover .tooltip-minha-localizacao,
 .group:hover .tooltip-selecionar-cidades,
+.group:hover .tooltip-editar-poligono,
 .group:hover .tooltip-medir-distancia {
   opacity: 1;
   visibility: visible;
@@ -162,6 +177,7 @@
 .tooltip-redraw::after,
 .tooltip-minha-localizacao::after,
 .tooltip-selecionar-cidades::after,
+.tooltip-editar-poligono::after,
 .tooltip-medir-distancia::after {
   content: '';
   position: absolute;
@@ -206,6 +222,7 @@
   .tooltip-finaliza-poligono,
   .tooltip-minha-localizacao,
   .tooltip-selecionar-cidades,
+  .tooltip-editar-poligono,
   .tooltip-medir-distancia {
     font-size: 12px;
     padding: 6px 8px;

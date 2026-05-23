@@ -10,6 +10,9 @@
     <!-- Lista de Anotacoes -->
     <app-lista-anotacoes (AnotacoesSelecionada)="onAnotacoesSelecionada($event)"></app-lista-anotacoes>
 
+    <!-- Lista de Poligonos -->
+    <app-lista-poligonos (PoligonosSelecionada)="onPoligonosSelecionada($event)"></app-lista-poligonos>
+
     <!-- Lista de Dios -->
     <app-lista-dios (DiosSelecionada)="onDiosSelecionada($event)"></app-lista-dios>
 
@@ -74,6 +77,7 @@
   
   <app-google-maps
   [destinoAnotacoes]="anotacoes"
+  [destinoPoligonos]="Poligonos"
   [destinoCondominios]="Condominios" 
   [destinoDios]="Dios"
   [destinoPopsCli]="popCLI"
