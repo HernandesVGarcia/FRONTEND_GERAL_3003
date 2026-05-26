@@ -46,6 +46,10 @@ import {
   ViabilidadeCirculoCaixaData,
 } from '../servico/compartilhamento.service';
 import { KmlExportService } from '../servico/kml-export.service';
+import {
+  KmlPolygonExportService,
+  PolygonMapExportData,
+} from '../servico/kml-polygon-export.service';
 import { InsertCaboService } from '../servico/insert-cabo.service';
 import { PoligonosService, InserirPoligonoPayload } from '../servico/poligonos.service';
 import {
@@ -61,12 +65,17 @@ import {
   LabelCaboDialogComponent,
   LabelCaboDialogData,
 } from '../label-cabo-dialog/label-cabo-dialog.component';
+import {
+  LabelPoligonoDialogComponent,
+  LabelPoligonoDialogData,
+} from '../label-poligono-dialog/label-poligono-dialog.component';
 import { InsertLogService } from '../servico/insert-log.service';
 import { ExcluiCaboService } from '../servico/exclui-cabo.service';
 import { DivideCaboService } from '../servico/divide-cabo.service';
 import { ExcluiCaixaService, ExcluiCaixaRequest, ExcluiCaixaResponse } from '../servico/exclui-caixa.service';
 import { ExcluiDioService, ExcluiDioRequest, ExcluiDioResponse } from '../servico/exclui-dio.service';
 import { ExcluiEstacaoService, ExcluiEstacaoRequest, ExcluiEstacaoResponse } from '../servico/exclui-estacao.service';
+import { ExcluiPoligonoService, ExcluiPoligonoRequest, ExcluiPoligonoResponse } from '../servico/exclui-poligono.service';
 import { ExcluiClienteService, ExcluiClienteRequest, ExcluiClienteResponse } from '../servico/exclui-cliente.service';
 import { Subject, Subscription, takeUntil } from 'rxjs';
 import { take } from 'rxjs/operators';
@@ -277,6 +286,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
   /** Polígono cuja edição está ativa (vértices arrastáveis). */
   private poligonoEmEdicao: google.maps.Polygon | null = null;
   private poligonosEdicaoDuploListeners: google.maps.MapsEventListener[] = [];
+  private poligonosEdicaoRightClickListeners: google.maps.MapsEventListener[] = [];
   /** Listeners MVC no `paths` durante edição (atualização do marcador do rótulo). */
   private poligonoEmEdicaoPathHandles: google.maps.MapsEventListener[] = [];
   private listenerEscModoPoligono: ((ev: KeyboardEvent) => void) | null = null;
@@ -343,7 +353,8 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
   // 🎯 Propriedades para context menu
   contextMenuVisible = false;
   contextMenuPosition = { x: 0, y: 0 };
-  contextMenuType: 'caixa' | 'map' | 'cabo' | 'dio' | 'cliente' | 'estacao' | 'vertice' = 'map'; // 🆕 Tipo de contexto do menu
+  contextMenuType: 'caixa' | 'map' | 'cabo' | 'dio' | 'cliente' | 'estacao' | 'vertice' | 'poligono' = 'map'; // 🆕 Tipo de contexto do menu
+  private clickedPoligono: google.maps.Polygon | null = null;
   private clickedVertexIndex: number | null = null; // 🆕 Índice do vértice clicado (para menu vertice)
   private contextMenuListenerAdded = false; // Flag para evitar listeners duplicados
   private clickedCaboData: any = null; // 🆕 Armazena dados do cabo clicado
@@ -475,6 +486,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
     private authService : AuthService,
     private compartilhamentoService: CompartilhamentoService,
     private kmlExportService: KmlExportService,
+    private kmlPolygonExportService: KmlPolygonExportService,
     private insertCaboService: InsertCaboService,
     private poligonosService: PoligonosService,
     private updatePoligonoService: UpdatePoligonoService,
@@ -492,6 +504,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
     private excluiCaixaService: ExcluiCaixaService,
     private excluiDioService: ExcluiDioService,
     private excluiEstacaoService: ExcluiEstacaoService,
+    private excluiPoligonoService: ExcluiPoligonoService,
     private excluiClienteService: ExcluiClienteService,
     private buscaObjetoConexPontaService: BuscaObjetoConexPontaService,
     private popInfoUpdateService: PopInfoUpdateService,
@@ -683,7 +696,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
       this.clickedClienteMarker = null; // marcador cliente: só válido enquanto o menu está ativo
       this.clickedDioData = null; // 🆕 Limpar dados do DIO
       this.clickedEstacaoData = null; // 🆕 Limpar dados da estação
-      
+      this.clickedPoligono = null;
       // 🆕 NOVO: Limpar coordenada do context menu quando não estiver em edição
       // Isso garante que a próxima vez que o usuário clicar com botão direito,
       // a coordenada será atualizada corretamente
@@ -811,6 +824,20 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
         break;
       case 'excluir-estacao':
         this.excluirEstacao();
+        break;
+
+      // 🔷 Ações para POLÍGONO (modo edição armado)
+      case 'editar-label-poligono':
+        this.abrirLabelPoligonoDialog();
+        break;
+      case 'relatorio-poligono':
+        alert('Função "Relatório" em implementação.');
+        break;
+      case 'exportar-kml-poligono':
+        this.exportarKmlPoligonoContextMenu();
+        break;
+      case 'excluir-poligono':
+        this.excluirPoligonoContextMenu();
         break;
 
       default:
@@ -10835,12 +10862,10 @@ openGoJSModal() {
   }
 
   /**
-   * 📤 EXPORT: Exporta o mapa para KML
+   * Monta payload de exportação KML com todos os destinos carregados no mapa.
    */
-  exportMapToKML(): void {
-    console.log('🗺️ [GOOGLE-MAPS] Iniciando exportação de mapa para KML...');
-    
-    this.kmlExportService.exportMapToKML({
+  private montarMapExportData(): PolygonMapExportData {
+    return {
       caixas: this.destino,
       ctos: this.destinoCTO,
       ctosSP: this.destinoCTOSP,
@@ -10860,7 +10885,271 @@ openGoJSModal() {
       cabos36f: this.destinoCabos36f,
       cabos48f: this.destinoCabos48f,
       cabos72f: this.destinoCabos72f,
-      cabos144f: this.destinoCabos144f
+      cabos144f: this.destinoCabos144f,
+    };
+  }
+
+  private exportarKmlPoligonoContextMenu(): void {
+    const poly = this.clickedPoligono;
+    if (!poly) {
+      alert('Erro: polígono não identificado. Clique novamente com o botão direito no polígono.');
+      return;
+    }
+
+    const result = this.kmlPolygonExportService.exportPolygonContentsToKML(
+      poly,
+      this.montarMapExportData()
+    );
+
+    if (!result.exported) {
+      alert('Não foi possível exportar: polígono inválido (menos de 3 vértices).');
+      return;
+    }
+
+    if (result.boundaryOnly) {
+      alert('Nenhum objeto encontrado dentro deste polígono. Exportado apenas o contorno.');
+    }
+  }
+
+  private aplicarNovoLabelPoligonoNoMapa(
+    poly: google.maps.Polygon | null,
+    id_meta: number,
+    novoLabel: string,
+  ): void {
+    if (!poly) {
+      return;
+    }
+
+    const displayText = (novoLabel ?? '').trim();
+    const labelPersistido = displayText !== '' ? displayText : '(_)';
+
+    const idxDestino = this.destinoPoligonos.findIndex((p) => p.id_meta === id_meta);
+    if (idxDestino !== -1) {
+      this.destinoPoligonos[idxDestino].Label = labelPersistido;
+    }
+
+    if (displayText) {
+      poly.set('labelPoligono', displayText);
+      const paths = this.primeiroAnelParaLiterais(poly);
+      const pos = this.centroPoligonoPontos(paths);
+      const labelStyle: google.maps.MarkerLabel = {
+        text: displayText,
+        color: 'rgba(15, 23, 42, 0.72)',
+        fontSize: '22px',
+        fontWeight: 'bold',
+      };
+      let marker = poly.get('labelMarker') as google.maps.Marker | undefined;
+      if (marker) {
+        marker.setLabel(labelStyle);
+        marker.setPosition(pos);
+      } else if (this.map) {
+        marker = new google.maps.Marker({
+          position: pos,
+          map: this.map,
+          clickable: false,
+          zIndex: google.maps.Marker.MAX_ZINDEX + 1,
+          icon: {
+            path: google.maps.SymbolPath.CIRCLE,
+            fillOpacity: 0,
+            strokeOpacity: 0,
+            scale: 1,
+          },
+          label: labelStyle,
+        });
+        poly.set('labelMarker', marker);
+        if (this.poligonosMapaLocais.includes(poly)) {
+          this.poligonosLabelMarkersLocais.push(marker);
+        } else {
+          this.poligonosLabelMarkers.push(marker);
+        }
+      }
+    } else {
+      poly.set('labelPoligono', '');
+      const marker = poly.get('labelMarker') as google.maps.Marker | undefined;
+      if (marker) {
+        marker.setMap(null);
+        const idxLabel = this.poligonosLabelMarkers.indexOf(marker);
+        if (idxLabel !== -1) {
+          this.poligonosLabelMarkers.splice(idxLabel, 1);
+        } else {
+          const idxLabelLocal = this.poligonosLabelMarkersLocais.indexOf(marker);
+          if (idxLabelLocal !== -1) {
+            this.poligonosLabelMarkersLocais.splice(idxLabelLocal, 1);
+          }
+        }
+        poly.set('labelMarker', null);
+      }
+    }
+
+    this.refreshPoligonosLabelMarkersVisibility();
+    this.cdr.detectChanges();
+  }
+
+  private abrirLabelPoligonoDialog(): void {
+    const poly = this.clickedPoligono;
+    if (!poly) {
+      alert('Erro: polígono não identificado. Clique novamente com o botão direito no polígono.');
+      this.hideContextMenu();
+      return;
+    }
+
+    const idRaw = poly.get('id_meta');
+    const id_meta = typeof idRaw === 'string' ? parseInt(idRaw, 10) : Number(idRaw);
+    if (!Number.isFinite(id_meta) || !Number.isInteger(id_meta) || id_meta <= 0) {
+      alert('Não foi possível editar o label: polígono ainda não persistido (id_meta ausente ou inválido).');
+      this.hideContextMenu();
+      return;
+    }
+
+    const coords = this.primeiroAnelParaLiterais(poly);
+    if (coords.length < 3) {
+      alert('Polígono inválido (menos de 3 vértices).');
+      this.hideContextMenu();
+      return;
+    }
+
+    const labelRaw = poly.get('labelPoligono');
+    const Label =
+      labelRaw != null && String(labelRaw).trim() !== '' ? String(labelRaw).trim() : '';
+
+    const polyRef = poly;
+    const anchorX = this.contextMenuPosition.x;
+    const anchorY = this.contextMenuPosition.y;
+    this.hideContextMenu();
+
+    const data: LabelPoligonoDialogData = {
+      id_meta,
+      Label,
+      GOOGLE_LATLNG: coords,
+      anchorX,
+      anchorY,
+    };
+
+    const ref = this.ngbModal.open(LabelPoligonoDialogComponent, {
+      size: 'lg',
+      backdrop: 'static',
+      keyboard: false,
+      windowClass: 'label-poligono-modal-window',
+    });
+    ref.componentInstance.data = data;
+    ref.result.then(
+      (result) => {
+        if (typeof result === 'string') {
+          this.aplicarNovoLabelPoligonoNoMapa(polyRef, id_meta, result);
+        }
+      },
+      () => {
+        /* dismissed */
+      },
+    );
+  }
+
+  private excluirPoligonoContextMenu(): void {
+    const poly = this.clickedPoligono;
+    if (!poly) {
+      alert('Erro: polígono não identificado. Clique novamente com o botão direito no polígono.');
+      return;
+    }
+
+    const idRaw = poly.get('id_meta');
+    const idMetaNum = typeof idRaw === 'string' ? parseInt(idRaw, 10) : Number(idRaw);
+    if (!Number.isFinite(idMetaNum) || !Number.isInteger(idMetaNum) || idMetaNum <= 0) {
+      alert('Não foi possível excluir: polígono ainda não persistido (id_meta ausente ou inválido).');
+      return;
+    }
+
+    const idCity = this.authService.getIdCity();
+    if (!idCity) {
+      alert('Erro: ID da cidade não encontrado. Selecione uma cidade no workspace.');
+      return;
+    }
+
+    const labelRaw = poly.get('labelPoligono');
+    const label = labelRaw != null && String(labelRaw).trim() !== '' ? String(labelRaw).trim() : 'N/A';
+    const confirmacao = confirm(
+      `Tem certeza que deseja excluir este polígono?\n\nLabel: ${label}\nID_META: ${idMetaNum}`
+    );
+    if (!confirmacao) {
+      return;
+    }
+
+    const request: ExcluiPoligonoRequest = {
+      id_meta: idMetaNum,
+      id_city: idCity,
+    };
+
+    this.excluiPoligonoService.excluirPoligono(request).subscribe({
+      next: (response: ExcluiPoligonoResponse) => {
+        console.log('✅ [EXCLUI-POLIGONO] Resposta da API:', response);
+        if (response.success) {
+          this.removerPoligonoDoMapa(poly, idMetaNum);
+        }
+      },
+      error: (err: any) => {
+        const errorObj = typeof err === 'object' ? err : {};
+        const errorMsg = errorObj?.message || (typeof err === 'string' ? err : 'Erro ao excluir polígono.');
+        alert(`Erro ao excluir polígono: ${errorMsg}`);
+      },
+    });
+  }
+
+  private removerPoligonoDoMapa(poly: google.maps.Polygon, idMeta: number): void {
+    if (this.poligonoEmEdicao === poly) {
+      this.sairVisualEdicaoPoligonoAtual();
+    }
+
+    poly.setMap(null);
+
+    const labelMarker = poly.get('labelMarker') as google.maps.Marker | undefined;
+    if (labelMarker) {
+      labelMarker.setMap(null);
+      const idxLabel = this.poligonosLabelMarkers.indexOf(labelMarker);
+      if (idxLabel !== -1) {
+        this.poligonosLabelMarkers.splice(idxLabel, 1);
+      } else {
+        const idxLabelLocal = this.poligonosLabelMarkersLocais.indexOf(labelMarker);
+        if (idxLabelLocal !== -1) {
+          this.poligonosLabelMarkersLocais.splice(idxLabelLocal, 1);
+        }
+      }
+    }
+
+    const idxMapa = this.poligonosMapa.indexOf(poly);
+    if (idxMapa !== -1) {
+      this.poligonosMapa.splice(idxMapa, 1);
+    } else {
+      const idxLocal = this.poligonosMapaLocais.indexOf(poly);
+      if (idxLocal !== -1) {
+        this.poligonosMapaLocais.splice(idxLocal, 1);
+      }
+    }
+
+    const idxDestino = this.destinoPoligonos.findIndex((p) => p.id_meta === idMeta);
+    if (idxDestino !== -1) {
+      this.destinoPoligonos.splice(idxDestino, 1);
+    }
+
+    this.clickedPoligono = null;
+    this.hideContextMenu();
+
+    if (this.modoEdicaoPoligonoArmado) {
+      this.reinstalarDuploCliquePoligonosModoArmado();
+    }
+
+    console.log('🗑️ [EXCLUI-POLIGONO] Polígono removido do mapa, id_meta:', idMeta);
+  }
+
+  /**
+   * 📤 EXPORT: Exporta o mapa para KML
+   */
+  exportMapToKML(): void {
+    console.log('🗺️ [GOOGLE-MAPS] Iniciando exportação de mapa para KML...');
+
+    this.kmlExportService.exportMapToKML({
+      ...this.montarMapExportData(),
+      clientes: this.destinoPopsCli,
+      clientesAtivados: this.destinoPopsCliAtv,
+      clientesDesativados: this.destinoPopsCliDes,
     });
   }
 
@@ -11746,6 +12035,9 @@ openGoJSModal() {
 
         this.pontosPoligonoAguardandoTipagem = [];
         this.refreshPoligonosLabelMarkersVisibility();
+        if (this.modoEdicaoPoligonoArmado) {
+          this.reinstalarDuploCliquePoligonosModoArmado();
+        }
       },
       error: (msg: string) => {
         console.error('❌ [TIPAGEM-POLIGONO] Falha ao inserir:', msg);
@@ -12084,9 +12376,37 @@ openGoJSModal() {
       google.maps.event.removeListener(h);
     }
     this.poligonosEdicaoDuploListeners = [];
+    for (const h of this.poligonosEdicaoRightClickListeners) {
+      google.maps.event.removeListener(h);
+    }
+    this.poligonosEdicaoRightClickListeners = [];
   }
 
-  /** Mantém só polígonos “alvo” clicáveis (duplo clique); polígono em edição fica clickable: false. */
+  /** Context menu de polígono (botão direito) — só com modo de edição armado. */
+  private processarRightClickPoligono(
+    poly: google.maps.Polygon,
+    event: google.maps.MapMouseEvent
+  ): void {
+    if (!this.modoEdicaoPoligonoArmado) {
+      return;
+    }
+
+    if (event.domEvent) {
+      event.domEvent.preventDefault();
+      event.domEvent.stopPropagation();
+    }
+    event.stop?.();
+
+    this.clickedPoligono = poly;
+    this.contextMenuType = 'poligono';
+
+    if (event.domEvent) {
+      const mouseEvent = event.domEvent as MouseEvent;
+      this.showContextMenu(mouseEvent.clientX, mouseEvent.clientY);
+    }
+  }
+
+  /** Polígonos clicáveis no modo armado (duplo clique + botão direito). */
   private reinstalarDuploCliquePoligonosModoArmado(): void {
     this.removerListenersDuploCliqueModoPoligono();
     if (!this.map || !this.modoEdicaoPoligonoArmado) {
@@ -12094,15 +12414,15 @@ openGoJSModal() {
     }
     const todos = [...this.poligonosMapa, ...this.poligonosMapaLocais];
     for (const poly of todos) {
-      const emEdicao = poly === this.poligonoEmEdicao;
-      poly.setOptions({ clickable: !emEdicao });
-      if (emEdicao) {
-        continue;
-      }
-      const h = poly.addListener('dblclick', (ev: google.maps.MapMouseEvent) => {
+      poly.setOptions({ clickable: true });
+      const hDbl = poly.addListener('dblclick', (ev: google.maps.MapMouseEvent) => {
         this.onDuploClickPoligonoModoArmado(poly, ev);
       });
-      this.poligonosEdicaoDuploListeners.push(h);
+      this.poligonosEdicaoDuploListeners.push(hDbl);
+      const hRight = poly.addListener('rightclick', (ev: google.maps.MapMouseEvent) => {
+        this.processarRightClickPoligono(poly, ev);
+      });
+      this.poligonosEdicaoRightClickListeners.push(hRight);
     }
   }
 
@@ -12130,7 +12450,7 @@ openGoJSModal() {
     poly.setOptions({
       editable: true,
       draggable: false,
-      clickable: false,
+      clickable: true,
       strokeColor: '#FF0000',
       strokeWeight: 5,
       strokeOpacity: 1.0,

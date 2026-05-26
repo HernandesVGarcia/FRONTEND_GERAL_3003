@@ -118,6 +118,31 @@
   </div>
 </ng-container>
 
+<!-- Menu para POLÍGONO (modo edição armado) -->
+<ng-container *ngIf="contextType === 'poligono'">
+  <div class="menu-item" (click)="onAction('editar-label-poligono')">
+    <mat-icon>edit</mat-icon>
+    <span>Editar Label do Polígono</span>
+  </div>
+
+  <div class="menu-item" (click)="onAction('relatorio-poligono')">
+    <mat-icon>assessment</mat-icon>
+    <span>Relatório do Polígono</span>
+  </div>
+
+  <div class="menu-item" (click)="onAction('exportar-kml-poligono')">
+    <mat-icon>download</mat-icon>
+    <span>Exportar KML do Polígono</span>
+  </div>
+
+  <div class="menu-divider"></div>
+
+  <div class="menu-item" (click)="onAction('excluir-poligono')">
+    <mat-icon>delete</mat-icon>
+    <span>Excluir Polígono</span>
+  </div>
+</ng-container>
+
     
     <!-- Menu para MAPA (quando não há cabos) -->
     <ng-container *ngIf="contextType === 'map'">

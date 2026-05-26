@@ -136,6 +136,11 @@ body.modal-open ngb-modal-window.label-cabo-modal-window > .modal-dialog {
   margin: 0 !important;
 }
 
+body.modal-open ngb-modal-window.label-poligono-modal-window > .modal-dialog {
+  position: fixed !important;
+  margin: 0 !important;
+}
+
 /* Forçar largura do conteúdo do modal ng-bootstrap */
 body.modal-open .modal-content {
   width: 100% !important;
