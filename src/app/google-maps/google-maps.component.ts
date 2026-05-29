@@ -70,10 +70,7 @@ import {
   LabelPoligonoDialogComponent,
   LabelPoligonoDialogData,
 } from '../label-poligono-dialog/label-poligono-dialog.component';
-import {
-  DashboardPoligonoComponent,
-  DashboardPoligonoData,
-} from '../dashboard-poligono/dashboard-poligono.component';
+import type { DashboardPoligonoData } from '../dashboard-poligono/dashboard-poligono.component';
 import { InsertLogService } from '../servico/insert-log.service';
 import { ExcluiCaboService } from '../servico/exclui-cabo.service';
 import { DivideCaboService } from '../servico/divide-cabo.service';
@@ -4358,7 +4355,7 @@ polylineOptions144f: google.maps.PolylineOptions = {
       this.exportMapToKML();
     });
 
-    window.addEventListener('openMapReport', () => {
+    window.addEventListener('openMapReport', () => {// para relatorio geral do mapa
       console.log('📊 [GOOGLE-MAPS] Recebendo evento de relatório geral da toolbar');
       this.abrirDashboardMapa();
     });
@@ -10940,6 +10937,41 @@ openGoJSModal() {
     }
   }
   
+  private async abrirDashboardModal(
+    data: DashboardPoligonoData,
+    loadSplitters: () => ReturnType<PoligonoDashboardService['loadSplittersPorTipo']>,
+  ): Promise<void> {
+    const { DashboardPoligonoComponent } = await import(
+      '../dashboard-poligono/dashboard-poligono.component'
+    );
+    const ref = this.ngbModal.open(DashboardPoligonoComponent, {
+      size: 'xl',
+      backdrop: 'static',
+      keyboard: true,
+      windowClass: 'dashboard-poligono-modal-window',
+    });
+    ref.componentInstance.data = data;
+
+    loadSplitters()
+      .pipe(take(1))
+      .subscribe({
+        next: (splittersTipo) => {
+          ref.componentInstance.data = {
+            ...ref.componentInstance.data,
+            splittersTipo,
+            splittersLoading: false,
+          };
+        },
+        error: () => {
+          ref.componentInstance.data = {
+            ...ref.componentInstance.data,
+            splittersTipo: [],
+            splittersLoading: false,
+          };
+        },
+      });
+  }
+
   private abrirDashboardPoligono(): void {
     const poly = this.clickedPoligono;
     if (!poly) {
@@ -10971,33 +11003,9 @@ openGoJSModal() {
       splittersTipo: [],
       splittersLoading: true,
     };
-    const ref = this.ngbModal.open(DashboardPoligonoComponent, {
-      size: 'xl',
-      backdrop: 'static',
-      keyboard: true,
-      windowClass: 'dashboard-poligono-modal-window',
-    });
-    ref.componentInstance.data = data;
-
-    this.poligonoDashboardService
-      .loadSplittersPorTipo(poly, mapData)
-      .pipe(take(1))
-      .subscribe({
-        next: (splittersTipo) => {
-          ref.componentInstance.data = {
-            ...ref.componentInstance.data,
-            splittersTipo,
-            splittersLoading: false,
-          };
-        },
-        error: () => {
-          ref.componentInstance.data = {
-            ...ref.componentInstance.data,
-            splittersTipo: [],
-            splittersLoading: false,
-          };
-        },
-      });
+    void this.abrirDashboardModal(data, () =>
+      this.poligonoDashboardService.loadSplittersPorTipo(poly, mapData),
+    );
   }
 
   private abrirDashboardMapa(): void {
@@ -11011,33 +11019,9 @@ openGoJSModal() {
       splittersTipo: [],
       splittersLoading: true,
     };
-    const ref = this.ngbModal.open(DashboardPoligonoComponent, {
-      size: 'xl',
-      backdrop: 'static',
-      keyboard: true,
-      windowClass: 'dashboard-poligono-modal-window',
-    });
-    ref.componentInstance.data = data;
-
-    this.poligonoDashboardService
-      .loadSplittersPorTipoFromData(mapData)
-      .pipe(take(1))
-      .subscribe({
-        next: (splittersTipo) => {
-          ref.componentInstance.data = {
-            ...ref.componentInstance.data,
-            splittersTipo,
-            splittersLoading: false,
-          };
-        },
-        error: () => {
-          ref.componentInstance.data = {
-            ...ref.componentInstance.data,
-            splittersTipo: [],
-            splittersLoading: false,
-          };
-        },
-      });
+    void this.abrirDashboardModal(data, () =>
+      this.poligonoDashboardService.loadSplittersPorTipoFromData(mapData),
+    );
   }
 
   private aplicarNovoLabelPoligonoNoMapa(
