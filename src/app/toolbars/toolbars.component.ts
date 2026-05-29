@@ -141,9 +141,13 @@ export class ToolbarsComponent {
 
   onExportKML(): void {
     console.log('🗺️ [TOOLBAR] Botão Exportar KML clicado');
-    // Dispara evento customizado que será capturado pelo GoogleMapsComponent
     const event = new CustomEvent('exportKML');
     window.dispatchEvent(event);
+  }
+
+  onOpenMapReport(): void {
+    console.log('📊 [TOOLBAR] Botão Relatório geral clicado');
+    window.dispatchEvent(new CustomEvent('openMapReport'));
   }
 
   abrirLogCidade(): void {

@@ -1,0 +1,203 @@
+@import 'bootstrap/dist/css/bootstrap.min.css';
+
+.dashboard-dialog {
+  max-width: 95vw !important;
+  width: 85vw !important;
+  margin: 1rem auto;
+  transition: none;
+  height: 90%;
+}
+
+.dashboard-body {
+  min-height: 0;
+  padding: 12px 16px 16px;
+  background: #f1f5f9;
+}
+
+gridster {
+  background: transparent;
+  min-height: calc(6 * 105px + 20px);
+  min-width: min-content;
+}
+
+.dashboard-body gridster.fixed {
+  overflow: visible;
+  height: auto;
+}
+
+gridster-item {
+  height: 100%;
+}
+
+.widget-card {
+  display: flex;
+  flex-direction: column;
+  height: 90%;
+  width: 105%;
+  min-height: 0;
+  background: #fff;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+  overflow: visible;
+}
+
+.widget-title {
+  margin: 0;
+  padding: 10px 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #334155;
+  border-bottom: 1px solid #e2e8f0;
+  background: linear-gradient(to bottom, #f8fafc, #fff);
+}
+
+.widget-chart {
+  flex: 1 1 auto;
+  min-height: 120px;
+  width: 90%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  overflow: visible;
+}
+
+:host ::ng-deep .widget-chart .ngx-charts-outer {
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+}
+
+:host ::ng-deep .widget-chart .chart-legend .legend-label {
+  font-size: 0.75rem;
+  margin: 4px 6px;
+}
+
+.modal-content {
+  border: none;
+  border-radius: 8px;
+  background: #fff;
+  overflow: visible;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 8px 8px 0 0;
+  padding: 6px 10px;
+  min-height: 2.5rem;
+  overflow: visible;
+  flex-shrink: 0;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+  background-color: #629ef8 !important;
+  color: #fff !important;
+  user-select: none;
+  cursor: move;
+}
+
+.modal-title {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.2;
+}
+
+.modal-header .btn-close {
+  box-sizing: content-box;
+  width: 1em;
+  height: 1em;
+  padding: 0.35em;
+  margin: 0;
+  opacity: 1;
+  flex-shrink: 0;
+  background-size: 1em;
+  background-position: center;
+}
+
+.modal-footer {
+  border-top: 2px solid #dee2e6;
+  padding: 12px 20px;
+  border-radius: 0 0 8px 8px;
+  background-color: #ffffff !important;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.btn-sm {
+  padding: 8px 16px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 6px;
+  transition: all 0.2s;
+  min-width: 100px;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #345677 0%, #345677 100%);
+  border: none;
+  color: #fff;
+  box-shadow: 0 2px 4px rgba(13, 110, 253, 0.3);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #345677 0%, #345677 100%);
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(13, 110, 253, 0.4);
+}
+
+.btn-secondary {
+  background: linear-gradient(135deg, #6c757d 0%, #5c636a 100%);
+  border: none;
+  color: #fff;
+  box-shadow: 0 2px 4px rgba(108, 117, 125, 0.3);
+}
+
+.btn-secondary:hover {
+  background: linear-gradient(135deg, #5c636a 0%, #495057 100%);
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(108, 117, 125, 0.4);
+}
+
+.modal-footer .btn:disabled {
+  color: #fff;
+  opacity: 0.65;
+}
+
+.pdf-captura .gridster-column,
+.pdf-captura .gridster-row,
+.pdf-captura .gridster-item-resizable-handler {
+  display: none !important;
+}
+
+.pdf-captura .widget-card {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.pdf-captura .widget-chart {
+  width: 100% !important;
+}
+
+.badge {
+  font-size: 0.55rem;
+  padding: 1px 5px;
+  font-weight: 600;
+  vertical-align: middle;
+}
+
+@media (max-width: 768px) {
+  .dashboard-dialog {
+    max-width: 98vw !important;
+    width: 98vw !important;
+  }
+}

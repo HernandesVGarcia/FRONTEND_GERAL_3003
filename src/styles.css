@@ -141,6 +141,42 @@ body.modal-open ngb-modal-window.label-poligono-modal-window > .modal-dialog {
   margin: 0 !important;
 }
 
+body.modal-open ngb-modal-window.dashboard-poligono-modal-window {
+  --bs-modal-width: 95vw;
+  overflow: visible;
+}
+
+body.modal-open ngb-modal-window.dashboard-poligono-modal-window > .modal-dialog {
+  position: fixed !important;
+  margin: 0 !important;
+  max-width: 95vw !important;
+  width: 95vw !important;
+}
+
+body.modal-open ngb-modal-window.dashboard-poligono-modal-window > .modal-dialog > .modal-content {
+  overflow: visible !important;
+  max-height: none !important;
+  display: block;
+}
+
+body.modal-open ngb-modal-window.dashboard-poligono-modal-window app-dashboard-poligono .modal-content {
+  max-height: 90vh;
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+}
+
+body.modal-open ngb-modal-window.dashboard-poligono-modal-window app-dashboard-poligono .modal-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+
+/* ngx-charts tooltips acima dos modais Ngb (z-index ~5001) */
+.ngx-charts-tooltip-content {
+  z-index: 10050 !important;
+}
+
 /* Forçar largura do conteúdo do modal ng-bootstrap */
 body.modal-open .modal-content {
   width: 100% !important;

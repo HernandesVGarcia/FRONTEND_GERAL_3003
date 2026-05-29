@@ -50,6 +50,7 @@ import {
   KmlPolygonExportService,
   PolygonMapExportData,
 } from '../servico/kml-polygon-export.service';
+import { PoligonoDashboardService } from '../servico/poligono-dashboard.service';
 import { InsertCaboService } from '../servico/insert-cabo.service';
 import { PoligonosService, InserirPoligonoPayload } from '../servico/poligonos.service';
 import {
@@ -69,6 +70,10 @@ import {
   LabelPoligonoDialogComponent,
   LabelPoligonoDialogData,
 } from '../label-poligono-dialog/label-poligono-dialog.component';
+import {
+  DashboardPoligonoComponent,
+  DashboardPoligonoData,
+} from '../dashboard-poligono/dashboard-poligono.component';
 import { InsertLogService } from '../servico/insert-log.service';
 import { ExcluiCaboService } from '../servico/exclui-cabo.service';
 import { DivideCaboService } from '../servico/divide-cabo.service';
@@ -487,6 +492,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
     private compartilhamentoService: CompartilhamentoService,
     private kmlExportService: KmlExportService,
     private kmlPolygonExportService: KmlPolygonExportService,
+    private poligonoDashboardService: PoligonoDashboardService,
     private insertCaboService: InsertCaboService,
     private poligonosService: PoligonosService,
     private updatePoligonoService: UpdatePoligonoService,
@@ -831,7 +837,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
         this.abrirLabelPoligonoDialog();
         break;
       case 'relatorio-poligono':
-        alert('Função "Relatório" em implementação.');
+        this.abrirDashboardPoligono();
         break;
       case 'exportar-kml-poligono':
         this.exportarKmlPoligonoContextMenu();
@@ -4352,6 +4358,11 @@ polylineOptions144f: google.maps.PolylineOptions = {
       this.exportMapToKML();
     });
 
+    window.addEventListener('openMapReport', () => {
+      console.log('📊 [GOOGLE-MAPS] Recebendo evento de relatório geral da toolbar');
+      this.abrirDashboardMapa();
+    });
+
     // 🗺️ NOVO: Listeners para desenho de cabo
     window.addEventListener('startDesenhoCabo', () => {
       console.log('🗺️ [GOOGLE-MAPS] Iniciando desenho de cabo');
@@ -5138,6 +5149,8 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
       if (this.map) {
         marker.setMap(this.map);
       }
+
+      this.gravarCamposDioNoMarcador(marker, location);
       
       // Variáveis para controlar cliques
       let clickTimeout: any;
@@ -5271,6 +5284,23 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
       
       console.log('Condominios atualizadas:', this.markerCondominios);
     }
+  }
+
+  /** id_meta, CAPACIDADE, sigla e dio_data no MVCObject do Marker (Google Maps). */
+  private gravarCamposDioNoMarcador(
+    marker: google.maps.Marker,
+    dio: { id_meta?: number; sigla?: string; CAPACIDADE?: number }
+  ): void {
+    if (dio.id_meta != null && Number(dio.id_meta) > 0) {
+      marker.set('id_meta', dio.id_meta);
+    }
+    if (dio.CAPACIDADE != null && Number.isFinite(Number(dio.CAPACIDADE))) {
+      marker.set('CAPACIDADE', Number(dio.CAPACIDADE));
+    }
+    if (dio.sigla != null && String(dio.sigla).trim() !== '') {
+      marker.set('sigla', String(dio.sigla).trim());
+    }
+    marker.set('dio_data', dio);
   }
 
   /** id_meta, recurso_* e portas_olt no MVCObject do Marker (Google Maps). */
@@ -6079,9 +6109,8 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
 
     const marker = new google.maps.Marker(markerOptions);
     marker.setMap(this.map);
-    
-    // Armazenar id_meta no marcador
-    marker.set('id_meta', dio.id_meta);
+
+    this.gravarCamposDioNoMarcador(marker, dio);
     
     // Variáveis para controlar cliques
     let clickTimeout: any;
@@ -10909,6 +10938,106 @@ openGoJSModal() {
     if (result.boundaryOnly) {
       alert('Nenhum objeto encontrado dentro deste polígono. Exportado apenas o contorno.');
     }
+  }
+  
+  private abrirDashboardPoligono(): void {
+    const poly = this.clickedPoligono;
+    if (!poly) {
+      alert('Erro: polígono não identificado. Clique novamente com o botão direito no polígono.');
+      this.hideContextMenu();
+      return;
+    }
+
+    const idRaw = poly.get('id_meta'); // pega o id_meta do polígono do marcador
+    const idMetaNum = typeof idRaw === 'string' ? parseInt(idRaw, 10) : Number(idRaw);
+    const id_meta =
+      Number.isFinite(idMetaNum) && Number.isInteger(idMetaNum) && idMetaNum > 0
+        ? idMetaNum
+        : undefined;
+
+    const labelRaw = poly.get('labelPoligono');
+    const label =
+      labelRaw != null && String(labelRaw).trim() !== '' ? String(labelRaw).trim() : undefined;
+
+    this.hideContextMenu();
+
+    const mapData = this.montarMapExportData(); // monta o payload de exportação KML com todos os destinos carregados no mapa.
+    const report = this.poligonoDashboardService.buildReport(poly, mapData); // constroi o relatório do polígono
+
+    const data: DashboardPoligonoData = {
+      id_meta,
+      label,
+      ...report,
+      splittersTipo: [],
+      splittersLoading: true,
+    };
+    const ref = this.ngbModal.open(DashboardPoligonoComponent, {
+      size: 'xl',
+      backdrop: 'static',
+      keyboard: true,
+      windowClass: 'dashboard-poligono-modal-window',
+    });
+    ref.componentInstance.data = data;
+
+    this.poligonoDashboardService
+      .loadSplittersPorTipo(poly, mapData)
+      .pipe(take(1))
+      .subscribe({
+        next: (splittersTipo) => {
+          ref.componentInstance.data = {
+            ...ref.componentInstance.data,
+            splittersTipo,
+            splittersLoading: false,
+          };
+        },
+        error: () => {
+          ref.componentInstance.data = {
+            ...ref.componentInstance.data,
+            splittersTipo: [],
+            splittersLoading: false,
+          };
+        },
+      });
+  }
+
+  private abrirDashboardMapa(): void {
+    const mapData = this.montarMapExportData();
+    const report = this.poligonoDashboardService.buildMapReport(mapData);
+
+    const data: DashboardPoligonoData = {
+      label: 'Relatório geral',
+      modoGeral: true,
+      ...report,
+      splittersTipo: [],
+      splittersLoading: true,
+    };
+    const ref = this.ngbModal.open(DashboardPoligonoComponent, {
+      size: 'xl',
+      backdrop: 'static',
+      keyboard: true,
+      windowClass: 'dashboard-poligono-modal-window',
+    });
+    ref.componentInstance.data = data;
+
+    this.poligonoDashboardService
+      .loadSplittersPorTipoFromData(mapData)
+      .pipe(take(1))
+      .subscribe({
+        next: (splittersTipo) => {
+          ref.componentInstance.data = {
+            ...ref.componentInstance.data,
+            splittersTipo,
+            splittersLoading: false,
+          };
+        },
+        error: () => {
+          ref.componentInstance.data = {
+            ...ref.componentInstance.data,
+            splittersTipo: [],
+            splittersLoading: false,
+          };
+        },
+      });
   }
 
   private aplicarNovoLabelPoligonoNoMapa(
