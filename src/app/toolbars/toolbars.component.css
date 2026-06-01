@@ -61,6 +61,61 @@
   margin-left: 8px;
 }
 
+.layers-select-field {
+  width: 200px; /* largura do dropdown de camadas */
+  margin-left: 8px;
+  font-size: 13px;
+  
+}
+
+.layers-select-field ::ng-deep .mat-mdc-text-field-wrapper {
+  height: 30px;
+  padding: 0 4px;
+}
+
+.layers-select-field ::ng-deep .mat-mdc-form-field-flex {
+  height: 30px;
+  align-items: center;
+}
+
+.layers-select-field ::ng-deep .mat-mdc-form-field-infix {
+  min-height: 30px;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.layers-select-field ::ng-deep .mat-mdc-floating-label {
+  font-size: 11px;
+  color: #fff !important;
+}
+
+.layers-select-field ::ng-deep .mat-mdc-select-value {
+  font-size: 11px;
+  color: #fff !important;
+}
+
+.layers-select-field ::ng-deep .mat-mdc-select-value-text,
+.layers-select-field ::ng-deep .mat-mdc-select-min-line,
+.layers-select-field ::ng-deep .mat-mdc-select-arrow {
+  color: #fff !important;
+}
+
+.layers-select-field ::ng-deep .mdc-notched-outline__leading,
+.layers-select-field ::ng-deep .mdc-notched-outline__notch,
+.layers-select-field ::ng-deep .mdc-notched-outline__trailing {
+  border-color: rgba(255, 255, 255, 0.7) !important;
+}
+
+.layers-select-field ::ng-deep .mdc-notched-outline--focused .mdc-notched-outline__leading,
+.layers-select-field ::ng-deep .mdc-notched-outline--focused .mdc-notched-outline__notch,
+.layers-select-field ::ng-deep .mdc-notched-outline--focused .mdc-notched-outline__trailing {
+  border-color: #fff !important;
+}
+
+.layers-select-field ::ng-deep .mat-mdc-form-field-subscript-wrapper {
+  display: none;
+}
+
 
 
 .example-form {

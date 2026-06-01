@@ -257,3 +257,21 @@ body.modal-open .modal-content {
 .modal-backdrop.power-meter-modal-backdrop {
   pointer-events: none !important;
 }
+
+/* Dropdown Camadas (toolbar) — painel no cdk-overlay, fora do componente */
+.layers-select-panel.mat-mdc-select-panel {
+  --mat-option-label-text-size: 13px;
+  --mat-option-min-height: 28px;
+}
+
+.layers-select-panel.mat-mdc-select-panel .mat-mdc-option {
+  font-size: 13px !important;
+  min-height: 28px !important;
+  padding: 2px 12px !important;
+  line-height: 1.2 !important;
+}
+
+.layers-select-panel .mdc-list-item__primary-text {
+  font-size: 13px !important;
+  line-height: 1.2 !important;
+}

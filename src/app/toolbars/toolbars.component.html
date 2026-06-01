@@ -31,6 +31,25 @@
           matTooltip="Log da cidade" 
           matTooltipPosition="below"
           (click)="abrirLogCidade()">Log</button>
+  <mat-form-field
+    #layersSelectTrigger
+    class="layers-select-field"
+    appearance="outline"
+    subscriptSizing="dynamic"
+    matTooltip="Visualização em Camadas"
+    matTooltipPosition="below">
+    <mat-label>Camadas</mat-label>
+    <mat-select
+      #layersSelect
+      multiple
+      panelClass="layers-select-panel"
+      [(ngModel)]="selectedLayers"
+      (openedChange)="onLayersSelectOpened($event)"
+      (selectionChange)="onLayersSelectionChange($event.value)"
+      aria-label="Camadas do mapa">
+      <mat-option *ngFor="let opt of layerOptions" [value]="opt.id">{{ opt.label }}</mat-option>
+    </mat-select>
+  </mat-form-field>
   <!--
   <button mat-icon-button class="example-icon" aria-label="Compartilhar">
     <mat-icon>share</mat-icon>

@@ -1,8 +1,8 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import {MatToolbarModule} from '@angular/material/toolbar';
 import {MatIconModule} from '@angular/material/icon';
 import {MatFormFieldModule} from '@angular/material/form-field';
-import {MatSelectModule} from '@angular/material/select';
+import {MatSelect, MatSelectModule} from '@angular/material/select';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -20,6 +20,11 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { CitySelectModalComponent } from '../city-select-modal/city-select-modal.component';
 import { LogCidadeComponent } from '../log-cidade/log-cidade.component';
+import {
+  MAP_LAYER_OPTIONS,
+  MapLayerId,
+  MapLayerVisibilityService,
+} from '../servico/map-layer-visibility.service';
 //import { CaixaInternasyncComponent } from '../caixa-internasync/caixa-internasync.component';
 //import { AppComponent } from '../app.component';
 //import {CaixaInternaSyncComponent} from '../caixa-interna-sync/caixa-interna-sync.component'
@@ -44,21 +49,29 @@ import { LogCidadeComponent } from '../log-cidade/log-cidade.component';
   styleUrls: ['./toolbars.component.css'],
   standalone: true
 })
-export class ToolbarsComponent {
+export class ToolbarsComponent implements OnInit, OnDestroy {
   //@ViewChild('gpsComponent') gpsComponent!: GoogleGpsComponent;
 
+  @ViewChild('layersSelect') layersSelect?: MatSelect;
+  @ViewChild('layersSelectTrigger', { read: ElementRef })
+  layersSelectTrigger?: ElementRef<HTMLElement>;
+
+  private layersSelectOutsideClickAttached = false;
   cities: any[] = [];
   selectedCity: any;
   cityModalOpen = false;
   showCityModal = false;
   showCaixaInterna=false;
+  layerOptions = MAP_LAYER_OPTIONS;
+  selectedLayers: MapLayerId[] = [];
  
    
   constructor(
     private cidadesService: CidadesService,
     private authService: AuthService,
     private router: Router,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private layerVisibilityService: MapLayerVisibilityService,
   ) {
     console.log('Toolbar construída');
   }
@@ -72,7 +85,56 @@ export class ToolbarsComponent {
     if (cityId) {
       this.selectedCity = cityId;
     }
+
+    this.selectedLayers = this.layerVisibilityService.getVisibleLayerIds();// obtém as camadas selecionadas
   }
+
+  ngOnDestroy(): void {
+    this.detachLayersSelectOutsideClick();
+  }
+
+  onLayersSelectOpened(open: boolean): void {// ao abrir o combobox camadas
+    if (!open) {
+      this.detachLayersSelectOutsideClick();
+      return;
+    }
+    setTimeout(() => this.attachLayersSelectOutsideClick());// vincular o linester
+  }
+
+  onLayersSelectionChange(selected: MapLayerId[]): void {
+    this.layerVisibilityService.setFromSelection(selected ?? []);// define as camadas selecionadas
+  }
+
+  private attachLayersSelectOutsideClick(): void {
+    if (this.layersSelectOutsideClickAttached) {// vincular o linester
+      return;
+    }
+    document.addEventListener('mousedown', this.onLayersSelectOutsideClick, true);
+    this.layersSelectOutsideClickAttached = true;
+  }
+
+  private detachLayersSelectOutsideClick(): void {// desvincular o linester
+    if (!this.layersSelectOutsideClickAttached) {
+      return;
+    }
+    document.removeEventListener('mousedown', this.onLayersSelectOutsideClick, true);
+    this.layersSelectOutsideClickAttached = false;
+  }
+
+  private onLayersSelectOutsideClick = (event: MouseEvent): void => {
+    const target = event.target as Node | null;
+    if (!target || !this.layersSelect?.panelOpen) {
+      return;
+    }
+
+    const trigger = this.layersSelectTrigger?.nativeElement;
+    const panel = document.querySelector('.layers-select-panel');
+    if (trigger?.contains(target) || panel?.contains(target)) {
+      return;
+    }
+
+    this.layersSelect.close();
+  };
 
   loadCities() {
     // Obter o valor do polo do AuthService

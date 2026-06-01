@@ -28,6 +28,7 @@ import { Poligonos } from '../modelo/poligonos';
 import { ChangeDetectorRef } from '@angular/core'; /// ============novo
 import { GoJSDemoComponent } from '../gojs-demo/gojs-demo.component';
 import { AuthService } from '../servico/auth.service';
+import { MapLayerVisibilityService } from '../servico/map-layer-visibility.service';
 import { animate, animation } from '@angular/animations';
 
 import { MapSearchButtonsComponent } from '../map-search-buttons/map-search-buttons.component';
@@ -486,6 +487,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
   constructor(
     private cdr: ChangeDetectorRef,
     private authService : AuthService,
+    private layerVisibilityService: MapLayerVisibilityService,
     private compartilhamentoService: CompartilhamentoService,
     private kmlExportService: KmlExportService,
     private kmlPolygonExportService: KmlPolygonExportService,
@@ -3806,8 +3808,92 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
     console.warn('⚠️ [EXCLUI-CABO] Polyline não encontrada em nenhum array');
     return null;
   }
+ //====================================================================================================================== 
+// inserido na implementação visualização de camadas ====================================================================
+  private getAllCaboPolylineArrays(): google.maps.Polyline[][] {
+    return [
+      this.polylines1f,
+      this.polylines2f,
+      this.polylines4f,
+      this.polylines6f,
+      this.polylines8f,
+      this.polylines12f,
+      this.polylines24f,
+      this.polylines36f,
+      this.polylines48f,
+      this.polylines72f,
+      this.polylines144f,
+    ];
+  }
 
-  /**
+  private updateVisibleCabos(): void {
+    const mapRef = this.layerVisibilityService.isVisible('cabos') ? this.map : null;
+    for (const arr of this.getAllCaboPolylineArrays()) {
+      arr.forEach((polyline) => polyline.setMap(mapRef ?? null));
+    }
+  }
+
+  private updateVisiblePoligonos(): void {
+    const mapRef = this.layerVisibilityService.isVisible('poligonos') ? this.map : null;
+    for (const p of [...this.poligonosMapa, ...this.poligonosMapaLocais]) {
+      p.setMap(mapRef ?? null);
+    }
+    this.refreshPoligonosLabelMarkersVisibility();
+  }
+
+  private recriarCabosSeLayerAtiva(): void {
+    if (!this.layerVisibilityService.isVisible('cabos')) {
+      return;
+    }
+
+    if (this.destinoCabos1f?.length) {
+      this.updatePolylinesCabos1f();
+      this.createCabo1fPolylines();
+    }
+    if (this.destinoCabos2f?.length) {
+      this.updatePolylinesCabos2f();
+      this.createCabo2fPolylines();
+    }
+    if (this.destinoCabos4f?.length) {
+      this.updatePolylinesCabos4f();
+      this.createCabo4fPolylines();
+    }
+    if (this.destinoCabos6f?.length) {
+      this.updatePolylinesCabos6f();
+      this.createCabo6fPolylines();
+    }
+    if (this.destinoCabos8f?.length) {
+      this.updatePolylinesCabos8f();
+      this.createCabo8fPolylines();
+    }
+    if (this.destinoCabos12f?.length) {
+      this.updatePolylinesCabos12f();
+      this.createCabo12fPolylines();
+    }
+    if (this.destinoCabos24f?.length) {
+      this.updatePolylinesCabos24f();
+      this.createCabo24fPolylines();
+    }
+    if (this.destinoCabos36f?.length) {
+      this.updatePolylinesCabos36f();
+      this.createCabo36fPolylines();
+    }
+    if (this.destinoCabos48f?.length) {
+      this.updatePolylinesCabos48f();
+      this.createCabo48fPolylines();
+    }
+    if (this.destinoCabos72f?.length) {
+      this.updatePolylinesCabos72f();
+      this.createCabo72fPolylines();
+    }
+    if (this.destinoCabos144f?.length) {
+      this.updatePolylinesCabos144f();
+      this.createCabo144fPolylines();
+    }
+  } //até aqui inserido na implementação visualização de camadas ====================================================================
+    //=======================================================================================================================
+  
+    /**
    * 🗑️ Remove a polyline dos arrays de controle
    */
   private removerPolylineDosArrays(polyline: google.maps.Polyline): void {
@@ -4419,6 +4505,43 @@ polylineOptions144f: google.maps.PolylineOptions = {
     });
     
     
+    this.layerVisibilityService.layersChanged$.pipe(takeUntil(this.destroy$)).subscribe((layers) => {
+      if (layers.poligonos && this.poligonosMapa.length === 0 && this.destinoPoligonos?.length) {
+        this.updatePoligonos();
+      }
+      if (layers.ceo && this.markerCaixas.length === 0 && this.destino?.length) {
+        this.updateMarkers();
+      }
+      if (layers.cto && this.markerCtos.length === 0 && this.destinoCTO?.length) {
+        this.updateMarkersCTO();
+      }
+      if (layers.ctosp && this.markerCtosSP.length === 0 && this.destinoCTOSP?.length) {
+        this.updateMarkersCTOSP();
+      }
+      if (layers.cabos && this.getAllCaboPolylineArrays().every((arr) => arr.length === 0)) {
+        this.recriarCabosSeLayerAtiva();
+      }
+      if (layers.condominios && this.markerCondominios.length === 0 && this.destinoCondominios?.length) {
+        this.updateMarkersCondominios();
+      }
+      if (layers.clientes && this.markerPopsCli.length === 0 && this.destinoPopsCli?.length) {
+        this.updateMarkersPopsCli();
+      }
+      if (layers.clientes_ativos && this.markerPopsCliAtv.length === 0 && this.destinoPopsCliAtv?.length) {
+        this.updateMarkersPopsCliAtv();
+      }
+      if (layers.clientes_cancelados && this.markerPopsCliDes.length === 0 && this.destinoPopsCliDes?.length) {
+        this.updateMarkersPopsCliDes();
+      }
+      if (layers.estacoes && this.markerPopsEst.length === 0 && this.destinoPopsEst?.length) {
+        this.updateMarkersPopsEst();
+      }
+      if (layers.estacoes && this.markerDios.length === 0 && this.destinoDios?.length) {
+        this.updateMarkersDios();
+      }
+      this.updateVisibleMarkers();
+    });
+
     //const lat= this.authService.getLat
     //const lng= this.authService.getLng
     //center:google.maps.LatLngLiteral = { lat: lat, lng: lng};
@@ -5019,6 +5142,9 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
     if (!this.map) {
       return;
     }
+    if (!this.layerVisibilityService.isVisible('poligonos')) { // inserido na implementação visualização de camadas
+      return;
+    }
     /** Recriação substitui instâncias: encerrar edição se polígono atual vinha dos dados servidor. */
     if (this.poligonoEmEdicao && this.poligonosMapa.includes(this.poligonoEmEdicao)) {
       this.sairVisualEdicaoPoligonoAtual();
@@ -5077,7 +5203,7 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
       }
       this.poligonosMapa.push(poly);
     }
-    this.refreshPoligonosLabelMarkersVisibility();
+    this.updateVisiblePoligonos(); // inserido na implementação de visualiza camada
     if (this.modoEdicaoPoligonoArmado) {
       this.reinstalarDuploCliquePoligonosModoArmado();
     }
@@ -5090,7 +5216,7 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
       return;
     }
     const mapRef = this.map;
-    const show = this.currentZoom >= this.ZOOM_LEVEL_CAIXAS;
+    const show = this.layerVisibilityService.isVisible('poligonos') && this.currentZoom >= this.ZOOM_LEVEL_CAIXAS; // inserido na implementação visualização de camadas
     const aplicarVisibilidade = (markers: google.maps.Marker[]) => {
       for (const m of markers) {
         if (!m) {
@@ -5112,6 +5238,10 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
 
 // função para carregar dios no mapa==============================
   private updateMarkersDios() {
+    if (!this.layerVisibilityService.isVisible('estacoes')) {
+      return;
+    }
+
     if (this.destinoDios && this.destinoDios.length > 0 && this.map) {
       this.markerDios.forEach(marker => marker.setMap(null));
       this.markerDios = [];
@@ -5225,6 +5355,9 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
   //=====================================função para carregar as POPs na Tela================================
   private updateMarkersCondominios() {
     
+    if (!this.layerVisibilityService.isVisible('condominios')) {
+      return;
+    }
 
       if (this.destinoCondominios && this.destinoCondominios.length > 0 && this.map) {
         this.markerCondominios.forEach(marker => marker.setMap(null));
@@ -5565,6 +5698,9 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
 //=====================================função para carregar as POPs na Tela================================
   private updateMarkersPopsCli() {
     
+    if (!this.layerVisibilityService.isVisible('clientes')) { //inserido na implementação visualização de camadas
+      return;
+    }
 
       if (this.destinoPopsCli && this.destinoPopsCli.length > 0 && this.map) {
         this.markerPopsCli.forEach(marker => marker.setMap(null));
@@ -5616,6 +5752,9 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
 //=====================================função para carregar as POPs na Tela================================
   private updateMarkersPopsCliDes() {
     
+    if (!this.layerVisibilityService.isVisible('clientes_cancelados')) {// implementação visualização de camadas
+      return;
+    }
 
       if (this.destinoPopsCliDes && this.destinoPopsCliDes.length > 0 && this.map) {
         this.markerPopsCliDes.forEach(marker => marker.setMap(null));
@@ -5681,6 +5820,9 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
 //=====================================função para carregar Clientes Ativos na Tela================================
   private updateMarkersPopsCliAtv() {
     
+    if (!this.layerVisibilityService.isVisible('clientes_ativos')) {// implementação visualização de camadas
+      return;
+    }
 
       if (this.destinoPopsCliAtv && this.destinoPopsCliAtv.length > 0 && this.map) {
         this.markerPopsCliAtv.forEach(marker => marker.setMap(null));
@@ -5736,6 +5878,9 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
 //=====================================função para carregar as POPs na Tela================================
   private updateMarkersPopsEst() {
     
+    if (!this.layerVisibilityService.isVisible('estacoes')) {//inserido na implementação visualização de camadas
+      return;
+    }
 
       if (this.destinoPopsEst && this.destinoPopsEst.length > 0 && this.map) {
         this.markerPopsEst.forEach(marker => marker.setMap(null));
@@ -5885,8 +6030,10 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
     // =============================== função para carregar o marcadores Caixas na tela =========
     private updateMarkers() {
 
-    const ceo_layer= this.authService.getceo_layer();
-    if(ceo_layer == '0')  {return} // flag visualiza CEO
+    const ceo_layer = this.layerVisibilityService.isVisible('ceo'); //inserido na implementação visualização de camadas
+    if (!ceo_layer) {
+      return;
+    } // flag visualiza CEO
     if (this.destino && this.destino.length > 0 && this.map) {
       this.markerCaixas.forEach(marker => marker.setMap(null));
       this.markerCaixas = [];
@@ -5959,12 +6106,6 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
       return;
     }
 
-    const ceo_layer = this.authService.getceo_layer();
-    if (ceo_layer === '0') {
-      console.log('⚠️ [ADICIONAR-MARCADOR-CAIXA] CEO layer desabilitado');
-      return;
-    }
-
     const position = { lat: Number(caixa.LAT), lng: Number(caixa.LONGI) };
     
     // Determinar ícone baseado no ID_TIPO
@@ -5976,18 +6117,27 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
     let isCTOSP = false;
 
     if (idTipo >= 10 && idTipo <= 13) {
+      if (!this.layerVisibilityService.isVisible('cto')) { // inserido na implementação visualização de camadas
+        return;
+      }
       // CTO sem splitter (ID 10-13)
       iconUrl = '/assets/CTO80.png';
       labelOrigin = new google.maps.Point(50, 10);
       scaledSize = new google.maps.Size(18, 22);
       isCTO = true;
     } else if (idTipo > 13) {
+      if (!this.layerVisibilityService.isVisible('ctosp')) {// inserido na implementação visualização de camadas
+        return;
+      }
       // CTO com splitter (ID > 13)
       iconUrl = '/assets/CTOSP.png';
       labelOrigin = new google.maps.Point(50, 10);
       scaledSize = new google.maps.Size(18, 22);
       isCTOSP = true;
     } else {
+      if (!this.layerVisibilityService.isVisible('ceo')) {// inserido na implementação visualização de camadas
+        return;
+      }
       // CEO (ID 1-9)
       iconUrl = '/assets/fosc ama.png';
       labelOrigin = new google.maps.Point(70, 10);
@@ -6105,7 +6255,9 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
     };
 
     const marker = new google.maps.Marker(markerOptions);
-    marker.setMap(this.map);
+    if (this.layerVisibilityService.isVisible('estacoes')) { //inserido na implementação visualização de camadas
+      marker.setMap(this.map);
+    }
 
     this.gravarCamposDioNoMarcador(marker, dio);
     
@@ -6372,10 +6524,7 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
 
   private updatePolylinesCabos1f() {
 
-    const cabo_layer= this.authService.getcabos_layer();
-    console.log(' cabos layer = ', cabo_layer);
-    if (cabo_layer =='0') return;
-
+    if (!this.layerVisibilityService.isVisible('cabos')) return; //inserido na implementação visualização de camadas
 
 
     if (!this.destinoCabos1f?.length) return;
@@ -6417,10 +6566,7 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
 
   private updatePolylinesCabos2f() {
 
-    const cabo_layer= this.authService.getcabos_layer();
-    console.log(' cabos layer = ', cabo_layer);
-    if (cabo_layer =='0') return;
-
+    if (!this.layerVisibilityService.isVisible('cabos')) return; //inserido na implementação visualização de camadas
 
 
     if (!this.destinoCabos2f?.length) return;
@@ -6458,10 +6604,7 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
 
   private updatePolylinesCabos4f() {
 
-    const cabo_layer= this.authService.getcabos_layer();
-    console.log(' cabos layer = ', cabo_layer);
-    if (cabo_layer =='0') return;
-
+    if (!this.layerVisibilityService.isVisible('cabos')) return; //inserido na implementação visualização de camadas
 
 
     if (!this.destinoCabos4f?.length) return;
@@ -6498,10 +6641,7 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
 
   private updatePolylinesCabos6f() {
 
-    const cabo_layer= this.authService.getcabos_layer();
-    console.log(' cabos layer = ', cabo_layer);
-    if (cabo_layer =='0') return;
-
+    if (!this.layerVisibilityService.isVisible('cabos')) return; //inserido na implementação visualização de camadas
 
 
     if (!this.destinoCabos6f?.length) return;
@@ -6558,8 +6698,7 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
 
   private updatePolylinesCabos8f() {
 
-    const cabo_layer= this.authService.getcabos_layer();
-    if (cabo_layer =='0') return;
+    if (!this.layerVisibilityService.isVisible('cabos')) return; //inserido na implementação visualização de camadas
 
     if (!this.destinoCabos8f?.length) return;
     
@@ -6604,8 +6743,7 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
 
   private updatePolylinesCabos12f() {
 
-    const cabo_layer= this.authService.getcabos_layer();
-    if (cabo_layer =='0') return;
+    if (!this.layerVisibilityService.isVisible('cabos')) return; //inserido na implementação visualização de camadas
 
 
     if (!this.destinoCabos12f?.length) return;
@@ -6648,8 +6786,7 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
 
   private updatePolylinesCabos24f() {
 
-    const cabo_layer= this.authService.getcabos_layer();
-    if (cabo_layer =='0') return;
+    if (!this.layerVisibilityService.isVisible('cabos')) return; //inserido na implementação visualização de camadas
 
     if (!this.destinoCabos24f?.length) return;
     
@@ -6690,8 +6827,7 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
 
   private updatePolylinesCabos36f() {
     
-    const cabo_layer= this.authService.getcabos_layer();
-    if (cabo_layer =='0') return;
+    if (!this.layerVisibilityService.isVisible('cabos')) return; //inserido na implementação visualização de camadas
 
 
     if (!this.destinoCabos36f?.length) return;
@@ -6730,8 +6866,7 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
 
   private updatePolylinesCabos48f() {
 
-    const cabo_layer= this.authService.getcabos_layer();
-    if (cabo_layer =='0') return;
+    if (!this.layerVisibilityService.isVisible('cabos')) return; //inserido na implementação visualização de camadas
 
     if (!this.destinoCabos48f?.length) return;
     
@@ -6768,8 +6903,7 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
 
   private updatePolylinesCabos72f() {
 
-    const cabo_layer= this.authService.getcabos_layer();
-    if (cabo_layer =='0') return;
+    if (!this.layerVisibilityService.isVisible('cabos')) return; //inserido na implementação visualização de camadas
 
 
     if (!this.destinoCabos72f?.length) return;
@@ -6812,8 +6946,7 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
 
   private updatePolylinesCabos144f() {
 
-    const cabo_layer= this.authService.getcabos_layer();
-    if (cabo_layer =='0') return;
+    if (!this.layerVisibilityService.isVisible('cabos')) return; //inserido na implementação visualização de camadas
 
 
     if (!this.destinoCabos144f?.length) return;
@@ -7043,7 +7176,7 @@ private updateVisibleMarkers() {
   
     const bounds = this.map.getBounds();
     if (!bounds) {
-      this.refreshPoligonosLabelMarkersVisibility();
+      this.updateVisiblePoligonos(); // inserido na implementação visualização de camadas
       return;
     }
 
@@ -7053,8 +7186,8 @@ private updateVisibleMarkers() {
     console.log('Atualizando marcadores visíveis com base nos limites do mapa');
 
 
-  const ceo_layer= this.authService.getceo_layer(); //----------------- Visibilidade das Caixas ----------------------------
-  if (ceo_layer == '1') {
+  const ceoVisible = this.layerVisibilityService.isVisible('ceo'); //inserido na implementação visualização de camadas----------------- Visibilidade das Caixas ----------------------------
+  if (ceoVisible) {
   
     // Atualizar visibilidade das caixas
     let visibleCaixasCount = 0;
@@ -7086,11 +7219,18 @@ private updateVisibleMarkers() {
 
    
 
+} else { //inserido na implementação visualização de camadas
+  this.markerCaixas.forEach((marker) => {
+    if (marker) {
+      marker.setVisible(false);
+      marker.setMap(null);
+    }
+  });
 }
   
 
- const cto_layer= this.authService.getcto_layer(); //----------------- Visibilidade das CTOS SEM SPLITTER ----------------------------
-  if (cto_layer == '1') {
+ const ctoVisible = this.layerVisibilityService.isVisible('cto'); //inserido na implementação visualização de camadas----------------- Visibilidade das CTOS SEM SPLITTER ----------------------------
+  if (ctoVisible) {
   
   // Atualizar visibilidade de CTOs
   let visibleCTOsCount = 0;
@@ -7117,10 +7257,17 @@ private updateVisibleMarkers() {
 
   console.log(` CTOs visíveis: ${visibleCTOsCount}`);
 
+  } else {//inserido na implementação visualização de camadas
+    this.markerCtos.forEach((marker) => {
+      if (marker) {
+        marker.setVisible(false);
+        marker.setMap(null);
+      }
+    });
   }
 
-  const ctoSP_layer= this.authService.getcto_layer(); //----------------- Visibilidade das CTOS COM SPLITTER----------------------------
-  if (ctoSP_layer == '1') {
+  const ctospVisible = this.layerVisibilityService.isVisible('ctosp'); //inserido na implementação visualização de camadas----------------- Visibilidade das CTOS COM SPLITTER----------------------------
+  if (ctospVisible) {
   
   // Atualizar visibilidade de CTOs
   let visibleCTOsSPCount = 0;
@@ -7147,9 +7294,18 @@ private updateVisibleMarkers() {
 
   console.log(` CTOs COM SP visíveis: ${visibleCTOsSPCount}`);
 
+  } else {//inserido na implementação visualização de camadas
+    this.markerCtosSP.forEach((marker) => {
+      if (marker) {
+        marker.setVisible(false);
+        marker.setMap(null);
+      }
+    });
   }
 
   // Atualizar visibilidade de Estações  //----------------- Visibilidade de Estações ----------------------------
+  const estacoesVisible = this.layerVisibilityService.isVisible('estacoes'); //inserido na implementação visualização de camadas
+  if (estacoesVisible) {
   let visiblePOPsCount = 0;
   console.log ('atualiza Estações visibles')
   this.markerPopsEst.forEach(marker => {
@@ -7173,9 +7329,25 @@ private updateVisibleMarkers() {
   });
 
   console.log(` Estações visíveis: ${visiblePOPsCount}`);
+  } else {
+    this.markerPopsEst.forEach((marker) => {//inserido na implementação visualização de camadas
+      if (marker) {
+        marker.setVisible(false);
+        marker.setMap(null);
+      }
+    });
+    this.markerDios.forEach((marker) => {//inserido na implementação visualização de camadas
+      if (marker) {
+        marker.setVisible(false);
+        marker.setMap(null);
+      }
+    });
+  }
    
 
 // Atualizar visibilidade de Clientes  //----------------- Visibilidade de Clientes ----------------------------
+  const clientesVisible = this.layerVisibilityService.isVisible('clientes'); //inserido na implementação visualização de camadas
+  if (clientesVisible) {
   let visiblePOPsCLICount = 0;
   console.log ('atualiza Clientes visibles')
   this.markerPopsCli.forEach(marker => {
@@ -7199,8 +7371,18 @@ private updateVisibleMarkers() {
   });
 
   console.log(` Clientes visíveis: ${visiblePOPsCLICount}`);
+  } else {
+    this.markerPopsCli.forEach((marker) => {//inserido na implementação visualização de camadas
+      if (marker) {
+        marker.setVisible(false);
+        marker.setMap(null);
+      }
+    });
+  }
 
   // Atualizar visibilidade de Clientes DESATIVADOS   //----------------- Visibilidade de Clientes DESATIVADOS ----------------------------
+  const clientesCanceladosVisible = this.layerVisibilityService.isVisible('clientes_cancelados'); //inserido na implementação visualização de camadas
+  if (clientesCanceladosVisible) {
   let visiblePOPsCLIDesCount = 0;
   console.log ('atualiza Clientes Desabilitados visibles')
   this.markerPopsCliDes.forEach(marker => {
@@ -7224,9 +7406,19 @@ private updateVisibleMarkers() {
   });
 
   console.log(` Clientes Desativados visíveis: ${visiblePOPsCLIDesCount}`);
+  } else {
+    this.markerPopsCliDes.forEach((marker) => {//
+      if (marker) {
+        marker.setVisible(false);
+        marker.setMap(null);
+      }
+    });
+  }
 
 
-// Atualizar visibilidade de Clientes DESATIVADOS   //----------------- Visibilidade de Clientes DESATIVADOS ----------------------------
+// Atualizar visibilidade de Clientes Ativos   //----------------- Visibilidade de Clientes Ativos ----------------------------
+  const clientesAtivosVisible = this.layerVisibilityService.isVisible('clientes_ativos');
+  if (clientesAtivosVisible) {
   let visiblePOPsCLIAtvCount = 0;
   console.log ('atualiza Clientes Ativos visibles')
   this.markerPopsCliAtv.forEach(marker => {
@@ -7249,9 +7441,19 @@ private updateVisibleMarkers() {
     }
   });
 
-  console.log(` Clientes Desativados visíveis: ${visiblePOPsCLIDesCount}`);
+  console.log(` Clientes Ativos visíveis: ${visiblePOPsCLIAtvCount}`);
+  } else {//inserido na implementação visualização de camadas
+    this.markerPopsCliAtv.forEach((marker) => {
+      if (marker) {
+        marker.setVisible(false);
+        marker.setMap(null);
+      }
+    });
+  }
 
 // Atualizar visibilidade de Condominios  //----------------- Visibilidade de Condominios ----------------------------
+  const condominiosVisible = this.layerVisibilityService.isVisible('condominios'); //inserido na implementação visualização de camadas
+  if (condominiosVisible) {
   let visibleCondominiosCount = 0;
   console.log ('atualiza Condominios visibles')
   this.markerCondominios.forEach(marker => {
@@ -7275,10 +7477,19 @@ private updateVisibleMarkers() {
   });
 
   console.log(` Condominios visíveis: ${visibleCondominiosCount}`);
+  } else {//inserido na implementação visualização de camadas
+    this.markerCondominios.forEach((marker) => {
+      if (marker) {
+        marker.setVisible(false);
+        marker.setMap(null);
+      }
+    });
+  }
    
 
 
   // Atualizar visibilidade de dios  //----------------- Visibilidade de dios ----------------------------
+  if (estacoesVisible) {//inserido na implementação visualização de camadas
   let visibleDiosCount = 0;
   console.log ('atualiza Dios visibles')
   this.markerDios.forEach(marker => {
@@ -7302,6 +7513,7 @@ private updateVisibleMarkers() {
   });
 
   console.log(` Dios visíveis: ${visibleDiosCount}`);
+  }
 
 
   // Atualizar visibilidade de dios  //----------------- Visibilidade de dios ----------------------------
@@ -7329,7 +7541,8 @@ private updateVisibleMarkers() {
 
   console.log(` Anotações visíveis: ${visibleAnotacoesCount}`);
 
-  this.refreshPoligonosLabelMarkersVisibility();
+  this.updateVisiblePoligonos(); // inserido na implementação visualização de camadas
+  this.updateVisibleCabos(); //inserido na implementação visualização de camadas
 
 } 
 
@@ -10401,7 +10614,7 @@ openGoJSModal() {
         const polyline = new google.maps.Polyline({
           path: path,
           ...options,
-          map: this.map
+          map: this.layerVisibilityService.isVisible('cabos') ? this.map : null, //inserido na implementação visualização de camadas
         });
 
         // Usar o índice correto do array de cabos
@@ -11094,8 +11307,8 @@ openGoJSModal() {
       }
     }
 
-    this.refreshPoligonosLabelMarkersVisibility();
-    this.cdr.detectChanges();
+    this.updateVisiblePoligonos(); // inserido na implementação visualização de camadas
+    this.cdr.detectChanges();//inserido na implementação visualização de camadas
   }
 
   private abrirLabelPoligonoDialog(): void {
@@ -12147,7 +12360,7 @@ openGoJSModal() {
         }
 
         this.pontosPoligonoAguardandoTipagem = [];
-        this.refreshPoligonosLabelMarkersVisibility();
+        this.updateVisiblePoligonos();// inserido na implementação visualização de camadas
         if (this.modoEdicaoPoligonoArmado) {
           this.reinstalarDuploCliquePoligonosModoArmado();
         }
@@ -12458,7 +12671,7 @@ openGoJSModal() {
       return;
     }
     marker.setPosition(this.centroPoligonoPontos(lit));
-    this.refreshPoligonosLabelMarkersVisibility();
+    this.updateVisiblePoligonos(); //
   }
 
   private removerHandlesPathPoligonoEmEdicao(): void {
