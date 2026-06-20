@@ -1,11 +1,38 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
-import { Observable, throwError, firstValueFrom } from 'rxjs';
+import { throwError, firstValueFrom } from 'rxjs';
 import { timeout, catchError } from 'rxjs/operators';
 import { AuthService } from './auth.service';
 import { environment } from '../environments/environment';
 
-// Interface para os dados recebidos da API de terceiros
+export interface AutenticacaoRBX {
+  Id?: string;
+  Cliente?: string;
+  Contrato?: string;
+  NAS?: string;
+  Porta?: string;
+  Usuario?: string;
+  Senha?: string;
+  MAC?: string;
+  Observacao?: string;
+}
+
+export interface ContratoRBX {
+  Numero?: string;
+  Cliente_Codigo?: string;
+  Cliente_Nome?: string;
+  Cliente_CPF_CNPJ?: string;
+  Cliente_Tel_Celular?: string;
+  EnderecoInstalacao_Logradouro?: string;
+  EnderecoInstalacao_Numero?: string;
+  EnderecoInstalacao_Complemento?: string;
+  EnderecoInstalacao_Bairro?: string;
+  EnderecoInstalacao_CEP?: string;
+  EnderecoInstalacao_Latitude?: string | number;
+  EnderecoInstalacao_Longitude?: string | number;
+  Situacao_Codigo?: string;
+}
+
 export interface ClienteApiTerceiros {
   Codigo?: string;
   CNPJ_CNPF?: string;
@@ -22,9 +49,10 @@ export interface ClienteApiTerceiros {
   Situacao?: string;
 }
 
-// Interface para os dados enviados à nossa API
 export interface ClienteInsertRequest {
   CONTRATO_GPON: string;
+  id_contrato: string;
+  id_autenticacao: string;
   CNPJ: string;
   SIGLA: string;
   ENDEREÇO: string;
@@ -44,7 +72,6 @@ export interface ClienteInsertRequest {
   ID_PROJETISTA?: number;
 }
 
-// Interface para a resposta da inserção
 export interface ClienteInsertResponse {
   success: boolean;
   message?: string;
@@ -58,22 +85,83 @@ export interface ClienteInsertResponse {
 })
 export class InserirClienteRBXService {
   private baseUrl: string = environment.apiUrlAbsolute;
-  private readonly TIMEOUT = 30000; // 30 segundos
+  private readonly TIMEOUT = 30000;
 
   constructor(
     private http: HttpClient,
     private authService: AuthService
   ) {}
 
-  /**
-   * Transforma os dados da API de terceiros para o formato da nossa API
-   */
-  private transformarDados(clienteApi: ClienteApiTerceiros, idCity: number, idCondominio: number = 0): ClienteInsertRequest {
-    // Converter STATUS: "C" → "0", outros → "1"
-    const status = clienteApi.Situacao === 'C' ? '0' : '1';
+  private valorComFallback(primario: unknown, fallback: unknown): string {
+    const primarioTexto = primario !== undefined && primario !== null ? String(primario).trim() : '';
+    if (primarioTexto !== '') {
+      return primarioTexto;
+    }
+
+    const fallbackTexto = fallback !== undefined && fallback !== null ? String(fallback).trim() : '';
+    return fallbackTexto;
+  }
+
+  private valorCoordenada(primario: unknown, fallback: unknown): string | number | null {
+    const valor = this.valorComFallback(primario, fallback);
+    if (valor === '' || valor === '0' || valor === '0.0000000000000') {
+      return null;
+    }
+    return valor;
+  }
+
+  private mapearStatus(situacaoContrato?: string, situacaoCliente?: string): string {
+    const situacao = (situacaoContrato || situacaoCliente || '').trim().toUpperCase();
+    if (situacao === 'A') {
+      return '1';
+    }
+    if (situacao === 'C' || situacao === 'T') {
+      return '0';
+    }
+    return '0';
+  }
+
+  transformarDadosIntegracao(
+    auth: AutenticacaoRBX,
+    contrato: ContratoRBX,
+    cliente: ClienteApiTerceiros,
+    idCity: number,
+    idCondominio: number = 0
+  ): ClienteInsertRequest {
+    const situacaoContrato = contrato.Situacao_Codigo?.trim() || '';
+    const status = situacaoContrato
+      ? this.mapearStatus(contrato.Situacao_Codigo)
+      : this.mapearStatus(undefined, cliente.Situacao);
 
     return {
+      CONTRATO_GPON: contrato.Cliente_Codigo || cliente.Codigo || auth.Cliente || '',
+      id_contrato: contrato.Numero || auth.Contrato || '',
+      id_autenticacao: auth.Id || '',
+      CNPJ: cliente.CNPJ_CNPF || '',
+      SIGLA: contrato.Cliente_Nome || cliente.Nome || '',
+      ENDEREÇO: this.valorComFallback(contrato.EnderecoInstalacao_Logradouro, cliente.Endereco),
+      NUMERO: this.valorComFallback(contrato.EnderecoInstalacao_Numero, cliente.Numero),
+      COMPLEMENTO: this.valorComFallback(contrato.EnderecoInstalacao_Complemento, cliente.Complemento),
+      BAIRRO: this.valorComFallback(contrato.EnderecoInstalacao_Bairro, cliente.Bairro),
+      CEP: this.valorComFallback(contrato.EnderecoInstalacao_CEP, cliente.CEP),
+      TELEFONE: this.valorComFallback(contrato.Cliente_Tel_Celular, cliente.TelCelular),
+      id_city: idCity,
+      id_condominio: idCondominio,
+      OBS: cliente.Observacoes || '',
+      LAT: this.valorCoordenada(contrato.EnderecoInstalacao_Latitude, cliente.MapsMarkLat),
+      LNG: this.valorCoordenada(contrato.EnderecoInstalacao_Longitude, cliente.MapsMarkLng),
+      TAMANHO: '1',
+      STATUS: status,
+      POP_ESTACAO: 0,
+      ID_PROJETISTA: 555
+    };
+  }
+
+  private transformarDados(clienteApi: ClienteApiTerceiros, idCity: number, idCondominio: number = 0): ClienteInsertRequest {
+    return {
       CONTRATO_GPON: clienteApi.Codigo || '',
+      id_contrato: '0',
+      id_autenticacao: '0',
       CNPJ: clienteApi.CNPJ_CNPF || '',
       SIGLA: clienteApi.Nome || '',
       ENDEREÇO: clienteApi.Endereco || '',
@@ -88,64 +176,52 @@ export class InserirClienteRBXService {
       LAT: clienteApi.MapsMarkLat || null,
       LNG: clienteApi.MapsMarkLng || null,
       TAMANHO: '1',
-      STATUS: status,
+      STATUS: this.mapearStatus(undefined, clienteApi.Situacao),
       POP_ESTACAO: 0,
-      ID_PROJETISTA: 555   // Valor padrão, ajuste se necessário      
+      ID_PROJETISTA: 555
     };
   }
 
-  /**
-   * Insere um cliente no banco de dados local
-   * @param clienteApi - Dados do cliente vindos da API de terceiros
-   * @param idCondominio - ID do condomínio (padrão: 0)
-   * @returns Promise com a resposta da inserção
-   */
-  async inserirCliente(clienteApi: ClienteApiTerceiros, idCondominio: number = 0): Promise<ClienteInsertResponse> {
+  async inserirIntegracao(
+    auth: AutenticacaoRBX,
+    contrato: ContratoRBX,
+    cliente: ClienteApiTerceiros,
+    idCondominio: number = 0
+  ): Promise<ClienteInsertResponse> {
     try {
-      // 1. Obter id_city do authService
       const idCity = this.authService.getIdCity();
-      
+
       if (!idCity) {
         const error = 'ID da cidade não encontrado no authService';
         console.error('❌ [INSERIR-CLIENTE-RBX]', error);
         return { success: false, error };
       }
 
-      console.log('🔍 [INSERIR-CLIENTE-RBX] ID da cidade:', idCity);
-      console.log('🔍 [INSERIR-CLIENTE-RBX] Dados recebidos da API:', clienteApi);
+      const dadosTransformados = this.transformarDadosIntegracao(auth, contrato, cliente, idCity, idCondominio);
+      console.log('🔄 [INSERIR-CLIENTE-RBX] Dados integração transformados:', dadosTransformados);
 
-      // 2. Transformar dados
-      const dadosTransformados = this.transformarDados(clienteApi, idCity, idCondominio);
-      console.log('🔄 [INSERIR-CLIENTE-RBX] Dados transformados:', dadosTransformados);
+      return await this.enviarInsert(dadosTransformados);
+    } catch (error: any) {
+      console.error('❌ [INSERIR-CLIENTE-RBX] Erro ao inserir integração:', error);
+      return {
+        success: false,
+        error: error.message || 'Erro desconhecido ao inserir integração RBX'
+      };
+    }
+  }
 
-      // 3. Preparar requisição
-      const token = this.authService.getToken();
-      const headers = new HttpHeaders()
-        .set('Content-Type', 'application/json')
-        .set('Authorization', `Bearer ${token}`);
+  async inserirCliente(clienteApi: ClienteApiTerceiros, idCondominio: number = 0): Promise<ClienteInsertResponse> {
+    try {
+      const idCity = this.authService.getIdCity();
 
-      const route = '/insert_cliente';
-      const url = `${this.baseUrl}${route}`;
-
-      // 4. Fazer a requisição
-      const response = await firstValueFrom(
-        this.http.post<ClienteInsertResponse>(url, dadosTransformados, { headers }).pipe(
-          timeout(this.TIMEOUT),
-          catchError(this.handleError)
-        )
-      );
-
-      if (response.success) {
-        console.log('✅ [INSERIR-CLIENTE-RBX] Cliente inserido com sucesso:', response);
-        return response;
-      } else {
-        console.error('❌ [INSERIR-CLIENTE-RBX] Erro na inserção:', response.error);
-        return {
-          success: false,
-          error: response.error || 'Erro desconhecido ao inserir cliente'
-        };
+      if (!idCity) {
+        const error = 'ID da cidade não encontrado no authService';
+        console.error('❌ [INSERIR-CLIENTE-RBX]', error);
+        return { success: false, error };
       }
 
+      const dadosTransformados = this.transformarDados(clienteApi, idCity, idCondominio);
+      return await this.enviarInsert(dadosTransformados);
     } catch (error: any) {
       console.error('❌ [INSERIR-CLIENTE-RBX] Erro ao inserir cliente:', error);
       return {
@@ -155,33 +231,48 @@ export class InserirClienteRBXService {
     }
   }
 
-  /**
-   * Processa e insere um cliente a partir dos dados da API de terceiros
-   * Método auxiliar que pode ser chamado diretamente com a resposta da API RBX
-   */
+  private async enviarInsert(dadosTransformados: ClienteInsertRequest): Promise<ClienteInsertResponse> {
+    const token = this.authService.getToken();
+    const headers = new HttpHeaders()
+      .set('Content-Type', 'application/json')
+      .set('Authorization', `Bearer ${token}`);
+
+    const url = `${this.baseUrl}/insert_cliente`;
+
+    const response = await firstValueFrom(
+      this.http.post<ClienteInsertResponse>(url, dadosTransformados, { headers }).pipe(
+        timeout(this.TIMEOUT),
+        catchError(this.handleError)
+      )
+    );
+
+    if (response.success) {
+      console.log('✅ [INSERIR-CLIENTE-RBX] Cliente inserido com sucesso:', response);
+      return response;
+    }
+
+    console.error('❌ [INSERIR-CLIENTE-RBX] Erro na inserção:', response.error);
+    return {
+      success: false,
+      error: response.error || 'Erro desconhecido ao inserir cliente'
+    };
+  }
+
   async processarEInserirCliente(dadosApiTerceiros: any): Promise<ClienteInsertResponse> {
     try {
-      // Verificar se os dados estão no formato esperado
-      // A resposta pode vir em diferentes formatos, ajuste conforme necessário
       let clienteApi: ClienteApiTerceiros;
 
-      // ✅ PRIMEIRO: Verificar se tem propriedade 'result' (formato da API RBX)
       if (dadosApiTerceiros.result && Array.isArray(dadosApiTerceiros.result)) {
         if (dadosApiTerceiros.result.length === 0) {
           return { success: false, error: 'Nenhum cliente encontrado na resposta da API' };
         }
         clienteApi = dadosApiTerceiros.result[0];
-        console.log('📦 [INSERIR-CLIENTE-RBX] Cliente extraído de result[0]:', clienteApi);
-      }
-      // Se for um array, pegar o primeiro item
-      else if (Array.isArray(dadosApiTerceiros)) {
+      } else if (Array.isArray(dadosApiTerceiros)) {
         if (dadosApiTerceiros.length === 0) {
           return { success: false, error: 'Nenhum cliente encontrado na resposta da API' };
         }
         clienteApi = dadosApiTerceiros[0];
-      } 
-      // Se for um objeto com propriedade que contém o array
-      else if (dadosApiTerceiros.ConsultaClientes || dadosApiTerceiros.data) {
+      } else if (dadosApiTerceiros.ConsultaClientes || dadosApiTerceiros.data) {
         const dados = dadosApiTerceiros.ConsultaClientes || dadosApiTerceiros.data;
         if (Array.isArray(dados) && dados.length > 0) {
           clienteApi = dados[0];
@@ -190,20 +281,14 @@ export class InserirClienteRBXService {
         } else {
           return { success: false, error: 'Formato de dados inválido da API' };
         }
-      }
-      // Se já for o objeto do cliente
-      else {
+      } else {
         clienteApi = dadosApiTerceiros;
       }
 
-      console.log('📦 [INSERIR-CLIENTE-RBX] Processando cliente:', clienteApi);
-
-      // Validar se o cliente foi extraído corretamente
       if (!clienteApi || !clienteApi.Codigo) {
         return { success: false, error: 'Dados do cliente inválidos ou incompletos' };
       }
 
-      // Inserir o cliente
       return await this.inserirCliente(clienteApi);
     } catch (error: any) {
       console.error('❌ [INSERIR-CLIENTE-RBX] Erro ao processar cliente:', error);
@@ -217,19 +302,16 @@ export class InserirClienteRBXService {
   private handleError(error: HttpErrorResponse) {
     console.error('❌ [INSERIR-CLIENTE-RBX] Erro na requisição HTTP:', error);
     let errorMessage = 'Ocorreu um erro ao inserir o cliente.';
-    
+
     if (error.error instanceof ErrorEvent) {
-      // Erro do cliente
       errorMessage = `Erro: ${error.error.message}`;
     } else {
-      // Erro do servidor
       errorMessage = `Código do erro: ${error.status}, mensagem: ${error.message}`;
       if (error.error && error.error.error) {
         errorMessage += ` - ${error.error.error}`;
       }
     }
-    
+
     return throwError(() => errorMessage);
   }
 }
-

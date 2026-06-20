@@ -29,11 +29,20 @@ export class ListaCondominiosComponent implements OnInit {
     this.servicoCondominios.selecionar().subscribe({
       next: (retorno) => {
         console.log('Dados recebidos:', retorno);
+        let raw: Condominios[];
         if ('response' in retorno) {
-          this.vetorCondominios = (retorno as any).response;
+          raw = (retorno as any).response;
         } else {
-          this.vetorCondominios = retorno as Condominios[];
+          raw = retorno as Condominios[];
         }
+        this.vetorCondominios = raw.map((item) => {
+          const numPavimRaw = item.NUM_PAVIM;
+          const numPavim =
+            numPavimRaw != null && Number.isFinite(Number(numPavimRaw)) && Number(numPavimRaw) > 0
+              ? Math.floor(Number(numPavimRaw))
+              : undefined;
+          return { ...item, NUM_PAVIM: numPavim };
+        });
         this.CondominiosSelecionada.emit(this.vetorCondominios);
       },
       error: (erro) => {

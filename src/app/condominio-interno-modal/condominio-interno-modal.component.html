@@ -1,0 +1,24 @@
+<div class="condominio-interno-modal">
+  <div class="modal-header">
+    <h3>{{ titulo }}</h3>
+    <button
+      mat-icon-button
+      type="button"
+      (mousedown)="$event.stopPropagation()"
+      (click)="close()"
+      aria-label="Fechar">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <div class="map-shell">
+    <google-map
+      [center]="center"
+      [zoom]="zoom"
+      [options]="mapOptions"
+      width="100%"
+      height="100%"
+      (mapInitialized)="onMapInitialized($event)">
+    </google-map>
+  </div>
+</div>

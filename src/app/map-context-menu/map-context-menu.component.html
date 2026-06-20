@@ -98,6 +98,21 @@
   </div>
 </ng-container>
 
+<!-- Menu para Condomínio -->
+<ng-container *ngIf="contextType === 'condominio'">
+  <div class="menu-item" (click)="onAction('visualizacao-interna-condominio')">
+    <mat-icon>visibility</mat-icon>
+    <span>Visualização Interna</span>
+  </div>
+
+  <div class="menu-divider"></div>
+
+  <div class="menu-item" (click)="onAction('excluir-condominio')">
+    <mat-icon>delete</mat-icon>
+    <span>Excluir Condominio</span>
+  </div>
+</ng-container>
+
 <!-- Menu para Estação -->
 <ng-container *ngIf="contextType === 'estacao'">
   <div class="menu-item" (click)="onAction('visualizar-estacao')">

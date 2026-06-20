@@ -27,6 +27,7 @@ import { Poligonos } from '../modelo/poligonos';
 //import { CaixaInternaComponent } from '../caixa-interna/caixa-interna.component';
 import { ChangeDetectorRef } from '@angular/core'; /// ============novo
 import { GoJSDemoComponent } from '../gojs-demo/gojs-demo.component';
+import type { CondominioInternoModalData } from '../condominio-interno-modal/condominio-interno-modal.data';
 import { AuthService } from '../servico/auth.service';
 import { MapLayerVisibilityService } from '../servico/map-layer-visibility.service';
 import { animate, animation } from '@angular/animations';
@@ -78,6 +79,7 @@ import { DivideCaboService } from '../servico/divide-cabo.service';
 import { ExcluiCaixaService, ExcluiCaixaRequest, ExcluiCaixaResponse } from '../servico/exclui-caixa.service';
 import { ExcluiDioService, ExcluiDioRequest, ExcluiDioResponse } from '../servico/exclui-dio.service';
 import { ExcluiEstacaoService, ExcluiEstacaoRequest, ExcluiEstacaoResponse } from '../servico/exclui-estacao.service';
+import { ExcluiCondominioService, ExcluiCondominioRequest, ExcluiCondominioResponse } from '../servico/exclui-condominio.service';
 import { ExcluiPoligonoService, ExcluiPoligonoRequest, ExcluiPoligonoResponse } from '../servico/exclui-poligono.service';
 import { ExcluiClienteService, ExcluiClienteRequest, ExcluiClienteResponse } from '../servico/exclui-cliente.service';
 import { Subject, Subscription, takeUntil } from 'rxjs';
@@ -356,7 +358,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
   // 🎯 Propriedades para context menu
   contextMenuVisible = false;
   contextMenuPosition = { x: 0, y: 0 };
-  contextMenuType: 'caixa' | 'map' | 'cabo' | 'dio' | 'cliente' | 'estacao' | 'vertice' | 'poligono' = 'map'; // 🆕 Tipo de contexto do menu
+  contextMenuType: 'caixa' | 'map' | 'cabo' | 'dio' | 'cliente' | 'estacao' | 'condominio' | 'vertice' | 'poligono' = 'map'; // 🆕 Tipo de contexto do menu
   private clickedPoligono: google.maps.Polygon | null = null;
   private clickedVertexIndex: number | null = null; // 🆕 Índice do vértice clicado (para menu vertice)
   private contextMenuListenerAdded = false; // Flag para evitar listeners duplicados
@@ -378,6 +380,9 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
   /** Cópia da ref do marcador ao abrir o modal de ativação (hideContextMenu zera clickedClienteMarker). */
   private marcadorClienteAtivacaoModal: google.maps.Marker | null = null;
   private clickedEstacaoData: any = null; // 🆕 Armazena dados da estação clicada
+  private clickedCondominioData: Condominios | null = null; // 🆕 Armazena dados do condomínio clicado
+  /** Cópia da ref do marcador ao abrir ações do condomínio (hideContextMenu zera clickedCondominioMarker). */
+  private clickedCondominioMarker: google.maps.Marker | null = null;
   private clickedPolyline: google.maps.Polyline | null = null; // 🆕 Armazena a polyline clicada
   private ultimaCoordenadaClique: google.maps.LatLng | null = null; // 🆕 Armazena coordenada do último clique para identificar ponta
   private ultimaCoordenadaContextMenu: google.maps.LatLng | null = null; // 🆕 Armazena coordenada do context menu do mapa
@@ -509,6 +514,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
     private excluiCaixaService: ExcluiCaixaService,
     private excluiDioService: ExcluiDioService,
     private excluiEstacaoService: ExcluiEstacaoService,
+    private excluiCondominioService: ExcluiCondominioService,
     private excluiPoligonoService: ExcluiPoligonoService,
     private excluiClienteService: ExcluiClienteService,
     private buscaObjetoConexPontaService: BuscaObjetoConexPontaService,
@@ -701,6 +707,8 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
       this.clickedClienteMarker = null; // marcador cliente: só válido enquanto o menu está ativo
       this.clickedDioData = null; // 🆕 Limpar dados do DIO
       this.clickedEstacaoData = null; // 🆕 Limpar dados da estação
+      this.clickedCondominioData = null; // 🆕 Limpar dados do condomínio
+      this.clickedCondominioMarker = null;
       this.clickedPoligono = null;
       // 🆕 NOVO: Limpar coordenada do context menu quando não estiver em edição
       // Isso garante que a próxima vez que o usuário clicar com botão direito,
@@ -829,6 +837,14 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
         break;
       case 'excluir-estacao':
         this.excluirEstacao();
+        break;
+
+      // 🆕 Ações para Condomínio
+      case 'visualizacao-interna-condominio':
+        this.visualizarCondominioInterno();
+        break;
+      case 'excluir-condominio':
+        this.excluirCondominio();
         break;
 
       // 🔷 Ações para POLÍGONO (modo edição armado)
@@ -1111,6 +1127,129 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
   private criarCondominio(): void {
     console.log('🗺️ [CONTEXT-MENU] Criando condomínio...');
     alert('Funcionalidade de criar condomínio será implementada em breve!');
+  }
+
+  private visualizarCondominioInterno(): void {
+    console.log('🔍 [CONTEXT-MENU] Visualização interna do condomínio...', this.clickedCondominioData);
+
+    if (!this.clickedCondominioData) {
+      alert('❌ Erro: Dados do condomínio não encontrados.');
+      this.hideContextMenu();
+      return;
+    }
+
+    let idMeta: number | undefined = this.clickedCondominioData.id_meta;
+    if (!idMeta && this.clickedCondominioMarker) {
+      const idMetaDoMarcador = this.clickedCondominioMarker.get('id_meta');
+      if (idMetaDoMarcador) {
+        idMeta = Number(idMetaDoMarcador);
+      }
+    }
+
+    if (!idMeta || isNaN(idMeta) || idMeta <= 0) {
+      alert('❌ Erro: Não foi possível identificar o ID do condomínio.');
+      this.hideContextMenu();
+      return;
+    }
+
+    const latRaw = this.clickedCondominioData.LAT;
+    const lngRaw = this.clickedCondominioData.LNG;
+    const lat = latRaw != null ? Number(latRaw) : undefined;
+    const lng = lngRaw != null ? Number(lngRaw) : undefined;
+
+    const numPavim = this.resolverNumPavimCondominio(this.clickedCondominioData);
+
+    const dialogData: CondominioInternoModalData = {
+      id_meta: idMeta,
+      sigla: this.clickedCondominioData.sigla,
+      lat: Number.isFinite(lat) ? lat : undefined,
+      lng: Number.isFinite(lng) ? lng : undefined,
+      qtdAndares: numPavim,
+    };
+
+    this.hideContextMenu();
+
+    import('../condominio-interno-modal/condominio-interno-modal.component').then(
+      ({ CondominioInternoModalComponent }) => {
+        this.dialog.open(CondominioInternoModalComponent, {
+          width: '95vw',
+          height: '90vh',
+          maxWidth: 'none',
+          maxHeight: 'none',
+          hasBackdrop: true,
+          disableClose: false,
+          panelClass: 'condominio-interno-modal-container',
+          data: dialogData,
+        });
+      },
+    );
+  }
+
+  private excluirCondominio(): void {
+    console.log('🗑️ [CONTEXT-MENU] Excluindo condomínio...', this.clickedCondominioData);
+
+    if (!this.clickedCondominioData) {
+      alert('❌ Erro: Dados do condomínio não encontrados.');
+      return;
+    }
+
+    let idMeta: number | undefined = this.clickedCondominioData.id_meta;
+    if (!idMeta && this.clickedCondominioMarker) {
+      const idMetaDoMarcador = this.clickedCondominioMarker.get('id_meta');
+      if (idMetaDoMarcador) {
+        idMeta = Number(idMetaDoMarcador);
+      }
+    }
+
+    if (!idMeta || isNaN(idMeta) || idMeta <= 0) {
+      alert('❌ Erro: Não foi possível identificar o ID do condomínio.');
+      return;
+    }
+
+    const idCity = this.authService.getIdCity();
+    if (!idCity) {
+      alert('❌ Erro: ID da cidade não encontrado. Selecione uma cidade no workspace.');
+      return;
+    }
+
+    const sigla = this.clickedCondominioData.sigla || 'N/A';
+    const confirmacao = confirm(`Tem certeza que deseja excluir este condomínio?\n\n📋 Sigla: ${sigla}`);
+
+    if (!confirmacao) {
+      return;
+    }
+
+    const request: ExcluiCondominioRequest = {
+      id_meta: idMeta,
+      id_city: idCity
+    };
+
+    this.excluiCondominioService.excluirCondominio(request).subscribe({
+      next: (response: ExcluiCondominioResponse) => {
+        console.log('✅ [EXCLUI-CONDOMINIO] Resposta da API:', response);
+
+        if (response.success) {
+          const index = this.destinoCondominios.findIndex(c => c.id_meta === idMeta);
+          if (index !== -1) {
+            const markerParaRemover = this.markerCondominios[index];
+            if (markerParaRemover) {
+              markerParaRemover.setMap(null);
+              this.markerCondominios.splice(index, 1);
+            }
+            this.destinoCondominios.splice(index, 1);
+            console.log('🗑️ [EXCLUI-CONDOMINIO] Condomínio removido do mapa');
+          }
+
+          this.clickedCondominioData = null;
+          this.hideContextMenu();
+        }
+      },
+      error: (error: any) => {
+        const msg = typeof error === 'string' ? error : error?.message || 'Erro ao excluir condomínio';
+        console.error('❌ [EXCLUI-CONDOMINIO] Erro na requisição:', error);
+        alert(`❌ Operação não realizada: ${msg}`);
+      }
+    });
   }
 
   private abrirCadastroCliente(): void {
@@ -5399,11 +5538,42 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
       if (this.map) {
         marker.setMap(this.map);
       }
+
+      this.gravarCamposCondominioNoMarcador(marker, location);
       
       marker.addListener('dragend', (event: google.maps.MapMouseEvent) => {
         const index = this.markerCondominios.indexOf(marker);
         if (index !== -1) {
           this.onMarkerDragEnd(event, index, true);
+        }
+      });
+
+      marker.addListener('rightclick', (event: google.maps.MapMouseEvent) => {
+        const condominioData =
+          (marker.get('condominio_data') as Condominios | undefined) ?? location;
+
+        if (!condominioData) {
+          return;
+        }
+
+        console.log('🔴 [CONDOMINIO] Right-click no condomínio:', condominioData);
+
+        this.clickedCondominioData = condominioData;
+        this.clickedCondominioMarker = marker;
+        this.clickedCaixaData = null;
+        this.clickedCTOData = null;
+        this.clickedCTOSPData = null;
+        this.clickedDioData = null;
+        this.clickedCliData = null;
+        this.clickedCliAtData = null;
+        this.clickedCliDesData = null;
+        this.clickedClienteMarker = null;
+        this.clickedEstacaoData = null;
+        this.contextMenuType = 'condominio';
+
+        if (event.domEvent) {
+          const mouseEvent = event.domEvent as MouseEvent;
+          this.showContextMenu(mouseEvent.clientX, mouseEvent.clientY);
         }
       });
 
@@ -5414,6 +5584,39 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
       
       console.log('Condominios atualizadas:', this.markerCondominios);
     }
+  }
+
+  /** id_meta, sigla, NUM_PAVIM e condominio_data no MVCObject do Marker (Google Maps). */
+  private gravarCamposCondominioNoMarcador(
+    marker: google.maps.Marker,
+    location: Condominios,
+  ): void {
+    if (location.id_meta != null && Number(location.id_meta) > 0) {
+      marker.set('id_meta', Number(location.id_meta));
+    }
+    if (location.sigla != null && String(location.sigla).trim() !== '') {
+      marker.set('sigla', String(location.sigla).trim());
+    }
+    const numPavim = this.normalizarNumPavim(location.NUM_PAVIM);
+    if (numPavim != null) {
+      marker.set('NUM_PAVIM', numPavim);
+    }
+    marker.set('condominio_data', location);
+  }
+
+  private normalizarNumPavim(valor: unknown): number | undefined {
+    if (valor === undefined || valor === null) {
+      return undefined;
+    }
+    const n = typeof valor === 'number' ? valor : Number(valor);
+    if (!Number.isFinite(n) || n <= 0) {
+      return undefined;
+    }
+    return Math.floor(n);
+  }
+
+  private resolverNumPavimCondominio(condominio: Condominios): number | undefined {
+    return this.normalizarNumPavim(condominio.NUM_PAVIM);
   }
 
   /** id_meta, CAPACIDADE, sigla e dio_data no MVCObject do Marker (Google Maps). */
