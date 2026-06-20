@@ -331,7 +331,7 @@ export class ConsultaApiRbxService {
 
       let codigoAtual = codigoInicial;
       let registrosVaziosConsecutivos = 0;
-      const maxRegistrosVazios = 6;
+      const maxRegistrosVazios = 15; // quanta segquencias de clientes vazios consecutivos para parar a consulta
       let totalAutenticacoesInseridas = 0;
 
       while (registrosVaziosConsecutivos <= maxRegistrosVazios) {
