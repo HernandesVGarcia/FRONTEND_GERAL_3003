@@ -57,6 +57,29 @@ export class FiberTraceUnifilarCaboService{
     return [...this.cabosInfo]; // Retorna uma cópia para evitar modificações externas
   }
 
+  private async registrarCaboPercorrido(caboId: number): Promise<void> {
+    if (this.cabosPercorridos.includes(caboId)) {
+      console.log(`🗺️ [CABO-UNIFILAR] Cabo ${caboId} já existe no array. Total: ${this.cabosPercorridos.length}`);
+      return;
+    }
+
+    this.cabosPercorridos.push(caboId);
+
+    try {
+      const capacidade = (await this.fiberApiService.getCapacidadeCabo(caboId).toPromise()) || 'unknown';
+      this.cabosInfo.push({ id: caboId, capacidade });
+      console.log(
+        `🗺️ [CABO-UNIFILAR] Cabo ${caboId} (${capacidade}) adicionado aos percorridos. Total: ${this.cabosPercorridos.length}`,
+      );
+    } catch (error) {
+      console.error(`🗺️ [CABO-UNIFILAR] Erro ao consultar capacidade do cabo ${caboId}:`, error);
+      this.cabosInfo.push({ id: caboId, capacidade: 'unknown' });
+      console.log(
+        `🗺️ [CABO-UNIFILAR] Cabo ${caboId} (unknown) adicionado aos percorridos. Total: ${this.cabosPercorridos.length}`,
+      );
+    }
+  }
+
   /**
    * 🗺️ NOVO: Limpa o array de cabos percorridos
    */
@@ -120,6 +143,8 @@ export class FiberTraceUnifilarCaboService{
         this.dotString += `${this.Objeto_Atual}[label="${this.Objeto_Atual}",color="${this.cor}"];`;
         
         console.log(`🎯 [DOT] Primeiro objeto definido: ${this.Objeto_Atual}`);
+
+        await this.registrarCaboPercorrido(idmeta);
       }
 
       // Verificar limite de passos
@@ -474,28 +499,7 @@ export class FiberTraceUnifilarCaboService{
     const fibra = parseInt(match[3]);
     const tipo = match[4] || 'VALUE'; // Label, VALUE ou VALUE (padrão para conexão direta)
 
-    // 🗺️ NOVO: Adicionar ID do cabo ao array de cabos percorridos
-    if (!this.cabosPercorridos.includes(caboId)) {
-      this.cabosPercorridos.push(caboId);
-      
-      // 🗺️ NOVO: Consultar capacidade do cabo no banco de dados
-      try {
-        const capacidade = await this.fiberApiService.getCapacidadeCabo(caboId).toPromise() || 'unknown';
-        this.cabosInfo.push({id: caboId, capacidade: capacidade});
-        
-        console.log(`🗺️ [CABO-UNIFILAR] ✅ CABO ENCONTRADO! Cabo ${caboId} (${capacidade}) adicionado aos percorridos. Total: ${this.cabosPercorridos.length}`);
-        console.log(`🗺️ [CABO-UNIFILAR] Conteúdo do cabo: ${conteudo}`);
-        console.log(`🗺️ [CABO-UNIFILAR] Regex match: ${match}`);
-        console.log(`🗺️ [CABO-UNIFILAR] Array atual: [${this.cabosPercorridos.join(', ')}]`);
-      } catch (error) {
-        console.error(`🗺️ [CABO-UNIFILAR] Erro ao consultar capacidade do cabo ${caboId}:`, error);
-        this.cabosInfo.push({id: caboId, capacidade: 'unknown'});
-        
-        console.log(`🗺️ [CABO-UNIFILAR] ✅ CABO ENCONTRADO! Cabo ${caboId} (unknown) adicionado aos percorridos. Total: ${this.cabosPercorridos.length}`);
-      }
-    } else {
-      console.log(`🗺️ [CABO-UNIFILAR] Cabo ${caboId} já existe no array. Total: ${this.cabosPercorridos.length}`);
-    }
+    await this.registrarCaboPercorrido(caboId);
 
     // Calcular tubo baseado na fibra
     const tubo = this.calculateTubo(fibra);

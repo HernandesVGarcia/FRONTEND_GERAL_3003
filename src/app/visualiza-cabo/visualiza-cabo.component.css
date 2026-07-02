@@ -82,8 +82,8 @@
 
 .rastreando-container p {
   margin: 0;
-  font-size: 0.8rem;
-  color: #666;
+  font-size: 1.0rem;
+  color: #4c6285;
   user-select: none;
   line-height: 1.1;
 }
@@ -184,13 +184,13 @@
 }
 
 .fibra-esm-button {
-  background-color: #fff3e0;
+  background-color: #73b6f5;
   color: #ef6c00;
   border-color: #ffcc02;
 }
 
 .fibra-esm-button:hover {
-  background-color: #ffcc02;
+  background-color: #0b55dd;
   border-color: #ffb300;
   transform: translateY(-1px);
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -228,13 +228,13 @@
 }
 
 .fibra-dsm-button {
-  background-color: #fff3e0;
+  background-color: #73b6f5;
   color: #ef6c00;
   border-color: #ffcc02;
 }
 
 .fibra-dsm-button:hover {
-  background-color: #ffcc02;
+  background-color: #0b55dd;
   border-color: #ffb300;
   transform: translateY(-1px);
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -351,7 +351,7 @@
   border-radius: 3px;
   flex-shrink: 0;
   margin-left: auto; /* Empurrar para a direita */
-  margin-right: 84px; /* Espaço para os botões da direita */
+  margin-right: 284px; /* Espaço para os botões da direita */
 }
 
 /* FlexGrid do Cabo - Exatamente como VB6 */

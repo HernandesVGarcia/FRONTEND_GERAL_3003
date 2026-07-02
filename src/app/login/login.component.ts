@@ -45,7 +45,7 @@ export class LoginComponent {
     this.tokenService.selecionar(this.chave, this.senha)
       .subscribe({
         next: (response: any) => {
-          console.log('Login bem-sucedido:', response);
+          //console.log('Login bem-sucedido:', response); estava mostrando o token e o usuario
           console.log('=================> response.lat' , response.lat, response.lng) 
           console.log('=================> response.menu_ON', response.menu_ON)
           

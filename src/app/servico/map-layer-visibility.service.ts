@@ -14,7 +14,7 @@ export type MapLayerId =
   | 'clientes_cancelados'
   | 'estacoes';
 
-export const MAP_LAYER_OPTIONS: { id: MapLayerId; label: string }[] = [
+export const MAP_LAYER_OPTIONS: { id: MapLayerId; label: string }[] = [//APARECE NO COMBOBOX CAMADAS
   { id: 'poligonos', label: 'Polígonos' },
   { id: 'ceo', label: 'CEO' },
   { id: 'cto', label: 'CTO' },
@@ -31,12 +31,12 @@ export const MAP_LAYER_OPTIONS: { id: MapLayerId; label: string }[] = [
   providedIn: 'root',
 })
 export class MapLayerVisibilityService {
-  private readonly layers: Record<MapLayerId, boolean>;
+  private readonly layers: Record<MapLayerId, boolean>; //valor inicial das camadas
   private readonly layersSubject = new BehaviorSubject<Record<MapLayerId, boolean>>(
     {} as Record<MapLayerId, boolean>,
   );
 
-  readonly layersChanged$ = this.layersSubject.asObservable();
+  readonly layersChanged$ = this.layersSubject.asObservable();// observa as mudanças nas camadas
 
   constructor(private authService: AuthService) {
     const ctoOn = this.authService.getcto_layer() === '1';
@@ -60,7 +60,7 @@ export class MapLayerVisibilityService {
     return this.layers[id];
   }
 
-  getVisibleLayerIds(): MapLayerId[] {
+  getVisibleLayerIds(): MapLayerId[] {// obtém as camadas selecionadas  1ª arrow function filtra as camadas que estão visíveis e a 2ª arrow function pega o id das camadas que estão visíveis
     return MAP_LAYER_OPTIONS.filter((opt) => this.layers[opt.id]).map((opt) => opt.id);
   }
 

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, Inject, AfterViewInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, Inject, AfterViewInit, inject, ElementRef, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialog } from '@angular/material/dialog';
 import { MatIcon } from '@angular/material/icon';
@@ -12,6 +12,7 @@ import { FiberTraceService, FiberTraceResult, FiberTraceStep } from '../servico/
 import { Cabo_tipo } from '../modelo/Cabo_tipo';
 import { GraphvizModalComponent } from '../graphviz-modal/graphviz-modal.component';
 import { FiberTraceUnifilarCaboService } from '../servico/fiber-trace-unifilar-cabo.service';
+import { FiberTraceMapCaboService, FiberTraceMapResult, CaboMapHighlightInfo, SplitterMapHighlightInfo } from '../servico/fiber-trace-map-cabo.service';
 
 
 export interface VisualizaCaboData {
@@ -54,6 +55,9 @@ export interface FlexGridCell {
   imports: [CommonModule, MatIcon, MatSpinner]
 })
 export class VisualizaCaboComponent implements OnInit, OnDestroy, AfterViewInit {
+  private readonly fiberTraceMapCaboService = inject(FiberTraceMapCaboService);
+  private readonly elementRef = inject(ElementRef<HTMLElement>);
+  private readonly cdr = inject(ChangeDetectorRef);
   private destroy$ = new Subject<void>();
   
   visualizaCaboData: VisualizaCaboData | null = null;
@@ -77,6 +81,7 @@ export class VisualizaCaboComponent implements OnInit, OnDestroy, AfterViewInit 
   fibrasPontaA: FibraDestino[] = [];
   fibrasPontaB: FibraDestino[] = [];
   isRastreando = false;
+  rastreandoMensagem = '';
 
   // Propriedades para arrastar o modal (mesmo padrão do visualiza-dio)
   isDragging = false;
@@ -85,8 +90,10 @@ export class VisualizaCaboComponent implements OnInit, OnDestroy, AfterViewInit 
   private initialX = 0;
   private initialY = 0;
   private modalElement: HTMLElement | null = null;
-  private modalContentElement: HTMLElement | null = null;
   private modalHeaderElement: HTMLElement | null = null;
+  private dragListenersAttached = false;
+  private readonly boundDragMove = (e: MouseEvent) => this.dragMove(e);
+  private readonly boundDragEnd = (e: MouseEvent) => this.dragEnd(e);
 
   // Propriedades das cores das fibras
   private coresFibras: string[] = [];
@@ -180,6 +187,7 @@ export class VisualizaCaboComponent implements OnInit, OnDestroy, AfterViewInit 
   }
 
   ngOnDestroy(): void {
+    this.teardownDragListeners();
     this.destroy$.next();
     this.destroy$.complete();
   }
@@ -351,13 +359,14 @@ export class VisualizaCaboComponent implements OnInit, OnDestroy, AfterViewInit 
     }
   }
 
+  // tracer sobre o mapa usando fiberTraceMapCaboService
   onFibraEsmClick(fibraNumber: number): void {
     console.log(`FIBRA_ESM${fibraNumber} clicada`);
-    // Aqui você pode adicionar a lógica específica para FIBRA_ESM
-    // Por exemplo, destacar a linha correspondente no grid
+    this.runFibraMapTrace(fibraNumber, 'A');
     this.highlightFiberRow(fibraNumber - 1);
   }
 
+  // tracer unifilar usando graphviz
   onFibraEsClick(fibraNumber: number): void {
     fibraNumber = fibraNumber +((this.selectedFiberGroup-1)*12);
     const tubo = this.fiberTraceService.calculateTubo(fibraNumber);
@@ -501,11 +510,62 @@ export class VisualizaCaboComponent implements OnInit, OnDestroy, AfterViewInit 
 
   onFibraDsmClick(fibraNumber: number): void {
     console.log(`FIBRA_DSM${fibraNumber} clicada`);
-    // Aqui você pode adicionar a lógica específica para FIBRA_DSM
-    // Por exemplo, destacar a linha correspondente no grid
+    this.runFibraMapTrace(fibraNumber, 'B');
     this.highlightFiberRow(fibraNumber - 1);
   }
+  //================================================================================================================
+  private buildFibraTraceParams(fibraNumber: number, ponta: 'A' | 'B'): {
+    fibra: number;
+    tabela: string;
+    regist: string;
+  } {
+    const fibra = fibraNumber + (this.selectedFiberGroup - 1) * 12;
+    const tubo = this.fiberTraceService.calculateTubo(fibra);
+    const tabela = ponta === 'A' ? `caboa_t${tubo}` : `cabob_t${tubo}`;
+    const regist = `FIBRA_${fibra}LABEL`;
+    return { fibra, tabela, regist };
+  }
 
+  //================================================================================================================
+  private runFibraMapTrace(fibraNumber: number, ponta: 'A' | 'B'): void {
+    const { fibra, tabela, regist } = this.buildFibraTraceParams(fibraNumber, ponta);
+    const pontaLabel = ponta === 'A' ? 'ESM' : 'DSM';
+
+    console.log(
+      `🔍 [TRACER-MAP CABO ${pontaLabel}] Parâmetros: IDMETA=${this.data.id_meta}, Fiber=${fibra}, Tabela=${tabela}, Registro=${regist}`,
+    );
+
+    this.clearCabosHighlight();
+    this.isLoading = true;
+    this.errorMessage = null;
+
+    this.fiberTraceMapCaboService.ANALISA_TABELAGRAFO(this.data.id_meta, fibra, tabela, regist)
+      .pipe(takeUntil(this.destroy$)) //utilizado para cancelar a subscrição quando o componente for destruído, evitando memory leaks caso modal seja fechado antes de concluir o rastreamento
+      .subscribe({
+        next: (result: FiberTraceMapResult) => {
+          this.isLoading = false;
+
+          if (result.success) {
+            console.log(
+              `✅ [TRACER-MAP CABO ${pontaLabel}] Rastreamento concluído:`,
+              result.trace.length,
+              'passos',
+            );
+            this.highlightCabosNoMapaComCapacidade(result.cabosInfo, result.splittersInfo);
+          } else {
+            console.error(`❌ [TRACER-MAP CABO ${pontaLabel}] Erro no rastreamento:`, result.error);
+            this.errorMessage = `Erro no rastreamento: ${result.error}`;
+          }
+        },
+        error: (error: unknown) => {
+          this.isLoading = false;
+          const message = error instanceof Error ? error.message : String(error);
+          console.error(`❌ [TRACER-MAP CABO ${pontaLabel}] Erro no rastreamento:`, error);
+          this.errorMessage = `Erro no rastreamento: ${message}`;
+        },
+      });
+  }
+//================================================================================================================
   private highlightFiberRow(rowIndex: number): void {
     // Lógica para destacar a linha correspondente no grid
     // Por exemplo, adicionar uma classe CSS ou mudar a cor
@@ -565,13 +625,18 @@ export class VisualizaCaboComponent implements OnInit, OnDestroy, AfterViewInit 
     }
 
     this.isRastreando = true;
+    this.rastreandoMensagem = `Rastreando fibras do grupo ${grupo}...`;
     console.log(`🔍 Rastreando grupo ${grupo} - PONTA A e PONTA B`);
 
     try {
       // Rastrear PONTA A primeiro (sequencial)
       console.log(`🔍 [GRUPO ${grupo}] Iniciando rastreio da PONTA A...`);
       const fibrasA = await this.fibraDestinoService.rastrearGrupoVisualizacaoAsync(
-        this.caboInfo.id_meta, grupo, 'A', this.caboInfo.capacidade
+        this.caboInfo.id_meta,
+        grupo,
+        'A',
+        this.caboInfo.capacidade,
+        ({ fibra, ponta }) => this.atualizarMensagemRastreio(fibra, ponta),
       );
       this.fibrasPontaA = fibrasA;
       console.log(`✅ [GRUPO ${grupo}] PONTA A concluída: ${fibrasA.length} fibras`);
@@ -579,7 +644,11 @@ export class VisualizaCaboComponent implements OnInit, OnDestroy, AfterViewInit 
       // Rastrear PONTA B depois (sequencial)
       console.log(`🔍 [GRUPO ${grupo}] Iniciando rastreio da PONTA B...`);
       const fibrasB = await this.fibraDestinoService.rastrearGrupoVisualizacaoAsync(
-        this.caboInfo.id_meta, grupo, 'B', this.caboInfo.capacidade
+        this.caboInfo.id_meta,
+        grupo,
+        'B',
+        this.caboInfo.capacidade,
+        ({ fibra, ponta }) => this.atualizarMensagemRastreio(fibra, ponta),
       );
       this.fibrasPontaB = fibrasB;
       console.log(`✅ [GRUPO ${grupo}] PONTA B concluída: ${fibrasB.length} fibras`);
@@ -597,7 +666,13 @@ export class VisualizaCaboComponent implements OnInit, OnDestroy, AfterViewInit 
       this.errorMessage = 'Erro ao rastrear fibras do grupo';
     } finally {
       this.isRastreando = false;
+      this.rastreandoMensagem = '';
     }
+  }
+
+  private atualizarMensagemRastreio(fibra: number, ponta: 'A' | 'B'): void {
+    this.rastreandoMensagem = `Rastreando Fibra ${fibra} Ponta ${ponta}...`;
+    this.cdr.detectChanges();
   }
 
   private updateGridWithResults(): void {
@@ -705,73 +780,113 @@ export class VisualizaCaboComponent implements OnInit, OnDestroy, AfterViewInit 
   
   private setupDragFunctionality(): void {
     setTimeout(() => {
-      console.log('Configurando funcionalidade de arrastar modal visualiza-cabo');
-      this.modalElement = document.querySelector('.cdk-dialog-container') as HTMLElement;
-      this.modalContentElement = this.modalElement; // Mover o modal completo, não o conteúdo interno
-      this.modalHeaderElement = document.querySelector('.modal-header') as HTMLElement;
-      
-      if (this.modalHeaderElement && this.modalContentElement) {
-        console.log('Modal header encontrado para arrastar visualiza-cabo');
-        // Adicionar listener apenas no cabeçalho, não no modal inteiro
-        this.modalHeaderElement.addEventListener('mousedown', (e: MouseEvent) => this.dragStart(e));
-        document.addEventListener('mousemove', (e: MouseEvent) => this.dragMove(e));
-        document.addEventListener('mouseup', (e: MouseEvent) => this.dragEnd(e));
-      } else {
-        console.warn('Modal header não encontrado para configurar o arrastar visualiza-cabo');
+      this.modalElement = this.elementRef.nativeElement.closest(
+        '.mat-mdc-dialog-container',
+      ) as HTMLElement | null;
+      this.modalHeaderElement = this.elementRef.nativeElement.querySelector(
+        '.modal-header',
+      ) as HTMLElement | null;
+
+      if (
+        this.dragListenersAttached ||
+        !this.modalHeaderElement ||
+        !this.modalElement
+      ) {
+        return;
       }
-    }, 500);
+
+      this.modalHeaderElement.addEventListener('mousedown', (e: MouseEvent) =>
+        this.dragStart(e),
+      );
+      document.addEventListener('mousemove', this.boundDragMove);
+      document.addEventListener('mouseup', this.boundDragEnd);
+      this.dragListenersAttached = true;
+    }, 0);
+  }
+
+  private teardownDragListeners(): void {
+    if (!this.dragListenersAttached) {
+      return;
+    }
+
+    document.removeEventListener('mousemove', this.boundDragMove);
+    document.removeEventListener('mouseup', this.boundDragEnd);
+
+    if (this.modalHeaderElement) {
+      this.modalHeaderElement.classList.remove('dragging');
+    }
+    if (this.modalElement) {
+      this.modalElement.classList.remove('dragging');
+    }
+
+    this.dragListenersAttached = false;
+    this.isDragging = false;
+    this.modalElement = null;
+    this.modalHeaderElement = null;
   }
 
   private dragStart(event: MouseEvent): void {
-    // Prevenir arrastar se clicou em um botão
     if ((event.target as HTMLElement).closest('button')) {
+      return;
+    }
+
+    if (
+      !this.modalHeaderElement ||
+      (event.target !== this.modalHeaderElement &&
+        !this.modalHeaderElement.contains(event.target as Node))
+    ) {
       return;
     }
 
     this.isDragging = true;
     this.initialX = event.clientX - this.currentX;
     this.initialY = event.clientY - this.currentY;
-    
-    if (this.modalHeaderElement) {
-      this.modalHeaderElement.classList.add('dragging');
-    }
-    
+
+    this.modalHeaderElement.classList.add('dragging');
+    this.modalElement?.classList.add('dragging');
+
     event.preventDefault();
   }
 
   private dragMove(event: MouseEvent): void {
-    if (!this.isDragging || !this.modalContentElement) return;
+    if (!this.isDragging || !this.modalElement) {
+      return;
+    }
+
+    event.preventDefault();
 
     this.currentX = event.clientX - this.initialX;
     this.currentY = event.clientY - this.initialY;
 
-    // Aplicar transformação ao modal
-    this.modalContentElement.style.transform = `translate(${this.currentX}px, ${this.currentY}px)`;
+    this.modalElement.style.transform = `translate3d(${this.currentX}px, ${this.currentY}px, 0)`;
   }
 
-  private dragEnd(event: MouseEvent): void {
-    if (!this.isDragging) return;
+  private dragEnd(_event: MouseEvent): void {
+    if (!this.isDragging) {
+      return;
+    }
 
     this.isDragging = false;
-    
-    if (this.modalHeaderElement) {
-      this.modalHeaderElement.classList.remove('dragging');
-    }
+    this.modalHeaderElement?.classList.remove('dragging');
+    this.modalElement?.classList.remove('dragging');
   }
 
 
-/**
+/*********************************************************************************************************************
    * 🗺️ NOVO: Destaca cabos percorridos no Google Maps com informações de capacidade
    */
-private highlightCabosNoMapaComCapacidade(cabosInfo: Array<{id: number, capacidade: string}>): void {
+private highlightCabosNoMapaComCapacidade(
+  cabosInfo: Array<CaboMapHighlightInfo | { id: number; capacidade: string }>,
+  splittersInfo: SplitterMapHighlightInfo[] = [],
+): void {
   console.log('🗺️ [HIGHLIGHT] Destacando cabos no mapa com capacidade:', cabosInfo);
-  
-  // 🗺️ NOVO: Comunicar com o Google Maps via evento customizado
+  console.log('🗺️ [HIGHLIGHT] Splitters no mapa:', splittersInfo);
+
   const event = new CustomEvent('highlightCabosComCapacidade', {
-    detail: { cabosInfo }
+    detail: { cabosInfo, splittersInfo },
   });
   window.dispatchEvent(event);
-  
+
   console.log('🗺️ [HIGHLIGHT] Evento de destaque com capacidade enviado para o Google Maps');
 }
 

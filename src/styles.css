@@ -264,6 +264,21 @@ body.modal-open .modal-content {
 .cadastro-cliente-modal-window app-cadastro-cliente .modal-content * { pointer-events: auto !important; }
 .cadastro-cliente-modal-window app-cadastro-cliente .modal-content { user-select: none !important; }
 
+/* Visualiza Cabo (MatDialog sobre o mapa): mapa interativo fora do modal */
+.visualiza-cabo-modal-container,
+.visualiza-cabo-modal-container * {
+  pointer-events: none !important;
+}
+
+.visualiza-cabo-modal-container .mat-mdc-dialog-container,
+.visualiza-cabo-modal-container .mat-mdc-dialog-container * {
+  pointer-events: auto !important;
+}
+
+.visualiza-cabo-modal-container .mat-mdc-dialog-container {
+  user-select: none;
+}
+
 /* Power Meter (diagrama GoJS / caixa) */
 .power-meter-modal-window,
 .power-meter-modal-window * { pointer-events: none !important; }

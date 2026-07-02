@@ -110,7 +110,7 @@ export class PopInfoAtivacaoModalComponent implements OnInit, OnDestroy {
   /** Emitido quando `/insert_posicao_olt` devolve um `portas_olt_id` válido — o pai atualiza o marcador. */
   @Output() portasOltOcupacaoRegistada = new EventEmitter<number>();
 
-  @ViewChild('modalDialog', { static: false }) modalDialog!: ElementRef;
+  @ViewChild('modalDialog', { static: false }) modalDialog!: ElementRef; // para poder arrastar o modal
 
   get clienteNomeExibicao(): string {
     const n = (this.clienteNome ?? '').trim();

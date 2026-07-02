@@ -118,90 +118,126 @@ import { BuscaObjetoConexPontaService, ObjetoConectado } from '../servico/busca-
  * ============================================================================
  * ÍNDICE DE SEÇÕES DO COMPONENTE GOOGLE MAPS
  * ============================================================================
+ * (Atualizar linhas ao mover blocos grandes de código.)
  *
  * PROPRIEDADES:
- * - Linha ~167: @Input() - Dados de entrada (destinos, cabos, caixas, etc)
- * - Linha ~253: Propriedades do Mapa (center, zoom, title, etc)
- * - Linha ~267: Marcadores (markerCaixas, markerCtos, markerPopsCli, etc)
- * - Linha ~300: Paths de Polylines (polylinePaths1f, polylinePaths2f, etc)
- * - Linha ~317: Polylines (polylines1f, polylines2f, etc)
- * - Linha ~329: InfoWindows (infoWindows1f, infoWindows2f, etc)
- * - Linha ~342: Controle de Destaque de Cabos
- * - Linha ~346: Context Menu
- * - Linha ~350: EDIÇÃO DE CABOS (clickedPolyline, isEditingCabo, pontasOriginais, etc)
- * - Linha ~372: DESENHO DE CABOS (isDesenhandoCabo, caboEmDesenho, etc)
- * - Linha ~380: Modal de Tipagem
+ * - Linha ~218: @Input() — Dados de entrada (destinos, cabos, caixas, etc.)
+ * - Linha ~245: Propriedades do Mapa (center, zoom, title, mapOptions, etc.)
+ * - Linha ~258: Marcadores (markerCaixas, polígonos, modoEdicaoPoligono, etc.)
+ * - Linha ~312: Paths de Polylines (polylinePaths1f, polylinePaths2f, etc.)
+ * - Linha ~329: Polylines (polylines1f, polylines2f, etc.)
+ * - Linha ~341: InfoWindows (infoWindows1f, infoWindows2f, etc.)
+ * - Linha ~354: Destaque Tracer Mapa (highlightedPolylines, labels, splitters)
+ * - Linha ~360: Context Menu e dados de clique (caixa, cabo, DIO, cliente, etc.)
+ * - Linha ~399: Edição de posição (caixa/CTO/DIO/estação/cliente no mapa)
+ * - Linha ~437: Edição de Cabos (isEditingCabo, pontasOriginais, pontasProtegidas, etc.)
+ * - Linha ~456: Desenho de Cabos (isDesenhandoCabo, caboEmDesenho, tipagem, etc.)
+ * - Linha ~471: Desenho de Polígonos (isDesenhandoPoligono, preview, tipagem, etc.)
+ * - Linha ~482: Medição de Distância / Régua (modoMedicao, pontosMedicao, etc.)
+ * - Linha ~4592: Opções de Polylines (polylineOptions1f, polylineOptions2f, etc.)
  *
  * MÉTODOS:
- * - Linha ~426: CONTEXT MENU
+ * - Linha ~491: Constructor
+ *
+ * - Linha ~528: CONTEXT MENU
  *   - setupContextMenuListener()
  *   - showContextMenu()
  *   - hideContextMenu()
  *   - onContextMenuAction()
  *
- * - Linha ~512: AÇÕES DO CONTEXT MENU (criarCaixa, criarDIO, etc)
+ * - Linha ~871: AÇÕES DO CONTEXT MENU (criarCaixa, criarDIO, editar/excluir, etc.)
  *
- * - Linha ~1590: EDIÇÃO DE CABOS
+ * - Linha ~1856: EDIÇÃO DE CABOS
  *   - editarCabo()
  *   - verificarConexoesPontas()
  *   - iniciarEdicaoCabo()
  *   - finalizarEdicaoCabo()
  *   - cancelarEdicaoCabo()
  *   - adicionarListenerProtecaoPontas()
+ *
+ * - Linha ~2088: DIVISÃO DE CABOS (context menu no vértice)
  *   - adicionarListenerRemoverVertice()
  *   - removerVertice()
  *   - dividirCaboNoVertice()
  *
- * - Linha ~1804: DIVISÃO DE CABOS (context menu no vértice)
- *   - adicionarListenerRemoverVertice() - right-click no vértice
- *   - removerVertice() - remove ponto do path
- *   - dividirCaboNoVertice() - divide cabo no vértice, chama API divide_cabo
- *
- * - Linha ~1980: AUXILIARES DE CABOS
+ * - Linha ~2279: AUXILIARES DE CABOS
  *   - normalizarTipoFibra()
  *   - getArraysPorCapacidade()
  *   - adicionarListenersCaboPolyline()
  *
- * - Linha ~2511: DETECÇÃO DE CONEXÃO CABO-CAIXA
+ * - Linha ~2801: DETECÇÃO DE CONEXÃO CABO-CAIXA / DIO
  *   - abrirModalConexao()
  *   - abrirModalConexaoDio()
  *   - encontrarCaixaProxima()
  *   - (Verificação de conexão no listener set_at em tempo real)
  *
- * - Linha ~3108: GESTÃO DE EVENTOS DE CABOS
+ * - Linha ~3405: GESTÃO DE EVENTOS DE CABOS
  *   - processarRightClickCabo()
  *   - recriarListenerRightClick()
  *   - recriarListenerRightClickMapa()
  *
- * - Linha ~3505: AÇÕES DE CABOS (liberarCabo, excluirCabo)
+ * - Linha ~3698: AÇÕES DE CABOS (context menu)
+ *   - liberarCabo()
+ *   - excluirCabo()
  *
- * - Linha ~3681: DESTAQUE DE CABOS
+ * - Linha ~4088: DESTAQUE TRACER MAPA
  *   - setupCabosHighlightListeners()
- *   - highlightCabos()
- *   - highlightCabosInArray()
+ *   - setupGoJSModalListener()
+ *   - highlightCabosComCapacidade()
+ *   - highlightTraceSplitters()
+ *   - highlightCabos() / highlightCabosInArray()
+ *   - addTraceHighlightLabel()
  *   - clearCabosHighlight()
  *
- * - Linha ~5117: GESTÃO DE MARCADORES
- *   - updateMarkers()
- *   - updateMarkersCTO()
- *   - updateMarkersCTOSP()
- *   - updateMarkersDios()
- *   - updateMarkersCondominios()
- *   - updateMarkersPopsCli()
- *   - etc...
+ * - Linha ~4756: Lifecycle do componente
+ *   - ngAfterViewInit()
+ *   - ngOnInit()
+ *   - ngOnChanges()
+ *   - ngOnDestroy()
+ *   - onMapInitialized()
  *
- * - Linha ~5605: GESTÃO DE POLYLINES
+ * - Linha ~6430: GESTÃO DE MARCADORES
+ *   - updateMarkers()
+ *   - updateMarkersCTO() / updateMarkersCTOSP()
+ *   - updateMarkersDios() / updateMarkersCondominios()
+ *   - updateMarkersPopsCli() / updatePoligonos()
+ *   - etc.
+ *
+ * - Linha ~6924: GESTÃO DE POLYLINES (atualização por capacidade)
  *   - updatePolylinesCabos1f()
  *   - updatePolylinesCabos2f()
- *   - etc...
+ *   - etc.
  *
- * - Linha ~9323: CRIAÇÃO DE POLYLINES
+ * - Linha ~9375: EDIÇÃO DE DIO / CAIXA / ESTAÇÃO / CLIENTE (posição no mapa)
+ *   - habilitarEdicaoDio(), habilitarEdicaoCaixa(), etc.
+ *
+ * - Linha ~10049: MODAIS (Visualiza DIO, Visualiza Cabo, GoJS)
+ *   - openVisualizaDioModal()
+ *   - openVisualizaCaboModal()
+ *   - openGoJSModal()
+ *
+ * - Linha ~10967: CRIAÇÃO DE POLYLINES
  *   - createCaboPolylines()
- *   - createCabo1fPolylines()
- *   - etc...
+ *   - createCabo1fPolylines() … createCabo144fPolylines()
  *
- * - Linha ~10011: CRIAÇÃO DE CABOS
+ * - Linha ~11886: DESENHO DE CABOS (toolbar / eventos window)
+ *   - startDesenhoCabo()
+ *   - finalizarDesenhoCabo() / cancelarDesenhoCabo()
+ *
+ * - Linha ~12095: CRIAÇÃO DE CABOS COM TIPAGEM
  *   - criarCaboComTipagemEIdMeta()
+ *
+ * - Linha ~12555: DESENHO DE POLÍGONOS
+ *   - startDesenhoPoligono()
+ *   - finalizarDesenhoPoligono() / cancelarDesenhoPoligono()
+ *
+ * - Linha ~12809: MEDIÇÃO DE DISTÂNCIA (Régua)
+ *   - ativarModoMedicao()
+ *   - desativarModoMedicao()
+ *
+ * - Linha ~13039: EDIÇÃO DE POLÍGONOS (modo toolbar)
+ *   - armarModoEdicaoPoligono() / desativarModoEdicaoPoligonoCompleto()
+ *   - context menu e vértices arrastáveis
  *
  * ============================================================================
  */
@@ -353,6 +389,8 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
 
   // 🗺️ NOVO: Controle de destaque dos cabos
   highlightedPolylines: google.maps.Polyline[] = [];
+  highlightedTraceLabelMarkers: google.maps.Marker[] = [];
+  highlightedTraceSplitterMarkers: google.maps.Marker[] = [];
   originalPolylineOptions: Map<google.maps.Polyline, google.maps.PolylineOptions> = new Map();
 
   // 🎯 Propriedades para context menu
@@ -2858,14 +2896,14 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
         // Inserir log de conexão de cabo na caixa evento 15
         const idUsuario = this.authService.getIdUser();
         const idCity = this.authService.getIdCity();
-        if (idUsuario && idCity && idMetaCabo) {
+        if (idUsuario && idCity && caixa.id_meta) {
           console.log('🔄 Inserindo log de conexão de cabo na caixa...');
           this.insertLogService.inserirLog({
             id_usuario: idUsuario,
             id_evento: 15, // ID do evento para conexão cabo-caixa 
             id_city: idCity,
-            id_meta_objeto: idMetaCabo,
-            descricao: `Conexão de cabo : Ponta ${ponta}, Caixa ${caixa.numero || 'N/A'}, Boca ${result.boca || 'N/A'}, ID Caixa: ${caixa.id_meta}`,
+            id_meta_objeto: caixa.id_meta,
+            descricao: `Conexão de cabo : Ponta ${ponta}, Caixa ${caixa.numero || 'N/A'}, Boca ${result.boca || 'N/A'}, ID Cabo: ${idMetaCabo}`,
             VERSION: 'Fiberworks WEB 1.0.0'
           }).subscribe({
             next: (logResponse) => {
@@ -3784,6 +3822,36 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
           alert(`O cabo já estava desconectado. ${response.message}`);
         } else {
           alert(`Cabo desconectado com sucesso! ${response.message}`);
+
+          if (objetoConectado.tipo === 'CAIXA') {
+            const idUsuario = this.authService.getIdUser();
+            const idCity = this.authService.getIdCity();
+            const caixaEncontrada = [
+              ...this.destino,
+              ...this.destinoCTO,
+              ...this.destinoCTOSP
+            ].find(c => c.id_meta === objetoConectado.idMeta);
+            const numeroCaixa = caixaEncontrada?.numero || 'N/A';
+
+            if (idUsuario && idCity && objetoConectado.idMeta) {
+              console.log('🔄 Inserindo log de desconexão de cabo na caixa...');
+              this.insertLogService.inserirLog({
+                id_usuario: idUsuario,
+                id_evento: 32,
+                id_city: idCity,
+                id_meta_objeto: objetoConectado.idMeta,
+                descricao: `Desconexão de cabo : Ponta ${pontaCabo}, Caixa ${numeroCaixa}, Boca ${objetoConectado.numeroConexao}, ID Cabo: ${idMetaCabo}`,
+                VERSION: 'Fiberworks WEB 1.0.0'
+              }).subscribe({
+                next: (logResponse) => {
+                  console.log('✅ Log de desconexão de cabo na caixa inserido com sucesso:', logResponse);
+                },
+                error: (error) => {
+                  console.error('❌ Erro ao inserir log de desconexão de cabo na caixa:', error);
+                }
+              });
+            }
+          }
           
           // Recarregar o mapa ou atualizar as conexões
           // Você pode adicionar lógica aqui para atualizar o mapa
@@ -4053,7 +4121,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
     }
   }
 
-  /**
+  /*********************************************************************************************************************
    * 🗺️ NOVO: Configura listeners para eventos de destaque de cabos
    */
   private setupCabosHighlightListeners(): void {
@@ -4068,9 +4136,9 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
     // Listener para destacar cabos com capacidade (otimizado)
     window.addEventListener('highlightCabosComCapacidade', (event: Event) => {
       const customEvent = event as CustomEvent;
-      const cabosInfo = customEvent.detail.cabosInfo;
-      console.log('🗺️ [LISTENER] Evento highlightCabosComCapacidade recebido:', cabosInfo);
-      this.highlightCabosComCapacidade(cabosInfo);
+      const { cabosInfo, splittersInfo = [] } = customEvent.detail;
+      console.log('🗺️ [LISTENER] Evento highlightCabosComCapacidade recebido:', cabosInfo, splittersInfo);
+      this.highlightCabosComCapacidade(cabosInfo, splittersInfo);
     });
 
     // Listener para limpar destaque
@@ -4101,7 +4169,19 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
   /**
    * 🗺️ NOVO: Destaca cabos no mapa baseado nas informações de capacidade (otimizado)
    */
-  private highlightCabosComCapacidade(cabosInfo: Array<{id: number, capacidade: string}>): void {
+  private highlightCabosComCapacidade(
+    cabosInfo: Array<{ id: number; capacidade: string; fibra?: number }>,
+    splittersInfo: Array<{
+      idMetaSplitter: number;
+      idMetaCaixa: number;
+      saida: number;
+      acoplamento: string;
+      tipoSplitter: number;
+      lat: number;
+      lng: number;
+      numeroCaixa?: string;
+    }> = [],
+  ): void {
     console.log('🗺️ [HIGHLIGHT-OTIMIZADO] ===== INICIANDO DESTAQUE =====');
     console.log('🗺️ [HIGHLIGHT-OTIMIZADO] Cabos para destacar:', cabosInfo);
     console.log('🗺️ [HIGHLIGHT-OTIMIZADO] Estado ANTES da limpeza - highlightedPolylines:', this.highlightedPolylines.length);
@@ -4111,74 +4191,74 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
     
     console.log('🗺️ [HIGHLIGHT-OTIMIZADO] Estado APÓS a limpeza - highlightedPolylines:', this.highlightedPolylines.length);
     
-    // Agrupar cabos por capacidade
-    const cabosPorCapacidade = new Map<string, number[]>();
+    // Agrupar cabos por capacidade (preservando fibra quando disponível)
+    const cabosPorCapacidade = new Map<string, Array<{ id: number; fibra?: number }>>();
     cabosInfo.forEach(cabo => {
       if (!cabosPorCapacidade.has(cabo.capacidade)) {
         cabosPorCapacidade.set(cabo.capacidade, []);
       }
-      cabosPorCapacidade.get(cabo.capacidade)!.push(cabo.id);
+      cabosPorCapacidade.get(cabo.capacidade)!.push({ id: cabo.id, fibra: cabo.fibra });
     });
     
     console.log('🗺️ [HIGHLIGHT-OTIMIZADO] Cabos agrupados por capacidade:', cabosPorCapacidade);
     
     // Destacar apenas nos arrays correspondentes à capacidade
-    cabosPorCapacidade.forEach((ids, capacidade) => {
-      console.log(`🗺️ [HIGHLIGHT-OTIMIZADO] Processando capacidade ${capacidade} com ${ids.length} cabos`);
+    cabosPorCapacidade.forEach((entries, capacidade) => {
+      console.log(`🗺️ [HIGHLIGHT-OTIMIZADO] Processando capacidade ${capacidade} com ${entries.length} cabos`);
       
       switch (capacidade) {
         case '1':
         case '1f':
-          this.highlightCabosInArray(this.polylines1f, ids, this.destinoCabos1f);
+          this.highlightCabosInArray(this.polylines1f, entries, this.destinoCabos1f);
           break;
         case '2':
         case '2f':
-          this.highlightCabosInArray(this.polylines2f, ids, this.destinoCabos2f);
+          this.highlightCabosInArray(this.polylines2f, entries, this.destinoCabos2f);
           break;
         case '4':
         case '4f':
-          this.highlightCabosInArray(this.polylines4f, ids, this.destinoCabos4f);
+          this.highlightCabosInArray(this.polylines4f, entries, this.destinoCabos4f);
           break;
         case '6':
         case '6f':
-          this.highlightCabosInArray(this.polylines6f, ids, this.destinoCabos6f);
+          this.highlightCabosInArray(this.polylines6f, entries, this.destinoCabos6f);
           break;
         case '8':
         case '8f':
-          this.highlightCabosInArray(this.polylines8f, ids, this.destinoCabos8f);
+          this.highlightCabosInArray(this.polylines8f, entries, this.destinoCabos8f);
           break;
         case '12':
         case '12f':
-          this.highlightCabosInArray(this.polylines12f, ids, this.destinoCabos12f);
+          this.highlightCabosInArray(this.polylines12f, entries, this.destinoCabos12f);
           break;
         case '24':
         case '24f':
-          this.highlightCabosInArray(this.polylines24f, ids, this.destinoCabos24f);
+          this.highlightCabosInArray(this.polylines24f, entries, this.destinoCabos24f);
           break;
         case '36':
         case '36f':
-          this.highlightCabosInArray(this.polylines36f, ids, this.destinoCabos36f);
+          this.highlightCabosInArray(this.polylines36f, entries, this.destinoCabos36f);
           break;
         case '48':
         case '48f':
-          this.highlightCabosInArray(this.polylines48f, ids, this.destinoCabos48f);
+          this.highlightCabosInArray(this.polylines48f, entries, this.destinoCabos48f);
           break;
         case '72':
         case '72f':
-          this.highlightCabosInArray(this.polylines72f, ids, this.destinoCabos72f);
+          this.highlightCabosInArray(this.polylines72f, entries, this.destinoCabos72f);
           break;
         case '144':
         case '144f':
-          this.highlightCabosInArray(this.polylines144f, ids, this.destinoCabos144f);
+          this.highlightCabosInArray(this.polylines144f, entries, this.destinoCabos144f);
           break;
         default:
           console.warn(`🗺️ [HIGHLIGHT-OTIMIZADO] Capacidade desconhecida: ${capacidade}`);
-          // Fallback: buscar em todos os arrays
-          this.highlightCabos(ids);
+          this.highlightCabosInAllArrays(entries);
       }
     });
     
     console.log('🗺️ [HIGHLIGHT-OTIMIZADO] Destaque otimizado concluído. Total de polylines destacadas:', this.highlightedPolylines.length);
+    this.highlightTraceSplitters(splittersInfo);
   }
 
   /**
@@ -4189,52 +4269,68 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
     
     // Limpar destaque anterior
     this.clearCabosHighlight();
-    
-    // Destacar cabos em todos os arrays de polylines
-    console.log(`🗺️ [HIGHLIGHT] Verificando array 1f (${this.polylines1f.length} polylines, ${this.destinoCabos1f?.length || 0} cabos)`);
-    this.highlightCabosInArray(this.polylines1f, cabosPercorridos, this.destinoCabos1f);
-    
-    console.log(`🗺️ [HIGHLIGHT] Verificando array 2f (${this.polylines2f.length} polylines, ${this.destinoCabos2f?.length || 0} cabos)`);
-    this.highlightCabosInArray(this.polylines2f, cabosPercorridos, this.destinoCabos2f);
-    
-    console.log(`🗺️ [HIGHLIGHT] Verificando array 4f (${this.polylines4f.length} polylines, ${this.destinoCabos4f?.length || 0} cabos)`);
-    this.highlightCabosInArray(this.polylines4f, cabosPercorridos, this.destinoCabos4f);
-    
-    console.log(`🗺️ [HIGHLIGHT] Verificando array 6f (${this.polylines6f.length} polylines, ${this.destinoCabos6f?.length || 0} cabos)`);
-    this.highlightCabosInArray(this.polylines6f, cabosPercorridos, this.destinoCabos6f);
-    
-    console.log(`🗺️ [HIGHLIGHT] Verificando array 8f (${this.polylines8f.length} polylines, ${this.destinoCabos8f?.length || 0} cabos)`);
-    this.highlightCabosInArray(this.polylines8f, cabosPercorridos, this.destinoCabos8f);
-    
-    console.log(`🗺️ [HIGHLIGHT] Verificando array 12f (${this.polylines12f.length} polylines, ${this.destinoCabos12f?.length || 0} cabos)`);
-    this.highlightCabosInArray(this.polylines12f, cabosPercorridos, this.destinoCabos12f);
-    
-    console.log(`🗺️ [HIGHLIGHT] Verificando array 24f (${this.polylines24f.length} polylines, ${this.destinoCabos24f?.length || 0} cabos)`);
-    this.highlightCabosInArray(this.polylines24f, cabosPercorridos, this.destinoCabos24f);
-    
-    console.log(`🗺️ [HIGHLIGHT] Verificando array 36f (${this.polylines36f.length} polylines, ${this.destinoCabos36f?.length || 0} cabos)`);
-    this.highlightCabosInArray(this.polylines36f, cabosPercorridos, this.destinoCabos36f);
-    
-    console.log(`🗺️ [HIGHLIGHT] Verificando array 48f (${this.polylines48f.length} polylines, ${this.destinoCabos48f?.length || 0} cabos)`);
-    this.highlightCabosInArray(this.polylines48f, cabosPercorridos, this.destinoCabos48f);
-    
-    console.log(`🗺️ [HIGHLIGHT] Verificando array 72f (${this.polylines72f.length} polylines, ${this.destinoCabos72f?.length || 0} cabos)`);
-    this.highlightCabosInArray(this.polylines72f, cabosPercorridos, this.destinoCabos72f);
-    
-    console.log(`🗺️ [HIGHLIGHT] Verificando array 144f (${this.polylines144f.length} polylines, ${this.destinoCabos144f?.length || 0} cabos)`);
-    this.highlightCabosInArray(this.polylines144f, cabosPercorridos, this.destinoCabos144f);
+
+    const entries = cabosPercorridos.map(id => ({ id }));
+    this.highlightCabosInAllArrays(entries);
     
     console.log('🗺️ [HIGHLIGHT] Destaque concluído. Total de polylines destacadas:', this.highlightedPolylines.length);
+  }
+
+  private highlightCabosInAllArrays(caboEntries: Array<{ id: number; fibra?: number }>): void {
+    console.log(`🗺️ [HIGHLIGHT] Verificando array 1f (${this.polylines1f.length} polylines, ${this.destinoCabos1f?.length || 0} cabos)`);
+    this.highlightCabosInArray(this.polylines1f, caboEntries, this.destinoCabos1f);
+    
+    console.log(`🗺️ [HIGHLIGHT] Verificando array 2f (${this.polylines2f.length} polylines, ${this.destinoCabos2f?.length || 0} cabos)`);
+    this.highlightCabosInArray(this.polylines2f, caboEntries, this.destinoCabos2f);
+    
+    console.log(`🗺️ [HIGHLIGHT] Verificando array 4f (${this.polylines4f.length} polylines, ${this.destinoCabos4f?.length || 0} cabos)`);
+    this.highlightCabosInArray(this.polylines4f, caboEntries, this.destinoCabos4f);
+    
+    console.log(`🗺️ [HIGHLIGHT] Verificando array 6f (${this.polylines6f.length} polylines, ${this.destinoCabos6f?.length || 0} cabos)`);
+    this.highlightCabosInArray(this.polylines6f, caboEntries, this.destinoCabos6f);
+    
+    console.log(`🗺️ [HIGHLIGHT] Verificando array 8f (${this.polylines8f.length} polylines, ${this.destinoCabos8f?.length || 0} cabos)`);
+    this.highlightCabosInArray(this.polylines8f, caboEntries, this.destinoCabos8f);
+    
+    console.log(`🗺️ [HIGHLIGHT] Verificando array 12f (${this.polylines12f.length} polylines, ${this.destinoCabos12f?.length || 0} cabos)`);
+    this.highlightCabosInArray(this.polylines12f, caboEntries, this.destinoCabos12f);
+    
+    console.log(`🗺️ [HIGHLIGHT] Verificando array 24f (${this.polylines24f.length} polylines, ${this.destinoCabos24f?.length || 0} cabos)`);
+    this.highlightCabosInArray(this.polylines24f, caboEntries, this.destinoCabos24f);
+    
+    console.log(`🗺️ [HIGHLIGHT] Verificando array 36f (${this.polylines36f.length} polylines, ${this.destinoCabos36f?.length || 0} cabos)`);
+    this.highlightCabosInArray(this.polylines36f, caboEntries, this.destinoCabos36f);
+    
+    console.log(`🗺️ [HIGHLIGHT] Verificando array 48f (${this.polylines48f.length} polylines, ${this.destinoCabos48f?.length || 0} cabos)`);
+    this.highlightCabosInArray(this.polylines48f, caboEntries, this.destinoCabos48f);
+    
+    console.log(`🗺️ [HIGHLIGHT] Verificando array 72f (${this.polylines72f.length} polylines, ${this.destinoCabos72f?.length || 0} cabos)`);
+    this.highlightCabosInArray(this.polylines72f, caboEntries, this.destinoCabos72f);
+    
+    console.log(`🗺️ [HIGHLIGHT] Verificando array 144f (${this.polylines144f.length} polylines, ${this.destinoCabos144f?.length || 0} cabos)`);
+    this.highlightCabosInArray(this.polylines144f, caboEntries, this.destinoCabos144f);
   }
 
   /**
    * 🗺️ NOVO: Destaca cabos em um array específico de polylines (OTIMIZADO)
    */
-  private highlightCabosInArray(polylines: google.maps.Polyline[], cabosPercorridos: number[], cabos: any[]): void {
+  private highlightCabosInArray(
+    polylines: google.maps.Polyline[],
+    caboEntries: Array<{ id: number; fibra?: number }>,
+    cabos: any[]
+  ): void {
     if (!polylines) return;
+
+    const caboIds = caboEntries.map(entry => entry.id);
+    const fibraById = new Map<number, number>();
+    caboEntries.forEach(entry => {
+      if (entry.fibra != null) {
+        fibraById.set(entry.id, entry.fibra);
+      }
+    });
     
     console.log(`🗺️ [HIGHLIGHT-OTIMIZADO] Verificando ${polylines.length} polylines`);
-    console.log(`🗺️ [HIGHLIGHT-OTIMIZADO] Cabos procurados: [${cabosPercorridos.join(', ')}]`);
+    console.log(`🗺️ [HIGHLIGHT-OTIMIZADO] Cabos procurados: [${caboIds.join(', ')}]`);
     
     // 🗺️ OTIMIZAÇÃO: Buscar diretamente nas polylines por propriedade
     polylines.forEach((polyline, index) => {
@@ -4244,7 +4340,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
       
       console.log(`🗺️ [HIGHLIGHT-OTIMIZADO] Polyline ${index}: ID=${idMeta}, Capacidade=${capacidade}, Tipo=${tipo}`);
       
-      if (idMeta && cabosPercorridos.includes(idMeta)) {
+      if (idMeta && caboIds.includes(idMeta)) {
         console.log(`🗺️ [HIGHLIGHT-OTIMIZADO] ✅ MATCH! Destacando cabo ${idMeta} (índice ${index})`);
         
         // 🗺️ OTIMIZAÇÃO: Usar dados da própria polyline para opções originais
@@ -4259,6 +4355,11 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
           strokeOpacity: 0.9,
           zIndex: 1000
         });
+
+        const fibra = fibraById.get(idMeta);
+        if (fibra != null) {
+          this.addTraceHighlightLabel(polyline, idMeta, fibra);
+        }
         
         // Adicionar à lista de destacados
         console.log(`🗺️ [HIGHLIGHT-OTIMIZADO] Adicionando polyline ${idMeta} à lista de destacados`);
@@ -4271,6 +4372,131 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
           console.warn(`🗺️ [HIGHLIGHT-OTIMIZADO] ⚠️ Polyline ${idMeta} já existe na lista! Pulando...`);
         }
       }
+    });
+  }
+
+   // COLOCAM PONTOS nos tracers do cabo, triangulos nos splitters e labels
+  // utilizado no tracer map para highligth do tracer colocando ponto
+  private getPolylineMidpoint(path: google.maps.MVCArray<google.maps.LatLng>): google.maps.LatLng | null {
+    if (!path || path.getLength() === 0) {
+      return null;
+    }
+    if (path.getLength() === 1) {
+      return path.getAt(0);
+    }
+
+    let totalLength = 0;
+    const segments: Array<{ start: google.maps.LatLng; end: google.maps.LatLng; length: number }> = [];
+
+    for (let i = 0; i < path.getLength() - 1; i++) {
+      const start = path.getAt(i);
+      const end = path.getAt(i + 1);
+      const length = google.maps.geometry.spherical.computeDistanceBetween(start, end);
+      segments.push({ start, end, length });
+      totalLength += length;
+    }
+
+    if (totalLength === 0) {
+      return path.getAt(0);
+    }
+
+    let remaining = totalLength / 2;
+    for (const segment of segments) {
+      if (remaining <= segment.length) {
+        const fraction = remaining / segment.length;
+        return google.maps.geometry.spherical.interpolate(segment.start, segment.end, fraction);
+      }
+      remaining -= segment.length;
+    }
+
+    return path.getAt(path.getLength() - 1);
+  }
+
+  // utilizado no tracer map para highligth do tracer
+  private addTraceHighlightLabel(polyline: google.maps.Polyline, idMeta: number, fibra: number): void {
+    if (!this.map) {
+      return;
+    }
+
+    const path = polyline.getPath();
+    const position = this.getPolylineMidpoint(path);
+    if (!position) {
+      return;
+    }
+
+    const marker = new google.maps.Marker({
+      position,
+      map: this.map,
+      clickable: false,
+      zIndex: google.maps.Marker.MAX_ZINDEX + 2,
+      icon: {
+        path: google.maps.SymbolPath.CIRCLE,
+        fillColor: '#2563eb',
+        fillOpacity: 0.30,
+        strokeColor: '#1d4ed8',
+        strokeOpacity: 0.60,
+        scale: 8,
+        labelOrigin: new google.maps.Point(0, 2),
+      },
+      label: {
+        text: `Tracer cabo: fibra ${fibra}`,
+        color: '#2563eb',
+        fontSize: '17px',
+        fontWeight: 'bold',
+      } as google.maps.MarkerLabel,
+    });
+
+    this.highlightedTraceLabelMarkers.push(marker);
+  }
+
+  private highlightTraceSplitters(
+    splittersInfo: Array<{
+      idMetaSplitter: number;
+      idMetaCaixa: number;
+      saida: number;
+      acoplamento: string;
+      tipoSplitter: number;
+      lat: number;
+      lng: number;
+      numeroCaixa?: string;
+    }>,
+  ): void {
+    if (!this.map || !splittersInfo?.length) {
+      return;
+    }
+
+    splittersInfo.forEach((splitter) => {
+      if (!Number.isFinite(splitter.lat) || !Number.isFinite(splitter.lng)) {
+        console.warn(
+          `🗺️ [SPLITTER-HIGHLIGHT] Coordenadas inválidas para splitter ${splitter.idMetaSplitter} S${splitter.saida}`,
+        );
+        return;
+      }
+
+      const marker = new google.maps.Marker({
+        position: { lat: splitter.lat, lng: splitter.lng },
+        map: this.map,
+        clickable: false,
+        zIndex: google.maps.Marker.MAX_ZINDEX + 3,
+        icon: {
+          path: 'M 0,-1 1,1 -1,1 z',
+          fillColor: '#2563eb',
+          fillOpacity: 0.45,
+          strokeColor: '#1d4ed8',
+          strokeOpacity: 1,
+          strokeWeight: 1,
+          scale: 15,
+          labelOrigin: new google.maps.Point(0, 2),
+        },
+        label: {
+          text: `Splitter ${splitter.acoplamento} - Saída:${splitter.saida} `,
+          color: '#2563eb',
+          fontSize: '15px',
+          fontWeight: 'bold',
+        } as google.maps.MarkerLabel,
+      });
+
+      this.highlightedTraceSplitterMarkers.push(marker);
     });
   }
 
@@ -4337,6 +4563,12 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
     console.log('🗺️ [CLEAR] Limpando arrays...');
     this.highlightedPolylines = [];
     this.originalPolylineOptions.clear();
+
+    this.highlightedTraceLabelMarkers.forEach(marker => marker.setMap(null));
+    this.highlightedTraceLabelMarkers = [];
+
+    this.highlightedTraceSplitterMarkers.forEach(marker => marker.setMap(null));
+    this.highlightedTraceSplitterMarkers = [];
     
     console.log('🗺️ [CLEAR] Arrays limpos - highlightedPolylines:', this.highlightedPolylines.length, 'originalPolylineOptions:', this.originalPolylineOptions.size);
     console.log('🗺️ [CLEAR] ===== LIMPEZA CONCLUÍDA =====');
@@ -9874,7 +10106,9 @@ openVisualizaCaboModal(id_meta: number, tipoFibra?: string) {
     maxWidth: '1200px',
     height: '40vh', // Alterado para 50vh
     maxHeight: '40vh',
-    data: { 
+    hasBackdrop: false,
+    panelClass: 'visualiza-cabo-modal-container',
+    data: {
       id_meta,
       config: {
         title: `Visualiza Cabo ${id_meta} - ${tipoFibra || 'Cabo Óptico'}`,

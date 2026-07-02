@@ -425,7 +425,8 @@ export class FibraDestinoCaboService {
     id_meta_cabo: number,
     grupo: number,
     ponta: 'A' | 'B',
-    capacidade: number
+    capacidade: number,
+    onProgress?: (info: { fibra: number; ponta: 'A' | 'B' }) => void,
   ): Promise<FibraDestino[]> {
     try {
       // Calcular o tubo baseado no grupo (1-12)
@@ -458,6 +459,7 @@ export class FibraDestinoCaboService {
       for (let i = 1; i <= fibrasParaProcessar; i++) {
         const fibraNumero = offset + i;
         const registro = `FIBRA_${fibraNumero}LABEL`;
+        onProgress?.({ fibra: fibraNumero, ponta });
         console.log(`🔍 [GRUPO ${grupo}] Consultando fibra ${fibraNumero} (${registro}) - ${i}/${fibrasParaProcessar}`);
         
         try {
@@ -515,9 +517,10 @@ export class FibraDestinoCaboService {
     id_meta_cabo: number,
     grupo: number,
     ponta: 'A' | 'B',
-    capacidade: number
+    capacidade: number,
+    onProgress?: (info: { fibra: number; ponta: 'A' | 'B' }) => void,
   ): Promise<FibraDestino[]> {
-    return await this.rastrearGrupoFibrasAsync(id_meta_cabo, grupo, ponta, capacidade);
+    return await this.rastrearGrupoFibrasAsync(id_meta_cabo, grupo, ponta, capacidade, onProgress);
   }
 
   /**

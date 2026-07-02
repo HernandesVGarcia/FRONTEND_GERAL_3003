@@ -72,6 +72,7 @@ export interface ClienteInsertRequest {
   ID_PROJETISTA?: number;
 }
 
+// Interface para a resposta da inserção
 export interface ClienteInsertResponse {
   success: boolean;
   message?: string;
