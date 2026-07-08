@@ -5,6 +5,7 @@ import { NgbActiveModal, NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { TiposService } from '../servico/tipos.service';
 import { UpdateTipagemCaixaService, UpdateTipagemCaixaRequest } from '../servico/update-tipagem-caixa.service';
 import { AuthService } from '../servico/auth.service';
+import { PesquisaCaixaService } from '../servico/pesquisa-caixa.service';
 
 export interface DetalhesCaixaData {
   id_meta: number;
@@ -32,6 +33,7 @@ export interface DetalhesCaixaData {
 export class DetalhesCaixaComponent implements OnInit, OnChanges {
   tipagens: string[] = [];
   carregandoTipos: boolean = false;
+  carregandoDetalhes: boolean = false;
   salvando: boolean = false;
 
   form = {
@@ -59,18 +61,61 @@ export class DetalhesCaixaComponent implements OnInit, OnChanges {
     public activeModal: NgbActiveModal,
     private tiposService: TiposService,
     private updateTipagemCaixaService: UpdateTipagemCaixaService,
-    private authService: AuthService
+    private authService: AuthService,
+    private pesquisaCaixaService: PesquisaCaixaService,
   ) {}
 
   ngOnInit(): void {
     this.carregarTiposCaixa();
     this.atualizarFormulario();
+    this.carregarDetalhesApi();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['data'] && changes['data'].currentValue) {
       this.atualizarFormulario();
+      this.carregarDetalhesApi();
     }
+  }
+
+  private carregarDetalhesApi(): void {
+    const idMeta = Number(this.data?.id_meta);
+    if (!Number.isFinite(idMeta) || idMeta <= 0) {
+      return;
+    }
+
+    this.carregandoDetalhes = true;
+    this.pesquisaCaixaService.buscarDetalhesPorIdMeta(idMeta).subscribe({
+      next: (detalhes) => {
+        this.carregandoDetalhes = false;
+        if (!detalhes) {
+          return;
+        }
+
+        if (detalhes.localizacao) {
+          this.form.endereco = detalhes.localizacao;
+          this.data.endereco = detalhes.localizacao;
+        }
+        if (detalhes.observacao) {
+          this.form.obs = detalhes.observacao;
+          this.data.obs = detalhes.observacao;
+        }
+        if (detalhes.numero && !this.form.labelCaixa?.trim()) {
+          this.form.labelCaixa = detalhes.numero;
+          this.data.labelCaixa = detalhes.numero;
+        }
+        if (
+          detalhes.tipo &&
+          (!this.data.tipagem || this.data.tipagem === 'INDEFINIDO')
+        ) {
+          this.form.tipagem = detalhes.tipo;
+          this.data.tipagem = detalhes.tipo;
+        }
+      },
+      error: () => {
+        this.carregandoDetalhes = false;
+      },
+    });
   }
 
   private atualizarFormulario(): void {
