@@ -10,6 +10,8 @@ export interface PopsInfo {
     TELEFONE:string | undefined;
     OBS:string | undefined;
     CONTRATO_GPON:string | undefined;
+    id_contrato?: string | number;
+    id_autenticacao?: string | number;
     CNPJ:string | undefined;
     USUARIO:string | undefined;
     data:string | undefined;

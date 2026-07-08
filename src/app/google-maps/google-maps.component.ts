@@ -92,6 +92,8 @@ import { PopInfoAtivacaoModalComponent } from '../pop-info-ativacao-modal/pop-in
 import { UpdateClienteAtivacaoResponse } from '../servico/update-cliente-ativacao.service';
 import { PopInfoUpdateService } from '../servico/pop-info-update.service';
 import { PopInfoEstacaoUpdateService } from '../servico/pop-info-estacao-update.service';
+import { PopInfoService } from '../servico/pop-info.service';
+import { PopsInfo } from '../modelo/PopsInfo';
 import { PopEstacaoInfoModalComponent } from '../pop-estacao-info-modal/pop-estacao-info-modal.component';
 import { VisualizaDioComponent } from '../visualiza-dio/visualiza-dio.component';
 import { VisualizaCaboComponent } from '../visualiza-cabo/visualiza-cabo.component';
@@ -558,6 +560,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
     private buscaObjetoConexPontaService: BuscaObjetoConexPontaService,
     private popInfoUpdateService: PopInfoUpdateService,
     private popInfoEstacaoUpdateService: PopInfoEstacaoUpdateService,
+    private popInfoService: PopInfoService,
     private updateClienteService: UpdateClienteService
   ) {}
 
@@ -4498,7 +4501,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
 
       this.highlightedTraceSplitterMarkers.push(marker);
     });
-  }
+  } // utilizado no tracer map para highligth do tracer colocando ponto até aqui
 
   /**
    * 🗺️ NOVO: Retorna opções padrão baseadas na capacidade
@@ -8066,9 +8069,128 @@ private darkenColor(color: string): string {
     '#27ae60': '#229954', // Verde
     '#e67e22': '#d35400', // Laranja
     '#9b59b6': '#8e44ad', // Roxo (DIO)
-    '#95a5a6': '#7f8c8d'  // Cinza
+    '#95a5a6': '#7f8c8d', // Cinza
+    '#e74c3c': '#c0392b', // Vermelho (cliente desativado)
   };
   return colorMap[color] || color;
+}
+
+private formatIntegracaoId(value: unknown): string {
+  if (value === null || value === undefined || value === '') {
+    return '0';
+  }
+  return String(value);
+}
+
+private getClienteInfoWindowStyle(tipo: string): { titulo: string; cor: string } {
+  switch (tipo) {
+    case 'cliat':
+      return { titulo: 'Cliente Ativo', cor: '#27ae60' };
+    case 'clides':
+      return { titulo: 'Cliente Desativado', cor: '#e74c3c' };
+    default:
+      return { titulo: 'Cliente', cor: '#3498db' };
+  }
+}
+
+private generateClienteInfoWindowContent(
+  tipo: string,
+  dados: PopsCli,
+  popInfo: PopsInfo | null,
+  options?: { loading?: boolean; apiError?: string },
+): string {
+  const lat = dados.LAT ?? (dados as any).lat;
+  const lng = dados.LNG ?? (dados as any).lng;
+  const { titulo, cor } = this.getClienteInfoWindowStyle(tipo);
+  const sigla = popInfo?.SIGLA || dados.sigla || 'S/N';
+  const idMeta = this.formatIntegracaoId(dados.id_meta ?? popInfo?.id_meta);
+  const idCliente = this.formatIntegracaoId(popInfo?.CONTRATO_GPON);
+  const idContrato = this.formatIntegracaoId(popInfo?.id_contrato);
+  const idAutenticacao = this.formatIntegracaoId(popInfo?.id_autenticacao);
+
+  const loadingHtml = options?.loading
+    ? '<p style="margin: 6px 0; color: #7f8c8d; font-style: italic;">Carregando dados...</p>'
+    : '';
+  const errorHtml = options?.apiError
+    ? `<p style="margin: 6px 0; color: #c0392b; font-size: 12px;">${options.apiError}</p>`
+    : '';
+
+  return `
+    <div style="padding: 12px; min-width: 240px; font-family: Arial, sans-serif; max-width: 320px;">
+      <h4 style="margin: 0 0 10px 0; color: #2c3e50; border-bottom: 2px solid ${cor}; padding-bottom: 5px;">
+        ${titulo}: ${sigla}
+      </h4>
+      ${loadingHtml}
+      ${errorHtml}
+      <p style="margin: 6px 0; color: #34495e;"><strong>id_meta:</strong> ${idMeta}</p>
+      <p style="margin: 6px 0; color: #34495e;"><strong>id_cliente:</strong> ${idCliente}</p>
+      <p style="margin: 6px 0; color: #34495e;"><strong>id_contrato:</strong> ${idContrato}</p>
+      <p style="margin: 6px 0; color: #34495e;"><strong>id_autenticacao:</strong> ${idAutenticacao}</p>
+      <div style="margin: 10px 0; padding: 8px; background: #ecf0f1; border-radius: 5px;">
+        <p style="margin: 0 0 5px 0; font-weight: bold; color: #2c3e50;">Coordenadas:</p>
+        <p style="margin: 0; font-family: 'Courier New', monospace; font-size: 13px; color: #2c3e50;">
+          Lat: ${lat}<br>
+          Lng: ${lng}
+        </p>
+      </div>
+      <button onclick="navigator.clipboard.writeText('${lat}, ${lng}')"
+              style="width: 100%; margin-top: 8px; padding: 8px; background: ${cor}; color: white;
+                     border: none; border-radius: 5px; cursor: pointer; font-weight: bold;"
+              onmouseover="this.style.background='${this.darkenColor(cor)}'"
+              onmouseout="this.style.background='${cor}'">
+        📋 Copiar Coordenadas
+      </button>
+      <p style="margin: 8px 0 0 0; font-size: 11px; color: #7f8c8d; text-align: center;">
+        Duplo-clique para abrir menu
+      </p>
+    </div>
+  `;
+}
+
+private showClienteInfoWindow(
+  marker: google.maps.Marker,
+  event: google.maps.MapMouseEvent,
+  tipo: string,
+  dados: PopsCli,
+): void {
+  console.log(`🔧 [INFO] Mostrando infowindow de cliente (${tipo}):`, dados.sigla || dados.id_meta);
+
+  if (this.currentMarkerInfoWindow) {
+    this.currentMarkerInfoWindow.close();
+  }
+
+  this.currentMarkerInfoWindow = new google.maps.InfoWindow({
+    content: this.generateClienteInfoWindowContent(tipo, dados, null, { loading: true }),
+    position: event.latLng,
+  });
+  this.currentMarkerInfoWindow.open(this.map, marker);
+
+  const idMeta = Number(dados.id_meta);
+  if (!Number.isFinite(idMeta) || idMeta <= 0) {
+    this.currentMarkerInfoWindow.setContent(
+      this.generateClienteInfoWindowContent(tipo, dados, null, { apiError: 'id_meta inválido' }),
+    );
+    return;
+  }
+
+  this.popInfoService.getPopInfo(idMeta).subscribe({
+    next: (info) => {
+      if (this.currentMarkerInfoWindow) {
+        this.currentMarkerInfoWindow.setContent(
+          this.generateClienteInfoWindowContent(tipo, dados, info),
+        );
+      }
+    },
+    error: () => {
+      if (this.currentMarkerInfoWindow) {
+        this.currentMarkerInfoWindow.setContent(
+          this.generateClienteInfoWindowContent(tipo, dados, null, {
+            apiError: 'Não foi possível carregar dados do cliente',
+          }),
+        );
+      }
+    },
+  });
 }
 
 // Método para mostrar InfoWindow de marcador
@@ -8172,7 +8294,11 @@ private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = fal
       
       if (tipo && dados) {
         console.log(`Clique simples detectado em ${tipo}:`, dados.numero || dados.sigla || 'N/A');
-        this.showMarkerInfoWindow(marker, event, tipo, dados);
+        if (tipo === 'cli' || tipo === 'cliat' || tipo === 'clides') {
+          this.showClienteInfoWindow(marker, event, tipo, dados);
+        } else {
+          this.showMarkerInfoWindow(marker, event, tipo, dados);
+        }
       }
     }, 300); // Delay de 300ms para distinguir de duplo clique
   });
