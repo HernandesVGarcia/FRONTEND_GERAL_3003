@@ -32,17 +32,24 @@
           <h6 class="mb-0 fw-semibold">ID: {{ popInfo?.id_meta || 'N/A' }}</h6>
         </div>
         <div class="card-body">
-          <div class="row g-3">
-            <div class="col-md-6">
-              <label class="form-label fw-semibold">SIGLA</label>
-              <div *ngIf="!isEditing" class="field-value">{{ popInfo?.SIGLA || 'N/A' }}</div>
-              <input *ngIf="isEditing" type="text" class="form-control form-control-sm" [(ngModel)]="editForm.SIGLA" name="SIGLA" placeholder="Digite a sigla">
-            </div>
-            <div class="col-md-6">
-              <label class="form-label fw-semibold">NÚMERO/CONTRATO</label>
+          <div class="pop-info-field-block pop-info-field-full">
+            <label class="form-label fw-semibold">SIGLA</label>
+            <div *ngIf="!isEditing" class="field-value">{{ popInfo?.SIGLA || 'N/A' }}</div>
+            <input *ngIf="isEditing" type="text" class="form-control form-control-sm" [(ngModel)]="editForm.SIGLA" name="SIGLA" placeholder="Digite a sigla">
+          </div>
+          <div class="pop-info-contrato-row">
+            <div class="pop-info-field-block pop-info-field-cliente">
+              <label class="form-label fw-semibold">NÚMERO CLIENTE</label>
               <div *ngIf="!isEditing" class="field-value">{{ popInfo?.CONTRATO_GPON || 'N/A' }}</div>
               <input *ngIf="isEditing" type="text" class="form-control form-control-sm" [(ngModel)]="editForm.CONTRATO_GPON" name="CONTRATO_GPON" placeholder="Digite o número/contrato">
             </div>
+            <div class="pop-info-field-block pop-info-field-contrato">
+              <label class="form-label fw-semibold">NÚMERO CONTRATO</label>
+              <div *ngIf="!isEditing" class="field-value">{{ editForm.id_contrato || '0' }}</div>
+              <input *ngIf="isEditing" type="text" class="form-control form-control-sm" [(ngModel)]="editForm.id_contrato" name="id_contrato" placeholder="Digite o número do contrato">
+            </div>
+          </div>
+          <div class="row g-3">
             <div class="col-md-6">
               <label class="form-label fw-semibold">CPF/CNPJ</label>
               <div *ngIf="!isEditing" class="field-value">{{ popInfo?.CNPJ || 'N/A' }}</div>

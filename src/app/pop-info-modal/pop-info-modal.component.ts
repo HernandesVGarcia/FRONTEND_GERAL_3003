@@ -41,6 +41,7 @@ export class PopInfoModalComponent implements OnInit {
   editForm = {
     SIGLA: '',
     CONTRATO_GPON: '',
+    id_contrato: '',
     CNPJ: '',
     ENDERECO: '',
     NUMERO: '',
@@ -99,6 +100,7 @@ export class PopInfoModalComponent implements OnInit {
     this.editForm = {
       SIGLA: info.SIGLA || '',
       CONTRATO_GPON: info.CONTRATO_GPON || '',
+      id_contrato: String(info.id_contrato ?? 0),
       CNPJ: info.CNPJ || '',
       ENDERECO: info.ENDERECO || '',
       NUMERO: info.NUMERO || '',

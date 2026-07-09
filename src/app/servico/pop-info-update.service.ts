@@ -17,6 +17,7 @@ interface UpdateClienteApiBody {
   ID_META: number;
   SIGLA?: string;
   CONTRATO?: string;
+  ID_CONTRATO?: string | number;
   LOGRADOURO?: string;
   NUMERO?: string;
   BAIRRO?: string;
@@ -74,6 +75,7 @@ export class PopInfoUpdateService {
       ID_META: id_meta,
       SIGLA: updateData.SIGLA,
       CONTRATO: updateData.CONTRATO_GPON,
+      ID_CONTRATO: this.normalizarIdContrato(updateData.id_contrato),
       LOGRADOURO: updateData.ENDERECO,
       NUMERO: updateData.NUMERO,
       BAIRRO: updateData.BAIRRO,
@@ -128,5 +130,13 @@ export class PopInfoUpdateService {
   /** Emite evento quando um cliente foi atualizado (para atualizar marcador no mapa) */
   emitClienteAtualizado(event: ClienteAtualizadoEvent): void {
     this.clienteAtualizado$.next(event);
+  }
+
+  private normalizarIdContrato(valor: string | number | null | undefined): string {
+    if (valor === undefined || valor === null) {
+      return '0';
+    }
+    const texto = String(valor).trim();
+    return texto === '' ? '0' : texto;
   }
 }
