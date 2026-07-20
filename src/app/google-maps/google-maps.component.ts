@@ -290,7 +290,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
   //   DEPLOY: 3b6c6c1a321f468a743f09d0  (My First Project)
   mapOptions: google.maps.MapOptions = {
     //mapId: '8c572a391e3b7eb1f8127118', //local
-    mapId: '3b6c6c1a321f468a743f09d0', //deploy
+    mapId: '2fa2a1283852882f399d9dde', //deploy
 
   };
   @ViewChild('mapContainer', { read: ElementRef }) mapContainerRef!: ElementRef;
