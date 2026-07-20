@@ -285,8 +285,13 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
   title: string = "Fiberworks";
   center: google.maps.LatLngLiteral = { lat: -23.326803, lng: -52.114882 };
   zoom = 13;
+  // mapId: trocar junto com a chave API no index.html ao publicar no Amplify
+  //   LOCAL:  8c572a391e3b7eb1f8127118  (My Project Angular)
+  //   DEPLOY: 3b6c6c1a321f468a743f09d0  (My First Project)
   mapOptions: google.maps.MapOptions = {
-    mapId : "My Project Angular",
+    //mapId: '8c572a391e3b7eb1f8127118', //local
+    mapId: '3b6c6c1a321f468a743f09d0', //deploy
+
   };
   @ViewChild('mapContainer', { read: ElementRef }) mapContainerRef!: ElementRef;
   caixaSelecionada: string | null = null;
