@@ -12,7 +12,8 @@ export type MapLayerId =
   | 'clientes'
   | 'clientes_ativos'
   | 'clientes_cancelados'
-  | 'estacoes';
+  | 'estacoes'
+  | 'postes_aprovados';
 
 export const MAP_LAYER_OPTIONS: { id: MapLayerId; label: string }[] = [//APARECE NO COMBOBOX CAMADAS
   { id: 'poligonos', label: 'Polígonos' },
@@ -25,6 +26,7 @@ export const MAP_LAYER_OPTIONS: { id: MapLayerId; label: string }[] = [//APARECE
   { id: 'clientes_ativos', label: 'Clientes Ativos' },
   { id: 'clientes_cancelados', label: 'Clientes Cancelados' },
   { id: 'estacoes', label: 'Estações' },
+  { id: 'postes_aprovados', label: 'Postes Aprovados' },
 ];
 
 @Injectable({
@@ -52,6 +54,7 @@ export class MapLayerVisibilityService {
       clientes_ativos: clientesOn,
       clientes_cancelados: clientesOn,
       estacoes: true,
+      postes_aprovados: true,
     };
     this.layersSubject.next({ ...this.layers });
   }
@@ -84,6 +87,7 @@ export class MapLayerVisibilityService {
       clientes_ativos: selected.includes('clientes_ativos'),
       clientes_cancelados: selected.includes('clientes_cancelados'),
       estacoes: selected.includes('estacoes'),
+      postes_aprovados: selected.includes('postes_aprovados'),
     };
     if (
       next.poligonos === this.layers.poligonos &&
@@ -95,7 +99,8 @@ export class MapLayerVisibilityService {
       next.clientes === this.layers.clientes &&
       next.clientes_ativos === this.layers.clientes_ativos &&
       next.clientes_cancelados === this.layers.clientes_cancelados &&
-      next.estacoes === this.layers.estacoes
+      next.estacoes === this.layers.estacoes &&
+      next.postes_aprovados === this.layers.postes_aprovados
     ) {
       return;
     }

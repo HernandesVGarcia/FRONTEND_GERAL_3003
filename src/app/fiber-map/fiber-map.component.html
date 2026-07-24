@@ -16,6 +16,9 @@
     <!-- Lista de Dios -->
     <app-lista-dios (DiosSelecionada)="onDiosSelecionada($event)"></app-lista-dios>
 
+    <!-- Lista de Postes Aprovados -->
+    <app-lista-postes-aprovados (PostesAPSelecionados)="onPostesAPSelecionados($event)"></app-lista-postes-aprovados>
+
     <!-- Lista de Condominios -->
     <app-lista-condominios (CondominiosSelecionada)="onCondominiosSelecionada($event)"></app-lista-condominios>
 
@@ -80,6 +83,7 @@
   [destinoPoligonos]="Poligonos"
   [destinoCondominios]="Condominios" 
   [destinoDios]="Dios"
+  [destinoPostesAP]="postesAP"
   [destinoPopsCli]="popCLI"
   [destinoPopsCliDes]="popCLIDes"
   [destinoPopsCliAtv]="popCLIAtv"

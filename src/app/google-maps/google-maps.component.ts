@@ -21,6 +21,7 @@ import { PopsCli } from '../modelo/PopsCli';
 import { PopsEst } from '../modelo/popsEst';
 import { Condominios } from '../modelo/Condominios';
 import { Dios } from '../modelo/dios';
+import { PosteAprovado } from '../modelo/poste-aprovado';
 import { Anotacoes } from '../modelo/Anotacoes';
 import { Poligonos } from '../modelo/poligonos';
 
@@ -260,6 +261,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
   @Input() destinoPoligonos: Poligonos[]=[];
   @Input() destinoCondominios: Condominios[]=[];
   @Input() destinoDios: Dios[] = [];
+  @Input() destinoPostesAP: PosteAprovado[] = [];
   @Input() destinoPopsCli: PopsCli[] = [];
   @Input() destinoPopsCliDes: PopsCli[] = [];
   @Input() destinoPopsCliAtv: PopsCli[] = [];
@@ -339,6 +341,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
   private poligonoEmEdicaoPathHandles: google.maps.MapsEventListener[] = [];
   private listenerEscModoPoligono: ((ev: KeyboardEvent) => void) | null = null;
   markerDios: google.maps.Marker[] = [];
+  markerPostesAP: google.maps.Marker[] = [];
   markerCondominios: google.maps.Marker[] = [];
   markerPopsCli: google.maps.Marker[] = [];
   markerPopsCliAtv: google.maps.Marker[] = [];
@@ -4601,6 +4604,7 @@ private ZOOM_LEVEL_CLIENTES_ATIVOS = 17;   // pops visíveis em zoom >= 17
 private ZOOM_LEVEL_CONDOMINIOS = 17;   // CTOs visíveis em zoom >= 17
 private ZOOM_LEVEL_DIOS = 18;   // DIOS visíveis em zoom >= 117
 private ZOOM_LEVEL_ANOTACOES = 18;   // DIOS visíveis em zoom >= 117
+private ZOOM_LEVEL_POSTES_AP = 18;
 
 private destroy$ = new Subject<void>();
 
@@ -4630,6 +4634,7 @@ private map?: (google.maps.Map);
  private MAX_VISIBLE_MARKERS_CONDOMINIOS = 100; // Ajuste este valor conforme necessário
  private MAX_VISIBLE_MARKERS_DIOS = 100; // Ajuste este valor conforme necessário
  private MAX_VISIBLE_MARKERS_ANOTACOES = 100; // Ajuste este valor conforme necessário
+ private MAX_VISIBLE_MARKERS_POSTES_AP = 200;
  
 // **********************************************************************************************inserido
 
@@ -4918,6 +4923,9 @@ polylineOptions144f: google.maps.PolylineOptions = {
       if (layers.estacoes && this.markerDios.length === 0 && this.destinoDios?.length) {
         this.updateMarkersDios();
       }
+      if (layers.postes_aprovados && this.markerPostesAP.length === 0 && this.destinoPostesAP?.length) {
+        this.updateMarkersPostesAP();
+      }
       this.updateVisibleMarkers();
     });
 
@@ -5120,6 +5128,11 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
     if (changes['destinoDios'] && changes['destinoDios'].currentValue) {
       console.log('Atualizando marcadores de Dios ',this.destinoDios);
       this.updateMarkersDios();
+    }
+
+    if (changes['destinoPostesAP'] && changes['destinoPostesAP'].currentValue) {
+      console.log('Atualizando marcadores de Postes Aprovados ', this.destinoPostesAP);
+      this.updateMarkersPostesAP();
     }
 
     if (changes['destinoCondominios'] && changes['destinoCondominios'].currentValue) {
@@ -5333,7 +5346,14 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
       return this.markerAnotacoes;
     }
     return [];
-  }   
+  }
+
+  getVisibleMarkerPostesAP(): google.maps.Marker[] {
+    if (this.currentZoom >= this.ZOOM_LEVEL_POSTES_AP) {
+      return this.markerPostesAP;
+    }
+    return [];
+  }
 
 
 // função para carregar anotacoes no mapa==============================
@@ -5407,7 +5427,56 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
     }
 
 
-  /** Parse de `GOOGLE_LATLNG` (JSON string de `{ lng, lat }[]`) para `paths` do Polygon. 
+// função para carregar postes aprovados no mapa==============================
+  private updateMarkersPostesAP() {
+    if (!this.layerVisibilityService.isVisible('postes_aprovados')) {
+      return;
+    }
+
+    if (this.destinoPostesAP && this.destinoPostesAP.length > 0 && this.map) {
+      this.markerPostesAP.forEach(marker => marker.setMap(null));
+      this.markerPostesAP = [];
+    }
+
+    this.destinoPostesAP.forEach(location => {
+      const position = {
+        lat: Number(location.LATI),
+        lng: Number(location.LONGI),
+      };
+
+      const titleParts = [`Poste ${location.NUM_SEQ_GEO}`];
+      if (location.obs) {
+        titleParts.push(location.obs);
+      }
+
+      const markerOptions: google.maps.MarkerOptions = {
+        position: position,
+        title: titleParts.join(' - '),
+        draggable: false,
+        opacity: 1,
+        icon: {
+          path: google.maps.SymbolPath.CIRCLE,
+          fillOpacity: 0,
+          strokeColor: '#666666',
+          strokeWeight: 2,
+          scale: 8,
+        },
+        visible: this.currentZoom >= this.ZOOM_LEVEL_POSTES_AP,
+      };
+
+      const marker = new google.maps.Marker(markerOptions);
+      if (this.map) {
+        marker.setMap(this.map);
+      }
+
+      this.markerPostesAP.push(marker);
+    });
+
+    console.log('Postes Aprovados atualizados:', this.markerPostesAP);
+  }
+
+
+  /** Parse de `GOOGLE_LATLNG` (JSON string de `{ lng, lat }[]`) para `paths` do Polygon.
    * parseGoogleLatLng() , CentroPoligonoPontos() , CoresPoligonoPorTipo() , UpdatePoligonos() , RefreshPoligonosLabelMarkersVisibility()
    * fazem parte da construção dos Poligonos
   **/
@@ -7983,6 +8052,37 @@ private updateVisibleMarkers() {
   });
 
   console.log(` Anotações visíveis: ${visibleAnotacoesCount}`);
+
+  const postesAPVisible = this.layerVisibilityService.isVisible('postes_aprovados');
+  if (postesAPVisible) {
+  let visiblePostesAPCount = 0;
+  console.log('atualiza Postes Aprovados visibles');
+  this.markerPostesAP.forEach(marker => {
+    if (marker) {
+      const position = marker.getPosition();
+      if (position &&
+          bounds.contains(position) &&
+          this.currentZoom >= this.ZOOM_LEVEL_POSTES_AP &&
+          visiblePostesAPCount < this.MAX_VISIBLE_MARKERS_POSTES_AP) {
+        if (this.map) { marker.setMap(this.map); }
+        marker.setVisible(true);
+        visiblePostesAPCount++;
+      } else {
+        marker.setVisible(false);
+        marker.setMap(null);
+      }
+    }
+  });
+
+  console.log(` Postes Aprovados visíveis: ${visiblePostesAPCount}`);
+  } else {
+    this.markerPostesAP.forEach((marker) => {
+      if (marker) {
+        marker.setVisible(false);
+        marker.setMap(null);
+      }
+    });
+  }
 
   this.updateVisiblePoligonos(); // inserido na implementação visualização de camadas
   this.updateVisibleCabos(); //inserido na implementação visualização de camadas
