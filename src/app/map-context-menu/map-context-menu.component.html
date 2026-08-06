@@ -133,6 +133,21 @@
   </div>
 </ng-container>
 
+<!-- Menu para SOBRA -->
+<ng-container *ngIf="contextType === 'sobra'">
+  <div class="menu-item" (click)="onAction('libera-sobra')">
+    <mat-icon>lock_open</mat-icon>
+    <span>Libera Sobra</span>
+  </div>
+
+  <div class="menu-divider"></div>
+
+  <div class="menu-item" (click)="onAction('exclui-sobra')">
+    <mat-icon>delete</mat-icon>
+    <span>Exclui Sobra</span>
+  </div>
+</ng-container>
+
 <!-- Menu para POLÍGONO (modo edição armado) -->
 <ng-container *ngIf="contextType === 'poligono'">
   <div class="menu-item" (click)="onAction('editar-label-poligono')">

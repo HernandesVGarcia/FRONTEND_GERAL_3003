@@ -306,7 +306,7 @@ export class CondominioInternoModalComponent implements AfterViewInit, OnDestroy
       };
     }
     return {
-      url: '/assets/fosc ama.png',
+      url: '/assets/fosc amarela.png',
       labelOrigin: new google.maps.Point(70, 10),
       scaledSize: new google.maps.Size(20, 40),
     };

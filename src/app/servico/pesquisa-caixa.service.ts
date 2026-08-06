@@ -12,6 +12,7 @@ export interface PesquisaCaixaRow {
   LOCALIZAÇAO?: string;
   TIPO?: string;
   OBSERVAÇÃO?: string;
+  INSTALADA?: number | string;
 }
 
 export interface PesquisaCaixaResult {
@@ -30,6 +31,7 @@ export interface PesquisaCaixaDetalhes {
   tipo?: string;
   lat?: number;
   lng?: number;
+  instalada?: boolean;
 }
 
 @Injectable({
@@ -119,7 +121,16 @@ export class PesquisaCaixaService {
       tipo: row.TIPO?.trim() || undefined,
       lat: Number.isFinite(lat) ? lat : undefined,
       lng: Number.isFinite(lng) ? lng : undefined,
+      instalada: this.resolverInstalada(row.INSTALADA),
     };
+  }
+
+  /** 1 = instalada; ausente/null = instalada (default). */
+  private resolverInstalada(instalada: unknown): boolean {
+    if (instalada == null || instalada === '') {
+      return true;
+    }
+    return Number(instalada) === 1;
   }
 
   private handleError(error: HttpErrorResponse): Observable<never> {

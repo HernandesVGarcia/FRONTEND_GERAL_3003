@@ -22,6 +22,7 @@ import { ListaPopsCLIAtvComponent} from '../lista-clientes-ativo/lista-clientes-
 import { ListaCondominiosComponent} from '../lista-condominios/lista-condominios.component';
 import { ListaDiosComponent} from '../lista-dios/lista-dios.component'
 import { ListaPostesAprovadosComponent } from '../lista-postes-aprovados/lista-postes-aprovados.component';
+import { ListaSegmentosComponent } from '../lista-segmentos/lista-segmentos.component';
 import { ListaAnotacoesComponent} from '../lista-anotacoes/lista-anotacoes.component';
 import { ListaPoligonosComponent} from '../lista-poligonos/lista-poligonos.component';
 import { Cabos1f } from '../modelo/Cabos1f';
@@ -43,6 +44,7 @@ import { Cto_SP } from '../modelo/Cto_SP';
 import { PopsCli } from '../modelo/PopsCli';
 import { Dios } from '../modelo/dios';
 import { PosteAprovado } from '../modelo/poste-aprovado';
+import { Segmento } from '../modelo/segmento';
 import { Anotacoes } from '../modelo/Anotacoes';
 import { Poligonos } from '../modelo/poligonos';
 
@@ -76,6 +78,7 @@ import { Poligonos } from '../modelo/poligonos';
     ListaCondominiosComponent,
     ListaDiosComponent,
     ListaPostesAprovadosComponent,
+    ListaSegmentosComponent,
     ListaAnotacoesComponent,
     ListaPoligonosComponent]
 })
@@ -91,6 +94,7 @@ export class FiberMapComponent {
   Condominios: any[]=[];
   Dios: any[]=[];
   postesAP: PosteAprovado[] = [];
+  segmentos: Segmento[] = [];
   Poligonos: any[]=[];
 
   cabos1f: Cabos1f []=[];
@@ -120,6 +124,10 @@ export class FiberMapComponent {
 
   onPostesAPSelecionados(postes: PosteAprovado[]) {
     this.postesAP = postes;
+  }
+
+  onSegmentosSelecionados(segmentos: Segmento[]) {
+    this.segmentos = segmentos;
   }
 
   onCondominiosSelecionada(condominios: Condominios[]) { 

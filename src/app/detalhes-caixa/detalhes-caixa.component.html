@@ -115,6 +115,23 @@
               </div>
 
               <div class="mb-3">
+                <div class="form-check">
+                  <input
+                    type="checkbox"
+                    class="form-check-input"
+                    id="caixaInstalada"
+                    [(ngModel)]="form.instalada"
+                    name="caixaInstalada"
+                    (change)="onInstaladaChange()"
+                    [disabled]="salvandoInstalada || carregandoDetalhes">
+                  <label class="form-check-label fw-semibold" for="caixaInstalada">
+                    Caixa Instalada
+                    <span *ngIf="salvandoInstalada" class="text-muted ms-1 small">(salvando...)</span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="mb-3">
                 <label class="form-label fw-semibold">
                   <span class="badge bg-secondary me-1"></span>
                   Observações

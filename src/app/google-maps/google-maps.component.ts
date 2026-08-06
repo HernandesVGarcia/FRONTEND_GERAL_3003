@@ -22,6 +22,7 @@ import { PopsEst } from '../modelo/popsEst';
 import { Condominios } from '../modelo/Condominios';
 import { Dios } from '../modelo/dios';
 import { PosteAprovado } from '../modelo/poste-aprovado';
+import { Segmento } from '../modelo/segmento';
 import { Anotacoes } from '../modelo/Anotacoes';
 import { Poligonos } from '../modelo/poligonos';
 
@@ -79,6 +80,7 @@ import { ExcluiCaboService } from '../servico/exclui-cabo.service';
 import { DivideCaboService } from '../servico/divide-cabo.service';
 import { ExcluiCaixaService, ExcluiCaixaRequest, ExcluiCaixaResponse } from '../servico/exclui-caixa.service';
 import { ExcluiDioService, ExcluiDioRequest, ExcluiDioResponse } from '../servico/exclui-dio.service';
+import { SegmentoService } from '../servico/segmento.service';
 import { ExcluiEstacaoService, ExcluiEstacaoRequest, ExcluiEstacaoResponse } from '../servico/exclui-estacao.service';
 import { ExcluiCondominioService, ExcluiCondominioRequest, ExcluiCondominioResponse } from '../servico/exclui-condominio.service';
 import { ExcluiPoligonoService, ExcluiPoligonoRequest, ExcluiPoligonoResponse } from '../servico/exclui-poligono.service';
@@ -262,6 +264,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
   @Input() destinoCondominios: Condominios[]=[];
   @Input() destinoDios: Dios[] = [];
   @Input() destinoPostesAP: PosteAprovado[] = [];
+  @Input() destinoSegmentos: Segmento[] = [];
   @Input() destinoPopsCli: PopsCli[] = [];
   @Input() destinoPopsCliDes: PopsCli[] = [];
   @Input() destinoPopsCliAtv: PopsCli[] = [];
@@ -342,6 +345,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
   private listenerEscModoPoligono: ((ev: KeyboardEvent) => void) | null = null;
   markerDios: google.maps.Marker[] = [];
   markerPostesAP: google.maps.Marker[] = [];
+  markerSegmentos: google.maps.Marker[] = [];
   markerCondominios: google.maps.Marker[] = [];
   markerPopsCli: google.maps.Marker[] = [];
   markerPopsCliAtv: google.maps.Marker[] = [];
@@ -406,7 +410,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
   // 🎯 Propriedades para context menu
   contextMenuVisible = false;
   contextMenuPosition = { x: 0, y: 0 };
-  contextMenuType: 'caixa' | 'map' | 'cabo' | 'dio' | 'cliente' | 'estacao' | 'condominio' | 'vertice' | 'poligono' = 'map'; // 🆕 Tipo de contexto do menu
+  contextMenuType: 'caixa' | 'map' | 'cabo' | 'dio' | 'cliente' | 'estacao' | 'condominio' | 'vertice' | 'poligono' | 'sobra' = 'map'; // 🆕 Tipo de contexto do menu
   private clickedPoligono: google.maps.Polygon | null = null;
   private clickedVertexIndex: number | null = null; // 🆕 Índice do vértice clicado (para menu vertice)
   private contextMenuListenerAdded = false; // Flag para evitar listeners duplicados
@@ -415,6 +419,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
   private clickedCTOData: any = null; // 🆕 Armazena dados da CTO clicada
   private clickedCTOSPData: any = null; // 🆕 Armazena dados da CTO_SP clicada
   private clickedDioData: any = null; // 🆕 Armazena dados do DIO clicado
+  private clickedSobraData: Segmento | null = null;
   private clickedCliData: any = null; // 🆕 Armazena dados do cliente clicado
   private clickedCliAtData: any = null; // 🆕 Armazena dados do cliente ativado clicado
   private clickedCliDesData: any = null; // 🆕 Armazena dados do cliente desativado clicado
@@ -569,7 +574,8 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
     private popInfoUpdateService: PopInfoUpdateService,
     private popInfoEstacaoUpdateService: PopInfoEstacaoUpdateService,
     private popInfoService: PopInfoService,
-    private updateClienteService: UpdateClienteService
+    private updateClienteService: UpdateClienteService,
+    private segmentoService: SegmentoService,
   ) {}
 
   // ============================================================================
@@ -759,6 +765,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
       this.clickedCondominioData = null; // 🆕 Limpar dados do condomínio
       this.clickedCondominioMarker = null;
       this.clickedPoligono = null;
+      this.clickedSobraData = null;
       // 🆕 NOVO: Limpar coordenada do context menu quando não estiver em edição
       // Isso garante que a próxima vez que o usuário clicar com botão direito,
       // a coordenada será atualizada corretamente
@@ -864,6 +871,13 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
         break;
       case 'excluir-dio':
         this.excluirDio();
+        break;
+
+      case 'libera-sobra':
+        this.liberaSobra();
+        break;
+      case 'exclui-sobra':
+        this.excluirSobra();
         break;
 
       // 🆕 Ações para Clientes
@@ -1378,8 +1392,8 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
       lng,
       labelCaixa: caixa.numero || caixa.labelCaixa || '',
       endereco: caixa.endereco || caixa.LOCALIZACAO || '',
-      obs: caixa.obs || caixa.OBSERVACAO || ''
-      
+      obs: caixa.obs || caixa.OBSERVACAO || '',
+      INSTALADA: (caixa as Caixa).INSTALADA,
     };
 
     const modalRef = this.ngbModal.open(DetalhesCaixaComponent, {
@@ -1389,10 +1403,13 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
     });
 
     modalRef.componentInstance.data = data;
+    modalRef.componentInstance.onInstaladaChanged = (idMeta: number, instalada: 0 | 1) => {
+      this.aplicarInstaladaCaixaNoMapa(idMeta, instalada);
+    };
     this.hideContextMenu();
 
     modalRef.result.then(
-      (result: DetalhesCaixaData & { tipagem?: string; labelCaixa?: string; endereco?: string; obs?: string; ID_TIPO?: string }) => {
+      (result: DetalhesCaixaData & { tipagem?: string; labelCaixa?: string; endereco?: string; obs?: string; ID_TIPO?: string; INSTALADA?: number | string }) => {
         if (result && result.id_meta) {
           const idMeta = result.id_meta;
           const updateItem = (item: any) => {
@@ -1402,11 +1419,20 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
               item.ID_TIPO = result.ID_TIPO ?? item.ID_TIPO;
               item.endereco = result.endereco ?? item.endereco;
               item.obs = result.obs ?? item.obs;
+              if (result.INSTALADA !== undefined) {
+                item.INSTALADA = result.INSTALADA;
+              }
             }
           };
 
           const idTipoNovo = parseInt(result.ID_TIPO || '1', 10);
-          const tipoNovo: 'ceo' | 'cto' | 'ctosp' = idTipoNovo >= 10 && idTipoNovo <= 13 ? 'cto' : idTipoNovo > 13 ? 'ctosp' : 'ceo';
+          const getArray = (t: 'ceo' | 'cto' | 'ctosp') =>
+            t === 'ctosp' ? this.destinoCTOSP : t === 'cto' ? this.destinoCTO : this.destino;
+          const itemAtual = getArray(tipoCaixa).find((c: any) => c.id_meta === idMeta);
+          const contaSplitter = Number(
+            (result as any).conta_splitter ?? itemAtual?.conta_splitter ?? 0,
+          );
+          const tipoNovo = this.classificarTipoCaixa(idTipoNovo, contaSplitter);
           
           
           if (tipoCaixa === 'ctosp') {
@@ -1418,7 +1444,6 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
           }
 
           if (tipoNovo !== tipoCaixa) {
-            const getArray = (t: 'ceo' | 'cto' | 'ctosp') => t === 'ctosp' ? this.destinoCTOSP : t === 'cto' ? this.destinoCTO : this.destino;
             const idx = getArray(tipoCaixa).findIndex((c: any) => c.id_meta === idMeta);
             if (idx !== -1) {
               const [item] = getArray(tipoCaixa).splice(idx, 1);
@@ -4605,6 +4630,7 @@ private ZOOM_LEVEL_CONDOMINIOS = 17;   // CTOs visíveis em zoom >= 17
 private ZOOM_LEVEL_DIOS = 18;   // DIOS visíveis em zoom >= 117
 private ZOOM_LEVEL_ANOTACOES = 18;   // DIOS visíveis em zoom >= 117
 private ZOOM_LEVEL_POSTES_AP = 18;
+private ZOOM_LEVEL_SEGMENTOS = 15;
 
 private destroy$ = new Subject<void>();
 
@@ -4635,6 +4661,7 @@ private map?: (google.maps.Map);
  private MAX_VISIBLE_MARKERS_DIOS = 100; // Ajuste este valor conforme necessário
  private MAX_VISIBLE_MARKERS_ANOTACOES = 100; // Ajuste este valor conforme necessário
  private MAX_VISIBLE_MARKERS_POSTES_AP = 200;
+ private MAX_VISIBLE_MARKERS_SEGMENTOS = 200;
  
 // **********************************************************************************************inserido
 
@@ -4905,6 +4932,9 @@ polylineOptions144f: google.maps.PolylineOptions = {
       if (layers.cabos && this.getAllCaboPolylineArrays().every((arr) => arr.length === 0)) {
         this.recriarCabosSeLayerAtiva();
       }
+      if (layers.cabos && this.markerSegmentos.length === 0 && this.destinoSegmentos?.length) {
+        this.updateMarkersSegmentos();
+      }
       if (layers.condominios && this.markerCondominios.length === 0 && this.destinoCondominios?.length) {
         this.updateMarkersCondominios();
       }
@@ -5135,6 +5165,11 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
       this.updateMarkersPostesAP();
     }
 
+    if (changes['destinoSegmentos'] && changes['destinoSegmentos'].currentValue) {
+      console.log('Atualizando marcadores de Segmentos (Sobras) ', this.destinoSegmentos);
+      this.updateMarkersSegmentos();
+    }
+
     if (changes['destinoCondominios'] && changes['destinoCondominios'].currentValue) {
       console.log('Atualizando marcadores de Condominios ',this.destinoCondominios);
       this.updateMarkersCondominios();
@@ -5355,6 +5390,13 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
     return [];
   }
 
+  getVisibleMarkerSegmentos(): google.maps.Marker[] {
+    if (this.currentZoom >= this.ZOOM_LEVEL_SEGMENTOS) {
+      return this.markerSegmentos;
+    }
+    return [];
+  }
+
 
 // função para carregar anotacoes no mapa==============================
   private updateMarkersAnotacoes() {
@@ -5473,6 +5515,85 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
     });
 
     console.log('Postes Aprovados atualizados:', this.markerPostesAP);
+  }
+
+
+// função para carregar segmentos (sobras) no mapa==============================
+  private updateMarkersSegmentos() {
+    if (!this.layerVisibilityService.isVisible('cabos')) {
+      return;
+    }
+
+    if (this.destinoSegmentos && this.destinoSegmentos.length > 0 && this.map) {
+      this.markerSegmentos.forEach(marker => marker.setMap(null));
+      this.markerSegmentos = [];
+    }
+
+    this.destinoSegmentos.forEach(location => {
+      const position = {
+        lat: Number(location.LAT),
+        lng: Number(location.LNG),
+      };
+
+      const titleParts = [
+        `Sobra ${location.id_meta}`,
+        `${location.Caboxd} / ${location.Caboxe}`,
+      ];
+      if (location.METRAGEM > 0) {
+        titleParts.push(`${location.METRAGEM}m`);
+      }
+
+      const markerOptions: google.maps.MarkerOptions = {
+        position: position,
+        title: titleParts.join(' — '),
+        draggable: false,
+        opacity: 100,
+        icon: this.iconeMarcadorSobraAsterisco(),
+        visible: this.currentZoom >= this.ZOOM_LEVEL_SEGMENTOS,
+      };
+
+      const marker = new google.maps.Marker(markerOptions);
+      if (this.map) {
+        marker.setMap(this.map);
+      }
+
+      let clickTimeout: any;
+      marker.addListener('click', (event: google.maps.MapMouseEvent) => {
+        if (clickTimeout) {
+          clearTimeout(clickTimeout);
+          clickTimeout = null;
+        }
+        clickTimeout = setTimeout(() => {
+          console.log('🔍 [Sobra] Clique simples detectado na Sobra:', location.id_meta);
+          this.showSobraInfoWindow(marker, event, location);
+        }, 300);
+      });
+
+      marker.addListener('rightclick', (event: google.maps.MapMouseEvent) => {
+        console.log('🔴 [Sobra] Right-click na Sobra:', location);
+
+        if (clickTimeout) {
+          clearTimeout(clickTimeout);
+          clickTimeout = null;
+        }
+
+        if (this.currentMarkerInfoWindow) {
+          this.currentMarkerInfoWindow.close();
+        }
+
+        this.clickedSobraData = location;
+        this.contextMenuType = 'sobra';
+
+        if (event.domEvent) {
+          const mouseEvent = event.domEvent as MouseEvent;
+          this.showContextMenu(mouseEvent.clientX, mouseEvent.clientY);
+        }
+      });
+
+      this.markerSegmentos.push(marker);
+    });
+
+    console.log('Segmentos (Sobras) atualizados:', this.markerSegmentos);
   }
 
 
@@ -6072,6 +6193,44 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
     return null;
   }
 
+  private findMarcadorCaixaPorIdMeta(idMeta: number): { marker: google.maps.Marker; tipo: 'ceo' | 'cto' | 'ctosp' } | null {
+    if (!Number.isFinite(idMeta) || idMeta <= 0) {
+      return null;
+    }
+    const pares: readonly (readonly ['ceo' | 'cto' | 'ctosp', { id_meta?: number }[], google.maps.Marker[]])[] = [
+      ['ceo', this.destino ?? [], this.markerCaixas],
+      ['cto', this.destinoCTO ?? [], this.markerCtos],
+      ['ctosp', this.destinoCTOSP ?? [], this.markerCtosSP],
+    ];
+    for (const [tipo, dest, markers] of pares) {
+      const i = dest.findIndex((c) => c?.id_meta === idMeta);
+      if (i !== -1 && markers[i]) {
+        return { marker: markers[i], tipo };
+      }
+    }
+    return null;
+  }
+
+  private aplicarInstaladaCaixaNoMapa(idMeta: number, instalada: 0 | 1): void {
+    const arrays: { dest: { id_meta?: number; INSTALADA?: number | string }[] }[] = [
+      { dest: this.destino ?? [] },
+      { dest: this.destinoCTO ?? [] },
+      { dest: this.destinoCTOSP ?? [] },
+    ];
+    for (const { dest } of arrays) {
+      const item = dest.find((c) => c?.id_meta === idMeta);
+      if (item) {
+        item.INSTALADA = instalada;
+        break;
+      }
+    }
+
+    const found = this.findMarcadorCaixaPorIdMeta(idMeta);
+    if (found) {
+      found.marker.setIcon(this.obterIconeCaixaPorTipo(found.tipo, instalada));
+    }
+  }
+
   private resolverMarcadorAtivacaoCliente(idMetaCliente: number | undefined): google.maps.Marker | null {
     const guardado = this.marcadorClienteAtivacaoModal;
     if (guardado != null && idMetaCliente != null) {
@@ -6160,6 +6319,98 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
       return;
     }
     this.marcarRecursosClienteNoMarcador(marker, { portas_olt: portasOltId });
+  }
+
+  /** 1 = instalada, 0 = não instalada (default instalada se ausente). */
+  private caixaEstaInstalada(instalada: unknown): boolean {
+    if (instalada == null || instalada === '') {
+      return true;
+    }
+    return Number(instalada) === 1;
+  }
+
+  /** CEO / CTO / CTOSP: ID_TIPO > 9 = CTO; conta_splitter > 0 = CTOSP. */
+  private classificarTipoCaixa(
+    idTipo: number,
+    contaSplitter?: number | string | null,
+  ): 'ceo' | 'cto' | 'ctosp' {
+    if (idTipo > 9) {
+      return Number(contaSplitter ?? 0) > 0 ? 'ctosp' : 'cto';
+    }
+    return 'ceo';
+  }
+
+  /** Ícone por tipo de marcador e INSTALADA. */
+  private obterIconeCaixaPorTipo(
+    tipo: 'ceo' | 'cto' | 'ctosp',
+    instalada: unknown,
+  ): google.maps.Icon {
+    const ok = this.caixaEstaInstalada(instalada);
+
+    if (tipo === 'ctosp') {
+      return {
+        url: ok ? '/assets/CTOSP.png' : '/assets/CTOSP_VERMELHA.png',
+        labelOrigin: new google.maps.Point(50, 10),
+        scaledSize: new google.maps.Size(18, 22),
+      };
+    }
+
+    if (tipo === 'cto') {
+      return {
+        url: ok ? '/assets/CTO80.png' : '/assets/CTO80_VERMELHA.png',
+        labelOrigin: new google.maps.Point(50, 10),
+        scaledSize: new google.maps.Size(18, 22),
+      };
+    }
+
+    return {
+      url: ok ? '/assets/fosc amarela.png' : '/assets/fosc vermelha.png',
+      labelOrigin: new google.maps.Point(70, 10),
+      scaledSize: new google.maps.Size(20, 40),
+    };
+  }
+
+  /** Ícone CEO / CTO / CTOSP conforme ID_TIPO, conta_splitter e INSTALADA. */
+  private obterIconeCaixa(
+    idTipo: number,
+    instalada: unknown,
+    contaSplitter?: number | string | null,
+  ): google.maps.Icon {
+    return this.obterIconeCaixaPorTipo(
+      this.classificarTipoCaixa(idTipo, contaSplitter),
+      instalada,
+    );
+  }
+
+  /** Ícone ampliado para modo edição (preserva variant instalada/não instalada). */
+  private obterIconeCaixaEdicao(
+    idTipo: number,
+    instalada: unknown,
+    contaSplitter?: number | string | null,
+  ): google.maps.Icon {
+    const tipo = this.classificarTipoCaixa(idTipo, contaSplitter);
+    const icon = this.obterIconeCaixaPorTipo(tipo, instalada);
+    if (tipo === 'ceo') {
+      return { ...icon, scaledSize: new google.maps.Size(25, 45) };
+    }
+    return { ...icon, scaledSize: new google.maps.Size(22, 26) };
+  }
+
+  /** Asterisco amarelo com contorno preto — sobras (`updateMarkersSegmentos`). */
+  private iconeMarcadorSobraAsterisco(): google.maps.Icon {
+    const svg = [
+      '<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 60 60">',
+      '<text x="30" y="30" text-anchor="middle" dominant-baseline="central"',
+      ' font-family="Arial,sans-serif" font-size="48" font-weight="bold"',
+      ' fill="#FFD700" stroke="#000000" stroke-width="2.5" paint-order="stroke fill">*</text>',
+      '</svg>',
+    ].join('');
+    return {
+      url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`,
+      scaledSize: new google.maps.Size(40, 40),
+      // Ajuste fino: glifo "*" do Arial fica ligeiramente NW do centro geométrico
+      anchor: new google.maps.Point(17, 17),
+    };
   }
 
   /** Círculo vermelho padrão de `updateMarkersPopsCli` — reutilizado pós-desactivação no mapa. */
@@ -6567,12 +6818,7 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
               color: 'blue',
               fontSize: '12px'
             } as google.maps.MarkerLabel,
-            icon: {
-              //url: '/assets/caixa_plp_15.png',
-              url: '/assets/fosc ama.png',
-              labelOrigin: new google.maps.Point(70, 10),
-              scaledSize: new google.maps.Size(20, 40)
-            },
+            icon: this.obterIconeCaixaPorTipo('ceo', (location as Caixa).INSTALADA),
             visible: this.currentZoom >= this.ZOOM_LEVEL_CAIXAS
             ///visible:false
           };
@@ -6612,7 +6858,15 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
    * Adiciona um marcador de caixa individual ao mapa
    * @param caixa Objeto com dados da caixa (id_meta, numero, LAT, LONGI, ID_TIPO)
    */
-  private adicionarMarcadorCaixa(caixa: { id_meta?: number; numero?: string; LAT: number; LONGI: number; ID_TIPO?: string }): void {
+  private adicionarMarcadorCaixa(caixa: {
+    id_meta?: number;
+    numero?: string;
+    LAT: number;
+    LONGI: number;
+    ID_TIPO?: string;
+    INSTALADA?: number | string;
+    conta_splitter?: number | string;
+  }): void {
     if (!this.map) {
       console.warn('⚠️ [ADICIONAR-MARCADOR-CAIXA] Mapa não está inicializado');
       return;
@@ -6622,42 +6876,27 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
     
     // Determinar ícone baseado no ID_TIPO
     const idTipo = parseInt(caixa.ID_TIPO || '1', 10);
-    let iconUrl: string;
-    let labelOrigin: google.maps.Point;
-    let scaledSize: google.maps.Size;
-    let isCTO = false;
-    let isCTOSP = false;
+    const contaSplitter = Number(caixa.conta_splitter ?? 0);
+    const tipoMarcador = this.classificarTipoCaixa(idTipo, contaSplitter);
+    let isCTO = tipoMarcador === 'cto';
+    let isCTOSP = tipoMarcador === 'ctosp';
 
-    if (idTipo >= 10 && idTipo <= 13) {
-      if (!this.layerVisibilityService.isVisible('cto')) { // inserido na implementação visualização de camadas
+    if (isCTO) {
+      if (!this.layerVisibilityService.isVisible('cto')) {
         return;
       }
-      // CTO sem splitter (ID 10-13)
-      iconUrl = '/assets/CTO80.png';
-      labelOrigin = new google.maps.Point(50, 10);
-      scaledSize = new google.maps.Size(18, 22);
-      isCTO = true;
-    } else if (idTipo > 13) {
-      if (!this.layerVisibilityService.isVisible('ctosp')) {// inserido na implementação visualização de camadas
+    } else if (isCTOSP) {
+      if (!this.layerVisibilityService.isVisible('ctosp')) {
         return;
       }
-      // CTO com splitter (ID > 13)
-      iconUrl = '/assets/CTOSP.png';
-      labelOrigin = new google.maps.Point(50, 10);
-      scaledSize = new google.maps.Size(18, 22);
-      isCTOSP = true;
     } else {
-      if (!this.layerVisibilityService.isVisible('ceo')) {// inserido na implementação visualização de camadas
+      if (!this.layerVisibilityService.isVisible('ceo')) {
         return;
       }
-      // CEO (ID 1-9)
-      iconUrl = '/assets/fosc ama.png';
-      labelOrigin = new google.maps.Point(70, 10);
-      scaledSize = new google.maps.Size(20, 40);
     }
 
-    // Determinar zoom level baseado no tipo
     const zoomLevel = isCTO ? this.ZOOM_LEVEL_CTOS : (isCTOSP ? this.ZOOM_LEVEL_CTOSSP : this.ZOOM_LEVEL_CAIXAS);
+    const icon = this.obterIconeCaixa(idTipo, caixa.INSTALADA, contaSplitter);
 
     const markerOptions: google.maps.MarkerOptions = {
       position: position,
@@ -6668,11 +6907,7 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
         color: 'blue',
         fontSize: '12px'
       } as google.maps.MarkerLabel,
-      icon: {
-        url: iconUrl,
-        labelOrigin: labelOrigin,
-        scaledSize: scaledSize
-      },
+      icon,
       visible: this.currentZoom >= zoomLevel
     };
 
@@ -6691,27 +6926,30 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
         numero: caixa.numero,
         LAT: caixa.LAT,
         LONGI: caixa.LONGI,
-        ID_TIPO: caixa.ID_TIPO || String(idTipo)
+        ID_TIPO: caixa.ID_TIPO || String(idTipo),
+        INSTALADA: caixa.INSTALADA,
+        conta_splitter: 0,
       } as any);
     } else if (isCTOSP) {
       this.markerCtosSP.push(marker);
-      // Adicionar ao destinoCTOSP
       this.destinoCTOSP.push({
         id_meta: caixa.id_meta,
         numero: caixa.numero,
         LAT: caixa.LAT,
         LONGI: caixa.LONGI,
-        ID_TIPO: caixa.ID_TIPO || String(idTipo)
+        ID_TIPO: caixa.ID_TIPO || String(idTipo),
+        INSTALADA: caixa.INSTALADA,
+        conta_splitter: contaSplitter || 1,
       } as any);
     } else {
       this.markerCaixas.push(marker);
-      // Adicionar ao destino (CEO)
       this.destino.push({
         id_meta: caixa.id_meta,
         numero: caixa.numero,
         LAT: caixa.LAT,
         LONGI: caixa.LONGI,
-        ID_TIPO: caixa.ID_TIPO || '1'
+        ID_TIPO: caixa.ID_TIPO || '1',
+        INSTALADA: caixa.INSTALADA,
       } as any);
     }
     
@@ -6720,7 +6958,7 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
       numero: caixa.numero, 
       position: position, 
       ID_TIPO: idTipo,
-      icon: iconUrl,
+      INSTALADA: caixa.INSTALADA,
       tipo: isCTO ? 'CTO' : (isCTOSP ? 'CTO_SP' : 'CEO')
     });
   }
@@ -6912,11 +7150,7 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
           color: 'blue',
           fontSize: '10px'
         } as google.maps.MarkerLabel,
-        icon: {
-          url: '/assets/CTO80.png',
-          labelOrigin: new google.maps.Point(50, 10),
-          scaledSize: new google.maps.Size(18, 22)
-        },
+        icon: this.obterIconeCaixaPorTipo('cto', (location as Cto).INSTALADA),
         visible: this.currentZoom >= this.ZOOM_LEVEL_CTOS
         ///visible: false
 
@@ -6998,11 +7232,7 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
           color: 'blue',
           fontSize: '10px'
         } as google.maps.MarkerLabel,
-        icon: {
-          url: '/assets/CTOSP.png',
-          labelOrigin: new google.maps.Point(50, 10),
-          scaledSize: new google.maps.Size(18, 22)
-        },
+        icon: this.obterIconeCaixaPorTipo('ctosp', (location as Cto_SP).INSTALADA),
         visible: this.currentZoom >= this.ZOOM_LEVEL_CTOSSP
         ///visible: false
 
@@ -8084,6 +8314,37 @@ private updateVisibleMarkers() {
     });
   }
 
+  const segmentosVisible = this.layerVisibilityService.isVisible('cabos');
+  if (segmentosVisible) {
+  let visibleSegmentosCount = 0;
+  console.log('atualiza Segmentos (Sobras) visibles');
+  this.markerSegmentos.forEach(marker => {
+    if (marker) {
+      const position = marker.getPosition();
+      if (position &&
+          bounds.contains(position) &&
+          this.currentZoom >= this.ZOOM_LEVEL_SEGMENTOS &&
+          visibleSegmentosCount < this.MAX_VISIBLE_MARKERS_SEGMENTOS) {
+        if (this.map) { marker.setMap(this.map); }
+        marker.setVisible(true);
+        visibleSegmentosCount++;
+      } else {
+        marker.setVisible(false);
+        marker.setMap(null);
+      }
+    }
+  });
+
+  console.log(` Segmentos (Sobras) visíveis: ${visibleSegmentosCount}`);
+  } else {
+    this.markerSegmentos.forEach((marker) => {
+      if (marker) {
+        marker.setVisible(false);
+        marker.setMap(null);
+      }
+    });
+  }
+
   this.updateVisiblePoligonos(); // inserido na implementação visualização de camadas
   this.updateVisibleCabos(); //inserido na implementação visualização de camadas
 
@@ -8296,6 +8557,44 @@ private showClienteInfoWindow(
       }
     },
   });
+}
+
+private infoview_para_sobras(dados: Segmento): string {
+  const cor = '#FFD700';
+  const idMeta = dados.id_meta ?? '—';
+  const metragem = dados.METRAGEM ?? 0;
+  const metragemTexto = metragem > 0 ? `${metragem} m` : '0';
+  const caboxd = dados.Caboxd ?? '—';
+  const caboxe = dados.Caboxe ?? '—';
+
+  return `
+    <div style="padding: 12px; min-width: 220px; font-family: Arial, sans-serif; max-width: 300px;">
+      <h4 style="margin: 0 0 10px 0; color: #2c3e50; border-bottom: 2px solid ${cor}; padding-bottom: 5px;">
+        Sobra
+      </h4>
+      <p style="margin: 6px 0; color: #34495e;"><strong>id_meta:</strong> ${idMeta}</p>
+      <p style="margin: 6px 0; color: #34495e;"><strong>Metragem:</strong> ${metragemTexto}</p>
+      <p style="margin: 6px 0; color: #7f8c8d; font-size: 12px;"><strong>Cabos:</strong> ${caboxd} / ${caboxe}</p>
+    </div>
+  `;
+}
+
+private showSobraInfoWindow(
+  marker: google.maps.Marker,
+  event: google.maps.MapMouseEvent,
+  dados: Segmento,
+): void {
+  console.log('🔧 [INFO] Mostrando infowindow de sobra:', dados.id_meta);
+
+  if (this.currentMarkerInfoWindow) {
+    this.currentMarkerInfoWindow.close();
+  }
+
+  this.currentMarkerInfoWindow = new google.maps.InfoWindow({
+    content: this.infoview_para_sobras(dados),
+    position: event.latLng,
+  });
+  this.currentMarkerInfoWindow.open(this.map, marker);
 }
 
 // Método para mostrar InfoWindow de marcador
@@ -8821,11 +9120,7 @@ private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = fal
     
     // Mudar aparência visual para indicar modo de edição
     marker.setOpacity(0.7);
-    marker.setIcon({
-      url: '/assets/fosc ama.png',
-      labelOrigin: new google.maps.Point(70, 10),
-      scaledSize: new google.maps.Size(25, 45) // Ligeiramente maior
-    });
+    marker.setIcon(this.obterIconeCaixaEdicao(1, caixa.INSTALADA, 0));
 
     // Armazenar referências
     this.caixaEmEdicao = marker;
@@ -8900,11 +9195,13 @@ private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = fal
     
     // Mudar aparência visual para indicar modo de edição
     marker.setOpacity(0.7);
-    marker.setIcon({
-      url: '/assets/CTO80.png',
-      labelOrigin: new google.maps.Point(50, 10),
-      scaledSize: new google.maps.Size(22, 26) // Ligeiramente maior
-    });
+    marker.setIcon(
+      this.obterIconeCaixaEdicao(
+        parseInt(String(cto.ID_TIPO || '10'), 10),
+        cto.INSTALADA,
+        cto.conta_splitter ?? 0,
+      ),
+    );
 
     // Armazenar referências
     this.caixaEmEdicao = marker;
@@ -8979,11 +9276,13 @@ private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = fal
     
     // Mudar aparência visual para indicar modo de edição
     marker.setOpacity(0.7);
-    marker.setIcon({
-      url: '/assets/CTOSP.png',
-      labelOrigin: new google.maps.Point(50, 10),
-      scaledSize: new google.maps.Size(22, 26) // Ligeiramente maior
-    });
+    marker.setIcon(
+      this.obterIconeCaixaEdicao(
+        parseInt(String(ctosp.ID_TIPO || '10'), 10),
+        ctosp.INSTALADA,
+        ctosp.conta_splitter ?? 1,
+      ),
+    );
 
     // Armazenar referências
     this.caixaEmEdicao = marker;
@@ -10637,6 +10936,99 @@ private excluirCliente(): void {
       }
       this.hideContextMenu();
     }
+  });
+}
+
+/**
+ * 🔓 Libera sobra (desconecta cabos e seta Caboxd/Caboxe = Z)
+ */
+private liberaSobra(): void {
+  console.log('🔓 [CONTEXT-MENU] Liberando sobra...', this.clickedSobraData);
+
+  if (!this.clickedSobraData?.id_meta) {
+    alert('Erro: Sobra não selecionada');
+    return;
+  }
+
+  const idMeta = this.clickedSobraData.id_meta;
+  const confirmacao = confirm(
+    `Liberar sobra ${idMeta}?\n\nIsso desconecta os cabos e define Caboxd/Caboxe como Z.`,
+  );
+  if (!confirmacao) {
+    return;
+  }
+
+  this.segmentoService.liberaSegmento(idMeta).subscribe({
+    next: (response: any) => {
+      if (response?.success) {
+        alert(response.message || 'Sobra liberada do cabo');
+        const idx = this.destinoSegmentos.findIndex((s) => s.id_meta === idMeta);
+        if (idx !== -1) {
+          this.destinoSegmentos[idx] = {
+            ...this.destinoSegmentos[idx],
+            Caboxd: 'Z',
+            Caboxe: 'Z',
+          };
+          this.updateMarkersSegmentos();
+        }
+      } else {
+        alert(response?.error || response?.message || 'Erro ao liberar sobra');
+      }
+      this.clickedSobraData = null;
+    },
+    error: (err) => {
+      console.error('❌ [LIBERA-SOBRA] Erro:', err);
+      alert(typeof err === 'string' ? err : 'Erro ao liberar sobra');
+      this.clickedSobraData = null;
+    },
+  });
+}
+
+/**
+ * 🗑️ Exclui sobra (segmento desconectado)
+ */
+private excluirSobra(): void {
+  console.log('🗑️ [CONTEXT-MENU] Excluindo sobra...', this.clickedSobraData);
+
+  if (!this.clickedSobraData?.id_meta) {
+    alert('Erro: Sobra não selecionada');
+    return;
+  }
+
+  const idMeta = this.clickedSobraData.id_meta;
+  const confirmacao = confirm(
+    `Excluir sobra ${idMeta}?\n\nA sobra deve estar desconectada (Caboxd/Caboxe = Z).`,
+  );
+  if (!confirmacao) {
+    return;
+  }
+
+  this.segmentoService.excluiSegmento(idMeta).subscribe({
+    next: (response: any) => {
+      if (response?.success) {
+        alert(response.message || 'Segmento excluído');
+
+        if (this.currentMarkerInfoWindow) {
+          this.currentMarkerInfoWindow.close();
+        }
+
+        const idxDestino = this.destinoSegmentos.findIndex((s) => s.id_meta === idMeta);
+        if (idxDestino !== -1) {
+          this.destinoSegmentos.splice(idxDestino, 1);
+        }
+
+        this.updateMarkersSegmentos();
+        this.hideContextMenu();
+      } else {
+        alert(response?.error || response?.message || 'Erro ao excluir sobra');
+      }
+      this.clickedSobraData = null;
+    },
+    error: (err) => {
+      console.error('❌ [EXCLUI-SOBRA] Erro:', err);
+      alert(typeof err === 'string' ? err : 'Erro ao excluir sobra');
+      this.clickedSobraData = null;
+    },
   });
 }
 

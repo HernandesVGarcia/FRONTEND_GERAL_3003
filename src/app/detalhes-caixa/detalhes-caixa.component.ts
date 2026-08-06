@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { NgbActiveModal, NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { TiposService } from '../servico/tipos.service';
 import { UpdateTipagemCaixaService, UpdateTipagemCaixaRequest } from '../servico/update-tipagem-caixa.service';
+import { UpdateCaixaInstaladaService } from '../servico/update-caixa-instalada.service';
 import { AuthService } from '../servico/auth.service';
 import { PesquisaCaixaService } from '../servico/pesquisa-caixa.service';
 
@@ -16,7 +17,7 @@ export interface DetalhesCaixaData {
   labelCaixa?: string;
   endereco?: string;
   obs?: string;
-  
+  INSTALADA?: number | string;
 }
 
 @Component({
@@ -35,6 +36,7 @@ export class DetalhesCaixaComponent implements OnInit, OnChanges {
   carregandoTipos: boolean = false;
   carregandoDetalhes: boolean = false;
   salvando: boolean = false;
+  salvandoInstalada: boolean = false;
 
   form = {
     tipagem: 'INDEFINIDO',
@@ -42,10 +44,12 @@ export class DetalhesCaixaComponent implements OnInit, OnChanges {
     lng: '',
     labelCaixa: '',
     endereco: '',
-    obs: ''
+    obs: '',
+    instalada: true,
   };
 
   @Input() data: DetalhesCaixaData = { id_meta: 0 };
+  @Input() onInstaladaChanged?: (idMeta: number, instalada: 0 | 1) => void;
 
   private isDragging = false;
   private currentX = 0;
@@ -61,6 +65,7 @@ export class DetalhesCaixaComponent implements OnInit, OnChanges {
     public activeModal: NgbActiveModal,
     private tiposService: TiposService,
     private updateTipagemCaixaService: UpdateTipagemCaixaService,
+    private updateCaixaInstaladaService: UpdateCaixaInstaladaService,
     private authService: AuthService,
     private pesquisaCaixaService: PesquisaCaixaService,
   ) {}
@@ -111,6 +116,10 @@ export class DetalhesCaixaComponent implements OnInit, OnChanges {
           this.form.tipagem = detalhes.tipo;
           this.data.tipagem = detalhes.tipo;
         }
+        if (detalhes.instalada !== undefined) {
+          this.form.instalada = detalhes.instalada;
+          this.data.INSTALADA = detalhes.instalada ? 1 : 0;
+        }
       },
       error: () => {
         this.carregandoDetalhes = false;
@@ -126,7 +135,48 @@ export class DetalhesCaixaComponent implements OnInit, OnChanges {
       this.form.labelCaixa = this.data.labelCaixa || '';
       this.form.endereco = this.data.endereco || '';
       this.form.obs = this.data.obs || '';
+      this.form.instalada = this.resolverInstalada(this.data.INSTALADA);
     }
+  }
+
+  /** 1 = instalada; ausente/null = instalada (default). */
+  private resolverInstalada(instalada: unknown): boolean {
+    if (instalada == null || instalada === '') {
+      return true;
+    }
+    return Number(instalada) === 1;
+  }
+
+  onInstaladaChange(): void {
+    const idMeta = Number(this.data?.id_meta);
+    if (!Number.isFinite(idMeta) || idMeta <= 0) {
+      return;
+    }
+
+    const instalada: 0 | 1 = this.form.instalada ? 1 : 0;
+    const valorAnterior = instalada === 1 ? 0 : 1;
+
+    this.salvandoInstalada = true;
+    this.updateCaixaInstaladaService.atualizarInstalada({
+      ID_META: idMeta,
+      INSTALADA: instalada,
+    }).subscribe({
+      next: (response) => {
+        this.salvandoInstalada = false;
+        if (response.success !== false) {
+          this.data.INSTALADA = instalada;
+          this.onInstaladaChanged?.(idMeta, instalada);
+        } else {
+          this.form.instalada = valorAnterior === 1;
+          alert(response.error || 'Erro ao atualizar status de instalação.');
+        }
+      },
+      error: (error) => {
+        this.salvandoInstalada = false;
+        this.form.instalada = valorAnterior === 1;
+        alert(`Erro ao atualizar status de instalação: ${error}`);
+      },
+    });
   }
 
   carregarTiposCaixa(): void {
@@ -236,7 +286,8 @@ export class DetalhesCaixaComponent implements OnInit, OnChanges {
             lng: this.data.lng,
             labelCaixa: numeroLabel,
             endereco: this.form.endereco || undefined,
-            obs: this.form.obs || undefined
+            obs: this.form.obs || undefined,
+            INSTALADA: this.form.instalada ? 1 : 0,
           };
           this.activeModal.close(resultado);
         } else {

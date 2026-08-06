@@ -46,6 +46,9 @@
     <!-- Lista de Cabos1 -->
     <app-lista-cabos1f (caboSelecionada)="onCabos1fSelecionada($event)"></app-lista-cabos1f>
 
+    <!-- Lista de Segmentos (Sobras) -->
+    <app-lista-segmentos (SegmentosSelecionados)="onSegmentosSelecionados($event)"></app-lista-segmentos>
+
     <!-- Lista de Cabos2 -->
     <app-lista-cabos2f (caboSelecionada)="onCabos2fSelecionada($event)"></app-lista-cabos2f>
 
@@ -84,6 +87,7 @@
   [destinoCondominios]="Condominios" 
   [destinoDios]="Dios"
   [destinoPostesAP]="postesAP"
+  [destinoSegmentos]="segmentos"
   [destinoPopsCli]="popCLI"
   [destinoPopsCliDes]="popCLIDes"
   [destinoPopsCliAtv]="popCLIAtv"

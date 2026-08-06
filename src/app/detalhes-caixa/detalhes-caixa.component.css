@@ -214,6 +214,47 @@ textarea.form-control-sm {
   padding-top: 6px;
 }
 
+.form-check-input#caixaInstalada,
+.form-check .form-check-input {
+  width: 1.125rem;
+  height: 1.125rem;
+  margin-top: 0.15rem;
+  border: 2px solid #495057;
+  background-color: #ffffff;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.form-check-input#caixaInstalada:not(:checked),
+.form-check .form-check-input:not(:checked) {
+  border-color: #495057;
+  background-color: #ffffff;
+  opacity: 1;
+}
+
+.form-check-input#caixaInstalada:hover:not(:disabled),
+.form-check .form-check-input:hover:not(:disabled) {
+  border-color: #345677;
+  box-shadow: 0 0 0 2px rgba(52, 86, 119, 0.15);
+}
+
+.form-check-input#caixaInstalada:focus,
+.form-check .form-check-input:focus {
+  border-color: #3b6c9c;
+  box-shadow: 0 0 0 0.2rem rgba(59, 108, 156, 0.35);
+}
+
+.form-check-input#caixaInstalada:checked,
+.form-check .form-check-input:checked {
+  background-color: #629ef8;
+  border-color: #629ef8;
+}
+
+.form-check-label {
+  cursor: pointer;
+  padding-left: 0.35rem;
+}
+
 .badge {
   font-size: 0.7rem;
   padding: 2px 6px;
