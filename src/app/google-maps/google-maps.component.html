@@ -28,7 +28,12 @@
 
   
  
-  <app-map-search-buttons [caixas]="destino" [ctosSP]="destinoCTOSP">
+  <app-map-search-buttons
+    [caixas]="destino"
+    [ctosSP]="destinoCTOSP"
+    [carregandoPostesConcessionaria]="carregandoPostesConcessionaria"
+    [postesConcessionariaDisponivel]="postesConcessionariaBotaoVisivel"
+    (carregarPostesConcessionaria)="onCarregarPostesConcessionaria()">
   </app-map-search-buttons>  
 
 <!-- 🗺️ NOVO: Botões de Tracer no canto superior -->

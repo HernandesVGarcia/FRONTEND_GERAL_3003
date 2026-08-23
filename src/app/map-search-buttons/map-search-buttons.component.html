@@ -54,3 +54,15 @@
     <div class="tooltip-viabilidade">Verificar Viabilidade</div>
   </div>
 
+  <!-- Postes Concessionária -->
+  <div class="group" *ngIf="postesConcessionariaDisponivel">
+    <button
+      class="map-search-button postes-concessionaria"
+      (click)="onPostesConcessionaria()"
+      [disabled]="carregandoPostesConcessionaria"
+      aria-label="Postes Concessionária">
+      <mat-icon>electric_bolt</mat-icon>
+    </button>
+    <div class="tooltip-postes-concessionaria">Postes Concessionária</div>
+  </div>
+

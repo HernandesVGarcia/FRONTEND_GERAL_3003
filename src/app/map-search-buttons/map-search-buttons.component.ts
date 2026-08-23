@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -24,6 +24,9 @@ import { Cto_SP } from '../modelo/Cto_SP';
 export class MapSearchButtonsComponent {
   @Input() caixas: Caixa[] = [];
   @Input() ctosSP: Cto_SP[] = [];
+  @Input() carregandoPostesConcessionaria = false;
+  @Input() postesConcessionariaDisponivel = false;
+  @Output() carregarPostesConcessionaria = new EventEmitter<void>();
 
   constructor(
     private ngbModal: NgbModal,
@@ -79,6 +82,10 @@ export class MapSearchButtonsComponent {
       centered: true,
       windowClass: 'logradouro-search-modal-window',
     });
+  }
+
+  onPostesConcessionaria(): void {
+    this.carregarPostesConcessionaria.emit();
   }
 
   onVerificarViabilidade(): void {

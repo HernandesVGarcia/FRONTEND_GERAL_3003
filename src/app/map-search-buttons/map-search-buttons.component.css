@@ -51,6 +51,20 @@
   background-color: #047857;
 }
 
+.map-search-button.postes-concessionaria {
+  background-color: #15803d;
+}
+
+.map-search-button.postes-concessionaria:hover:not(:disabled) {
+  background-color: #166534;
+}
+
+.map-search-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
 /* Tooltip styles */
 /* 🔍 MUDANÇA: Estilos base para todos os tooltips específicos 
  */
@@ -58,7 +72,8 @@
 .tooltip-cliente,
 .tooltip-estacao,
 .tooltip-logradouro,
-.tooltip-viabilidade {
+.tooltip-viabilidade,
+.tooltip-postes-concessionaria {
   position: absolute;
   left: calc(100% + 12px); 
   top: 50%;
@@ -81,7 +96,8 @@
 .group:hover .tooltip-cliente,
 .group:hover .tooltip-estacao,
 .group:hover .tooltip-logradouro,
-.group:hover .tooltip-viabilidade {
+.group:hover .tooltip-viabilidade,
+.group:hover .tooltip-postes-concessionaria {
   opacity: 1;
   visibility: visible;
 }
@@ -91,7 +107,8 @@
 .tooltip-cliente::after,
 .tooltip-estacao::after,
 .tooltip-logradouro::after,
-.tooltip-viabilidade::after {
+.tooltip-viabilidade::after,
+.tooltip-postes-concessionaria::after {
   content: '';
   position: absolute;
   right: 100%;

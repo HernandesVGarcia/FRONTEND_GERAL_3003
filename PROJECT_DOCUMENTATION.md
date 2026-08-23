@@ -235,7 +235,7 @@ interface VisualizaCaboConfig {
 ### **🏢 Outras Tabelas Importantes**
 - **`pop`**: Pontos de presença
 - **`caixa`**: Caixas gerais
-- **`poste`**, **`postes`**: Postes
+- **`poste`**, **`postes`**: Postes — ver também [`POSTES-CONCESSIONARIA-MAPA.md`](src/assets/documentação/POSTES-CONCESSIONARIA-MAPA.md) (camada no mapa, API `postes_coordenadas`, tabela `postes_parana`)
 - **`condominio`**: Condomínios
 - **`conexões`**, **`conexao`**: Conexões
 - **`connect_01`**: Conexões específicas

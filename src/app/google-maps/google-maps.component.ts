@@ -22,6 +22,7 @@ import { PopsEst } from '../modelo/popsEst';
 import { Condominios } from '../modelo/Condominios';
 import { Dios } from '../modelo/dios';
 import { PosteAprovado } from '../modelo/poste-aprovado';
+import { PosteConcessionaria } from '../modelo/poste-concessionaria';
 import { Segmento } from '../modelo/segmento';
 import { Anotacoes } from '../modelo/Anotacoes';
 import { Poligonos } from '../modelo/poligonos';
@@ -81,6 +82,7 @@ import { DivideCaboService } from '../servico/divide-cabo.service';
 import { ExcluiCaixaService, ExcluiCaixaRequest, ExcluiCaixaResponse } from '../servico/exclui-caixa.service';
 import { ExcluiDioService, ExcluiDioRequest, ExcluiDioResponse } from '../servico/exclui-dio.service';
 import { SegmentoService } from '../servico/segmento.service';
+import { PostesConcessionariaService } from '../servico/postes-concessionaria.service';
 import { ExcluiEstacaoService, ExcluiEstacaoRequest, ExcluiEstacaoResponse } from '../servico/exclui-estacao.service';
 import { ExcluiCondominioService, ExcluiCondominioRequest, ExcluiCondominioResponse } from '../servico/exclui-condominio.service';
 import { ExcluiPoligonoService, ExcluiPoligonoRequest, ExcluiPoligonoResponse } from '../servico/exclui-poligono.service';
@@ -126,33 +128,36 @@ import { BuscaObjetoConexPontaService, ObjetoConectado } from '../servico/busca-
  * (Atualizar linhas ao mover blocos grandes de código.)
  *
  * PROPRIEDADES:
- * - Linha ~218: @Input() — Dados de entrada (destinos, cabos, caixas, etc.)
- * - Linha ~245: Propriedades do Mapa (center, zoom, title, mapOptions, etc.)
- * - Linha ~258: Marcadores (markerCaixas, polígonos, modoEdicaoPoligono, etc.)
- * - Linha ~312: Paths de Polylines (polylinePaths1f, polylinePaths2f, etc.)
- * - Linha ~329: Polylines (polylines1f, polylines2f, etc.)
- * - Linha ~341: InfoWindows (infoWindows1f, infoWindows2f, etc.)
- * - Linha ~354: Destaque Tracer Mapa (highlightedPolylines, labels, splitters)
- * - Linha ~360: Context Menu e dados de clique (caixa, cabo, DIO, cliente, etc.)
- * - Linha ~399: Edição de posição (caixa/CTO/DIO/estação/cliente no mapa)
- * - Linha ~437: Edição de Cabos (isEditingCabo, pontasOriginais, pontasProtegidas, etc.)
- * - Linha ~456: Desenho de Cabos (isDesenhandoCabo, caboEmDesenho, tipagem, etc.)
- * - Linha ~471: Desenho de Polígonos (isDesenhandoPoligono, preview, tipagem, etc.)
- * - Linha ~482: Medição de Distância / Régua (modoMedicao, pontosMedicao, etc.)
- * - Linha ~4592: Opções de Polylines (polylineOptions1f, polylineOptions2f, etc.)
+ * - Linha ~262: @Input() — Dados de entrada (destinos, cabos, caixas, etc.)
+ * - Linha ~290: Propriedades do Mapa (center, zoom, title, mapOptions, etc.)
+ * - Linha ~308: Marcadores (markerCaixas, polígonos, modoEdicaoPoligono, etc.)
+ * - Linha ~350: Postes Concessionária (markerPostesConcessionaria, destinoPostesConcessionaria, carregandoPostesConcessionaria)
+ * - Linha ~367: Paths de Polylines (polylinePaths1f, polylinePaths2f, etc.)
+ * - Linha ~384: Polylines (polylines1f, polylines2f, etc.)
+ * - Linha ~397: InfoWindows (infoWindows1f, infoWindows2f, etc.)
+ * - Linha ~409: Destaque Tracer Mapa (highlightedPolylines, labels, splitters)
+ * - Linha ~415: Context Menu e dados de clique (caixa, cabo, DIO, cliente, etc.)
+ * - Linha ~455: Edição de posição (caixa/CTO/DIO/estação/cliente no mapa)
+ * - Linha ~493: Edição de Cabos (isEditingCabo, pontasOriginais, pontasProtegidas, etc.)
+ * - Linha ~512: Desenho de Cabos (isDesenhandoCabo, caboEmDesenho, tipagem, etc.)
+ * - Linha ~527: Desenho de Polígonos (isDesenhandoPoligono, preview, tipagem, etc.)
+ * - Linha ~538: Medição de Distância / Régua (modoMedicao, pontosMedicao, etc.)
+ * - Linha ~4635: Limites de zoom / visibilidade (ZOOM_LEVEL_*, MAX_VISIBLE_MARKERS_*)
+ * - Linha ~4676: Opções de Polylines (polylineOptions1f, polylineOptions2f, etc.)
  *
  * MÉTODOS:
- * - Linha ~491: Constructor
+ * - Linha ~550: Constructor
  *
- * - Linha ~528: CONTEXT MENU
+ * - Linha ~588: CONTEXT MENU
  *   - setupContextMenuListener()
  *   - showContextMenu()
  *   - hideContextMenu()
  *   - onContextMenuAction()
  *
- * - Linha ~871: AÇÕES DO CONTEXT MENU (criarCaixa, criarDIO, editar/excluir, etc.)
+ * - Linha ~939: AÇÕES DO CONTEXT MENU (criarCaixa, criarDIO, editar/excluir, etc.)
+ *   - abrirDetalhesCaixa() — modal Detalhes Caixa (checkbox INSTALADA)
  *
- * - Linha ~1856: EDIÇÃO DE CABOS
+ * - Linha ~1935: EDIÇÃO DE CABOS
  *   - editarCabo()
  *   - verificarConexoesPontas()
  *   - iniciarEdicaoCabo()
@@ -160,32 +165,32 @@ import { BuscaObjetoConexPontaService, ObjetoConectado } from '../servico/busca-
  *   - cancelarEdicaoCabo()
  *   - adicionarListenerProtecaoPontas()
  *
- * - Linha ~2088: DIVISÃO DE CABOS (context menu no vértice)
+ * - Linha ~2166: DIVISÃO DE CABOS (context menu no vértice)
  *   - adicionarListenerRemoverVertice()
  *   - removerVertice()
  *   - dividirCaboNoVertice()
  *
- * - Linha ~2279: AUXILIARES DE CABOS
+ * - Linha ~2357: AUXILIARES DE CABOS
  *   - normalizarTipoFibra()
  *   - getArraysPorCapacidade()
  *   - adicionarListenersCaboPolyline()
  *
- * - Linha ~2801: DETECÇÃO DE CONEXÃO CABO-CAIXA / DIO
+ * - Linha ~2880: DETECÇÃO DE CONEXÃO CABO-CAIXA / DIO
  *   - abrirModalConexao()
  *   - abrirModalConexaoDio()
  *   - encontrarCaixaProxima()
  *   - (Verificação de conexão no listener set_at em tempo real)
  *
- * - Linha ~3405: GESTÃO DE EVENTOS DE CABOS
+ * - Linha ~3483: GESTÃO DE EVENTOS DE CABOS
  *   - processarRightClickCabo()
  *   - recriarListenerRightClick()
  *   - recriarListenerRightClickMapa()
  *
- * - Linha ~3698: AÇÕES DE CABOS (context menu)
+ * - Linha ~3776: AÇÕES DE CABOS (context menu)
  *   - liberarCabo()
  *   - excluirCabo()
  *
- * - Linha ~4088: DESTAQUE TRACER MAPA
+ * - Linha ~4169: DESTAQUE TRACER MAPA
  *   - setupCabosHighlightListeners()
  *   - setupGoJSModalListener()
  *   - highlightCabosComCapacidade()
@@ -194,54 +199,65 @@ import { BuscaObjetoConexPontaService, ObjetoConectado } from '../servico/busca-
  *   - addTraceHighlightLabel()
  *   - clearCabosHighlight()
  *
- * - Linha ~4756: Lifecycle do componente
+ * - Linha ~4840: Lifecycle do componente
  *   - ngAfterViewInit()
- *   - ngOnInit()
+ *   - ngOnInit() — inclui layersChanged$ (camada postes_concessionaria ~4927)
  *   - ngOnChanges()
  *   - ngOnDestroy()
- *   - onMapInitialized()
+ *   - onMapInitialized() (~7869)
  *
- * - Linha ~6430: GESTÃO DE MARCADORES
+ * - Linha ~5495: POSTES NO MAPA
+ *   - updateMarkersPostesAP()
+ *   - onCarregarPostesConcessionaria() — busca por extent visível
+ *   - updateMarkersPostesConcessionaria() — cores por SITUACAO, camada postes_concessionaria
+ *
+ * - Linha ~6923: GESTÃO DE MARCADORES
  *   - updateMarkers()
+ *   - adicionarMarcadorCaixa()
  *   - updateMarkersCTO() / updateMarkersCTOSP()
  *   - updateMarkersDios() / updateMarkersCondominios()
  *   - updateMarkersPopsCli() / updatePoligonos()
- *   - etc.
+ *   - updateVisibleMarkers() (~8042)
  *
- * - Linha ~6924: GESTÃO DE POLYLINES (atualização por capacidade)
+ * - Linha ~6343: CAIXAS — INSTALADA (ícones CEO/CTO/CTOSP)
+ *   - aplicarInstaladaCaixaNoMapa()
+ *   - caixaEstaInstalada()
+ *   - obterIconeCaixaPorTipo()
+ *
+ * - Linha ~7396: GESTÃO DE POLYLINES (atualização por capacidade)
  *   - updatePolylinesCabos1f()
  *   - updatePolylinesCabos2f()
  *   - etc.
  *
- * - Linha ~9375: EDIÇÃO DE DIO / CAIXA / ESTAÇÃO / CLIENTE (posição no mapa)
+ * - Linha ~9250: EDIÇÃO DE DIO / CAIXA / ESTAÇÃO / CLIENTE (posição no mapa)
  *   - habilitarEdicaoDio(), habilitarEdicaoCaixa(), etc.
  *
- * - Linha ~10049: MODAIS (Visualiza DIO, Visualiza Cabo, GoJS)
+ * - Linha ~10778: MODAIS (Visualiza DIO, Visualiza Cabo, GoJS)
  *   - openVisualizaDioModal()
  *   - openVisualizaCaboModal()
  *   - openGoJSModal()
  *
- * - Linha ~10967: CRIAÇÃO DE POLYLINES
+ * - Linha ~11625: CRIAÇÃO DE POLYLINES
  *   - createCaboPolylines()
  *   - createCabo1fPolylines() … createCabo144fPolylines()
  *
- * - Linha ~11886: DESENHO DE CABOS (toolbar / eventos window)
+ * - Linha ~12708: DESENHO DE CABOS (toolbar / eventos window)
  *   - startDesenhoCabo()
  *   - finalizarDesenhoCabo() / cancelarDesenhoCabo()
  *
- * - Linha ~12095: CRIAÇÃO DE CABOS COM TIPAGEM
+ * - Linha ~12917: CRIAÇÃO DE CABOS COM TIPAGEM
  *   - criarCaboComTipagemEIdMeta()
  *
- * - Linha ~12555: DESENHO DE POLÍGONOS
+ * - Linha ~13377: DESENHO DE POLÍGONOS
  *   - startDesenhoPoligono()
  *   - finalizarDesenhoPoligono() / cancelarDesenhoPoligono()
  *
- * - Linha ~12809: MEDIÇÃO DE DISTÂNCIA (Régua)
+ * - Linha ~13631: MEDIÇÃO DE DISTÂNCIA (Régua)
  *   - ativarModoMedicao()
  *   - desativarModoMedicao()
  *
- * - Linha ~13039: EDIÇÃO DE POLÍGONOS (modo toolbar)
- *   - armarModoEdicaoPoligono() / desativarModoEdicaoPoligonoCompleto()
+ * - Linha ~13862: EDIÇÃO DE POLÍGONOS (modo toolbar)
+ *   - ativarModoEdicaoPoligonoDoToolbar() / desativarModoEdicaoPoligonoCompleto()
  *   - context menu e vértices arrastáveis
  *
  * ============================================================================
@@ -345,6 +361,10 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
   private listenerEscModoPoligono: ((ev: KeyboardEvent) => void) | null = null;
   markerDios: google.maps.Marker[] = [];
   markerPostesAP: google.maps.Marker[] = [];
+  markerPostesConcessionaria: google.maps.Marker[] = [];
+  destinoPostesConcessionaria: PosteConcessionaria[] = [];
+  carregandoPostesConcessionaria = false;
+  postesConcessionariaBotaoVisivel = false;
   markerSegmentos: google.maps.Marker[] = [];
   markerCondominios: google.maps.Marker[] = [];
   markerPopsCli: google.maps.Marker[] = [];
@@ -576,6 +596,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
     private popInfoService: PopInfoService,
     private updateClienteService: UpdateClienteService,
     private segmentoService: SegmentoService,
+    private postesConcessionariaService: PostesConcessionariaService,
   ) {}
 
   // ============================================================================
@@ -4630,6 +4651,9 @@ private ZOOM_LEVEL_CONDOMINIOS = 17;   // CTOs visíveis em zoom >= 17
 private ZOOM_LEVEL_DIOS = 18;   // DIOS visíveis em zoom >= 117
 private ZOOM_LEVEL_ANOTACOES = 18;   // DIOS visíveis em zoom >= 117
 private ZOOM_LEVEL_POSTES_AP = 18;
+private ZOOM_LEVEL_POSTES_CONCESSIONARIA = 18;
+private readonly MAX_EXTENT_LAT_POSTES_CONCESSIONARIA = 0.05;
+private readonly MAX_EXTENT_LNG_POSTES_CONCESSIONARIA = 0.05;
 private ZOOM_LEVEL_SEGMENTOS = 15;
 
 private destroy$ = new Subject<void>();
@@ -4661,6 +4685,7 @@ private map?: (google.maps.Map);
  private MAX_VISIBLE_MARKERS_DIOS = 100; // Ajuste este valor conforme necessário
  private MAX_VISIBLE_MARKERS_ANOTACOES = 100; // Ajuste este valor conforme necessário
  private MAX_VISIBLE_MARKERS_POSTES_AP = 200;
+ private MAX_VISIBLE_MARKERS_POSTES_CONCESSIONARIA = 1000;
  private MAX_VISIBLE_MARKERS_SEGMENTOS = 200;
  
 // **********************************************************************************************inserido
@@ -4955,6 +4980,13 @@ polylineOptions144f: google.maps.PolylineOptions = {
       }
       if (layers.postes_aprovados && this.markerPostesAP.length === 0 && this.destinoPostesAP?.length) {
         this.updateMarkersPostesAP();
+      }
+      if (
+        layers.postes_concessionaria &&
+        this.markerPostesConcessionaria.length === 0 &&
+        this.destinoPostesConcessionaria?.length
+      ) {
+        this.updateMarkersPostesConcessionaria();
       }
       this.updateVisibleMarkers();
     });
@@ -5390,6 +5422,13 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
     return [];
   }
 
+  getVisibleMarkerPostesConcessionaria(): google.maps.Marker[] {
+    if (this.currentZoom >= this.ZOOM_LEVEL_POSTES_CONCESSIONARIA) {
+      return this.markerPostesConcessionaria;
+    }
+    return [];
+  }
+
   getVisibleMarkerSegmentos(): google.maps.Marker[] {
     if (this.currentZoom >= this.ZOOM_LEVEL_SEGMENTOS) {
       return this.markerSegmentos;
@@ -5515,6 +5554,144 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
     });
 
     console.log('Postes Aprovados atualizados:', this.markerPostesAP);
+  }
+
+  private extentPermiteCarregarPostesConcessionaria(): boolean {
+    const bounds = this.map?.getBounds();
+    if (!bounds) {
+      return false;
+    }
+
+    const ne = bounds.getNorthEast();
+    const sw = bounds.getSouthWest();
+    const latSpan = Math.abs(ne.lat() - sw.lat());
+    const lngSpan = Math.abs(ne.lng() - sw.lng());
+
+    return latSpan <= this.MAX_EXTENT_LAT_POSTES_CONCESSIONARIA
+      && lngSpan <= this.MAX_EXTENT_LNG_POSTES_CONCESSIONARIA;
+  }
+
+  private atualizarVisibilidadeBotaoPostesConcessionaria(): void {
+    const next = this.extentPermiteCarregarPostesConcessionaria();
+    if (next !== this.postesConcessionariaBotaoVisivel) {
+      this.postesConcessionariaBotaoVisivel = next;
+      this.cdr.detectChanges();
+    }
+  }
+
+  onCarregarPostesConcessionaria(): void {
+    if (!this.map) {
+      alert('Mapa ainda não está pronto. Aguarde o carregamento.');
+      return;
+    }
+
+    if (!this.extentPermiteCarregarPostesConcessionaria()) {
+      alert('Aproxime o mapa (área muito ampla) para carregar postes da concessionária.');
+      return;
+    }
+
+    const bounds = this.map.getBounds();
+    if (!bounds) {
+      alert('Não foi possível obter a área visível do mapa.');
+      return;
+    }
+
+    const ne = bounds.getNorthEast();
+    const sw = bounds.getSouthWest();
+    const extent = {
+      LAT_MAX: String(ne.lat()),
+      LAT_MIN: String(sw.lat()),
+      LONG_MAX: String(ne.lng()),
+      LONG_MIN: String(sw.lng()),
+    };
+
+    this.carregandoPostesConcessionaria = true;
+    this.postesConcessionariaService.buscarPorExtent(extent).subscribe({
+      next: (postes) => {
+        this.carregandoPostesConcessionaria = false;
+        this.destinoPostesConcessionaria = postes ?? [];
+        this.updateMarkersPostesConcessionaria();
+        this.updateVisibleMarkers();
+        this.cdr.detectChanges();
+        console.log(
+          `Postes Concessionária carregados: ${this.destinoPostesConcessionaria.length}`,
+        );
+      },
+      error: (err) => {
+        this.carregandoPostesConcessionaria = false;
+        this.cdr.detectChanges();
+        alert(typeof err === 'string' ? err : err?.message ?? 'Erro ao carregar postes da concessionária.');
+      },
+    });
+  }
+
+  private updateMarkersPostesConcessionaria(): void {
+    if (!this.layerVisibilityService.isVisible('postes_concessionaria')) {
+      return;
+    }
+
+    this.markerPostesConcessionaria.forEach((marker) => marker.setMap(null));
+    this.markerPostesConcessionaria = [];
+
+    if (!this.map || !this.destinoPostesConcessionaria?.length) {
+      return;
+    }
+
+    this.destinoPostesConcessionaria.forEach((poste) => {
+      const lat = Number(poste.LATITUDE);
+      const lng = Number(poste.LONGITUDE);
+      if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+        return;
+      }
+
+      const markerOptions: google.maps.MarkerOptions = {
+        position: { lat, lng },
+        title: `Poste ${poste.NUM_SEQ_GEO} — ${poste.SITUACAO ?? ''}`,
+        draggable: false,
+        opacity: 1,
+        icon: this.iconeMarcadorPosteConcessionaria(poste.SITUACAO),
+        visible: this.currentZoom >= this.ZOOM_LEVEL_POSTES_CONCESSIONARIA,
+      };
+
+      const marker = new google.maps.Marker(markerOptions);
+      marker.setMap(this.map ?? null);
+      this.markerPostesConcessionaria.push(marker);
+    });
+
+    console.log('Postes Concessionária atualizados:', this.markerPostesConcessionaria.length);
+  }
+
+  private iconeMarcadorPosteConcessionaria(situacao: string): google.maps.Symbol {
+    return {
+      path: google.maps.SymbolPath.CIRCLE,
+      fillColor: this.corMarcadorPosteConcessionaria(situacao),
+      fillOpacity: 0.7,
+      strokeColor: '#ffffff',
+      strokeWeight: 1.5,
+      scale: 4,
+    };
+  }
+
+  /** Indisponível → vermelho; Possível → laranja; Disponível → verde; Indefinido/vazio → cinza. */
+  private corMarcadorPosteConcessionaria(situacao: string): string {
+    const s = (situacao ?? '')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+
+    if (s.includes('indispon')) {
+      return '#dc3545';
+    }
+    if (s.includes('possiv')) {
+      return '#fd7e14';
+    }
+    if (s.includes('dispon')) {
+      return '#28a745';
+    }
+    if (!s || s.includes('indefin')) {
+      return '#6c757d';
+    }
+    return '#6c757d';
   }
 
 
@@ -7841,6 +8018,7 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
 
       ///this.updateMarkersVisibility();
       this.updateVisibleMarkers();
+      this.atualizarVisibilidadeBotaoPostesConcessionaria();
 
     });
 
@@ -7853,12 +8031,14 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
       
       this.boundsChangeTimeout = setTimeout(() => {
         this.updateVisibleMarkers();
+        this.atualizarVisibilidadeBotaoPostesConcessionaria();
       }, 200); // Pequeno delay para evitar muitas atualizações
     });
 
     if (this.map) {
       this.currentZoom = this.map.getZoom() || 0;
       this.updateVisibleMarkers();
+      this.atualizarVisibilidadeBotaoPostesConcessionaria();
 
       if ((this.destinoPoligonos?.length ?? 0) > 0) {
         this.updatePoligonos();
@@ -8307,6 +8487,40 @@ private updateVisibleMarkers() {
   console.log(` Postes Aprovados visíveis: ${visiblePostesAPCount}`);
   } else {
     this.markerPostesAP.forEach((marker) => {
+      if (marker) {
+        marker.setVisible(false);
+        marker.setMap(null);
+      }
+    });
+  }
+
+  const postesConcessionariaVisible = this.layerVisibilityService.isVisible('postes_concessionaria');
+  if (postesConcessionariaVisible) {
+  let visiblePostesConcessionariaCount = 0;
+  this.markerPostesConcessionaria.forEach((marker) => {
+    if (marker) {
+      const position = marker.getPosition();
+      if (
+        position &&
+        bounds.contains(position) &&
+        this.currentZoom >= this.ZOOM_LEVEL_POSTES_CONCESSIONARIA &&
+        visiblePostesConcessionariaCount < this.MAX_VISIBLE_MARKERS_POSTES_CONCESSIONARIA
+      ) {
+        if (this.map) {
+          marker.setMap(this.map);
+        }
+        marker.setVisible(true);
+        visiblePostesConcessionariaCount++;
+      } else {
+        marker.setVisible(false);
+        marker.setMap(null);
+      }
+    }
+  });
+
+  console.log(` Postes Concessionária visíveis: ${visiblePostesConcessionariaCount}`);
+  } else {
+    this.markerPostesConcessionaria.forEach((marker) => {
       if (marker) {
         marker.setVisible(false);
         marker.setMap(null);
