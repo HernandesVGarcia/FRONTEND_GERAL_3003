@@ -83,6 +83,7 @@ import { ExcluiCaixaService, ExcluiCaixaRequest, ExcluiCaixaResponse } from '../
 import { ExcluiDioService, ExcluiDioRequest, ExcluiDioResponse } from '../servico/exclui-dio.service';
 import { SegmentoService } from '../servico/segmento.service';
 import { PostesConcessionariaService } from '../servico/postes-concessionaria.service';
+import { AprovarPostesModalComponent } from '../aprovar-postes-modal/aprovar-postes-modal.component';
 import { ExcluiEstacaoService, ExcluiEstacaoRequest, ExcluiEstacaoResponse } from '../servico/exclui-estacao.service';
 import { ExcluiCondominioService, ExcluiCondominioRequest, ExcluiCondominioResponse } from '../servico/exclui-condominio.service';
 import { ExcluiPoligonoService, ExcluiPoligonoRequest, ExcluiPoligonoResponse } from '../servico/exclui-poligono.service';
@@ -91,7 +92,7 @@ import { Subject, Subscription, takeUntil } from 'rxjs';
 import { take } from 'rxjs/operators';
 
 import { MatDialog } from '@angular/material/dialog';
-import { NgbModal, NgbModalModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, NgbModalModule, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { PopInfoModalComponent } from '../pop-info-modal/pop-info-modal.component';
 import { PopInfoAtivacaoModalComponent } from '../pop-info-ativacao-modal/pop-info-ativacao-modal.component';
 import { UpdateClienteAtivacaoResponse } from '../servico/update-cliente-ativacao.service';
@@ -365,6 +366,14 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
   destinoPostesConcessionaria: PosteConcessionaria[] = [];
   carregandoPostesConcessionaria = false;
   postesConcessionariaBotaoVisivel = false;
+  modoAprovarPostesAtivo = false;
+  private selecaoPostesInicio: google.maps.LatLng | null = null;
+  private selecaoPostesArrastando = false;
+  private retanguloSelecaoPostes: google.maps.Rectangle | null = null;
+  private listenersAprovarPostes: google.maps.MapsEventListener[] = [];
+  private listenerEscAprovarPostes: ((ev: KeyboardEvent) => void) | null = null;
+  private aprovarPostesOverlay: google.maps.OverlayView | null = null;
+  private aprovarPostesModalRef: NgbModalRef | null = null;
   markerSegmentos: google.maps.Marker[] = [];
   markerCondominios: google.maps.Marker[] = [];
   markerPopsCli: google.maps.Marker[] = [];
@@ -831,6 +840,9 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
         break;
       case 'cria-sobra':
         this.criarSobra();
+        break;
+      case 'aprovar-postes':
+        this.iniciarModoAprovarPostes();
         break;
       // 🆕 Ações para CABOS
       case 'visualizar-cabo':
@@ -5692,6 +5704,308 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
       return '#6c757d';
     }
     return '#6c757d';
+  }
+
+  iniciarModoAprovarPostes(): void {
+    if (!this.map) {
+      alert('Mapa ainda não está pronto. Aguarde o carregamento.');
+      return;
+    }
+
+    if (!this.destinoPostesConcessionaria?.length) {
+      alert('Carregue os postes da concessionária antes de aprovar (botão Postes Concessionária).');
+      this.hideContextMenu();
+      return;
+    }
+
+    if (this.modoAprovarPostesAtivo) {
+      this.cancelarModoAprovarPostes();
+    }
+
+    this.desativarModoEdicaoPoligonoCompleto();
+    this.cancelarDesenhoPoligono();
+    this.cancelarDesenhoCabo();
+    if (this.modoMedicao) {
+      this.desativarModoMedicao();
+    }
+
+    this.hideContextMenu();
+    this.modoAprovarPostesAtivo = true;
+    this.selecaoPostesInicio = null;
+    this.selecaoPostesArrastando = false;
+
+    this.map.setOptions({
+      draggable: false,
+      draggableCursor: 'crosshair',
+      draggingCursor: 'crosshair',
+      disableDoubleClickZoom: true,
+      clickableIcons: false,
+    });
+
+    this.ensureAprovarPostesOverlay();
+    this.registrarListenersModoAprovarPostes();
+  }
+
+  private ensureAprovarPostesOverlay(): void {
+    if (this.aprovarPostesOverlay || !this.map) {
+      return;
+    }
+
+    const overlay = new google.maps.OverlayView();
+    overlay.onAdd = () => {};
+    overlay.draw = () => {};
+    overlay.onRemove = () => {};
+    overlay.setMap(this.map);
+    this.aprovarPostesOverlay = overlay;
+  }
+
+  private latLngFromDomMouseEvent(event: MouseEvent): google.maps.LatLng | null {
+    if (!this.map) {
+      return null;
+    }
+
+    const projection = this.aprovarPostesOverlay?.getProjection();
+    if (!projection) {
+      return null;
+    }
+
+    const rect = this.map.getDiv().getBoundingClientRect();
+    const point = new google.maps.Point(
+      event.clientX - rect.left,
+      event.clientY - rect.top,
+    );
+    return projection.fromContainerPixelToLatLng(point);
+  }
+
+  private registrarListenersModoAprovarPostes(): void {
+    if (!this.map) {
+      return;
+    }
+
+    this.teardownListenersAprovarPostes();
+
+    const mapDiv = this.map.getDiv();
+
+    this.listenersAprovarPostes.push(
+      google.maps.event.addDomListener(mapDiv, 'mousedown', (event: MouseEvent) => {
+        if (!this.modoAprovarPostesAtivo || event.button !== 0) {
+          return;
+        }
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        const latLng = this.latLngFromDomMouseEvent(event);
+        if (!latLng) {
+          return;
+        }
+
+        this.selecaoPostesInicio = latLng;
+        this.selecaoPostesArrastando = true;
+        this.atualizarRetanguloSelecaoPostes(latLng, latLng);
+      }),
+    );
+
+    this.listenersAprovarPostes.push(
+      this.map.addListener('mousemove', (event: google.maps.MapMouseEvent) => {
+        if (!this.modoAprovarPostesAtivo || !this.selecaoPostesArrastando || !this.selecaoPostesInicio || !event.latLng) {
+          return;
+        }
+
+        this.atualizarRetanguloSelecaoPostes(this.selecaoPostesInicio, event.latLng);
+      }),
+    );
+
+    this.listenersAprovarPostes.push(
+      google.maps.event.addDomListener(document, 'mouseup', (event: MouseEvent) => {
+        if (!this.modoAprovarPostesAtivo || !this.selecaoPostesArrastando || event.button !== 0) {
+          return;
+        }
+
+        const fim = this.latLngFromDomMouseEvent(event);
+        if (!fim || !this.selecaoPostesInicio) {
+          this.resetarArrasteSelecaoPostes();
+          return;
+        }
+
+        this.finalizarSelecaoAprovarPostes(this.selecaoPostesInicio, fim);
+      }),
+    );
+
+    this.listenersAprovarPostes.push(
+      this.map.addListener('rightclick', () => {
+        if (this.modoAprovarPostesAtivo) {
+          this.cancelarModoAprovarPostes();
+        }
+      }),
+    );
+
+    this.listenerEscAprovarPostes = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && this.modoAprovarPostesAtivo) {
+        this.cancelarModoAprovarPostes();
+      }
+    };
+    document.addEventListener('keydown', this.listenerEscAprovarPostes);
+  }
+
+  private atualizarRetanguloSelecaoPostes(
+    inicio: google.maps.LatLng,
+    fim: google.maps.LatLng,
+  ): void {
+    if (!this.map) {
+      return;
+    }
+
+    const bounds = new google.maps.LatLngBounds(inicio, fim);
+
+    if (!this.retanguloSelecaoPostes) {
+      this.retanguloSelecaoPostes = new google.maps.Rectangle({
+        map: this.map,
+        bounds,
+        strokeColor: '#15803d',
+        strokeWeight: 2,
+        strokeOpacity: 0.9,
+        fillColor: '#15803d',
+        fillOpacity: 0.15,
+        clickable: false,
+        zIndex: 1000,
+      });
+      return;
+    }
+
+    this.retanguloSelecaoPostes.setBounds(bounds);
+  }
+
+  private postesDentroDoRetangulo(
+    inicio: google.maps.LatLng,
+    fim: google.maps.LatLng,
+  ): PosteConcessionaria[] {
+    const latMin = Math.min(inicio.lat(), fim.lat());
+    const latMax = Math.max(inicio.lat(), fim.lat());
+    const lngMin = Math.min(inicio.lng(), fim.lng());
+    const lngMax = Math.max(inicio.lng(), fim.lng());
+
+    return (this.destinoPostesConcessionaria ?? []).filter((poste) => {
+      const lat = Number(poste.LATITUDE);
+      const lng = Number(poste.LONGITUDE);
+      if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+        return false;
+      }
+      return lat >= latMin && lat <= latMax && lng >= lngMin && lng <= lngMax;
+    });
+  }
+
+  private finalizarSelecaoAprovarPostes(
+    inicio: google.maps.LatLng,
+    fim: google.maps.LatLng,
+  ): void {
+    const selecionados = this.postesDentroDoRetangulo(inicio, fim);
+    this.resetarArrasteSelecaoPostes();
+
+    if (!selecionados.length) {
+      alert('Nenhum poste da concessionária na área selecionada.');
+      return;
+    }
+
+    this.atualizarModalAprovarPostes(selecionados);
+  }
+
+  private resetarArrasteSelecaoPostes(): void {
+    this.selecaoPostesInicio = null;
+    this.selecaoPostesArrastando = false;
+
+    if (this.retanguloSelecaoPostes) {
+      this.retanguloSelecaoPostes.setMap(null);
+      this.retanguloSelecaoPostes = null;
+    }
+  }
+
+  private reforcarCursorSelecaoPostes(): void {
+    if (!this.map || !this.modoAprovarPostesAtivo) {
+      return;
+    }
+
+    this.map.setOptions({
+      draggable: false,
+      draggableCursor: 'crosshair',
+      draggingCursor: 'crosshair',
+      disableDoubleClickZoom: true,
+      clickableIcons: false,
+    });
+  }
+
+  private atualizarModalAprovarPostes(novosPostes: PosteConcessionaria[]): void {
+    if (this.aprovarPostesModalRef) {
+      const modal = this.aprovarPostesModalRef.componentInstance as AprovarPostesModalComponent;
+      modal.adicionarPostes(novosPostes);
+      this.reforcarCursorSelecaoPostes();
+      return;
+    }
+
+    const modalRef = this.ngbModal.open(AprovarPostesModalComponent, {
+      size: 'lg',
+      backdrop: false,
+      keyboard: false,
+      windowClass: 'aprovar-postes-modal-window',
+    });
+
+    this.aprovarPostesModalRef = modalRef;
+    modalRef.componentInstance.postes = [...novosPostes];
+    this.reforcarCursorSelecaoPostes();
+
+    modalRef.result.then(
+      (result) => {
+        this.aprovarPostesModalRef = null;
+        this.cancelarModoAprovarPostes(false);
+        if (result) {
+          console.log('Postes aprovados:', result);
+        }
+      },
+      () => {
+        this.aprovarPostesModalRef = null;
+        this.cancelarModoAprovarPostes(false);
+      },
+    );
+  }
+
+  private cancelarModoAprovarPostes(fecharModal = true): void {
+    this.modoAprovarPostesAtivo = false;
+    this.resetarArrasteSelecaoPostes();
+
+    if (this.aprovarPostesOverlay) {
+      this.aprovarPostesOverlay.setMap(null);
+      this.aprovarPostesOverlay = null;
+    }
+
+    this.teardownListenersAprovarPostes();
+
+    if (fecharModal && this.aprovarPostesModalRef) {
+      const modalRef = this.aprovarPostesModalRef;
+      this.aprovarPostesModalRef = null;
+      modalRef.dismiss('cancelar-selecao');
+    }
+
+    if (this.map) {
+      this.map.setOptions({
+        draggable: true,
+        draggableCursor: null,
+        draggingCursor: null,
+        disableDoubleClickZoom: false,
+        clickableIcons: true,
+      });
+    }
+  }
+
+  private teardownListenersAprovarPostes(): void {
+    this.listenersAprovarPostes.forEach((listener) => {
+      google.maps.event.removeListener(listener);
+    });
+    this.listenersAprovarPostes = [];
+
+    if (this.listenerEscAprovarPostes) {
+      document.removeEventListener('keydown', this.listenerEscAprovarPostes);
+      this.listenerEscAprovarPostes = null;
+    }
   }
 
 
@@ -13345,6 +13659,7 @@ openGoJSModal() {
    * 🧹 Limpa listeners quando o componente é destruído
    */
   ngOnDestroy(): void {
+    this.cancelarModoAprovarPostes();
     this.limparMarcadorLogradouroPesquisa();
     this.limparMarcadorViabilidadePesquisa();
     this.limparCirculosViabilidadeCaixas();

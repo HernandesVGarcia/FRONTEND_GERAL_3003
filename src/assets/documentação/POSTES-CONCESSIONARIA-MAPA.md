@@ -76,7 +76,8 @@ Valores enviados como **string**, obtidos do `map.getBounds()` no momento do cli
 | `src/app/servico/postes-concessionaria.service.ts` | HTTP POST, token, timeout 15s, retry 2 |
 | `src/app/modelo/poste-concessionaria.ts` | Interfaces `PosteConcessionaria`, `PostesConcessionariaExtent` |
 | `src/app/map-search-buttons/map-search-buttons.component.*` | Botão toolbar (ícone `signpost`) |
-| `src/app/google-maps/google-maps.component.ts` | Carga, marcadores, cores, limite de extent |
+| `src/app/aprovar-postes-modal/*` | Modal lista pós-seleção retangular |
+| `src/app/google-maps/google-maps.component.ts` | Carga, marcadores, cores, limite de extent, modo aprovar |
 | `src/app/google-maps/google-maps.component.html` | Binding do botão com o mapa |
 | `src/app/servico/map-layer-visibility.service.ts` | Camada `postes_concessionaria` no combobox |
 
@@ -202,7 +203,44 @@ Em `google-maps.component.ts`:
 
 ---
 
-## 11. Deploy
+## 11. Aprovar postes (seleção retangular)
+
+Fluxo para selecionar postes Concessionária já carregados e revisar em formulário (sem gravação em API nesta fase).
+
+### Pré-requisito
+
+Carregar postes com o botão **Postes Concessionária** (`destinoPostesConcessionaria` não vazio).
+
+### Passos
+
+1. Botão direito no mapa (menu tipo `map`) → **Aprovar postes**.
+2. Cursor muda para crosshair; arraste com botão esquerdo desenhando retângulo semi-transparente verde.
+3. Ao soltar o mouse → modal **Aprovar postes** com tabela (`NUM_SEQ_GEO`, `SITUACAO`, `LATITUDE`, `LONGITUDE`).
+4. Com o modal aberto, **continue arrastando retângulos no mapa** para incluir mais postes (lista acumula sem duplicar `NUM_SEQ_GEO`). O cursor permanece crosshair sobre o mapa.
+5. **Confirmar** encerra seleção e fecha o modal (sem persistir). **Cancelar** descarta tudo.
+
+O modal usa `backdrop: false` e `windowClass: 'aprovar-postes-modal-window'` (regras em `styles.css`) para o mapa continuar interativo — ver `TUTORIAL-MODAL-MAPA-INTERATIVO.md`.
+
+### Cancelar seleção
+
+- **ESC** ou botão direito no mapa encerra o modo e fecha o modal.
+- Modos conflitantes (desenho cabo/polígono, régua, edição polígono) são encerrados ao iniciar.
+
+### Arquivos
+
+| Ficheiro | Função |
+|----------|--------|
+| `map-context-menu.component.html` | Item de menu `aprovar-postes` |
+| `google-maps.component.ts` | `iniciarModoAprovarPostes()`, retângulo, filtro, modal |
+| `aprovar-postes-modal/*` | Lista e botões Confirmar/Cancelar |
+
+### Fase 2 (pendente)
+
+- API POST para gravar postes aprovados na base.
+
+---
+
+## 12. Deploy
 
 - Front: build Angular / Amplify (`amplify.yml`).
 - API: copiar rota `postes_coordenadas` para `C:\optic-map-api\...` e reiniciar PM2 (portas 3001/3002).

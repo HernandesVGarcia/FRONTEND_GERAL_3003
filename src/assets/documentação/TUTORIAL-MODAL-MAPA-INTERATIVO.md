@@ -104,6 +104,7 @@ Assim, apenas o `.modal-content` interno do seu componente (dentro de `app-meu-m
 | Cliente Search | `cliente-search-modal-window` | map-search-buttons.component.ts |
 | Estação Search | `estacao-search-modal-window` | map-search-buttons.component.ts |
 | Cadastro Cliente | `cadastro-cliente-modal-window` | google-maps.component.ts |
+| Aprovar postes | `aprovar-postes-modal-window` | google-maps.component.ts |
 
 ---
 

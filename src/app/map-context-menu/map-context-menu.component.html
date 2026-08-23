@@ -219,6 +219,11 @@
       <!-- Separador -->
       <div class="menu-divider"></div>
 
+      <div class="menu-item" (click)="onAction('aprovar-postes')">
+        <mat-icon>signpost</mat-icon>
+        <span>Aprovar postes</span>
+      </div>
+
       <!-- Cria Marcação (com submenu) -->
       <div class="menu-item has-submenu" 
            (click)="toggleSubmenu('marcacao')"

@@ -1,0 +1,215 @@
+@import 'bootstrap/dist/css/bootstrap.min.css';
+
+:host ::ng-deep .modal-backdrop {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 5000 !important;
+}
+
+:host ::ng-deep .modal {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  z-index: 5001 !important;
+  display: block !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  pointer-events: none !important;
+}
+
+:host ::ng-deep .modal-dialog {
+  position: relative !important;
+  margin: 1.75rem auto !important;
+  width: 680px !important;
+  max-width: 680px !important;
+  z-index: 5002 !important;
+  pointer-events: none !important;
+  transition: none;
+}
+
+:host ::ng-deep .modal-content {
+  pointer-events: auto !important;
+}
+
+.modal-dialog {
+  max-width: 680px !important;
+  width: 680px !important;
+}
+
+.modal-content {
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2) !important;
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+  width: 100% !important;
+  max-width: 100% !important;
+  background-color: #ffffff;
+}
+
+.modal-header {
+  border-radius: 8px 8px 0 0;
+  padding: 12px 20px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+  background-color: #629ef8 !important;
+  color: #fff !important;
+  cursor: move;
+  user-select: none;
+}
+
+.modal-title {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.icon {
+  font-size: 10px;
+}
+
+.modal-body {
+  padding: 15px 20px;
+  background: linear-gradient(to bottom, #f8f9fa, #ffffff);
+  overflow-y: auto;
+  flex: 0 1 auto;
+  max-height: calc(90vh - 120px);
+}
+
+.modal-body .row {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.modal-body .row > [class*='col-'] {
+  padding-left: 12px;
+  padding-right: 12px;
+}
+
+.modal-footer {
+  border-top: 2px solid #dee2e6;
+  padding: 12px 20px;
+  border-radius: 0 0 8px 8px;
+  background-color: #ffffff !important;
+}
+
+.card {
+  border-radius: 6px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+.card-header {
+  border-radius: 6px 6px 0 0 !important;
+  font-weight: 400;
+  padding: 10px 15px;
+}
+
+.card.border-primary .card-header {
+  background-color: #f1f4f7 !important;
+  color: #333 !important;
+}
+
+.card.border-primary .card-body {
+  background-color: #eff3f5;
+}
+
+.badge {
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  font-weight: 600;
+}
+
+.postes-table-wrap {
+  max-height: 360px;
+  overflow: auto;
+  background-color: #ffffff;
+}
+
+.postes-table-wrap .table {
+  margin-bottom: 0;
+  font-size: 0.875rem;
+  background-color: #ffffff;
+}
+
+.postes-table-wrap th,
+.postes-table-wrap td {
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.btn-sm {
+  padding: 8px 16px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 6px;
+  transition: all 0.2s;
+  min-width: 100px;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #345677 0%, #345677 100%);
+  border: none;
+  box-shadow: 0 2px 4px rgba(13, 110, 253, 0.3);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #345677 0%, #345677 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(13, 110, 253, 0.4);
+}
+
+.btn-secondary {
+  background: linear-gradient(135deg, #6c757d 0%, #5c636a 100%);
+  border: none;
+  box-shadow: 0 2px 4px rgba(108, 117, 125, 0.3);
+}
+
+.btn-secondary:hover {
+  background: linear-gradient(135deg, #5c636a 0%, #495057 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(108, 117, 125, 0.4);
+}
+
+.modal-body::-webkit-scrollbar,
+.postes-table-wrap::-webkit-scrollbar {
+  width: 8px;
+}
+
+.modal-body::-webkit-scrollbar-track,
+.postes-table-wrap::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.modal-body::-webkit-scrollbar-thumb,
+.postes-table-wrap::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.modal-body::-webkit-scrollbar-thumb:hover,
+.postes-table-wrap::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+@media (max-width: 768px) {
+  .modal-dialog {
+    max-width: 95% !important;
+    width: 95% !important;
+  }
+
+  .modal-body {
+    padding: 15px;
+  }
+}

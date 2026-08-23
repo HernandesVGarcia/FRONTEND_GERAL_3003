@@ -1,0 +1,62 @@
+<div class="modal-dialog modal-lg" #modalDialog>
+  <div class="modal-content shadow-lg">
+    <div class="modal-header bg-primary text-white" (mousedown)="onMouseDown($event)" style="cursor: move;">
+      <h5 class="modal-title fw-bold">
+        <span class="icon me-2"></span>
+        Aprovar postes
+      </h5>
+      <button type="button" class="btn-close btn-close-white" (click)="fechar()" aria-label="Close"></button>
+    </div>
+
+    <div class="modal-body">
+      <div class="row g-3">
+        <div class="col-12">
+          <div class="card border-primary">
+            <div class="card-header bg-light">
+              <h6 class="mb-0 fw-semibold">
+                Postes selecionados
+                <span class="badge bg-info ms-2">{{ postes.length }}</span>
+              </h6>
+              <small class="text-muted d-block mt-1">
+                Arraste no mapa para incluir mais postes na seleção.
+              </small>
+            </div>
+            <div class="card-body p-0">
+              <div class="table-responsive postes-table-wrap">
+                <table class="table table-sm table-striped table-bordered mb-0">
+                  <thead class="table-light">
+                    <tr>
+                      <th>NUM_SEQ_GEO</th>
+                      <th>SITUACAO</th>
+                      <th>LATITUDE</th>
+                      <th>LONGITUDE</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let poste of postes; trackBy: trackByNumSeqGeo">
+                      <td>{{ poste.NUM_SEQ_GEO }}</td>
+                      <td>{{ poste.SITUACAO || '—' }}</td>
+                      <td>{{ poste.LATITUDE }}</td>
+                      <td>{{ poste.LONGITUDE }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer bg-light">
+      <button type="button" class="btn btn-secondary btn-sm me-2" (click)="fechar()">
+        <span class="me-1">✕</span>
+        Cancelar
+      </button>
+      <button type="button" class="btn btn-primary btn-sm" (click)="confirmar()">
+        <span class="me-1">✓</span>
+        Confirmar
+      </button>
+    </div>
+  </div>
+</div>

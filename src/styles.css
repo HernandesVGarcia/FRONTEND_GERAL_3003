@@ -248,6 +248,14 @@ body.modal-open .modal-content {
 .viabilidade-modal-window app-viabilidade-modal .modal-content * { pointer-events: auto !important; }
 .viabilidade-modal-window app-viabilidade-modal .modal-content { user-select: none !important; }
 
+/* Aprovar postes (seleção retangular + mapa interativo) */
+.aprovar-postes-modal-window,
+.aprovar-postes-modal-window * { pointer-events: none !important; }
+.aprovar-postes-modal-window .modal-dialog > .modal-content { pointer-events: none !important; }
+.aprovar-postes-modal-window app-aprovar-postes-modal .modal-content,
+.aprovar-postes-modal-window app-aprovar-postes-modal .modal-content * { pointer-events: auto !important; }
+.aprovar-postes-modal-window app-aprovar-postes-modal .modal-content { user-select: none !important; }
+
 /* Ativação Cliente (caixas por raio desde o marcador cliente) */
 .pop-info-ativacao-modal-window,
 .pop-info-ativacao-modal-window * { pointer-events: none !important; }
