@@ -6,18 +6,25 @@ import {
   ViewChild,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { NgbActiveModal, NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { PosteConcessionaria } from '../modelo/poste-concessionaria';
+
+export interface AprovarPostesConfirmacao {
+  postes: PosteConcessionaria[];
+  obs: string;
+}
 
 @Component({
   selector: 'app-aprovar-postes-modal',
   standalone: true,
-  imports: [CommonModule, NgbModule],
+  imports: [CommonModule, FormsModule, NgbModule],
   templateUrl: './aprovar-postes-modal.component.html',
   styleUrls: ['./aprovar-postes-modal.component.css'],
 })
 export class AprovarPostesModalComponent {
   @Input() postes: PosteConcessionaria[] = [];
+  observacao = '';
 
   private isDragging = false;
   private currentX = 0;
@@ -32,7 +39,12 @@ export class AprovarPostesModalComponent {
   constructor(public activeModal: NgbActiveModal) {}
 
   confirmar(): void {
-    this.activeModal.close(this.postes);
+    const obs = this.observacao.trim() !== '' ? this.observacao.trim() : '-';
+    const resultado: AprovarPostesConfirmacao = {
+      postes: this.postes,
+      obs,
+    };
+    this.activeModal.close(resultado);
   }
 
   fechar(): void {

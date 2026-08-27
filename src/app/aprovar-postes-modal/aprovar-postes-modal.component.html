@@ -1,4 +1,4 @@
-<div class="modal-dialog modal-lg" #modalDialog>
+<div class="modal-dialog" #modalDialog>
   <div class="modal-content shadow-lg">
     <div class="modal-header bg-primary text-white" (mousedown)="onMouseDown($event)" style="cursor: move;">
       <h5 class="modal-title fw-bold">
@@ -44,6 +44,19 @@
               </div>
             </div>
           </div>
+        </div>
+
+        <div class="col-12">
+          <label for="observacaoPostes" class="form-label fw-semibold mb-1">Observação</label>
+          <textarea
+            id="observacaoPostes"
+            class="form-control form-control-sm"
+            rows="2"
+            maxlength="500"
+            placeholder="Observação aplicada a todos os postes selecionados"
+            [(ngModel)]="observacao"
+          ></textarea>
+          <small class="text-muted">Se vazio, será salvo como "-".</small>
         </div>
       </div>
     </div>

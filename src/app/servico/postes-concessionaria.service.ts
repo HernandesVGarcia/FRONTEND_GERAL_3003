@@ -30,12 +30,18 @@ export class PostesConcessionariaService {
       return throwError(() => new Error('Token de autenticação não encontrado'));
     }
 
+    const postesTabela = this.authService.getPostesTabela();
+    if (!postesTabela) {
+      return throwError(() => new Error('Tabela de postes da concessionária não configurada para esta cidade'));
+    }
+
     const headers = new HttpHeaders()
       .set('Content-Type', 'application/json')
       .set('Authorization', `Bearer ${token}`);
 
     const url = `${this.baseUrl}/postes_coordenadas`;
     const body = {
+      POSTES: postesTabela,
       LAT_MAX: String(extent.LAT_MAX),
       LAT_MIN: String(extent.LAT_MIN),
       LONG_MAX: String(extent.LONG_MAX),

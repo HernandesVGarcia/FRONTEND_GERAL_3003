@@ -83,7 +83,8 @@ import { ExcluiCaixaService, ExcluiCaixaRequest, ExcluiCaixaResponse } from '../
 import { ExcluiDioService, ExcluiDioRequest, ExcluiDioResponse } from '../servico/exclui-dio.service';
 import { SegmentoService } from '../servico/segmento.service';
 import { PostesConcessionariaService } from '../servico/postes-concessionaria.service';
-import { AprovarPostesModalComponent } from '../aprovar-postes-modal/aprovar-postes-modal.component';
+import { InsertPosteAprovadoService } from '../servico/insert-poste-aprovado.service';
+import { AprovarPostesModalComponent, AprovarPostesConfirmacao } from '../aprovar-postes-modal/aprovar-postes-modal.component';
 import { ExcluiEstacaoService, ExcluiEstacaoRequest, ExcluiEstacaoResponse } from '../servico/exclui-estacao.service';
 import { ExcluiCondominioService, ExcluiCondominioRequest, ExcluiCondominioResponse } from '../servico/exclui-condominio.service';
 import { ExcluiPoligonoService, ExcluiPoligonoRequest, ExcluiPoligonoResponse } from '../servico/exclui-poligono.service';
@@ -606,6 +607,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
     private updateClienteService: UpdateClienteService,
     private segmentoService: SegmentoService,
     private postesConcessionariaService: PostesConcessionariaService,
+    private insertPosteAprovadoService: InsertPosteAprovadoService,
   ) {}
 
   // ============================================================================
@@ -5569,6 +5571,10 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
   }
 
   private extentPermiteCarregarPostesConcessionaria(): boolean {
+    if (!this.authService.hasPostesConcessionaria()) {
+      return false;
+    }
+
     const bounds = this.map?.getBounds();
     if (!bounds) {
       return false;
@@ -5594,6 +5600,11 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
   onCarregarPostesConcessionaria(): void {
     if (!this.map) {
       alert('Mapa ainda não está pronto. Aguarde o carregamento.');
+      return;
+    }
+
+    if (!this.authService.hasPostesConcessionaria()) {
+      alert('Esta cidade não possui tabela de postes da concessionária configurada.');
       return;
     }
 
@@ -5943,7 +5954,7 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
     }
 
     const modalRef = this.ngbModal.open(AprovarPostesModalComponent, {
-      size: 'lg',
+      size: 'sm',
       backdrop: false,
       keyboard: false,
       windowClass: 'aprovar-postes-modal-window',
@@ -5954,11 +5965,11 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
     this.reforcarCursorSelecaoPostes();
 
     modalRef.result.then(
-      (result) => {
+      (result: AprovarPostesConfirmacao) => {
         this.aprovarPostesModalRef = null;
         this.cancelarModoAprovarPostes(false);
-        if (result) {
-          console.log('Postes aprovados:', result);
+        if (result?.postes?.length) {
+          void this.processarConfirmacaoAprovarPostes(result);
         }
       },
       () => {
@@ -5966,6 +5977,102 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
         this.cancelarModoAprovarPostes(false);
       },
     );
+  }
+
+  private normalizarNumSeqGeo(valor: string | number): string {
+    return String(valor).trim();
+  }
+
+  private async processarConfirmacaoAprovarPostes(resultado: AprovarPostesConfirmacao): Promise<void> {
+    const idCity = this.authService.getIdCity();
+    const origem = this.authService.getPostesTabela();
+
+    if (!idCity) {
+      alert('Cidade não selecionada. Selecione a cidade e tente novamente.');
+      return;
+    }
+
+    if (!origem?.trim()) {
+      alert('Tabela de origem (POSTES) não configurada. Selecione a cidade novamente.');
+      return;
+    }
+
+    const aprovadosExistentes = new Set(
+      (this.destinoPostesAP ?? []).map((poste) => this.normalizarNumSeqGeo(poste.NUM_SEQ_GEO)),
+    );
+
+    const postesParaInserir = resultado.postes.filter((poste) => {
+      const chave = this.normalizarNumSeqGeo(poste.NUM_SEQ_GEO);
+      return !aprovadosExistentes.has(chave);
+    });
+
+    const duplicados = resultado.postes.length - postesParaInserir.length;
+
+    if (postesParaInserir.length === 0) {
+      alert(
+        duplicados > 0
+          ? 'Todos os postes selecionados já estão aprovados para este provedor.'
+          : 'Nenhum poste selecionado para aprovar.',
+      );
+      return;
+    }
+
+    let sucesso = 0;
+    let falhas = 0;
+    const erros: string[] = [];
+
+    for (const poste of postesParaInserir) {
+      try {
+        const response = await this.insertPosteAprovadoService.inserirPosteAsync({
+          NUM_SEQ_GEO: poste.NUM_SEQ_GEO,
+          obs: resultado.obs,
+          LATI: Number(poste.LATITUDE),
+          LONG: Number(poste.LONGITUDE),
+        });
+
+        if (response.success) {
+          sucesso += 1;
+          this.destinoPostesAP = [
+            ...(this.destinoPostesAP ?? []),
+            {
+              NUM_SEQ_GEO: Number(poste.NUM_SEQ_GEO),
+              obs: resultado.obs,
+              LATI: Number(poste.LATITUDE),
+              LONGI: Number(poste.LONGITUDE),
+            },
+          ];
+        } else {
+          falhas += 1;
+          erros.push(`Poste ${poste.NUM_SEQ_GEO}: ${response.message || response.error || 'Erro desconhecido'}`);
+        }
+      } catch (error: unknown) {
+        falhas += 1;
+        const msg = error instanceof Error ? error.message : String(error);
+        erros.push(`Poste ${poste.NUM_SEQ_GEO}: ${msg}`);
+      }
+    }
+
+    if (sucesso > 0) {
+      this.updateMarkersPostesAP();
+      this.updateVisibleMarkers();
+      this.cdr.detectChanges();
+    }
+
+    let mensagem = `${sucesso} poste(s) aprovado(s) com sucesso.`;
+    if (duplicados > 0) {
+      mensagem += `\n${duplicados} poste(s) ignorado(s) por já estarem aprovados.`;
+    }
+    if (falhas > 0) {
+      mensagem += `\n${falhas} poste(s) com falha.`;
+      if (erros.length > 0) {
+        mensagem += `\n\n${erros.slice(0, 5).join('\n')}`;
+        if (erros.length > 5) {
+          mensagem += `\n... e mais ${erros.length - 5} erro(s).`;
+        }
+      }
+    }
+
+    alert(mensagem);
   }
 
   private cancelarModoAprovarPostes(fecharModal = true): void {
@@ -7309,7 +7416,7 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
               color: 'blue',
               fontSize: '12px'
             } as google.maps.MarkerLabel,
-            icon: this.obterIconeCaixaPorTipo('ceo', (location as Caixa).INSTALADA),
+            icon: this.obterIconeCaixaPorTipo('ceo', (location as Caixa).INSTALADA),            
             visible: this.currentZoom >= this.ZOOM_LEVEL_CAIXAS
             ///visible:false
           };
@@ -7482,6 +7589,7 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
       title: dio.sigla || 'Sem nome',
       draggable: false,
       opacity: 10,
+      
       label: {
         text: 'DIO: ' + (dio.sigla || 'S/N'),
         color: 'blue',

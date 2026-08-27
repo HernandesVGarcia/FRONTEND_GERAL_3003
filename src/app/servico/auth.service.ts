@@ -11,6 +11,7 @@ export class AuthService {
   private readonly TOKEN_KEY = 'auth_token';
   private readonly POLO_KEY = 'auth_polo';
   private readonly IDCIDADE_KEY = 'auth_idcidade';
+  private readonly POSTES_TABELA_KEY = 'auth_postes_tabela';
   private readonly IDMETACX = 'auth_idmetacx'
   private readonly USUARIO = 'auth_user'
   private readonly IDUSER = 'auth_iduser'
@@ -149,6 +150,27 @@ export class AuthService {
     return idCityStr ? Number(idCityStr) : null;
   }
 
+  setPostesTabela(valor: string | null): void {
+    if (valor && valor.trim() !== '') {
+      localStorage.setItem(this.POSTES_TABELA_KEY, valor.trim());
+    } else {
+      localStorage.removeItem(this.POSTES_TABELA_KEY);
+    }
+  }
+
+  getPostesTabela(): string | null {
+    return localStorage.getItem(this.POSTES_TABELA_KEY);
+  }
+
+  hasPostesConcessionaria(): boolean {
+    const tabela = this.getPostesTabela();
+    if (!tabela) {
+      return false;
+    }
+    const normalizado = tabela.trim().toLowerCase();
+    return normalizado !== '' && normalizado !== 'indefinido';
+  }
+
   setPolo(polo: string | null): void {
     if (polo) {
       localStorage.setItem(this.POLO_KEY, polo);
@@ -266,6 +288,7 @@ export class AuthService {
     localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.POLO_KEY); // Também limpar o polo quando sair
     localStorage.removeItem(this.IDCIDADE_KEY); // Também limpar o ID da cidade quando sair //***************inserido */
+    localStorage.removeItem(this.POSTES_TABELA_KEY);
     this.idCidadeSubject.next(null); //***************inserido */
   }
   

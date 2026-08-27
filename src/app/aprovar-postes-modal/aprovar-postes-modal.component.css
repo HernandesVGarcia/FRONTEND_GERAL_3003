@@ -25,8 +25,8 @@
 :host ::ng-deep .modal-dialog {
   position: relative !important;
   margin: 1.75rem auto !important;
-  width: 680px !important;
-  max-width: 680px !important;
+  width: 340px !important;
+  max-width: 340px !important;
   z-index: 5002 !important;
   pointer-events: none !important;
   transition: none;
@@ -37,8 +37,8 @@
 }
 
 .modal-dialog {
-  max-width: 680px !important;
-  width: 680px !important;
+  max-width: 340px !important;
+  width: 340px !important;
 }
 
 .modal-content {
@@ -47,7 +47,7 @@
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2) !important;
   display: flex;
   flex-direction: column;
-  max-height: 90vh;
+  max-height: 45vh;
   width: 100% !important;
   max-width: 100% !important;
   background-color: #ffffff;
@@ -55,7 +55,7 @@
 
 .modal-header {
   border-radius: 8px 8px 0 0;
-  padding: 12px 20px;
+  padding: 8px 12px;
   border-bottom: 2px solid rgba(255, 255, 255, 0.2);
   background-color: #629ef8 !important;
   color: #fff !important;
@@ -75,11 +75,11 @@
 }
 
 .modal-body {
-  padding: 15px 20px;
+  padding: 10px 12px;
   background: linear-gradient(to bottom, #f8f9fa, #ffffff);
   overflow-y: auto;
   flex: 0 1 auto;
-  max-height: calc(90vh - 120px);
+  max-height: calc(45vh - 100px);
 }
 
 .modal-body .row {
@@ -94,7 +94,7 @@
 
 .modal-footer {
   border-top: 2px solid #dee2e6;
-  padding: 12px 20px;
+  padding: 8px 12px;
   border-radius: 0 0 8px 8px;
   background-color: #ffffff !important;
 }
@@ -131,7 +131,7 @@
 }
 
 .postes-table-wrap {
-  max-height: 360px;
+  max-height: 180px;
   overflow: auto;
   background-color: #ffffff;
 }

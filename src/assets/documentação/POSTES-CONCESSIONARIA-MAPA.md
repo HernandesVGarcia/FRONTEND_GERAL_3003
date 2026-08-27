@@ -19,23 +19,47 @@ Diferença em relação a **Postes Aprovados**:
 
 ```mermaid
 flowchart TD
-  user[Usuario aproxima mapa] --> btn[Botao Postes Concessionaria visivel]
-  btn --> click[Clique no botao signpost]
+  cidades["POST /cidades retorna POSTES"]
+  select["Usuario seleciona cidade"]
+  auth["AuthService auth_postes_tabela"]
+  user[Usuario aproxima mapa] --> btn{POSTES definido e extent ok?}
+  cidades --> select --> auth --> btn
+  btn -->|Nao| oculto[Botao oculto]
+  btn -->|Sim| click[Clique no botao signpost]
   click --> guard{Extent dentro do limite?}
   guard -->|Nao| alert[Alerta area ampla]
-  guard -->|Sim| api[POST postes_coordenadas]
-  api --> destino[destinoPostesConcessionaria]
+  guard -->|Sim| api[POST postes_coordenadas com POSTES]
+  api --> lookup["Backend consulta tstmeta.{POSTES}"]
+  lookup --> destino[destinoPostesConcessionaria]
   destino --> markers[updateMarkersPostesConcessionaria]
   markers --> layer{Camada postes_concessionaria ativa?}
   layer -->|Sim| mapa[Marcadores no Google Maps]
-  layer -->|Nao| oculto[Marcadores nao desenhados]
+  layer -->|Nao| ocultoMarcadores[Marcadores nao desenhados]
 ```
 
 ---
 
 ## 3. API
 
-### Endpoint
+### Configuração por cidade — `POST /cidades`
+
+Ao listar cidades do polo, a API retorna também o campo **`POSTES`**: nome da tabela em `tstmeta` de onde ler postes da concessionária.
+
+```json
+{
+  "response": [
+    { "IDCIDADES": 210, "CIDADE": "Maringá_LATLONG", "POSTES": "postes_parana" },
+    { "IDCIDADES": 646, "CIDADE": "MARINGA_PR_DEMONSTRA", "POSTES": "Indefinido" }
+  ]
+}
+```
+
+- `POSTES = "postes_parana"` (exemplo): cidade com fonte de postes configurada
+- `POSTES = "Indefinido"`: botão **Postes Concessionária** fica oculto no front (a API, se chamada, assume `postes_parana` como fallback)
+
+No front, ao confirmar cidade no modal, `AuthService.setPostesTabela()` persiste o valor em `localStorage` (`auth_postes_tabela`). Esse valor é reenviado em `/postes_coordenadas`.
+
+### Endpoint de carga — `POST /postes_coordenadas`
 
 `POST {apiUrlAbsolute}/postes_coordenadas`
 
@@ -45,6 +69,7 @@ flowchart TD
 
 ```json
 {
+  "POSTES": "postes_parana",
   "LAT_MAX": "-23.32",
   "LAT_MIN": "-23.35",
   "LONG_MAX": "-52.10",
@@ -52,9 +77,16 @@ flowchart TD
 }
 ```
 
-Valores enviados como **string**, obtidos do `map.getBounds()` no momento do clique.
+Valores de extent enviados como **string**, obtidos do `map.getBounds()` no momento do clique. `POSTES` vem do `localStorage` (`auth_postes_tabela`), gravado na seleção de cidade via `/cidades`. Se `POSTES = Indefinido`, o backend usa **`postes_parana`** como fallback.
 
-**Resposta:** array de postes ou `{ response: [...] }`.
+**Resposta:** `{ response: [...] }`.
+
+**Erros relevantes:**
+
+| HTTP | Situação |
+|------|----------|
+| 400 | Falta `POSTES` ou extent inválido |
+| 422 | Nome de tabela inválido |
 
 ### Campos utilizados no front
 
@@ -150,7 +182,9 @@ Funções em `google-maps.component.ts`:
 
 ## 8. Backend / base de dados (referência)
 
-Tabela de destino no MySQL: **`postes_parana`** (schema `tstmeta` no servidor).
+A tabela de postes **não é fixa**: configurada por cidade em `/cidades` (`POSTES`), persistida no front e enviada em `/postes_coordenadas`. A rota valida o nome (`^[a-zA-Z0-9_]+$`) e consulta `tstmeta.{POSTES}` (`Indefinido` → fallback `postes_parana`).
+
+Exemplo de tabela configurada: **`tstmeta.postes_parana`**.
 
 Origem histórica de carga em massa: **`postes_wkt`** (coluna texto `wkt` no formato `POINT(lng lat)`).
 
@@ -205,7 +239,9 @@ Em `google-maps.component.ts`:
 
 ## 11. Aprovar postes (seleção retangular)
 
-Fluxo para selecionar postes Concessionária já carregados e revisar em formulário (sem gravação em API nesta fase).
+Documentação completa de implantação: **[`APROVAR-POSTES-MAPA.md`](APROVAR-POSTES-MAPA.md)**.
+
+Fluxo para selecionar postes Concessionária já carregados, revisar em modal e persistir via API.
 
 ### Pré-requisito
 
@@ -217,7 +253,8 @@ Carregar postes com o botão **Postes Concessionária** (`destinoPostesConcessio
 2. Cursor muda para crosshair; arraste com botão esquerdo desenhando retângulo semi-transparente verde.
 3. Ao soltar o mouse → modal **Aprovar postes** com tabela (`NUM_SEQ_GEO`, `SITUACAO`, `LATITUDE`, `LONGITUDE`).
 4. Com o modal aberto, **continue arrastando retângulos no mapa** para incluir mais postes (lista acumula sem duplicar `NUM_SEQ_GEO`). O cursor permanece crosshair sobre o mapa.
-5. **Confirmar** encerra seleção e fecha o modal (sem persistir). **Cancelar** descarta tudo.
+5. Preencher **Observação** (aplicada a todos os postes; se vazio, salva `"-"`).
+6. **Confirmar** persiste cada poste via `POST /insert_poste_aprovado` (um request por poste). **Cancelar** descarta tudo.
 
 O modal usa `backdrop: false` e `windowClass: 'aprovar-postes-modal-window'` (regras em `styles.css`) para o mapa continuar interativo — ver `TUTORIAL-MODAL-MAPA-INTERATIVO.md`.
 
@@ -232,16 +269,45 @@ O modal usa `backdrop: false` e `windowClass: 'aprovar-postes-modal-window'` (re
 |----------|--------|
 | `map-context-menu.component.html` | Item de menu `aprovar-postes` |
 | `google-maps.component.ts` | `iniciarModoAprovarPostes()`, retângulo, filtro, modal |
-| `aprovar-postes-modal/*` | Lista e botões Confirmar/Cancelar |
+| `aprovar-postes-modal/*` | Lista, observação e botões Confirmar/Cancelar |
+| `servico/insert-poste-aprovado.service.ts` | HTTP POST `/insert_poste_aprovado` (loop no Confirmar) |
 
-### Fase 2 (pendente)
+### Fase 2 — API insert poste aprovado (integrado no front)
 
-- API POST para gravar postes aprovados na base.
+**Endpoint:** `POST /insert_poste_aprovado`  
+**Arquivo:** `src/assets/rotas_api/insert_poste_aprovado.js` (copiar para servidor PM2)  
+**Tabela:** `tstmeta.postes_aprovados_parana`  
+**Um poste por chamada** — o front faz loop N requests ao Confirmar.
+
+**Headers:** `Authorization: Bearer {token}`, `Content-Type: application/json`
+
+**Body (montado pelo serviço Angular):**
+
+```json
+{
+  "id_city": 210,
+  "NUM_SEQ_GEO": 472253061,
+  "obs": "TESTE",
+  "LATI": -23.42648,
+  "LONG": -51.94863,
+  "ORIGEM": "postes_parana"
+}
+```
+
+- **`id_city`**: `AuthService.getIdCity()`
+- **`ORIGEM`**: `AuthService.getPostesTabela()` (`POSTES` de `/cidades`, salvo em `auth_postes_tabela`)
+- **`obs`**: campo do modal (único para todos os postes da seleção)
+
+**Duplicata:** antes de inserir, o front compara `NUM_SEQ_GEO` com `destinoPostesAP` (postes já aprovados do provedor) e ignora repetidos.
+
+**Resposta 200:** `{ "success": true, "insertId": 198, "NUM_SEQ_GEO": 774787707, "message": "..." }`
+
+Após sucesso, os postes são adicionados a `destinoPostesAP` e os marcadores de **Postes Aprovados** são atualizados no mapa.
 
 ---
 
 ## 12. Deploy
 
 - Front: build Angular / Amplify (`amplify.yml`).
-- API: copiar rota `postes_coordenadas` para `C:\optic-map-api\...` e reiniciar PM2 (portas 3001/3002).
-- Garantir tabela `postes_parana` populada e índice em `NUM_SEQ_GEO` para consultas por extent.
+- API: copiar `routes/cidades.js`, `routes/postes_coordenadas.js`, `app.js` para `C:\optic-map-api\...` e reiniciar PM2 (portas 3001/3002).
+- Garantir coluna `POSTES` em `TST.cidades` e tabelas referenciadas (ex.: `tstmeta.postes_parana`) populadas com índice em `NUM_SEQ_GEO` para consultas por extent.
