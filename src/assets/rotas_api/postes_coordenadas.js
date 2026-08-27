@@ -5,6 +5,7 @@ const login = require('../middleware/login');
 
 const TABELA_POSTES_REGEX = /^[a-zA-Z0-9_]+$/;
 const TABELA_POSTES_PADRAO = 'postes_parana';
+const LIMITE_POSTES_EXTENT = 2500;
 
 function parseNumero(raw, fieldName) {
     const value = Number.parseFloat(String(raw));
@@ -130,6 +131,7 @@ router.post('/', login, async (req, res) => {
             FROM tstmeta.${tabelaPostes}
             WHERE LATITUDE BETWEEN ? AND ?
               AND LONGITUDE BETWEEN ? AND ?
+            LIMIT ${LIMITE_POSTES_EXTENT}
         `;
 
         const resultado = await executarQuery(conn, queryPostes, [

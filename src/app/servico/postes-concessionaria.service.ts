@@ -14,8 +14,8 @@ import {
 })
 export class PostesConcessionariaService {
   private readonly baseUrl = environment.apiUrlAbsolute;
-  private readonly TIMEOUT = 15000;
-  private readonly RETRY_ATTEMPTS = 2;
+  private readonly TIMEOUT = 60000;
+  private readonly RETRY_ATTEMPTS = 1;
 
   constructor(
     private http: HttpClient,
@@ -59,20 +59,35 @@ export class PostesConcessionariaService {
           }
           return res?.response ?? [];
         }),
-        catchError(this.handleError),
+        catchError((error: unknown) => this.handleError(error)),
       );
   }
 
-  private handleError(error: HttpErrorResponse): Observable<never> {
+  private handleError(error: unknown): Observable<never> {
     console.error('[PostesConcessionariaService] Erro:', error);
     let msg = 'Erro ao buscar postes da concessionária.';
-    if (error.status === 401) {
-      msg = 'Não autorizado. Faça login novamente.';
-    } else if (error.status === 0) {
-      msg = 'Não foi possível conectar ao servidor.';
-    } else if (error.status === 400) {
-      msg = 'Parâmetros de extent inválidos.';
+
+    const errorName = error && typeof error === 'object' && 'name' in error
+      ? String((error as { name: string }).name)
+      : '';
+    const errorMessage = error && typeof error === 'object' && 'message' in error
+      ? String((error as { message: string }).message)
+      : '';
+
+    if (errorName === 'TimeoutError' || errorMessage.includes('Timeout')) {
+      msg = 'A consulta demorou demais. Aproxime mais o mapa (área menor) e tente novamente.';
+    } else if (error instanceof HttpErrorResponse) {
+      if (error.status === 401) {
+        msg = 'Não autorizado. Faça login novamente.';
+      } else if (error.status === 0) {
+        msg = 'Não foi possível conectar ao servidor.';
+      } else if (error.status === 400) {
+        msg = 'Parâmetros de extent inválidos.';
+      } else if (error.status === 504 || error.status === 408) {
+        msg = 'O servidor demorou para responder. Aproxime mais o mapa e tente novamente.';
+      }
     }
+
     return throwError(() => new Error(msg));
   }
 }
