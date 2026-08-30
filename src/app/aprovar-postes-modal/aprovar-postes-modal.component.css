@@ -25,8 +25,8 @@
 :host ::ng-deep .modal-dialog {
   position: relative !important;
   margin: 1.75rem auto !important;
-  width: 340px !important;
-  max-width: 340px !important;
+  width: 540px !important;
+  max-width: 540px !important;
   z-index: 5002 !important;
   pointer-events: none !important;
   transition: none;
@@ -37,8 +37,8 @@
 }
 
 .modal-dialog {
-  max-width: 340px !important;
-  width: 340px !important;
+  max-width: 540px !important;
+  width: 540px !important;
 }
 
 .modal-content {

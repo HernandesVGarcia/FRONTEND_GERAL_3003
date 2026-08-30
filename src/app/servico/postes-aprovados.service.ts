@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
 import { PosteAprovado } from '../modelo/poste-aprovado';
 import { Observable, throwError } from 'rxjs';
-import { retry, timeout, catchError } from 'rxjs/operators';
+import { retry, timeout, catchError, map } from 'rxjs/operators';
 import { AuthService } from '../servico/auth.service';
 import { environment } from '../environments/environment';
 
@@ -36,9 +36,15 @@ export class PostesAprovadosService {
 
     const url = `${this.baseUrl}${route}`;
 
-    return this.http.post<PosteAprovado[]>(url, body, { headers }).pipe(
+    return this.http.post<{ response?: PosteAprovado[] } | PosteAprovado[]>(url, body, { headers }).pipe(
       timeout(this.TIMEOUT),
       retry(this.RETRY_ATTEMPTS),
+      map((res) => {
+        if (Array.isArray(res)) {
+          return res;
+        }
+        return res?.response ?? [];
+      }),
       catchError(this.handleError),
     );
   }

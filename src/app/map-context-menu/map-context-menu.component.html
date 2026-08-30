@@ -133,6 +133,14 @@
   </div>
 </ng-container>
 
+<!-- Menu para Poste Aprovado -->
+<ng-container *ngIf="contextType === 'poste_aprovado'">
+  <div class="menu-item" (click)="onAction('excluir-poste-aprovado')">
+    <mat-icon>delete</mat-icon>
+    <span>Exclui Poste Aprovado</span>
+  </div>
+</ng-container>
+
 <!-- Menu para SOBRA -->
 <ng-container *ngIf="contextType === 'sobra'">
   <div class="menu-item" (click)="onAction('libera-sobra')">

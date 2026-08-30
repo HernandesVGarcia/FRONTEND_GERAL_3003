@@ -302,7 +302,7 @@ O modal usa `backdrop: false` e `windowClass: 'aprovar-postes-modal-window'` (re
 
 **Resposta 200:** `{ "success": true, "insertId": 198, "NUM_SEQ_GEO": 774787707, "message": "..." }`
 
-Após sucesso, os postes são adicionados a `destinoPostesAP` e os marcadores de **Postes Aprovados** são atualizados no mapa.
+Após sucesso, os postes são adicionados a `destinoPostesAP` (com `ID` do `insertId`) e os marcadores de **Postes Aprovados** são atualizados no mapa. Para excluir um poste aprovado, ver [`EXCLUI-POSTES-APROVADOS-MAPA.md`](EXCLUI-POSTES-APROVADOS-MAPA.md).
 
 ---
 

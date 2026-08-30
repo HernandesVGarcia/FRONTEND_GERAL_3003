@@ -84,6 +84,7 @@ import { ExcluiDioService, ExcluiDioRequest, ExcluiDioResponse } from '../servic
 import { SegmentoService } from '../servico/segmento.service';
 import { PostesConcessionariaService } from '../servico/postes-concessionaria.service';
 import { InsertPosteAprovadoService } from '../servico/insert-poste-aprovado.service';
+import { ExcluiPosteAprovadoService } from '../servico/exclui-poste-aprovado.service';
 import { AprovarPostesModalComponent, AprovarPostesConfirmacao } from '../aprovar-postes-modal/aprovar-postes-modal.component';
 import { ExcluiEstacaoService, ExcluiEstacaoRequest, ExcluiEstacaoResponse } from '../servico/exclui-estacao.service';
 import { ExcluiCondominioService, ExcluiCondominioRequest, ExcluiCondominioResponse } from '../servico/exclui-condominio.service';
@@ -440,7 +441,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
   // 🎯 Propriedades para context menu
   contextMenuVisible = false;
   contextMenuPosition = { x: 0, y: 0 };
-  contextMenuType: 'caixa' | 'map' | 'cabo' | 'dio' | 'cliente' | 'estacao' | 'condominio' | 'vertice' | 'poligono' | 'sobra' = 'map'; // 🆕 Tipo de contexto do menu
+  contextMenuType: 'caixa' | 'map' | 'cabo' | 'dio' | 'cliente' | 'estacao' | 'condominio' | 'vertice' | 'poligono' | 'sobra' | 'poste_aprovado' = 'map'; // 🆕 Tipo de contexto do menu
   private clickedPoligono: google.maps.Polygon | null = null;
   private clickedVertexIndex: number | null = null; // 🆕 Índice do vértice clicado (para menu vertice)
   private contextMenuListenerAdded = false; // Flag para evitar listeners duplicados
@@ -450,6 +451,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
   private clickedCTOSPData: any = null; // 🆕 Armazena dados da CTO_SP clicada
   private clickedDioData: any = null; // 🆕 Armazena dados do DIO clicado
   private clickedSobraData: Segmento | null = null;
+  private clickedPosteAprovadoData: PosteAprovado | null = null;
   private clickedCliData: any = null; // 🆕 Armazena dados do cliente clicado
   private clickedCliAtData: any = null; // 🆕 Armazena dados do cliente ativado clicado
   private clickedCliDesData: any = null; // 🆕 Armazena dados do cliente desativado clicado
@@ -608,6 +610,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
     private segmentoService: SegmentoService,
     private postesConcessionariaService: PostesConcessionariaService,
     private insertPosteAprovadoService: InsertPosteAprovadoService,
+    private excluiPosteAprovadoService: ExcluiPosteAprovadoService,
   ) {}
 
   // ============================================================================
@@ -798,6 +801,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
       this.clickedCondominioMarker = null;
       this.clickedPoligono = null;
       this.clickedSobraData = null;
+      this.clickedPosteAprovadoData = null;
       // 🆕 NOVO: Limpar coordenada do context menu quando não estiver em edição
       // Isso garante que a próxima vez que o usuário clicar com botão direito,
       // a coordenada será atualizada corretamente
@@ -957,6 +961,10 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
         break;
       case 'excluir-poligono':
         this.excluirPoligonoContextMenu();
+        break;
+
+      case 'excluir-poste-aprovado':
+        this.excluirPosteAprovado();
         break;
 
       default:
@@ -5549,13 +5557,7 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
         title: titleParts.join(' - '),
         draggable: false,
         opacity: 1,
-        icon: {
-          path: google.maps.SymbolPath.CIRCLE,
-          fillOpacity: 0,
-          strokeColor: '#666666',
-          strokeWeight: 2,
-          scale: 8,
-        },
+        icon: this.iconeMarcadorPosteAprovado(),
         visible: this.currentZoom >= this.ZOOM_LEVEL_POSTES_AP,
       };
 
@@ -5564,10 +5566,88 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
         marker.setMap(this.map);
       }
 
+      marker.addListener('rightclick', (event: google.maps.MapMouseEvent) => {
+        this.clickedPosteAprovadoData = location;
+        this.contextMenuType = 'poste_aprovado';
+
+        if (event.domEvent) {
+          const mouseEvent = event.domEvent as MouseEvent;
+          this.showContextMenu(mouseEvent.clientX, mouseEvent.clientY);
+        }
+      });
+
       this.markerPostesAP.push(marker);
     });
 
     console.log('Postes Aprovados atualizados:', this.markerPostesAP);
+  }
+
+  private iconeMarcadorPosteAprovado(): google.maps.Symbol {
+    return {
+      path: google.maps.SymbolPath.CIRCLE,
+      fillColor: '#898989',
+      fillOpacity: 0.85,
+      strokeColor: '#ffffff',
+      strokeWeight: 2,
+      scale: 8,
+    };
+  }
+
+  private excluirPosteAprovado(): void {
+    const poste = this.clickedPosteAprovadoData;
+
+    if (!poste?.ID) {
+      alert('Erro: poste aprovado sem ID. Recarregue a lista lateral e tente novamente.');
+      this.hideContextMenu();
+      return;
+    }
+
+    const idCity = this.authService.getIdCity();
+    if (!idCity) {
+      alert('Erro: ID da cidade não encontrado. Selecione uma cidade no workspace.');
+      this.hideContextMenu();
+      return;
+    }
+
+    const confirmacao = confirm(
+      `Tem certeza que deseja excluir este poste aprovado?\n\nNUM_SEQ_GEO: ${poste.NUM_SEQ_GEO}`,
+    );
+
+    if (!confirmacao) {
+      return;
+    }
+
+    this.excluiPosteAprovadoService.excluirPosteAprovado({
+      id: poste.ID,
+      id_city: idCity,
+    }).subscribe({
+      next: (response) => {
+        if (response.success) {
+          const index = (this.destinoPostesAP ?? []).findIndex((item) => item.ID === poste.ID);
+          if (index !== -1) {
+            const markerParaRemover = this.markerPostesAP[index];
+            if (markerParaRemover) {
+              markerParaRemover.setMap(null);
+            }
+            this.markerPostesAP.splice(index, 1);
+            this.destinoPostesAP = this.destinoPostesAP.filter((item) => item.ID !== poste.ID);
+          }
+
+          this.clickedPosteAprovadoData = null;
+          this.updateVisibleMarkers();
+          this.hideContextMenu();
+          this.cdr.detectChanges();
+        } else {
+          alert(response.message || response.error || 'Erro ao excluir poste aprovado');
+        }
+      },
+      error: (err: unknown) => {
+        console.error('[EXCLUI-POSTE-APROVADO] Erro:', err);
+        const errorObj = err as { message?: string };
+        alert(errorObj?.message || 'Erro ao excluir poste aprovado');
+        this.clickedPosteAprovadoData = null;
+      },
+    });
   }
 
   private extentPermiteCarregarPostesConcessionaria(): boolean {
@@ -6030,11 +6110,12 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
           LONG: Number(poste.LONGITUDE),
         });
 
-        if (response.success) {
+        if (response.success && response.insertId != null) {
           sucesso += 1;
           this.destinoPostesAP = [
             ...(this.destinoPostesAP ?? []),
             {
+              ID: Number(response.insertId),
               NUM_SEQ_GEO: Number(poste.NUM_SEQ_GEO),
               obs: resultado.obs,
               LATI: Number(poste.LATITUDE),

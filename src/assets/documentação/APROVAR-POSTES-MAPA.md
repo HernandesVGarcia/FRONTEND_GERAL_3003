@@ -13,7 +13,7 @@ A funcionalidade complementa a camada **Postes Concessionária** (carga por exte
 | Revisão | Modal com tabela + observação |
 | Persistência | Confirmar → loop `POST /insert_poste_aprovado` |
 
-Documentação relacionada: [`POSTES-CONCESSIONARIA-MAPA.md`](POSTES-CONCESSIONARIA-MAPA.md) (carga e cores da concessionária).
+Documentação relacionada: [`POSTES-CONCESSIONARIA-MAPA.md`](POSTES-CONCESSIONARIA-MAPA.md) (carga e cores da concessionária), [`EXCLUI-POSTES-APROVADOS-MAPA.md`](EXCLUI-POSTES-APROVADOS-MAPA.md) (exclusão via context menu).
 
 ---
 
@@ -210,7 +210,7 @@ Aceita alias: `LAT`/`LATI`, `LONG`/`LONGI`/`LNG`.
 1. Valida `id_city` e `getPostesTabela()`.
 2. **Duplicata (frontend):** compara `NUM_SEQ_GEO` com `destinoPostesAP` (postes já aprovados do provedor atual). Ignora repetidos e informa no resumo.
 3. Para cada poste restante: `insertPosteAprovadoService.inserirPosteAsync(...)`.
-4. Em sucesso: adiciona item a `destinoPostesAP`, chama `updateMarkersPostesAP()` e `updateVisibleMarkers()`.
+4. Em sucesso: adiciona item a `destinoPostesAP` (com `ID: insertId`), chama `updateMarkersPostesAP()` e `updateVisibleMarkers()`.
 5. Alerta final: quantidade aprovada, ignorados por duplicata, falhas (até 5 mensagens de erro).
 
 **Regra de duplicata:** mesmo `NUM_SEQ_GEO` pode existir em **provedores diferentes** (`id_city` diferente); a checagem usa apenas a lista já carregada do provedor atual.
