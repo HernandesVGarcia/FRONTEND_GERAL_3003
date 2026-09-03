@@ -4707,7 +4707,7 @@ private map?: (google.maps.Map);
  private MAX_VISIBLE_MARKERS_DIOS = 100; // Ajuste este valor conforme necessário
  private MAX_VISIBLE_MARKERS_ANOTACOES = 100; // Ajuste este valor conforme necessário
  private MAX_VISIBLE_MARKERS_POSTES_AP = 200;
- private MAX_VISIBLE_MARKERS_POSTES_CONCESSIONARIA = 1000;
+ private MAX_VISIBLE_MARKERS_POSTES_CONCESSIONARIA = 3000;
  private MAX_VISIBLE_MARKERS_SEGMENTOS = 200;
  
 // **********************************************************************************************inserido
@@ -5749,7 +5749,7 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
 
       const markerOptions: google.maps.MarkerOptions = {
         position: { lat, lng },
-        title: `Poste ${poste.NUM_SEQ_GEO} — ${poste.SITUACAO ?? ''}`,
+        title: `Poste ${poste.NUM_SEQ_GEO}${poste.ORIGEM ? ` (${poste.ORIGEM})` : ''} — ${poste.SITUACAO ?? ''}`,
         draggable: false,
         opacity: 1,
         icon: this.iconeMarcadorPosteConcessionaria(poste.SITUACAO),
@@ -6063,26 +6063,32 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
     return String(valor).trim();
   }
 
+  private chavePosteConcessionaria(poste: PosteConcessionaria): string {
+    const numSeq = this.normalizarNumSeqGeo(poste.NUM_SEQ_GEO);
+    const origem = String(poste.ORIGEM ?? '').trim();
+    return origem ? `${origem}|${numSeq}` : numSeq;
+  }
+
+  private chavePosteAprovado(poste: { NUM_SEQ_GEO: string | number; ORIGEM?: string }): string {
+    const numSeq = this.normalizarNumSeqGeo(poste.NUM_SEQ_GEO);
+    const origem = String(poste.ORIGEM ?? '').trim();
+    return origem ? `${origem}|${numSeq}` : numSeq;
+  }
+
   private async processarConfirmacaoAprovarPostes(resultado: AprovarPostesConfirmacao): Promise<void> {
     const idCity = this.authService.getIdCity();
-    const origem = this.authService.getPostesTabela();
 
     if (!idCity) {
       alert('Cidade não selecionada. Selecione a cidade e tente novamente.');
       return;
     }
 
-    if (!origem?.trim()) {
-      alert('Tabela de origem (POSTES) não configurada. Selecione a cidade novamente.');
-      return;
-    }
-
     const aprovadosExistentes = new Set(
-      (this.destinoPostesAP ?? []).map((poste) => this.normalizarNumSeqGeo(poste.NUM_SEQ_GEO)),
+      (this.destinoPostesAP ?? []).map((poste) => this.chavePosteAprovado(poste)),
     );
 
     const postesParaInserir = resultado.postes.filter((poste) => {
-      const chave = this.normalizarNumSeqGeo(poste.NUM_SEQ_GEO);
+      const chave = this.chavePosteConcessionaria(poste);
       return !aprovadosExistentes.has(chave);
     });
 
@@ -6102,12 +6108,20 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
     const erros: string[] = [];
 
     for (const poste of postesParaInserir) {
+      const origem = String(poste.ORIGEM ?? '').trim();
+      if (!origem) {
+        falhas += 1;
+        erros.push(`Poste ${poste.NUM_SEQ_GEO}: origem (tabela) não informada.`);
+        continue;
+      }
+
       try {
         const response = await this.insertPosteAprovadoService.inserirPosteAsync({
           NUM_SEQ_GEO: poste.NUM_SEQ_GEO,
           obs: resultado.obs,
           LATI: Number(poste.LATITUDE),
           LONG: Number(poste.LONGITUDE),
+          ORIGEM: origem,
         });
 
         if (response.success && response.insertId != null) {
@@ -6120,6 +6134,7 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
               obs: resultado.obs,
               LATI: Number(poste.LATITUDE),
               LONGI: Number(poste.LONGITUDE),
+              ORIGEM: origem,
             },
           ];
         } else {

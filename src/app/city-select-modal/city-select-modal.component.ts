@@ -85,7 +85,11 @@ export class CitySelectModalComponent implements OnInit {
       return;
     }
     console.log('Confirmando seleção da cidade:', cidade.CIDADE, 'ID:', cidade.IDCIDADES);
-    this.authService.setPostesTabela(cidade.POSTES ?? 'Indefinido');
+    if (cidade.POSTES_LISTA?.length) {
+      this.authService.setPostesTabelas(cidade.POSTES_LISTA);
+    } else {
+      this.authService.setPostesTabela(cidade.POSTES ?? 'Indefinido');
+    }
     this.citySelected.emit(cidade.IDCIDADES);
 
     const idUsuario = this.authService.getIdUser();

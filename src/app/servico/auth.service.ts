@@ -12,6 +12,7 @@ export class AuthService {
   private readonly POLO_KEY = 'auth_polo';
   private readonly IDCIDADE_KEY = 'auth_idcidade';
   private readonly POSTES_TABELA_KEY = 'auth_postes_tabela';
+  private readonly POSTES_TABELAS_KEY = 'auth_postes_tabelas';
   private readonly IDMETACX = 'auth_idmetacx'
   private readonly USUARIO = 'auth_user'
   private readonly IDUSER = 'auth_iduser'
@@ -150,25 +151,84 @@ export class AuthService {
     return idCityStr ? Number(idCityStr) : null;
   }
 
+  static parsePostesCsv(valor: string | null | undefined): string[] {
+    const texto = String(valor ?? '').trim();
+    if (!texto || texto.toLowerCase() === 'indefinido') {
+      return [];
+    }
+
+    const tabelas: string[] = [];
+    const visto = new Set<string>();
+
+    texto.split(',').forEach((parte) => {
+      const nome = parte.trim();
+      if (!nome || nome.toLowerCase() === 'indefinido' || visto.has(nome)) {
+        return;
+      }
+      visto.add(nome);
+      tabelas.push(nome);
+    });
+
+    return tabelas;
+  }
+
   setPostesTabela(valor: string | null): void {
+    const tabelas = AuthService.parsePostesCsv(valor);
+
     if (valor && valor.trim() !== '') {
       localStorage.setItem(this.POSTES_TABELA_KEY, valor.trim());
     } else {
       localStorage.removeItem(this.POSTES_TABELA_KEY);
     }
+
+    if (tabelas.length > 0) {
+      localStorage.setItem(this.POSTES_TABELAS_KEY, JSON.stringify(tabelas));
+    } else {
+      localStorage.removeItem(this.POSTES_TABELAS_KEY);
+    }
+  }
+
+  setPostesTabelas(tabelas: string[] | null | undefined): void {
+    const normalizadas = (tabelas ?? [])
+      .map((item) => String(item ?? '').trim())
+      .filter((item) => item && item.toLowerCase() !== 'indefinido');
+
+    const unicas = [...new Set(normalizadas)];
+
+    if (unicas.length > 0) {
+      localStorage.setItem(this.POSTES_TABELA_KEY, unicas.join(', '));
+      localStorage.setItem(this.POSTES_TABELAS_KEY, JSON.stringify(unicas));
+      return;
+    }
+
+    localStorage.removeItem(this.POSTES_TABELA_KEY);
+    localStorage.removeItem(this.POSTES_TABELAS_KEY);
   }
 
   getPostesTabela(): string | null {
     return localStorage.getItem(this.POSTES_TABELA_KEY);
   }
 
-  hasPostesConcessionaria(): boolean {
-    const tabela = this.getPostesTabela();
-    if (!tabela) {
-      return false;
+  getPostesTabelas(): string[] {
+    const json = localStorage.getItem(this.POSTES_TABELAS_KEY);
+    if (json) {
+      try {
+        const parsed = JSON.parse(json);
+        if (Array.isArray(parsed)) {
+          return parsed
+            .map((item) => String(item ?? '').trim())
+            .filter((item) => item && item.toLowerCase() !== 'indefinido');
+        }
+      } catch {
+        // fallback para CSV legado
+      }
     }
-    const normalizado = tabela.trim().toLowerCase();
-    return normalizado !== '' && normalizado !== 'indefinido';
+
+    return AuthService.parsePostesCsv(this.getPostesTabela());
+  }
+
+  hasPostesConcessionaria(): boolean {
+    return this.getPostesTabelas().length > 0;
   }
 
   setPolo(polo: string | null): void {
@@ -289,6 +349,7 @@ export class AuthService {
     localStorage.removeItem(this.POLO_KEY); // Também limpar o polo quando sair
     localStorage.removeItem(this.IDCIDADE_KEY); // Também limpar o ID da cidade quando sair //***************inserido */
     localStorage.removeItem(this.POSTES_TABELA_KEY);
+    localStorage.removeItem(this.POSTES_TABELAS_KEY);
     this.idCidadeSubject.next(null); //***************inserido */
   }
   

@@ -4,4 +4,5 @@ export interface PosteAprovado {
   obs?: string;
   LATI: number;
   LONGI: number;
+  ORIGEM?: string;
 }

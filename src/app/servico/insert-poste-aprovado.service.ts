@@ -10,6 +10,7 @@ export interface InsertPosteAprovadoPayload {
   obs: string;
   LATI: number;
   LONG: number;
+  ORIGEM: string;
 }
 
 export interface InsertPosteAprovadoRequest {
@@ -55,9 +56,9 @@ export class InsertPosteAprovadoService {
       return throwError(() => new Error('ID da cidade não encontrado'));
     }
 
-    const origem = this.authService.getPostesTabela();
-    if (!origem?.trim()) {
-      return throwError(() => new Error('Tabela de origem (POSTES) não configurada para esta cidade'));
+    const origem = payload.ORIGEM?.trim();
+    if (!origem) {
+      return throwError(() => new Error('Origem do poste (tabela) não informada'));
     }
 
     const headers = new HttpHeaders()
@@ -70,7 +71,7 @@ export class InsertPosteAprovadoService {
       obs: payload.obs?.trim() ? payload.obs.trim() : '-',
       LATI: payload.LATI,
       LONG: payload.LONG,
-      ORIGEM: origem.trim(),
+      ORIGEM: origem,
     };
 
     const url = `${this.baseUrl}/insert_poste_aprovado`;

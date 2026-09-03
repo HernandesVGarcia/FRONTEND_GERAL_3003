@@ -3,6 +3,7 @@ export interface PosteConcessionaria {
   LATITUDE: number;
   LONGITUDE: number;
   SITUACAO: string;
+  ORIGEM?: string;
 }
 
 export interface PostesConcessionariaExtent {

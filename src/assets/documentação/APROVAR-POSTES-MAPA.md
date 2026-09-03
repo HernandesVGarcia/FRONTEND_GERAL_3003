@@ -22,11 +22,11 @@ Documentação relacionada: [`POSTES-CONCESSIONARIA-MAPA.md`](POSTES-CONCESSIONA
 ```mermaid
 flowchart TD
   subgraph prep [Preparacao]
-    cidades["POST /cidades → POSTES"]
-    ls["localStorage auth_postes_tabela"]
+    cidades["POST /cidades → POSTES_LISTA"]
+    ls["localStorage auth_postes_tabelas"]
     load["Botao Postes Concessionaria"]
-    apiLoad["POST /postes_coordenadas"]
-    destino["destinoPostesConcessionaria"]
+    apiLoad["POST /postes_coordenadas POSTES_TABELAS"]
+    destino["destinoPostesConcessionaria com ORIGEM"]
     cidades --> ls
     load --> apiLoad --> destino
   end
@@ -40,7 +40,7 @@ flowchart TD
 
   subgraph save [Persistencia]
     confirm["Confirmar"]
-    dup["Filtrar duplicatas vs destinoPostesAP"]
+    dup["Filtrar duplicatas ORIGEM+NUM_SEQ_GEO vs destinoPostesAP"]
     loop["Loop insert_poste_aprovado"]
     db["tstmeta.postes_aprovados_parana"]
     mapaAP["Atualizar marcadores Postes Aprovados"]
@@ -56,9 +56,9 @@ flowchart TD
 
 ## 3. Pré-requisitos
 
-1. **Cidade selecionada** — `AuthService.getIdCity()` e `AuthService.getPostesTabela()` (campo `POSTES` de `/cidades`, salvo ao confirmar o modal de cidade).
+1. **Cidade selecionada** — `AuthService.getIdCity()` e `AuthService.getPostesTabelas()` (array `POSTES_LISTA` de `/cidades`, salvo ao confirmar o modal de cidade).
 2. **Postes carregados** — `destinoPostesConcessionaria` não vazio (botão **Postes Concessionária** na toolbar).
-3. **Cidade com POSTES configurado** — cidades com `POSTES = "Indefinido"` não exibem o botão de carga; o fluxo de aprovação depende de postes já plotados.
+3. **Cidade com POSTES configurado** — cidades com `POSTES = "Indefinido"` (ou `POSTES_LISTA` vazio) não exibem o botão de carga; o fluxo de aprovação depende de postes já plotados.
 
 ---
 
@@ -83,7 +83,7 @@ flowchart TD
 ### 4.3 Modal aberto — seleção contínua
 
 - Com o modal aberto, **novos retângulos** no mapa **acumulam** postes na lista.
-- Duplicatas por `NUM_SEQ_GEO` são ignoradas (`adicionarPostes`).
+- Duplicatas por **`(ORIGEM, NUM_SEQ_GEO)`** são ignoradas (`adicionarPostes`).
 - O mapa permanece interativo (ver seção 6).
 
 ### 4.4 Confirmar ou cancelar
@@ -102,7 +102,7 @@ flowchart TD
 
 | Elemento | Descrição |
 |----------|-----------|
-| Tabela | `NUM_SEQ_GEO`, `SITUACAO`, `LATITUDE`, `LONGITUDE` |
+| Tabela | `NUM_SEQ_GEO`, **`ORIGEM`**, `SITUACAO`, `LATITUDE`, `LONGITUDE` |
 | Badge | Quantidade de postes selecionados |
 | Observação | Textarea única para **todos** os postes (máx. 500 caracteres) |
 | Confirmar | Retorna `{ postes, obs }` — `obs` default `"-"` se vazio |
@@ -152,7 +152,7 @@ Ver também: [`TUTORIAL-MODAL-MAPA-INTERATIVO.md`](TUTORIAL-MODAL-MAPA-INTERATIV
 ### 7.1 Backend
 
 **Arquivo:** `NODE API 2025/routes/insert_poste_aprovado.js`  
-**Espelho deploy:** `src/assets/rotas_api/insert_poste_aprovado.js`  
+**Espelho deploy:** `documentação/rotas_api/insert_poste_aprovado.js`  
 **Registro:** `app.use('/insert_poste_aprovado', ...)`  
 **Tabela:** `tstmeta.postes_aprovados_parana`  
 **Auth:** middleware `login` (JWT)
@@ -178,7 +178,7 @@ Ver também: [`TUTORIAL-MODAL-MAPA-INTERATIVO.md`](TUTORIAL-MODAL-MAPA-INTERATIV
 | `NUM_SEQ_GEO` | Poste selecionado |
 | `LATI` / `LONG` | `LATITUDE` / `LONGITUDE` do poste |
 | `obs` | Campo do modal (mesmo valor para todos) |
-| **`ORIGEM`** | **`AuthService.getPostesTabela()`** — valor `POSTES` retornado por `/cidades` e salvo em `auth_postes_tabela` |
+| **`ORIGEM`** | **`poste.ORIGEM`** — tabela de origem retornada por `/postes_coordenadas` (ex.: `postes_parana`, `postes_wkt_cemig`) |
 
 Aceita alias: `LAT`/`LATI`, `LONG`/`LONGI`/`LNG`.
 
@@ -202,39 +202,54 @@ Aceita alias: `LAT`/`LATI`, `LONG`/`LONGI`/`LNG`.
 
 - `inserirPoste(payload)` — Observable
 - `inserirPosteAsync(payload)` — Promise (usado no loop)
-- Monta body completo com `id_city` e `ORIGEM` do `AuthService`
+- Monta body com `id_city` e `ORIGEM` **por poste** (campo do poste selecionado)
 - Timeout 10s, retry 2
 
 ### 8.2 `processarConfirmacaoAprovarPostes` (`google-maps.component.ts`)
 
-1. Valida `id_city` e `getPostesTabela()`.
-2. **Duplicata (frontend):** compara `NUM_SEQ_GEO` com `destinoPostesAP` (postes já aprovados do provedor atual). Ignora repetidos e informa no resumo.
+1. Valida `id_city`.
+2. **Duplicata (frontend):** compara **`(ORIGEM, NUM_SEQ_GEO)`** com `destinoPostesAP` (postes já aprovados do provedor atual). Ignora repetidos e informa no resumo.
 3. Para cada poste restante: `insertPosteAprovadoService.inserirPosteAsync(...)`.
 4. Em sucesso: adiciona item a `destinoPostesAP` (com `ID: insertId`), chama `updateMarkersPostesAP()` e `updateVisibleMarkers()`.
 5. Alerta final: quantidade aprovada, ignorados por duplicata, falhas (até 5 mensagens de erro).
 
-**Regra de duplicata:** mesmo `NUM_SEQ_GEO` pode existir em **provedores diferentes** (`id_city` diferente); a checagem usa apenas a lista já carregada do provedor atual.
+**Regra de duplicata:** o mesmo `NUM_SEQ_GEO` pode existir em **tabelas diferentes** (`ORIGEM` diferente) ou em **provedores diferentes** (`id_city` diferente). A checagem usa a chave composta **`ORIGEM|NUM_SEQ_GEO`** na lista já carregada do provedor atual.
 
 ---
 
-## 9. Campo POSTES (`/cidades` → localStorage → ORIGEM)
+## 9. Campo POSTES — multi-concessionária
 
 ```json
 {
   "response": [
-    { "IDCIDADES": 210, "CIDADE": "Maringá_LATLONG", "POSTES": "postes_parana" },
-    { "IDCIDADES": 646, "CIDADE": "MARINGA_PR_DEMONSTRA", "POSTES": "Indefinido" }
+    {
+      "IDCIDADES": 210,
+      "CIDADE": "Maringá_LATLONG",
+      "POSTES": "postes_parana, postes_wkt_cemig",
+      "POSTES_LISTA": ["postes_parana", "postes_wkt_cemig"]
+    },
+    {
+      "IDCIDADES": 646,
+      "CIDADE": "MARINGA_PR_DEMONSTRA",
+      "POSTES": "Indefinido",
+      "POSTES_LISTA": []
+    }
   ]
 }
 ```
 
 | Momento | O que acontece |
 |---------|------------------|
-| Login → modal cidade | `city-select-modal` chama `setPostesTabela(cidade.POSTES)` |
-| Carga concessionária | `POST /postes_coordenadas` envia `POSTES` do localStorage |
-| Aprovar postes | `ORIGEM` no insert = mesmo valor de `auth_postes_tabela` |
+| Login → modal cidade | `city-select-modal` chama `setPostesTabelas(cidade.POSTES_LISTA)` |
+| Carga concessionária | `POST /postes_coordenadas` envia `POSTES_TABELAS` (array) e `POSTES` (CSV legado) |
+| Resposta carga | Cada poste traz `ORIGEM` = nome da tabela consultada |
+| Aprovar postes | `ORIGEM` no insert = **`poste.ORIGEM`** (não o CSV da cidade) |
 
-**Chave localStorage:** `auth_postes_tabela`  
+**Chaves localStorage:**
+
+- `auth_postes_tabelas` — JSON array (preferencial)
+- `auth_postes_tabela` — CSV legado (`"postes_parana, postes_wkt_cemig"`)
+
 **Limpeza:** `AuthService.clearToken()` remove junto com `auth_idcidade`.
 
 ---
@@ -249,22 +264,23 @@ Aceita alias: `LAT`/`LATI`, `LONG`/`LONGI`/`LNG`.
 | `google-maps.component.ts` | Modo seleção, retângulo, modal, loop API, duplicata |
 | `aprovar-postes-modal/*` | UI modal, obs, confirmar/cancelar |
 | `servico/insert-poste-aprovado.service.ts` | HTTP POST insert |
-| `servico/auth.service.ts` | `setPostesTabela`, `getPostesTabela`, `hasPostesConcessionaria` |
-| `city-select-modal.component.ts` | Persiste POSTES ao selecionar cidade |
-| `servico/postes-concessionaria.service.ts` | Envia `POSTES` em `/postes_coordenadas` |
-| `modelo/Cidades.ts` | Campo `POSTES` |
+| `servico/auth.service.ts` | `setPostesTabelas`, `getPostesTabelas`, `hasPostesConcessionaria` |
+| `city-select-modal.component.ts` | Persiste `POSTES_LISTA` ao selecionar cidade |
+| `servico/postes-concessionaria.service.ts` | Envia `POSTES_TABELAS` em `/postes_coordenadas` |
+| `modelo/Cidades.ts` | Campos `POSTES` e `POSTES_LISTA` |
+| `modelo/poste-concessionaria.ts` | Campo `ORIGEM` |
 | `styles.css` | Regras `aprovar-postes-modal-window` |
 
 ### API Node
 
 | Arquivo | Função |
 |---------|--------|
-| `routes/cidades.js` | Retorna campo `POSTES` |
-| `routes/postes_coordenadas.js` | Carga por extent + tabela dinâmica |
+| `routes/cidades.js` | Retorna `POSTES` (CSV) e `POSTES_LISTA` (array) |
+| `routes/postes_coordenadas.js` | Carga por extent — N tabelas em paralelo, `ORIGEM` por poste, limite 5000/tabela |
 | `routes/insert_poste_aprovado.js` | INSERT poste aprovado |
 | `app.js` | Registro das rotas |
 
-### Espelhos deploy (`src/assets/rotas_api/`)
+### Espelhos deploy (`documentação/rotas_api/`)
 
 - `cidades.js`
 - `postes_coordenadas.js`
@@ -289,15 +305,16 @@ Aceita alias: `LAT`/`LATI`, `LONG`/`LONGI`/`LNG`.
 
 ## 12. Verificação manual
 
-1. Selecionar cidade com `POSTES = postes_parana` (verificar `localStorage.auth_postes_tabela`).
-2. Carregar postes concessionária na área desejada.
+1. Selecionar cidade com postes configurados (ex.: `POSTES = "postes_parana, postes_wkt_cemig"`) — verificar `localStorage.auth_postes_tabelas`.
+2. Carregar postes concessionária na área desejada — postes devem ter `ORIGEM` distinto por tabela.
 3. Botão direito → **Aprovar postes** → cursor crosshair.
-4. Arrastar retângulo sobre postes → modal abre com lista.
-5. Arrastar outro retângulo com modal aberto → lista acumula sem duplicar `NUM_SEQ_GEO`.
+4. Arrastar retângulo sobre postes → modal abre com lista (coluna **ORIGEM**).
+5. Arrastar outro retângulo com modal aberto → lista acumula sem duplicar **`(ORIGEM, NUM_SEQ_GEO)`**.
 6. Preencher observação → **Confirmar** → alerta com sucesso.
 7. Camada **Postes Aprovados** → novos marcadores aparecem (ou recarregar lista lateral).
-8. Tentar aprovar o mesmo `NUM_SEQ_GEO` de novo → ignorado como duplicata.
-9. **ESC** durante seleção → cancela e fecha modal.
+8. Tentar aprovar o mesmo **`(ORIGEM, NUM_SEQ_GEO)`** de novo → ignorado como duplicata.
+9. Mesmo `NUM_SEQ_GEO` com **`ORIGEM` diferente** → permitido (multi-concessionária).
+10. **ESC** durante seleção → cancela e fecha modal.
 
 ---
 
@@ -328,7 +345,7 @@ Build Angular / Amplify (`amplify.yml`).
 
 ## 14. Limitações conhecidas
 
-- Sessões antigas sem reselecionar cidade podem não ter `auth_postes_tabela` — usuário deve escolher a cidade novamente.
+- Sessões antigas sem reselecionar cidade podem não ter `auth_postes_tabelas` — usuário deve escolher a cidade novamente.
 - Duplicata checada apenas no front (lista `destinoPostesAP`); a API executa INSERT direto.
 - Cidades com `POSTES = Indefinido` não mostram botão de carga; aprovação só faz sentido após postes carregados de outra forma.
 - Loop sequencial (N requests); sem barra de progresso visual (apenas alerta ao final).

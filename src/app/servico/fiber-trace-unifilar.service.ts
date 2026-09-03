@@ -114,7 +114,7 @@ export class FiberTraceUnifilarService {
         ).toPromise();
         
         const sigla = siglaResponse?.data?.[0]?.SIGLA || `DIO_${idmeta}`;
-        this.Objeto_Atual = `${sigla}_F${fiber + 1}`; // +1 porque a fibra vem 0-based B1C1_F1
+        this.Objeto_Atual = `${sigla}_F${fiber}`; // fibra já vem 1-based do visualiza-dio (F1 → B1C1_F1)
         this.Objeto_Anterior = this.Objeto_Atual;
         
         // 🆕 CORREÇÃO: Adicionar nó do primeiro objeto

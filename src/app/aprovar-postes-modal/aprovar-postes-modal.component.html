@@ -27,14 +27,16 @@
                   <thead class="table-light">
                     <tr>
                       <th>NUM_SEQ_GEO</th>
+                      <th>ORIGEM</th>
                       <th>SITUACAO</th>
                       <th>LATITUDE</th>
                       <th>LONGITUDE</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr *ngFor="let poste of postes; trackBy: trackByNumSeqGeo">
+                    <tr *ngFor="let poste of postes; trackBy: trackByPoste">
                       <td>{{ poste.NUM_SEQ_GEO }}</td>
+                      <td>{{ poste.ORIGEM || '—' }}</td>
                       <td>{{ poste.SITUACAO || '—' }}</td>
                       <td>{{ poste.LATITUDE }}</td>
                       <td>{{ poste.LONGITUDE }}</td>

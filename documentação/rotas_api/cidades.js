@@ -3,6 +3,43 @@ const router = express.Router();
 const mysql = require('../mysql').pool;
 const login = require('../middleware/login');
 
+function isPostesIndefinido(valor) {
+    const texto = String(valor ?? '').trim();
+    return texto === '' || texto.toLowerCase() === 'indefinido';
+}
+
+function parsePostesLista(raw) {
+    const texto = String(raw ?? '').trim();
+    if (isPostesIndefinido(texto)) {
+        return [];
+    }
+
+    const tabelas = [];
+    const visto = new Set();
+
+    texto.split(',').forEach((parte) => {
+        const nome = parte.trim();
+        if (!nome || isPostesIndefinido(nome) || visto.has(nome)) {
+            return;
+        }
+        visto.add(nome);
+        tabelas.push(nome);
+    });
+
+    return tabelas;
+}
+
+function enriquecerCidadePostes(cidade) {
+    const postesRaw = cidade.POSTES;
+    const postesLista = parsePostesLista(postesRaw);
+
+    return {
+        ...cidade,
+        POSTES: isPostesIndefinido(postesRaw) ? 'Indefinido' : String(postesRaw).trim(),
+        POSTES_LISTA: postesLista,
+    };
+}
+
 //******************consulta cidades *************/
 router.post('/', login, (req, res, next) => {
     mysql.getConnection((error, conn) => {
@@ -41,7 +78,8 @@ router.post('/', login, (req, res, next) => {
                     });
                 }
 
-                return res.status(200).send({ response: resultado });
+                const response = resultado.map(enriquecerCidadePostes);
+                return res.status(200).send({ response });
             });
         } catch (error) {
             conn.release();

@@ -99,7 +99,7 @@ O `gojs-demo` trata `splitterContextMenu` juntando `portId` ao payload quando ex
 
 ## 7. API `POST /analisa_conexao_nivel`
 
-**Ficheiro de referência:** `src/assets/rotas_api/analisa_conexao_nivel.js`
+**Ficheiro de referência:** `documentação/rotas_api/analisa_conexao_nivel.js`
 
 - **Body:** `{ regist, tabela, idmeta }` (opcionais `metragem`, `atenuacao`, `nivels` no arranque).
 - **Resposta:** `success`, `nivels`, `atenuacao`, `metragem`, `motivo`, `passos`, etc.
@@ -157,7 +157,7 @@ flowchart LR
 | `src/app/servico/splitter.service.ts` | `getSplitterAttenuation` (fallback) |
 | `src/app/Stencil/cabo-port-power-meter-direct.ts` | Clique direto em porta de cabo |
 | `src/app/Stencil/splitter-port-power-meter-direct.ts` | Clique em porta de splitter (entrada/saídas) |
-| `src/assets/rotas_api/analisa_conexao_nivel.js` | Lógica servidor / `atenuacaoComPerdaPorMetragem` |
+| `documentação/rotas_api/analisa_conexao_nivel.js` | Lógica servidor / `atenuacaoComPerdaPorMetragem` |
 | `src/assets/VB6/power_meter` | Referência legado VB |
 
 ---

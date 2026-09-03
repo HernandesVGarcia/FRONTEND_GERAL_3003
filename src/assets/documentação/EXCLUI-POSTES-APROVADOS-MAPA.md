@@ -124,7 +124,7 @@ Se o usuário tentar excluir um poste **sem `ID`** (sessão antiga ou falha no i
 ### 6.1 Backend
 
 **Arquivo:** `NODE API 2025/routes/exclui-poste-aprovado.js`  
-**Espelho deploy:** `src/assets/rotas_api/exclui-poste-aprovado.js`  
+**Espelho deploy:** `documentação/rotas_api/exclui-poste-aprovado.js`  
 **Registro:** `app.use('/exclui-poste-aprovado', rotaExclui_poste_aprovado)`  
 **Tabela:** `tstmeta.postes_aprovados_parana`  
 **Auth:** middleware `login` (JWT)  
@@ -276,7 +276,7 @@ Postes concessionária usam `scale: 4` e cores por `SITUACAO` — postes aprovad
 | `routes/exclui-poste-aprovado.js` | DELETE por `ID` + `id_city` |
 | `app.js` | `app.use('/exclui-poste-aprovado', ...)` |
 
-### Espelhos deploy (`src/assets/rotas_api/`)
+### Espelhos deploy (`documentação/rotas_api/`)
 
 - `exclui-poste-aprovado.js`
 

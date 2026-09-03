@@ -56,21 +56,30 @@ export class AprovarPostesModalComponent {
       return;
     }
 
-    const existentes = new Set(this.postes.map((poste) => poste.NUM_SEQ_GEO));
+    const existentes = new Set(
+      this.postes.map((poste) => this.chavePoste(poste)),
+    );
     const mesclados = [...this.postes];
 
     novos.forEach((poste) => {
-      if (!existentes.has(poste.NUM_SEQ_GEO)) {
+      const chave = this.chavePoste(poste);
+      if (!existentes.has(chave)) {
         mesclados.push(poste);
-        existentes.add(poste.NUM_SEQ_GEO);
+        existentes.add(chave);
       }
     });
 
     this.postes = mesclados;
   }
 
-  trackByNumSeqGeo(_index: number, poste: PosteConcessionaria): string | number {
-    return poste.NUM_SEQ_GEO;
+  private chavePoste(poste: PosteConcessionaria): string {
+    const origem = String(poste.ORIGEM ?? '').trim();
+    const numSeq = String(poste.NUM_SEQ_GEO).trim();
+    return origem ? `${origem}|${numSeq}` : numSeq;
+  }
+
+  trackByPoste(_index: number, poste: PosteConcessionaria): string {
+    return this.chavePoste(poste);
   }
 
   onMouseDown(event: MouseEvent): void {
