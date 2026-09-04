@@ -15,6 +15,12 @@ export interface AprovarPostesConfirmacao {
   obs: string;
 }
 
+function chavePosteConcessionaria(poste: PosteConcessionaria): string {
+  const origem = String(poste.ORIGEM ?? '').trim();
+  const numSeq = String(poste.NUM_SEQ_GEO).trim();
+  return origem ? `${origem}|${numSeq}` : numSeq;
+}
+
 @Component({
   selector: 'app-aprovar-postes-modal',
   standalone: true,
@@ -57,12 +63,12 @@ export class AprovarPostesModalComponent {
     }
 
     const existentes = new Set(
-      this.postes.map((poste) => this.chavePoste(poste)),
+      this.postes.map((poste) => chavePosteConcessionaria(poste)),
     );
     const mesclados = [...this.postes];
 
     novos.forEach((poste) => {
-      const chave = this.chavePoste(poste);
+      const chave = chavePosteConcessionaria(poste);
       if (!existentes.has(chave)) {
         mesclados.push(poste);
         existentes.add(chave);
@@ -72,15 +78,8 @@ export class AprovarPostesModalComponent {
     this.postes = mesclados;
   }
 
-  private chavePoste(poste: PosteConcessionaria): string {
-    const origem = String(poste.ORIGEM ?? '').trim();
-    const numSeq = String(poste.NUM_SEQ_GEO).trim();
-    return origem ? `${origem}|${numSeq}` : numSeq;
-  }
-
-  trackByPoste(_index: number, poste: PosteConcessionaria): string {
-    return this.chavePoste(poste);
-  }
+  trackByPoste = (_index: number, poste: PosteConcessionaria): string =>
+    chavePosteConcessionaria(poste);
 
   onMouseDown(event: MouseEvent): void {
     if (event.target instanceof HTMLElement) {
