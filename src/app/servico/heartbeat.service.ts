@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Router } from '@angular/router';
 import { environment } from '../environments/environment';
 import { AuthService } from './auth.service';
 
@@ -13,7 +14,8 @@ export class HeartbeatService {
 
   constructor(
     private http: HttpClient,
-    private authService: AuthService
+    private authService: AuthService,
+    private router: Router
   ) {}
 
   startHeartbeat(): void {
@@ -60,10 +62,12 @@ export class HeartbeatService {
       error: (error) => {
         console.error('❌ Erro no heartbeat:', error);
         
-        // Se token inválido, parar heartbeat
+        // Se token inválido, encerrar sessão e limpar storage
         if (error.status === 401) {
-          console.log('Token inválido, parando heartbeat');
+          console.log('Token inválido, encerrando sessão');
+          this.authService.clearToken();
           this.stopHeartbeat();
+          void this.router.navigate(['/login']);
         }
       }
     });

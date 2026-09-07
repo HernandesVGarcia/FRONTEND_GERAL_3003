@@ -23,7 +23,6 @@ export class CaixaService {
 
   private readonly TIMEOUT = 10000; // 10 segundos
   private readonly RETRY_ATTEMPTS = 2;
-  //private readonly TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZF91c3VhcmlvIjoxMiwiZW1haWwiOiJzdXBvcnRlQGZpYmVyd29ya3MuY29tLmJyIiwiaWF0IjoxNzQyNDE1MDEzLCJleHAiOjE3NDI0MTg2MTN9.ATIDLq_4ZmMDx7rqsX-0ZSEYQOD-nuPh78Lyw9A4ECg';
 
   private baseUrl: string = environment.apiUrlAbsolute;
   

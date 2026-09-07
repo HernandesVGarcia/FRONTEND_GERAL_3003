@@ -344,13 +344,30 @@ export class AuthService {
     return !!this.getToken();
   }
 
+  /** Todas as chaves auth_* gerenciadas por este serviço — manter em sync com setters/getters. */
+  private allAuthStorageKeys(): string[] {
+    return [
+      this.TOKEN_KEY,
+      this.POLO_KEY,
+      this.IDCIDADE_KEY,
+      this.POSTES_TABELA_KEY,
+      this.POSTES_TABELAS_KEY,
+      this.IDMETACX,
+      this.USUARIO,
+      this.IDUSER,
+      this.LAT_PERFIL,
+      this.LNG_PERFIL,
+      this.CEO_PERFIL,
+      this.CTO_PERFIL,
+      this.CLIENTES_PERFIL,
+      this.MENUS_PERFIL,
+      this.CABOS_PERFIL,
+    ];
+  }
+
   clearToken(): void {
-    localStorage.removeItem(this.TOKEN_KEY);
-    localStorage.removeItem(this.POLO_KEY); // Também limpar o polo quando sair
-    localStorage.removeItem(this.IDCIDADE_KEY); // Também limpar o ID da cidade quando sair //***************inserido */
-    localStorage.removeItem(this.POSTES_TABELA_KEY);
-    localStorage.removeItem(this.POSTES_TABELAS_KEY);
-    this.idCidadeSubject.next(null); //***************inserido */
+    this.allAuthStorageKeys().forEach((key) => localStorage.removeItem(key));
+    this.idCidadeSubject.next(null);
   }
   
   isTokenValid(): boolean {

@@ -1,0 +1,19 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+}
+
+.container {
+  /* Loaders de dados (listas vazias) — fora do fluxo visual */
+  display: none;
+}
+
+app-google-maps {
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+  width: 100%;
+}

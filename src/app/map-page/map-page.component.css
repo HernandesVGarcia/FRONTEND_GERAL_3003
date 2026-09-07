@@ -1,6 +1,17 @@
-.main {
+:host {
+  display: block;
+  height: 100vh;
+  overflow: hidden;
+}
 
-    width: 100%;
-    height: 100vh;
+main.map-page-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
 
+.map-page-map {
+  flex: 1;
+  min-height: 0;
 }

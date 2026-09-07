@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
+import { Router } from '@angular/router';
 import { HeartbeatService } from './heartbeat.service';
 import { AuthService } from './auth.service';
+import { InsertLogService } from './insert-log.service';
 
 @Injectable({
   providedIn: 'root'
@@ -9,7 +11,9 @@ export class AppLifecycleService {
 
   constructor(
     private heartbeatService: HeartbeatService,
-    private authService: AuthService
+    private authService: AuthService,
+    private router: Router,
+    private insertLogService: InsertLogService,
   ) {
     this.setupLifecycleEvents();
   }
@@ -49,5 +53,33 @@ export class AppLifecycleService {
   endUserSession(): void {
     console.log('🔄 Encerrando sessão do usuário...');
     this.heartbeatService.stopHeartbeat();
+  }
+
+  /** Limpa localStorage auth_* e redireciona para login. */
+  logout(): void {
+    this.endUserSession();
+
+    const idUser = this.authService.getIdUser();
+    if (idUser && this.authService.getToken()) {
+      console.log('🔄 Inserindo log de logout...');
+      this.insertLogService.inserirLog({
+        id_usuario: idUser,
+        id_evento: 2,
+        id_city: this.authService.getIdCity(),
+        id_meta_objeto: 0,
+        descricao: 'Logout bem-sucedido',
+        VERSION: 'Fiberworks WEB 1.0.0',
+      }).subscribe({
+        next: (logResponse) => {
+          console.log('✅ Log de logout inserido com sucesso:', logResponse);
+        },
+        error: (error) => {
+          console.error('❌ Erro ao inserir log de logout:', error);
+        },
+      });
+    }
+
+    this.authService.clearToken();
+    void this.router.navigate(['/login']);
   }
 }
