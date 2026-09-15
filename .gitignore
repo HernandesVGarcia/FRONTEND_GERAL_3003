@@ -40,3 +40,6 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
+
+# Documentação local (rotas API, segurança, planos ERP) — não versionar
+/documentação/

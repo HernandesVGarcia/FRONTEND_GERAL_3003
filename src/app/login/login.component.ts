@@ -7,6 +7,9 @@ import { AuthService } from '../servico/auth.service';
 import { CitySelectModalComponent } from '../city-select-modal/city-select-modal.component';
 import { HeartbeatService } from '../servico/heartbeat.service';
 import { ConsultaApiRbxService } from '../servico/consulta-api-rbx.service';
+import { ConsultaApiVigoService } from '../servico/consulta-api-vigo.service';
+import { PoloErpService } from '../servico/polo-erp.service';
+import { ERP_RBX, ERP_VIGO } from '../servico/erp.constants';
 import { InsertLogService } from '../servico/insert-log.service';
 
 @Component({
@@ -29,8 +32,29 @@ export class LoginComponent {
     private router: Router,
     private heartbeatService: HeartbeatService,
     private consultaApiRbxService: ConsultaApiRbxService,
+    private consultaApiVigoService: ConsultaApiVigoService,
+    private poloErpService: PoloErpService,
     private insertLogService: InsertLogService,
   ) {}
+
+  private async carregarErpDoPolo(idPolo: string | number | null | undefined): Promise<void> {
+    if (idPolo === null || idPolo === undefined || String(idPolo).trim() === '') {
+      this.authService.setIdErp(null);
+      return;
+    }
+
+    const erp = await this.poloErpService.consultarErpDoPolo(String(idPolo));
+
+    if (erp) {
+      this.authService.setIdErp(erp.idErp);
+      console.log(`[LOGIN] ERP do polo: ${erp.erp} (ID_ERP=${erp.idErp})`);
+    } else {
+      this.authService.setIdErp(null);
+      console.warn('[LOGIN] /polo_erp não retornou ERP — sync ERP desabilitado nesta sessão');
+    }
+  }
+
+  
 
   onSubmit(event: Event): void {
     event.preventDefault();
@@ -62,6 +86,7 @@ export class LoginComponent {
             this.authService.setUsuario(this.chave);
             this.authService.setIdUser(response.IDUSER);
             this.authService.setPolo(response.polo);
+            void this.carregarErpDoPolo(response.polo);
             this.authService.setLat(response.lat);
             this.authService.setLng(response.lng);
             this.authService.setceo_layer(response.ceo_layer.toString());
@@ -114,17 +139,39 @@ export class LoginComponent {
     }
 
 
-      onCitySelected(idCidade: number): void {
+      async onCitySelected(idCidade: number): Promise<void> {
         console.log('Cidade selecionada no componente login:', idCidade);
-        // Redirecionar para a página do mapa após a seleção da cidade
         this.authService.setIdCity(idCidade);
-        
-        // Iniciar consulta à API do ERP após a cidade ser definida
-        console.log('🚀 Iniciando consulta à API do ERP após seleção da cidade...');
-        this.consultaApiRbxService.iniciarConsultaClientes();
-        
+
+        if (this.authService.getIdErp() === null && this.authService.getPolo()) {
+          await this.carregarErpDoPolo(this.authService.getPolo());
+        }
+
+        this.iniciarSyncErp();
         this.router.navigate(['/mapa']);
       }
+
+
+      private iniciarSyncErp(): void {
+        const idErp = this.authService.getIdErp();
+    
+        if (idErp === ERP_VIGO) {
+          console.log('🚀 Iniciando sync VIGO após seleção da cidade...');
+          this.consultaApiVigoService.iniciarSyncClientes();
+          return;
+        }
+    
+        if (idErp === ERP_RBX) {
+          console.log('🚀 Iniciando sync RBX após seleção da cidade...');
+          this.consultaApiRbxService.iniciarConsultaClientes();
+          return;
+        }
+    
+        console.log('⏭️ Nenhum sync ERP configurado para ID_ERP:', idErp);
+      }
+
+
+
     
       onModalClosed(): void {
         // Se o usuário fechar o modal sem selecionar uma cidade, redirecione para a página do mapa

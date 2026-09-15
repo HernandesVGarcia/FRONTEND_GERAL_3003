@@ -10,6 +10,7 @@ export class AuthService {
   }
   private readonly TOKEN_KEY = 'auth_token';
   private readonly POLO_KEY = 'auth_polo';
+  private readonly ID_ERP_KEY = 'auth_id_erp';
   private readonly IDCIDADE_KEY = 'auth_idcidade';
   private readonly POSTES_TABELA_KEY = 'auth_postes_tabela';
   private readonly POSTES_TABELAS_KEY = 'auth_postes_tabelas';
@@ -304,6 +305,24 @@ export class AuthService {
   getPolo(): string | null {
     return localStorage.getItem(this.POLO_KEY);
   }
+
+  setIdErp(idErp: number | null): void {
+    if (idErp !== null && idErp !== undefined && Number.isFinite(idErp)) {
+      localStorage.setItem(this.ID_ERP_KEY, String(idErp));
+    } else {
+      localStorage.removeItem(this.ID_ERP_KEY);
+    }
+  }
+
+  getIdErp(): number | null {
+    const idErpStr = localStorage.getItem(this.ID_ERP_KEY);
+    if (!idErpStr) {
+      return null;
+    }
+
+    const idErp = Number(idErpStr);
+    return Number.isFinite(idErp) ? idErp : null;
+  }
  
   getLat(): string | null {
     return localStorage.getItem(this.LAT_PERFIL);
@@ -349,6 +368,7 @@ export class AuthService {
     return [
       this.TOKEN_KEY,
       this.POLO_KEY,
+      this.ID_ERP_KEY,
       this.IDCIDADE_KEY,
       this.POSTES_TABELA_KEY,
       this.POSTES_TABELAS_KEY,

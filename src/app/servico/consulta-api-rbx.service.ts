@@ -11,6 +11,7 @@ import {
   ClienteApiTerceiros
 } from './inserir-cliente-RBX.service';
 import { environment } from '../environments/environment';
+import { ERP_RBX } from './erp.constants';
 
 export interface ConsultaClientesResponse {
   success?: boolean;
@@ -313,6 +314,12 @@ export class ConsultaApiRbxService {
 
   async iniciarConsultaClientes(): Promise<void> {
     console.log('🚀 [RBX] Iniciando consulta sequencial de clientes após login...');
+
+    const idErp = this.authService.getIdErp();
+    if (idErp !== ERP_RBX) {
+      console.log(`⏭️ [RBX] ID_ERP (${idErp}) não é RBX (${ERP_RBX}). Consulta não executada.`);
+      return;
+    }
 
     try {
       const ultimoContrato = await this.buscarUltimoContratoGpon();
