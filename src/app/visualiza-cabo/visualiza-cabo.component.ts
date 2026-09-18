@@ -328,6 +328,12 @@ export class VisualizaCaboComponent implements OnInit, OnDestroy, AfterViewInit 
   }
 
   // ================================ Botões das Fibras ================================
+
+  /** Número real da fibra na linha do grupo (ex.: grupo 2 → 13, 14, …) */
+  numeroFibraDoGrupo(indexZeroBased: number): number {
+    const grupo = this.selectedFiberGroup || 1;
+    return (grupo - 1) * 12 + indexZeroBased + 1;
+  }
   
   private initializeButtons(): void {
     // Determinar número de botões baseado na capacidade do cabo

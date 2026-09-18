@@ -183,6 +183,13 @@
   margin: 1px 0;
 }
 
+.fiber-button-numbered {
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
+  color: #1b5e20;
+}
+
 .fibra-esm-button {
   background-color: #73b6f5;
   color: #ef6c00;

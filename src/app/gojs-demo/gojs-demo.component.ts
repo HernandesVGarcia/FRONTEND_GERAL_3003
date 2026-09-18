@@ -3293,7 +3293,6 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
         this.diagram.toolManager.rotatingTool.computeRotate;
 
         this.diagram.commandHandler.zoomFactor=1.3;
-        this.diagram.scrollToRect=scroll;
         //this.diagram.zoomToFit;;
         //this.diagram.toolManager.showToolTip;
 
@@ -3598,7 +3597,9 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
           //.movable(false)
          
       );
-        
+
+      this.diagram.nodeTemplateMap.add('FibraTabela', this.createFibraTabelaTemplate());
+
 
      
         
@@ -3868,8 +3869,9 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
             const portId = event.detail?.portId as string | undefined;
             if (action === 'visualizarFibras') {
               console.log('🔗 [CABO-CONTEXT] Visualizar fibras', data);
-              // TODO: abrir modal/tela de visualização de fibras do cabo
-              // abre o power meter atraves do port, trabalha junto com o cabo-port-power-meter-direct.ts
+              this.ngZone.run(() => {
+                void this.mostrarTabelaFibrasNoDiagrama(data);
+              });
             } else if (action === 'powerMeter') {
               const payload =
                 portId != null &&
@@ -5632,6 +5634,300 @@ private restaurarCursor(): void {
         }, 100);
       }
     }, 300); // Aumentei o tempo inicial também
+  }
+
+//=========================================================== VISUALIZAR FIBRAS (nó Table no rodapé do diagrama) ==============================
+  private static readonly FIBRA_TABELA_PREFIX = 'FibraTabela_';
+  private static readonly FIBRA_TABELA_CORES = [
+    '#00FF00', '#FFFF00', '#FFFFFF', '#4169E1', '#FF0000', '#8A2BE2'
+  ];
+
+  private isFibraTabelaKey(key: unknown): boolean {
+    return typeof key === 'string' && key.startsWith(GoJSDemoComponent.FIBRA_TABELA_PREFIX);
+  }
+
+  private chaveFibraTabela(caboKey: string): string {
+    return `${GoJSDemoComponent.FIBRA_TABELA_PREFIX}${caboKey}`;
+  }
+
+  private createFibraTabelaTemplate(): go.Node {
+    const rowTemplate = new go.Panel(go.Panel.TableRow)
+      .add(
+        new go.TextBlock({
+          column: 0,
+          margin: 2,
+          font: '9pt sans-serif',
+          stroke: '#333',
+          width: 110,
+          overflow: go.TextOverflow.Ellipsis,
+          wrap: go.Wrap.None
+        }).bind('text', 'origem')
+      )
+      .add(
+        new go.TextBlock({
+          column: 1,
+          margin: 2,
+          font: '9pt sans-serif',
+          stroke: '#333',
+          width: 36,
+          textAlign: 'center'
+        }).bind('text', 'numero')
+      )
+      .add(
+        new go.TextBlock({
+          column: 2,
+          margin: 2,
+          font: '9pt sans-serif',
+          stroke: '#333',
+          width: 110,
+          overflow: go.TextOverflow.Ellipsis,
+          wrap: go.Wrap.None
+        }).bind('text', 'destino')
+      )
+      .add(
+        new go.Panel(go.Panel.Horizontal, {
+          column: 3,
+          margin: 1,
+          alignment: go.Spot.Left
+        })
+          .add(
+            new go.TextBlock({
+              font: '9pt sans-serif',
+              stroke: '#000',
+              margin: new go.Margin(0, 3, 0, 0),
+              width: 28,
+              textAlign: 'right'
+            }).bind('text', 'numero', (n) => `F${n}`)
+          )
+          .add(
+            new go.Shape('Circle', {
+              stroke: 'black',
+              strokeWidth: 1.5,
+              desiredSize: new go.Size(14, 14)
+            }).bind('fill', 'cor')
+          )
+          .add(
+            new go.TextBlock({
+              font: '9pt sans-serif',
+              stroke: '#000',
+              margin: new go.Margin(0, 0, 0, 4),
+              width: 110,
+              textAlign: 'left',
+              overflow: go.TextOverflow.Ellipsis,
+              wrap: go.Wrap.None
+            }).bind('text', 'labelConexao')
+          )
+      );
+
+    return new go.Node(go.Panel.Auto, {
+      movable: true,
+      selectable: true,
+      selectionAdorned: true,
+      layerName: 'Foreground'
+    })
+      .bind(new go.Binding('location', 'loc', go.Point.parse).makeTwoWay(go.Point.stringify))
+      .add(
+        new go.Shape('RoundedRectangle', {
+          fill: '#fafafa',
+          stroke: '#424242',
+          strokeWidth: 1.5
+        })
+      )
+      .add(
+        new go.Panel(go.Panel.Vertical, {
+          margin: 6,
+          defaultAlignment: go.Spot.Left
+        })
+          .add(
+            new go.Panel(go.Panel.Horizontal)
+              .add(
+                new go.TextBlock({
+                  font: 'bold 11pt sans-serif',
+                  stroke: '#212121',
+                  margin: new go.Margin(0, 8, 4, 0)
+                }).bind('text', 'titulo')
+              )
+              .add(
+                new go.TextBlock({
+                  text: '✕',
+                  font: 'bold 12pt sans-serif',
+                  stroke: '#c62828',
+                  cursor: 'pointer',
+                  margin: new go.Margin(0, 0, 4, 0),
+                  click: (_e, obj) => {
+                    const node = obj.part;
+                    const diagram = node?.diagram;
+                    if (diagram && node?.data) {
+                      diagram.model.removeNodeData(node.data);
+                    }
+                  }
+                })
+              )
+          )
+          .add(
+            new go.Panel(go.Panel.Table, {
+              defaultSeparatorPadding: new go.Margin(1, 2),
+              defaultColumnSeparatorStroke: '#bdbdbd',
+              defaultRowSeparatorStroke: '#e0e0e0',
+              itemTemplate: rowTemplate
+            }).bind('itemArray', 'fibras')
+          )
+      );
+  }
+
+  /** Bounds do desenho de conectividade, excluindo painéis FibraTabela_*. */
+  private obterBoundsDesenhoSemTabela(): go.Rect {
+    if (!this.diagram) {
+      return new go.Rect(0, 0, 0, 0);
+    }
+
+    let bounds: go.Rect | null = null;
+    this.diagram.nodes.each((node) => {
+      if (this.isFibraTabelaKey(node.data?.key)) {
+        return;
+      }
+      const b = node.actualBounds;
+      if (!b || !b.isReal()) {
+        return;
+      }
+      bounds = bounds ? bounds.unionRect(b) : b.copy();
+    });
+
+    if (bounds) {
+      return bounds;
+    }
+
+    const doc = this.diagram.documentBounds;
+    return doc && doc.isReal() ? doc.copy() : new go.Rect(0, 0, 400, 200);
+  }
+
+  /**
+   * Posição só para painel novo: à direita dos painéis existentes (lado a lado).
+   * Primeiro painel fica abaixo do desenho. Não move painéis já posicionados.
+   */
+  private obterLocProximoPainelFibras(): go.Point {
+    const desenho = this.obterBoundsDesenhoSemTabela();
+    let maxRight: number | null = null;
+    let minTop: number | null = null;
+
+    if (this.diagram) {
+      this.diagram.nodes.each((node) => {
+        if (!this.isFibraTabelaKey(node.data?.key)) {
+          return;
+        }
+        const b = node.actualBounds;
+        if (b && b.isReal()) {
+          maxRight = maxRight === null ? b.right : Math.max(maxRight, b.right);
+          minTop = minTop === null ? b.y : Math.min(minTop, b.y);
+        }
+      });
+    }
+
+    if (maxRight === null || minTop === null) {
+      return new go.Point(desenho.x, desenho.bottom + 40);
+    }
+
+    return new go.Point(maxRight + 20, minTop);
+  }
+
+  /**
+   * Cria/atualiza um painel por cabo e preenche conexões via /conex_bc.
+   * Novo: coloca ao lado dos existentes. Update: mantém loc atual.
+   */
+  private async mostrarTabelaFibrasNoDiagrama(cableData: any): Promise<void> {
+    if (!this.diagram || !cableData) {
+      console.warn('⚠️ [FIBRA-TABELA] Diagrama ou dados do cabo indisponíveis');
+      return;
+    }
+
+    const caboKey = String(cableData.key ?? '');
+    if (!caboKey) {
+      console.warn('⚠️ [FIBRA-TABELA] caboKey vazio');
+      return;
+    }
+
+    const tabelaKey = this.chaveFibraTabela(caboKey);
+    const bocaNum = parseInt(caboKey.replace(/^Boca/i, ''), 10);
+    const tipo =
+      Number.isFinite(bocaNum) && bocaNum >= 1 && bocaNum <= 18
+        ? this.VetorTipoCabos[bocaNum - 1]
+        : undefined;
+    const capacidade = Math.max(1, tipo?.capacidade ?? 12);
+    const label = String(cableData.labelText ?? caboKey);
+    const titulo = `Fibras — ${label} (${capacidade}F)`;
+
+    const montarFibras = (labelPorFibra: Map<string, string>) =>
+      Array.from({ length: capacidade }, (_, i) => {
+        const numero = i + 1;
+        const chaveFibra = `F${numero}`;
+        return {
+          origem: '---',
+          numero,
+          destino: '---',
+          labelConexao: labelPorFibra.get(chaveFibra) ?? '---',
+          cor: GoJSDemoComponent.FIBRA_TABELA_CORES[(numero - 1) % GoJSDemoComponent.FIBRA_TABELA_CORES.length]
+        };
+      });
+
+    // Painel imediato com placeholders
+    let fibras = montarFibras(new Map());
+    const model = this.diagram.model as go.GraphLinksModel;
+    const existing = model.findNodeDataForKey(tabelaKey);
+
+    this.diagram.startTransaction('mostrarFibraTabela');
+    if (existing) {
+      model.setDataProperty(existing, 'titulo', titulo);
+      model.setDataProperty(existing, 'caboKey', caboKey);
+      model.setDataProperty(existing, 'fibras', fibras);
+    } else {
+      const loc = this.obterLocProximoPainelFibras();
+      model.addNodeData({
+        key: tabelaKey,
+        category: 'FibraTabela',
+        titulo,
+        caboKey,
+        fibras,
+        loc: go.Point.stringify(loc)
+      });
+    }
+    this.diagram.commitTransaction('mostrarFibraTabela');
+
+    const focus = this.diagram.findNodeForKey(tabelaKey);
+    if (focus) {
+      try {
+        this.diagram.commandHandler.scrollToPart(focus);
+      } catch (e) {
+        console.warn('⚠️ [FIBRA-TABELA] scrollToPart falhou (seguindo sem scroll):', e);
+      }
+    }
+
+    // Buscar conexões e atualizar labels
+    if (Number.isFinite(bocaNum) && bocaNum >= 1 && bocaNum <= 18) {
+      try {
+        const conexoes = await this.conexBocasTotalService.selecionarAsync(
+          bocaNum as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18,
+          capacidade
+        );
+        const labelPorFibra = new Map<string, string>();
+        for (const c of conexoes) {
+          if (c.fibraOrigem && c.bocaDestino && c.fibraDestino) {
+            labelPorFibra.set(c.fibraOrigem, `--> ${c.bocaDestino} ${c.fibraDestino}`);
+          }
+        }
+        fibras = montarFibras(labelPorFibra);
+        const nodeData = model.findNodeDataForKey(tabelaKey);
+        if (nodeData) {
+          this.diagram.startTransaction('atualizarFibraTabelaConex');
+          model.setDataProperty(nodeData, 'fibras', fibras);
+          this.diagram.commitTransaction('atualizarFibraTabelaConex');
+        }
+        console.log('✅ [FIBRA-TABELA] Conexões carregadas para', caboKey, labelPorFibra.size, 'ligadas');
+      } catch (error) {
+        console.error('❌ [FIBRA-TABELA] Erro ao carregar conex_bc:', error);
+      }
+    }
+
+    console.log('✅ [FIBRA-TABELA] Painel para', caboKey, `(${capacidade} fibras)`);
   }
 
 //=========================================================== FUNÇÃO ESPELHAR BOCAS (via context menu do cabo) ==============================

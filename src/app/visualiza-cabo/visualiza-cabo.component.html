@@ -52,13 +52,14 @@
           </button>
         </div>
         
-        <!-- Segunda coluna - FIBRA_ES -->
+        <!-- Segunda coluna - FIBRA_ES (números das fibras) -->
         <div class="button-column">
           <button 
             *ngFor="let button of fibraEsButtons; let i = index" 
-            class="fiber-button fibra-es-button"
+            class="fiber-button fibra-es-button fiber-button-numbered"
             (click)="onFibraEsClick(i + 1)"
-            [title]="'FIBRA_ES' + (i + 1)">
+            [title]="'FIBRA_ES' + numeroFibraDoGrupo(i)">
+            {{ numeroFibraDoGrupo(i) }}
           </button>
         </div>
       </div>
@@ -97,13 +98,14 @@
       
       <!-- Colunas de botões à direita -->
       <div class="buttons-container">
-        <!-- Terceira coluna - FIBRA_DS -->
+        <!-- Terceira coluna - FIBRA_DS (números das fibras) -->
         <div class="button-column">
           <button 
             *ngFor="let button of fibraDsButtons; let i = index" 
-            class="fiber-button fibra-ds-button"
+            class="fiber-button fibra-ds-button fiber-button-numbered"
             (click)="onFibraDsClick(i + 1)"
-            [title]="'FIBRA_DS' + (i + 1)">
+            [title]="'FIBRA_DS' + numeroFibraDoGrupo(i)">
+            {{ numeroFibraDoGrupo(i) }}
           </button>
         </div>
         
