@@ -19,6 +19,7 @@ import { Cabo1FNacComponent} from '../Stencil/cabo-drop/cabo-drop.component'
 import { Cabo1FNacDComponent} from '../Stencil/cabo-drop-d/cabo-drop-d.component'
 import { Cabo1FIntComponent } from '../Stencil/cabo-1-f-int/cabo-1-f-int.component';
 import { Cabo1FIntDComponent } from '../Stencil/cabo-1-f-int-d/cabo-1-f-int-d.component';
+import { decorateCableWithFibraToggle, decorateSplitterWithFibraToggle } from '../gojs-shared/cable-fibra-toggle';
 
 import { Cabo2FNacComponent} from '../Stencil/cabo-2-f-nac/cabo-2-f-nac.component'
 import { Cabo2FNacDComponent} from '../Stencil/cabo-2-f-nac-d/cabo-2-f-nac-d.component'
@@ -102,6 +103,7 @@ import { Splitter} from '../modelo/Splitter'
 import { Cabo_tipo} from '../modelo/Cabo_tipo'
 import { ConexBocasService } from '../servico/conex-bocas.service';
 import { ConexBocasTotalService } from '../servico/conex-bocas-total.service';
+import { FibraDestinoCaboService } from '../servico/fibra-destino-cabo.service';
 import { ConexSpSpService } from '../servico/conex-sp-sp.service';
 import { ConexSplitterService } from '../servico/conex-splitter.service';
 import { ConexaoBoca } from '../modelo/ConexaoBoca';
@@ -139,6 +141,61 @@ import { DestinoSigla } from '../modelo/DestinoSigla';
 import { NgbModal, NgbModalModule, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { PowerMeterModalComponent } from '../power-meter-modal/power-meter-modal.component';
 import { buildCableAnalisaRequest } from '../servico/analisa-conexao-nivel.service';
+
+/**
+ * ============================================================================
+ * ÍNDICE DE SEÇÕES DO COMPONENTE GOJS DEMO (caixa)
+ * ============================================================================
+ * (Atualizar linhas ao mover blocos grandes de código.)
+ *
+ * PROPRIEDADES:
+ * - Linha ~207: diagram / flags de inicialização (cabos, splitters, drops)
+ * - Linha ~222: conexões carregadas, bocas/splitters processados
+ * - Linha ~248: drag do modal Material
+ * - Linha ~251: instâncias de stencils cabo / splitter
+ * - Linha ~342: VetorBocas, VetorTipoCabos, VetorSplitter, listeners context menu
+ *
+ * CICLO DE VIDA / CARGA:
+ * - Linha ~422: Power Meter modal
+ * - Linha ~483: ngOnInit / ngOnDestroy
+ * - Linha ~533: carregarDadosCompletosAsync
+ * - Linha ~585: carregar / adicionar splitters ao diagrama
+ * - Linha ~808: carregar cabos (bocas, tipos, destinos)
+ *
+ * CONEXÕES NO DIAGRAMA:
+ * - Linha ~1348: filtrarConexao
+ * - Linha ~1425: carregarConexoesBocas (cabo–cabo / conex_bc)
+ * - Linha ~1543: selecionarModeloCaboPorCapacidade
+ * - Linha ~1828: carregarConexoesSplitters
+ * - Linha ~1943: carregarConexoesBocas9798 (ligação SP–SP)
+ *
+ * UI / DIAGRAMA GOJS:
+ * - Linha ~1988: arrastar modal
+ * - Linha ~2084: montagem nodes Boca1..18 no model
+ * - Linha ~3193: labels com siglas nos cabos
+ * - Linha ~3284: initializeDiagram (templates, links, context menus)
+ * - Linha ~3492: listener splitterContextMenu
+ * - Linha ~3934: listeners linkContextMenu / caboContextMenu
+ *
+ * FUSÕES / CRUD:
+ * - Linha ~4771: excluirFusaoInterna (cabo–cabo)
+ * - Linha ~4935: excluir fusão cabo–entrada SP
+ * - Linha ~5082: excluir fusão cabo–saída SP
+ * - Linha ~5234: excluir fusão saída–entrada SP
+ * - Linha ~5537: redesenharDiagrama
+ * - Linha ~5577: abrirLogCaixa
+ *
+ * PAINÉIS VISUALIZAR FIBRAS:
+ * - Linha ~5731: FibraTabela (cabo) — template, loc, conex_bc
+ * - Linha ~6115: executarTracerPontaOposta (tracer sob demanda)botao tracer
+ * - Linha ~6224: FibraTabelaSplitter — template + conex_sp; Boca97 → Entrada Splitter via SpSp
+ *
+ * HELPERS / SPLITTER:
+ * - Linha ~6447: espelharNode (cabo)
+ * - Linha ~6530: abrirModalSplitter (mapear Graphviz)
+ * - Linha ~6590: excluirSplitter
+ * - Linha ~6715: getCapacidadeFromTipo
+ */
 
 @Component({
   selector: 'app-gojs-demo',
@@ -309,6 +366,10 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnDestroy {
   
   // Flag global para controlar se o listener já foi adicionado
   private static globalListenerAdded = false;
+  /** Handler ativo do splitter (só uma instância viva por vez). */
+  private static activeSplitterContextHandler: ((event: any) => void) | null = null;
+  // Listener splitter: por instância (como cabo) — o flag global antigo deixava this morto após fechar o modal
+  private splitterContextMenuListenerAdded = false;
   // Flag para listener do context menu de links (evita múltiplas chamadas ao excluir fusão)
   private static linkContextMenuListenerAdded = false;
   // Listener do context menu de cabos: por instância (removido no destroy) para não usar instância antiga ao reabrir o modal
@@ -329,6 +390,7 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnDestroy {
      private servicoTipoCabos : Cabo_TipoService ,
      private servicoDestinoCabos : CaboDestinoCxService,
      private conexBocasTotalService: ConexBocasTotalService,
+     private fibraDestinoCaboService: FibraDestinoCaboService,
      private conexBocasService: ConexBocasService,
      private conexSplitterService: ConexSplitterService,
      private conexSpSpService:ConexSpSpService,
@@ -456,6 +518,14 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.caboContextMenuListenerAdded && this.handleCaboContextMenu) {
       window.removeEventListener('caboContextMenu', this.handleCaboContextMenu);
       this.caboContextMenuListenerAdded = false;
+    }
+    if (this.splitterContextMenuListenerAdded && this.handleSplitterContextMenu) {
+      window.removeEventListener('splitterContextMenu', this.handleSplitterContextMenu);
+      if (GoJSDemoComponent.activeSplitterContextHandler === this.handleSplitterContextMenu) {
+        GoJSDemoComponent.activeSplitterContextHandler = null;
+      }
+      this.splitterContextMenuListenerAdded = false;
+      this.handleSplitterContextMenu = null;
     }
   }
 
@@ -1278,12 +1348,21 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnDestroy {
   //===========================================================================================================
 
   private filtrarConexao(conexao: ConexaoBoca): boolean {
-    const numeroBocaDestino = parseInt(conexao.bocaDestino.replace('Boca', ''));
-    
+    // Splitter / destinos não-Boca não entram no fluxo de links cabo–cabo
+    if (
+      conexao.tipoDestino === 'splitter' ||
+      conexao.tipoDestino === 'splitter_saida' ||
+      !conexao.bocaDestino?.startsWith('Boca')
+    ) {
+      return false;
+    }
+
+    const numeroBocaDestino = parseInt(conexao.bocaDestino.replace('Boca', ''), 10);
+
     if (this.bocasProcessadas.has(numeroBocaDestino)) {
       return false;
     }
-    
+
     return true;
   }
 
@@ -3411,11 +3490,8 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
           }
         });
 
-        // 🆕 NOVO: Context menu nativo do GoJS para splitters
-        // 🆕 CORREÇÃO: Adicionar listener APENAS UMA VEZ globalmente
-        if (!GoJSDemoComponent.globalListenerAdded) {
-          console.log('🔀 [GLOBAL] Adicionando listener splitterContextMenu pela primeira vez');
-          
+        // Context menu dos splitters: listener por instância (removido no destroy), igual aos cabos
+        if (!this.splitterContextMenuListenerAdded) {
           this.handleSplitterContextMenu = (event: any) => {
             const { action, data, node: nodeRef } = event.detail;
             const portId = event.detail?.portId as string | undefined;
@@ -3436,6 +3512,21 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
               }
               case 'mapear':
                 this.abrirModalSplitter(data);
+                break;
+              case 'visualizarFibras':
+                this.ngZone.run(() => {
+                  this.setSplitterFibrasPainelAberto(data, true);
+                  void this.mostrarTabelaFibrasSplitter(data).catch((err) =>
+                    console.error('❌ [FIBRA-TABELA-SP] Promise rejeitada:', err)
+                  );
+                });
+                break;
+              case 'toggleFibras':
+                this.ngZone.run(() => {
+                  void this.togglePainelFibrasSplitter(data).catch((err) =>
+                    console.error('❌ [FIBRA-TABELA-SP] toggle rejeitado:', err)
+                  );
+                });
                 break;
               case 'excluir':
                 this.excluirSplitter(data, nodeRef);
@@ -3462,10 +3553,20 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
           };
 
           window.addEventListener('splitterContextMenu', this.handleSplitterContextMenu);
+          // Remove handler de instância anterior (evita this morto / F5 para “consertar”)
+          if (
+            GoJSDemoComponent.activeSplitterContextHandler &&
+            GoJSDemoComponent.activeSplitterContextHandler !== this.handleSplitterContextMenu
+          ) {
+            window.removeEventListener(
+              'splitterContextMenu',
+              GoJSDemoComponent.activeSplitterContextHandler
+            );
+          }
+          GoJSDemoComponent.activeSplitterContextHandler = this.handleSplitterContextMenu;
+          this.splitterContextMenuListenerAdded = true;
           GoJSDemoComponent.globalListenerAdded = true;
-          console.log('🔀 [GLOBAL] Listener splitterContextMenu adicionado globalmente');
-        } else {
-          console.log('🔀 [GLOBAL] Listener splitterContextMenu já existe globalmente');
+          console.log('🔀 [SPLITTER-CONTEXT] Listener splitterContextMenu adicionado (por instância)');
         }
 
 
@@ -3476,99 +3577,100 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
         // Agora usando o nodeTemplate definido no componente do modelo
 
         const caboTemplateMap = new go.Map<string, go.Node>();
+        const addCaboTpl = (category: string, tpl: go.Node) =>
+          caboTemplateMap.add(category, decorateCableWithFibraToggle(tpl));
 
-        // Adicionar templates DROPS
-        caboTemplateMap.add("cabo1F", this.cabo1FNAC.getNodeTemplate());
-        caboTemplateMap.add("cabo1F_D", this.cabo1FNAC_D.getNodeTemplate());
-        caboTemplateMap.add("cabo1FINT", this.cabo1FINT.getNodeTemplate());
-        caboTemplateMap.add("cabo1FINT_D", this.cabo1FINT_D.getNodeTemplate());
+        // Adicionar templates DROPS / cabos 1F
+        addCaboTpl("cabo1F", this.cabo1FNAC.getNodeTemplate());
+        addCaboTpl("cabo1F_D", this.cabo1FNAC_D.getNodeTemplate());
+        addCaboTpl("cabo1FINT", this.cabo1FINT.getNodeTemplate());
+        addCaboTpl("cabo1FINT_D", this.cabo1FINT_D.getNodeTemplate());
 
-        caboTemplateMap.add("cabo2F", this.cabo2FNAC.getNodeTemplate());
-        caboTemplateMap.add("cabo2F_D", this.cabo2FNAC_D.getNodeTemplate());
-        caboTemplateMap.add("cabo2FINT", this.cabo2FINT.getNodeTemplate());
-        caboTemplateMap.add("cabo2FINT_D", this.cabo2FINT_D.getNodeTemplate());
-
-
-        caboTemplateMap.add("cabo4F_D", this.cabo4FNAC_D.getNodeTemplate());
-        caboTemplateMap.add("cabo4F", this.cabo4FNAC.getNodeTemplate());
-        caboTemplateMap.add("cabo4FINT_D", this.cabo4FINT_D.getNodeTemplate());
-        caboTemplateMap.add("cabo4FINT", this.cabo4FINT.getNodeTemplate());
+        addCaboTpl("cabo2F", this.cabo2FNAC.getNodeTemplate());
+        addCaboTpl("cabo2F_D", this.cabo2FNAC_D.getNodeTemplate());
+        addCaboTpl("cabo2FINT", this.cabo2FINT.getNodeTemplate());
+        addCaboTpl("cabo2FINT_D", this.cabo2FINT_D.getNodeTemplate());
 
 
-        caboTemplateMap.add("cabo6F_D", this.cabo6FNAC_D.getNodeTemplate());
-        caboTemplateMap.add("cabo6F", this.cabo6FNAC.getNodeTemplate());
-        caboTemplateMap.add("cabo6FINT_D", this.cabo6FINT_D.getNodeTemplate());
-        caboTemplateMap.add("cabo6FINT", this.cabo6FINT.getNodeTemplate());
+        addCaboTpl("cabo4F_D", this.cabo4FNAC_D.getNodeTemplate());
+        addCaboTpl("cabo4F", this.cabo4FNAC.getNodeTemplate());
+        addCaboTpl("cabo4FINT_D", this.cabo4FINT_D.getNodeTemplate());
+        addCaboTpl("cabo4FINT", this.cabo4FINT.getNodeTemplate());
 
 
-        caboTemplateMap.add("cabo8F_D", this.cabo8FNAC_D.getNodeTemplate());
-        caboTemplateMap.add("cabo8F", this.cabo8FNAC.getNodeTemplate());
-        caboTemplateMap.add("cabo8FINT_D", this.cabo8FINT_D.getNodeTemplate());
-        caboTemplateMap.add("cabo8FINT", this.cabo8FINT.getNodeTemplate());
+        addCaboTpl("cabo6F_D", this.cabo6FNAC_D.getNodeTemplate());
+        addCaboTpl("cabo6F", this.cabo6FNAC.getNodeTemplate());
+        addCaboTpl("cabo6FINT_D", this.cabo6FINT_D.getNodeTemplate());
+        addCaboTpl("cabo6FINT", this.cabo6FINT.getNodeTemplate());
 
 
-        caboTemplateMap.add("cabo12F_NAC", this.cabo12F_NAC.getNodeTemplate());
-        caboTemplateMap.add("cabo12F_NAC_D", this.cabo12F_NAC_D.getNodeTemplate());
-        caboTemplateMap.add("cabo12FINT", this.cabo12FINT.getNodeTemplate());
-        caboTemplateMap.add("cabo12FINT_D", this.cabo12FINT_D.getNodeTemplate());
-        caboTemplateMap.add("cabo12FNAC_TB12", this.cabo12FNAC_TB12.getNodeTemplate());
-        caboTemplateMap.add("cabo12FNAC_D_TB12", this.cabo12FNAC_D_TB12.getNodeTemplate());
-        caboTemplateMap.add("cabo12FINT_TB12", this.cabo12FINT_TB12.getNodeTemplate());
-        caboTemplateMap.add("cabo12FINT_D_TB12", this.cabo12FINT_D_TB12.getNodeTemplate());
-        caboTemplateMap.add("cabo12FNAC_TB2", this.cabo12FNAC_TB2.getNodeTemplate());
-        caboTemplateMap.add("cabo12FNAC_D_TB2", this.cabo12FNAC_D_TB2.getNodeTemplate());
-        caboTemplateMap.add("cabo12FINT_TB2", this.cabo12FINT_TB2.getNodeTemplate());
-        caboTemplateMap.add("cabo12FINT_D_TB2", this.cabo12FINT_D_TB2.getNodeTemplate());
+        addCaboTpl("cabo8F_D", this.cabo8FNAC_D.getNodeTemplate());
+        addCaboTpl("cabo8F", this.cabo8FNAC.getNodeTemplate());
+        addCaboTpl("cabo8FINT_D", this.cabo8FINT_D.getNodeTemplate());
+        addCaboTpl("cabo8FINT", this.cabo8FINT.getNodeTemplate());
 
 
-        caboTemplateMap.add("cabo24F", this.cabo24FNAC.getNodeTemplate());
-        caboTemplateMap.add("cabo24F_D", this.cabo24FNAC_D.getNodeTemplate());
-        caboTemplateMap.add("cabo24F_INT", this.cabo24FINT.getNodeTemplate());
-        caboTemplateMap.add("cabo24F_INT_D", this.cabo24FINT_D.getNodeTemplate());
-        caboTemplateMap.add("cabo24F_NAC_TB24", this.cabo24FNAC_TB24.getNodeTemplate());
-        caboTemplateMap.add("cabo24F_NAC_D_TB24", this.cabo24FNAC_D_TB24.getNodeTemplate());
-        caboTemplateMap.add("cabo24F_INT_TB24", this.cabo24FINT_TB24.getNodeTemplate());
-        caboTemplateMap.add("cabo24F_INT_D_TB24", this.cabo24FINT_D_TB24.getNodeTemplate());
+        addCaboTpl("cabo12F_NAC", this.cabo12F_NAC.getNodeTemplate());
+        addCaboTpl("cabo12F_NAC_D", this.cabo12F_NAC_D.getNodeTemplate());
+        addCaboTpl("cabo12FINT", this.cabo12FINT.getNodeTemplate());
+        addCaboTpl("cabo12FINT_D", this.cabo12FINT_D.getNodeTemplate());
+        addCaboTpl("cabo12FNAC_TB12", this.cabo12FNAC_TB12.getNodeTemplate());
+        addCaboTpl("cabo12FNAC_D_TB12", this.cabo12FNAC_D_TB12.getNodeTemplate());
+        addCaboTpl("cabo12FINT_TB12", this.cabo12FINT_TB12.getNodeTemplate());
+        addCaboTpl("cabo12FINT_D_TB12", this.cabo12FINT_D_TB12.getNodeTemplate());
+        addCaboTpl("cabo12FNAC_TB2", this.cabo12FNAC_TB2.getNodeTemplate());
+        addCaboTpl("cabo12FNAC_D_TB2", this.cabo12FNAC_D_TB2.getNodeTemplate());
+        addCaboTpl("cabo12FINT_TB2", this.cabo12FINT_TB2.getNodeTemplate());
+        addCaboTpl("cabo12FINT_D_TB2", this.cabo12FINT_D_TB2.getNodeTemplate());
 
 
-        caboTemplateMap.add("cabo36F", this.cabo36FNAC.getNodeTemplate());
-        caboTemplateMap.add("cabo36F_D", this.cabo36FNAC_D.getNodeTemplate());
-        caboTemplateMap.add("cabo36FINT", this.cabo36FINT.getNodeTemplate());
-        caboTemplateMap.add("cabo36FINT_D", this.cabo36FINT_D.getNodeTemplate());
+        addCaboTpl("cabo24F", this.cabo24FNAC.getNodeTemplate());
+        addCaboTpl("cabo24F_D", this.cabo24FNAC_D.getNodeTemplate());
+        addCaboTpl("cabo24F_INT", this.cabo24FINT.getNodeTemplate());
+        addCaboTpl("cabo24F_INT_D", this.cabo24FINT_D.getNodeTemplate());
+        addCaboTpl("cabo24F_NAC_TB24", this.cabo24FNAC_TB24.getNodeTemplate());
+        addCaboTpl("cabo24F_NAC_D_TB24", this.cabo24FNAC_D_TB24.getNodeTemplate());
+        addCaboTpl("cabo24F_INT_TB24", this.cabo24FINT_TB24.getNodeTemplate());
+        addCaboTpl("cabo24F_INT_D_TB24", this.cabo24FINT_D_TB24.getNodeTemplate());
 
-        caboTemplateMap.add("cabo48F_D", this.cabo48FNAC_D.getNodeTemplate());
-        caboTemplateMap.add("cabo48F", this.cabo48FNAC.getNodeTemplate());
-        caboTemplateMap.add("cabo48FINT_D", this.cabo48FINT_D.getNodeTemplate());
-        caboTemplateMap.add("cabo48FINT", this.cabo48FINT.getNodeTemplate());
 
-        caboTemplateMap.add("cabo72F_D", this.cabo72FNAC_D.getNodeTemplate());
-        caboTemplateMap.add("cabo72F", this.cabo72FNAC.getNodeTemplate());
-        caboTemplateMap.add("cabo72FINT_D", this.cabo72FINT_D.getNodeTemplate());
-        caboTemplateMap.add("cabo72FINT", this.cabo72FINT.getNodeTemplate());
+        addCaboTpl("cabo36F", this.cabo36FNAC.getNodeTemplate());
+        addCaboTpl("cabo36F_D", this.cabo36FNAC_D.getNodeTemplate());
+        addCaboTpl("cabo36FINT", this.cabo36FINT.getNodeTemplate());
+        addCaboTpl("cabo36FINT_D", this.cabo36FINT_D.getNodeTemplate());
 
-        caboTemplateMap.add("cabo144F_D", this.cabo144FNAC_D.getNodeTemplate());
-        caboTemplateMap.add("cabo144F", this.cabo144FNAC.getNodeTemplate());
-        caboTemplateMap.add("cabo144FINT_D", this.cabo144FINT_D.getNodeTemplate());
-        caboTemplateMap.add("cabo144FINT", this.cabo144FINT.getNodeTemplate());
+        addCaboTpl("cabo48F_D", this.cabo48FNAC_D.getNodeTemplate());
+        addCaboTpl("cabo48F", this.cabo48FNAC.getNodeTemplate());
+        addCaboTpl("cabo48FINT_D", this.cabo48FINT_D.getNodeTemplate());
+        addCaboTpl("cabo48FINT", this.cabo48FINT.getNodeTemplate());
 
+        addCaboTpl("cabo72F_D", this.cabo72FNAC_D.getNodeTemplate());
+        addCaboTpl("cabo72F", this.cabo72FNAC.getNodeTemplate());
+        addCaboTpl("cabo72FINT_D", this.cabo72FINT_D.getNodeTemplate());
+        addCaboTpl("cabo72FINT", this.cabo72FINT.getNodeTemplate());
+
+        addCaboTpl("cabo144F_D", this.cabo144FNAC_D.getNodeTemplate());
+        addCaboTpl("cabo144F", this.cabo144FNAC.getNodeTemplate());
+        addCaboTpl("cabo144FINT_D", this.cabo144FINT_D.getNodeTemplate());
+        addCaboTpl("cabo144FINT", this.cabo144FINT.getNodeTemplate());
 
 
         
-        caboTemplateMap.add("splitter12", this.splitter12.getNodeTemplate());
-
+        const addSpTpl = (category: string, tpl: go.Node) =>
+          caboTemplateMap.add(category, decorateSplitterWithFibraToggle(tpl));
 
         // Adicionar templates para cada tipo de splitter
-        caboTemplateMap.add("splitter12", this.splitter12.getNodeTemplate());
-        caboTemplateMap.add("splitter14", this.splitter14.getNodeTemplate());
-        caboTemplateMap.add("splitter18", this.splitter18.getNodeTemplate());
-        caboTemplateMap.add("splitter116", this.splitter116.getNodeTemplate());
-        caboTemplateMap.add("splitterDesb", this.splitterDesb.getNodeTemplate());
+        addSpTpl("splitter12", this.splitter12.getNodeTemplate());
+        addSpTpl("splitter14", this.splitter14.getNodeTemplate());
+        addSpTpl("splitter18", this.splitter18.getNodeTemplate());
+        addSpTpl("splitter116", this.splitter116.getNodeTemplate());
+        addSpTpl("splitterDesb", this.splitterDesb.getNodeTemplate());
         
         // Adicionar templates genéricos para outros tipos de splitters que ainda não têm componentes específicos
-        caboTemplateMap.add("splitter132", this.splitter132.getNodeTemplate());
-        caboTemplateMap.add("splitter164", this.splitter164.getNodeTemplate());
-        caboTemplateMap.add("splitter1128", this.splitter1128.getNodeTemplate());
-        caboTemplateMap.add("splitter1256", this.splitter116.getNodeTemplate());
+        addSpTpl("splitter132", this.splitter132.getNodeTemplate());
+        addSpTpl("splitter164", this.splitter164.getNodeTemplate());
+        addSpTpl("splitter1128", this.splitter1128.getNodeTemplate());
+        addSpTpl("splitter1256", this.splitter116.getNodeTemplate());
 
         
 
@@ -3599,6 +3701,7 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
       );
 
       this.diagram.nodeTemplateMap.add('FibraTabela', this.createFibraTabelaTemplate());
+      this.diagram.nodeTemplateMap.add('FibraTabelaSplitter', this.createFibraTabelaSplitterTemplate());
 
 
      
@@ -3868,9 +3971,23 @@ console.log('======================================>Conexão: ' ,conexao.bocaOri
             const { action, data } = event.detail;
             const portId = event.detail?.portId as string | undefined;
             if (action === 'visualizarFibras') {
+              const keyStr = String(data?.key ?? '');
+              if (/^Drop/i.test(keyStr)) {
+                console.log('🔗 [CABO-CONTEXT] Visualizar fibras ignorado para drop', keyStr);
+                return;
+              }
               console.log('🔗 [CABO-CONTEXT] Visualizar fibras', data);
               this.ngZone.run(() => {
+                this.setCaboFibrasPainelAberto(keyStr, true);
                 void this.mostrarTabelaFibrasNoDiagrama(data);
+              });
+            } else if (action === 'toggleFibras') {
+              const keyStr = String(data?.key ?? '');
+              if (!keyStr || /^Drop/i.test(keyStr)) {
+                return;
+              }
+              this.ngZone.run(() => {
+                void this.togglePainelFibrasCabo(data);
               });
             } else if (action === 'powerMeter') {
               const payload =
@@ -5636,18 +5753,170 @@ private restaurarCursor(): void {
     }, 300); // Aumentei o tempo inicial também
   }
 
-//=========================================================== VISUALIZAR FIBRAS (nó Table no rodapé do diagrama) ==============================
+//============================================== VISUALIZAR FIBRAS (nó Table no rodapé do diagrama) ==============================
   private static readonly FIBRA_TABELA_PREFIX = 'FibraTabela_';
+  private static readonly FIBRA_TABELA_SPLITTER_PREFIX = 'FibraTabelaSplitter_';
   private static readonly FIBRA_TABELA_CORES = [
     '#00FF00', '#FFFF00', '#FFFFFF', '#4169E1', '#FF0000', '#8A2BE2'
   ];
+  /** Evita clique duplo no Tracer por painel (caboKey). */
+  private readonly fibraTabelaTracerBusy = new Set<string>();
 
   private isFibraTabelaKey(key: unknown): boolean {
-    return typeof key === 'string' && key.startsWith(GoJSDemoComponent.FIBRA_TABELA_PREFIX);
+    return (
+      typeof key === 'string' &&
+      (key.startsWith(GoJSDemoComponent.FIBRA_TABELA_PREFIX) ||
+        key.startsWith(GoJSDemoComponent.FIBRA_TABELA_SPLITTER_PREFIX))
+    );
   }
 
   private chaveFibraTabela(caboKey: string): string {
     return `${GoJSDemoComponent.FIBRA_TABELA_PREFIX}${caboKey}`;
+  }
+
+  private setCaboFibrasPainelAberto(caboKey: string, aberto: boolean): void {
+    if (!this.diagram || !caboKey) {
+      return;
+    }
+    const node = this.diagram.findNodeForKey(caboKey);
+    if (!node?.data) {
+      return;
+    }
+    this.diagram.model.setDataProperty(node.data, 'fibrasPainelAberto', aberto);
+  }
+
+  /** Toggle +/− no cabo: abre ou fecha FibraTabela_{caboKey}. */
+  private async togglePainelFibrasCabo(cableData: any): Promise<void> {
+    if (!this.diagram || !cableData) {
+      return;
+    }
+    const caboKey = String(cableData.key ?? '');
+    if (!caboKey || /^Drop/i.test(caboKey)) {
+      return;
+    }
+    const tabelaKey = this.chaveFibraTabela(caboKey);
+    const existing = (this.diagram.model as go.GraphLinksModel).findNodeDataForKey(tabelaKey);
+    if (existing) {
+      this.diagram.model.removeNodeData(existing);
+      this.setCaboFibrasPainelAberto(caboKey, false);
+      return;
+    }
+    this.setCaboFibrasPainelAberto(caboKey, true);
+    await this.mostrarTabelaFibrasNoDiagrama(cableData);
+  }
+
+  private setSplitterFibrasPainelAberto(splitterData: any, aberto: boolean): void {
+    if (!this.diagram || !splitterData) {
+      return;
+    }
+    const key =
+      String(splitterData.key ?? '') ||
+      (splitterData.idmeta != null ? `Splitter${splitterData.idmeta}` : '');
+    if (!key) {
+      return;
+    }
+    const node = this.diagram.findNodeForKey(key);
+    if (!node?.data) {
+      return;
+    }
+    this.diagram.model.setDataProperty(node.data, 'fibrasPainelAberto', aberto);
+  }
+
+  /** Toggle +/− no splitter: abre ou fecha FibraTabelaSplitter_{idmeta}. */
+  private async togglePainelFibrasSplitter(splitterData: any): Promise<void> {
+    if (!this.diagram || !splitterData) {
+      return;
+    }
+    const idmeta =
+      splitterData.idmeta ??
+      (splitterData.key ? String(splitterData.key).replace(/^Splitter/i, '') : null);
+    if (idmeta == null || idmeta === '') {
+      return;
+    }
+    const tabelaKey = this.chaveFibraTabelaSplitter(idmeta);
+    const existing = (this.diagram.model as go.GraphLinksModel).findNodeDataForKey(tabelaKey);
+    if (existing) {
+      this.diagram.model.removeNodeData(existing);
+      this.setSplitterFibrasPainelAberto(splitterData, false);
+      return;
+    }
+    this.setSplitterFibrasPainelAberto(splitterData, true);
+    await this.mostrarTabelaFibrasSplitter(splitterData);
+  }
+
+  private chaveFibraTabelaSplitter(idmeta: number | string): string {
+    return `${GoJSDemoComponent.FIBRA_TABELA_SPLITTER_PREFIX}${idmeta}`;
+  }
+
+  /** Cor do port F{n} no nó do cabo; fallback na sequência nacional de 6. */
+  private obterCorFibraDoCabo(caboKey: string, numero: number): string {
+    const node = this.diagram?.findNodeForKey(caboKey);
+    const port = node?.findPort(`F${numero}`);
+    if (port instanceof go.Shape && typeof port.fill === 'string' && port.fill) {
+      return port.fill;
+    }
+    return GoJSDemoComponent.FIBRA_TABELA_CORES[
+      (numero - 1) % GoJSDemoComponent.FIBRA_TABELA_CORES.length
+    ];
+  }
+
+  /**
+   * Título do painel cabo: fatiar para pintar só "Boca:N" em azul.
+   * labelText tipicamente: `...__Boca:3__\nLabel...`
+   */
+  private montarTituloPainelCabo(
+    labelText: string,
+    capacidade: number
+  ): { tituloAntes: string; tituloBoca: string; tituloDepois: string } {
+    const labelNorm = String(labelText ?? '')
+      .replace(/\r?\n/g, ' ')
+      .replace(/__\s*(Boca:\s*\d+)\s*__/gi, ' $1 ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    const completo = `Fibras — ${labelNorm} (${capacidade}F)`;
+    const m = completo.match(/Boca:\s*\d+/i);
+    if (!m || m.index == null) {
+      return { tituloAntes: completo, tituloBoca: '', tituloDepois: '' };
+    }
+    return {
+      tituloAntes: completo.slice(0, m.index).replace(/\s+$/, ''),
+      // \u00A0: GoJS TextBlock costuma descartar espaço normal nas bordas
+      tituloBoca: `\u00A0${m[0]}\u00A0`,
+      tituloDepois: completo.slice(m.index + m[0].length).replace(/^\s+/, '')
+    };
+  }
+
+  /** Título do painel splitter: fatiar para pintar só "Splitter{id}" em azul. */
+  private montarTituloPainelSplitter(
+    idmeta: number | string,
+    labelText: string,
+    capacidade: number
+  ): { tituloAntes: string; tituloSplitter: string; tituloDepois: string } {
+    const label = String(labelText ?? '').trim();
+    const completo = label
+      ? `Fibras — Splitter${idmeta} — ${label} (1:${capacidade})`
+      : `Fibras — Splitter${idmeta} (1:${capacidade})`;
+    const m = completo.match(/Splitter\d+/i);
+    if (!m || m.index == null) {
+      return { tituloAntes: completo, tituloSplitter: '', tituloDepois: '' };
+    }
+    return {
+      tituloAntes: completo.slice(0, m.index).replace(/\s+$/, ''),
+      tituloSplitter: `\u00A0${m[0]}\u00A0`,
+      tituloDepois: completo.slice(m.index + m[0].length).replace(/^\s+/, '')
+    };
+  }
+
+  /** Cor do port F{n} no nó do splitter; fallback na sequência nacional de 6. */
+  private obterCorFibraDoSplitter(splitterKey: string, numero: number): string {
+    const node = this.diagram?.findNodeForKey(splitterKey);
+    const port = node?.findPort(`F${numero}`);
+    if (port instanceof go.Shape && typeof port.fill === 'string' && port.fill) {
+      return port.fill;
+    }
+    return GoJSDemoComponent.FIBRA_TABELA_CORES[
+      (numero - 1) % GoJSDemoComponent.FIBRA_TABELA_CORES.length
+    ];
   }
 
   private createFibraTabelaTemplate(): go.Node {
@@ -5658,10 +5927,10 @@ private restaurarCursor(): void {
           margin: 2,
           font: '9pt sans-serif',
           stroke: '#333',
-          width: 110,
+          width: 100,
           overflow: go.TextOverflow.Ellipsis,
           wrap: go.Wrap.None
-        }).bind('text', 'origem')
+        }).bind('text', 'origemObs')
       )
       .add(
         new go.TextBlock({
@@ -5671,7 +5940,7 @@ private restaurarCursor(): void {
           stroke: '#333',
           width: 36,
           textAlign: 'center'
-        }).bind('text', 'numero')
+        }).bind('text', 'origemFibra')
       )
       .add(
         new go.TextBlock({
@@ -5679,10 +5948,10 @@ private restaurarCursor(): void {
           margin: 2,
           font: '9pt sans-serif',
           stroke: '#333',
-          width: 110,
+          width: 140,
           overflow: go.TextOverflow.Ellipsis,
           wrap: go.Wrap.None
-        }).bind('text', 'destino')
+        }).bind('text', 'origemTipo')
       )
       .add(
         new go.Panel(go.Panel.Horizontal, {
@@ -5711,7 +5980,7 @@ private restaurarCursor(): void {
               font: '9pt sans-serif',
               stroke: '#000',
               margin: new go.Margin(0, 0, 0, 4),
-              width: 110,
+              width: 200,
               textAlign: 'left',
               overflow: go.TextOverflow.Ellipsis,
               wrap: go.Wrap.None
@@ -5741,11 +6010,66 @@ private restaurarCursor(): void {
           .add(
             new go.Panel(go.Panel.Horizontal)
               .add(
-                new go.TextBlock({
-                  font: 'bold 11pt sans-serif',
-                  stroke: '#212121',
-                  margin: new go.Margin(0, 8, 4, 0)
-                }).bind('text', 'titulo')
+                new go.Panel(go.Panel.Vertical, {
+                  margin: new go.Margin(0, 8, 4, 0),
+                  defaultAlignment: go.Spot.Left,
+                  maxSize: new go.Size(480, NaN)
+                })
+                  .add(
+                    new go.Panel(go.Panel.Horizontal)
+                      .add(
+                        new go.TextBlock({
+                          font: 'bold 11pt sans-serif',
+                          stroke: '#212121',
+                          wrap: go.Wrap.None
+                        }).bind('text', 'tituloAntes')
+                      )
+                      .add(
+                        new go.TextBlock({
+                          font: 'bold 11pt sans-serif',
+                          stroke: '#1565c0',
+                          wrap: go.Wrap.None,
+                          margin: new go.Margin(0, 2, 0, 2)
+                        }).bind('text', 'tituloBoca')
+                      )
+                  )
+                  .add(
+                    new go.TextBlock({
+                      font: 'bold 11pt sans-serif',
+                      stroke: '#212121',
+                      overflow: go.TextOverflow.Ellipsis,
+                      wrap: go.Wrap.None,
+                      maxSize: new go.Size(480, NaN)
+                    }).bind('text', 'tituloDepois')
+                  )
+              )
+              .add(
+                new go.Panel(go.Panel.Auto, {
+                  cursor: 'pointer',
+                  margin: new go.Margin(0, 8, 4, 0),
+                  click: (_e, obj) => {
+                    const caboKey = String(obj.part?.data?.caboKey ?? '');
+                    this.ngZone.run(() => {
+                      void this.executarTracerPontaOposta(caboKey);
+                    });
+                  }
+                })
+                  .add(
+                    new go.Shape('RoundedRectangle', {
+                      fill: '#e3f2fd',
+                      stroke: '#1565c0',
+                      strokeWidth: 1.2,
+                      parameter1: 3
+                    })
+                  )
+                  .add(
+                    new go.TextBlock({
+                      text: 'Tracer',
+                      font: 'bold 9pt sans-serif',
+                      stroke: '#1565c0',
+                      margin: new go.Margin(2, 8, 2, 8)
+                    })
+                  )
               )
               .add(
                 new go.TextBlock({
@@ -5758,7 +6082,9 @@ private restaurarCursor(): void {
                     const node = obj.part;
                     const diagram = node?.diagram;
                     if (diagram && node?.data) {
+                      const caboKey = String(node.data.caboKey ?? '');
                       diagram.model.removeNodeData(node.data);
+                      this.setCaboFibrasPainelAberto(caboKey, false);
                     }
                   }
                 })
@@ -5773,7 +6099,9 @@ private restaurarCursor(): void {
             }).bind('itemArray', 'fibras')
           )
       );
-  }
+  } /*************************************************************************************************************
+
+
 
   /** Bounds do desenho de conectividade, excluindo painéis FibraTabela_*. */
   private obterBoundsDesenhoSemTabela(): go.Rect {
@@ -5830,7 +6158,31 @@ private restaurarCursor(): void {
     return new go.Point(maxRight + 20, minTop);
   }
 
-  /**
+  private scrollToFibraTabelaKey(tabelaKey: string): void {
+    if (!this.diagram) {
+      return;
+    }
+    const focus = this.diagram.findNodeForKey(tabelaKey);
+    if (!focus) {
+      console.warn('⚠️ [FIBRA-TABELA-SP] Painel não encontrado após criar:', tabelaKey);
+      return;
+    }
+    try {
+      if (!Number.isFinite(this.diagram.scale) || this.diagram.scale <= 0) {
+        this.diagram.scale = 1;
+      }
+      this.diagram.commandHandler.scrollToPart(focus);
+    } catch (e) {
+      console.warn('⚠️ [FIBRA-TABELA-SP] scrollToPart falhou:', e);
+      try {
+        this.diagram.centerRect(focus.actualBounds);
+      } catch {
+        /* ignore */
+      }
+    }
+  }
+
+  /*************************************************************************************************************
    * Cria/atualiza um painel por cabo e preenche conexões via /conex_bc.
    * Novo: coloca ao lado dos existentes. Update: mantém loc atual.
    */
@@ -5854,18 +6206,22 @@ private restaurarCursor(): void {
         : undefined;
     const capacidade = Math.max(1, tipo?.capacidade ?? 12);
     const label = String(cableData.labelText ?? caboKey);
-    const titulo = `Fibras — ${label} (${capacidade}F)`;
+    const { tituloAntes, tituloBoca, tituloDepois } = this.montarTituloPainelCabo(
+      label,
+      capacidade
+    );
 
     const montarFibras = (labelPorFibra: Map<string, string>) =>
       Array.from({ length: capacidade }, (_, i) => {
         const numero = i + 1;
         const chaveFibra = `F${numero}`;
         return {
-          origem: '---',
+          origemObs: '---',
+          origemFibra: '---',
+          origemTipo: '---',
           numero,
-          destino: '---',
-          labelConexao: labelPorFibra.get(chaveFibra) ?? '---',
-          cor: GoJSDemoComponent.FIBRA_TABELA_CORES[(numero - 1) % GoJSDemoComponent.FIBRA_TABELA_CORES.length]
+          labelConexao: labelPorFibra.get(chaveFibra) ?? '-- VAGA',
+          cor: this.obterCorFibraDoCabo(caboKey, numero)
         };
       });
 
@@ -5876,7 +6232,9 @@ private restaurarCursor(): void {
 
     this.diagram.startTransaction('mostrarFibraTabela');
     if (existing) {
-      model.setDataProperty(existing, 'titulo', titulo);
+      model.setDataProperty(existing, 'tituloAntes', tituloAntes);
+      model.setDataProperty(existing, 'tituloBoca', tituloBoca);
+      model.setDataProperty(existing, 'tituloDepois', tituloDepois);
       model.setDataProperty(existing, 'caboKey', caboKey);
       model.setDataProperty(existing, 'fibras', fibras);
     } else {
@@ -5884,22 +6242,15 @@ private restaurarCursor(): void {
       model.addNodeData({
         key: tabelaKey,
         category: 'FibraTabela',
-        titulo,
+        tituloAntes,
+        tituloBoca,
+        tituloDepois,
         caboKey,
         fibras,
         loc: go.Point.stringify(loc)
       });
     }
     this.diagram.commitTransaction('mostrarFibraTabela');
-
-    const focus = this.diagram.findNodeForKey(tabelaKey);
-    if (focus) {
-      try {
-        this.diagram.commandHandler.scrollToPart(focus);
-      } catch (e) {
-        console.warn('⚠️ [FIBRA-TABELA] scrollToPart falhou (seguindo sem scroll):', e);
-      }
-    }
 
     // Buscar conexões e atualizar labels
     if (Number.isFinite(bocaNum) && bocaNum >= 1 && bocaNum <= 18) {
@@ -5910,7 +6261,14 @@ private restaurarCursor(): void {
         );
         const labelPorFibra = new Map<string, string>();
         for (const c of conexoes) {
-          if (c.fibraOrigem && c.bocaDestino && c.fibraDestino) {
+          if (!c.fibraOrigem || !c.bocaDestino || !c.fibraDestino) {
+            continue;
+          }
+          if (c.tipoDestino === 'splitter') {
+            labelPorFibra.set(c.fibraOrigem, `--> Entrada Splitter ${c.fibraDestino}`);
+          } else if (c.tipoDestino === 'splitter_saida') {
+            labelPorFibra.set(c.fibraOrigem, `--> ${c.bocaDestino} Saida${c.fibraDestino}`);
+          } else {
             labelPorFibra.set(c.fibraOrigem, `--> ${c.bocaDestino} ${c.fibraDestino}`);
           }
         }
@@ -5928,6 +6286,433 @@ private restaurarCursor(): void {
     }
 
     console.log('✅ [FIBRA-TABELA] Painel para', caboKey, `(${capacidade} fibras)`);
+  }
+
+  /******************************************************************************************************
+   * Tracer sob demanda: /analisa-conexao-total só na ponta oposta (serviço FibraDestinoCabo).
+   * Preenche fibras[].origem deste painel apenas.
+   */
+  private async executarTracerPontaOposta(caboKey: string): Promise<void> {
+    if (!this.diagram || !caboKey) {
+      console.warn('⚠️ [FIBRA-TABELA] Tracer: diagrama ou caboKey indisponível');
+      return;
+    }
+    if (this.fibraTabelaTracerBusy.has(caboKey)) {
+      console.log('⏳ [FIBRA-TABELA] Tracer já em andamento para', caboKey);
+      return;
+    }
+
+    const bocaNum = parseInt(caboKey.replace(/^Boca/i, ''), 10);
+    if (!Number.isFinite(bocaNum) || bocaNum < 1 || bocaNum > 18) {
+      console.warn('⚠️ [FIBRA-TABELA] Tracer: boca inválida', caboKey);
+      return;
+    }
+
+    const tipo = this.VetorTipoCabos[bocaNum - 1];
+    const idMetaCabo = Number(tipo?.id_meta_cabo);
+    const capacidade = Math.max(1, tipo?.capacidade ?? 12);
+    if (!Number.isFinite(idMetaCabo) || idMetaCabo <= 0) {
+      console.warn('⚠️ [FIBRA-TABELA] Tracer: id_meta_cabo ausente para', caboKey);
+      return;
+    }
+
+    const bocaValue = String(this.getBocaValue(bocaNum) || '').trim();
+    const pontaLocal = bocaValue.slice(-1).toUpperCase();
+    if (pontaLocal !== 'A' && pontaLocal !== 'B') {
+      console.warn('⚠️ [FIBRA-TABELA] Tracer: ponta A/B não identificada em', bocaValue);
+      return;
+    }
+    const pontaOposta: 'A' | 'B' = pontaLocal === 'A' ? 'B' : 'A';
+
+    const tabelaKey = this.chaveFibraTabela(caboKey);
+    const model = this.diagram.model as go.GraphLinksModel;
+    const nodeData = model.findNodeDataForKey(tabelaKey);
+    if (!nodeData) {
+      console.warn('⚠️ [FIBRA-TABELA] Tracer: painel não encontrado', tabelaKey);
+      return;
+    }
+
+    this.fibraTabelaTracerBusy.add(caboKey);
+    console.log(
+      `🔍 [FIBRA-TABELA] Tracer ${caboKey}: ponta na caixa=${pontaLocal} → oposta=${pontaOposta}, id_meta=${idMetaCabo}, cap=${capacidade}`,
+    );
+
+    try {
+      const grupos = this.fibraDestinoCaboService.calcularGrupos(capacidade);
+      const tracerPorFibra = new Map<
+        number,
+        { origemObs: string; origemFibra: string; origemTipo: string }
+      >();
+
+      for (let grupo = 1; grupo <= grupos; grupo++) {
+        const resultados = await this.fibraDestinoCaboService.rastrearGrupoVisualizacaoAsync(
+          idMetaCabo,
+          grupo,
+          pontaOposta,
+          capacidade,
+        );
+        const offset = (grupo - 1) * 12;
+        resultados.forEach((fibraDest, index) => {
+          const numero = offset + index + 1;
+          tracerPorFibra.set(numero, this.mapearColunasTracer(fibraDest));
+        });
+      }
+
+      const fibrasAtuais = Array.isArray(nodeData['fibras']) ? [...nodeData['fibras']] : [];
+      const fibrasAtualizadas = fibrasAtuais.map((row: any) => {
+        const numero = Number(row?.numero);
+        const cols =
+          Number.isFinite(numero) && tracerPorFibra.has(numero)
+            ? tracerPorFibra.get(numero)!
+            : {
+                origemObs: row?.origemObs ?? '---',
+                origemFibra: row?.origemFibra ?? '---',
+                origemTipo: row?.origemTipo ?? '---'
+              };
+        return { ...row, ...cols };
+      });
+
+      this.diagram.startTransaction('fibraTabelaTracer');
+      model.setDataProperty(nodeData, 'fibras', fibrasAtualizadas);
+      this.diagram.commitTransaction('fibraTabelaTracer');
+      console.log('✅ [FIBRA-TABELA] Tracer concluído para', caboKey, tracerPorFibra.size, 'fibras');
+    } catch (error) {
+      console.error('❌ [FIBRA-TABELA] Tracer falhou:', error);
+    } finally {
+      this.fibraTabelaTracerBusy.delete(caboKey);
+    }
+  }
+
+  private mapearColunasTracer(fibraDest: {
+    tipo_objeto?: string;
+    obs_dio?: string;
+    fibra?: string;
+  } | null): { origemObs: string; origemFibra: string; origemTipo: string } {
+    if (!fibraDest) {
+      return { origemObs: '---', origemFibra: '---', origemTipo: '---' };
+    }
+    const tipo = String(fibraDest.tipo_objeto ?? '').trim();
+    const obs = String(fibraDest.obs_dio ?? '').trim();
+    const fibra = String(fibraDest.fibra ?? '').trim();
+    return {
+      origemObs: obs && obs !== '-----' ? obs : '---',
+      origemFibra: fibra !== '' ? fibra : '---',
+      origemTipo: tipo && tipo !== 'SEM_CONEXAO' ? tipo : '---'
+    };
+  }
+
+  private createFibraTabelaSplitterTemplate(): go.Node {
+    const rowTemplate = new go.Panel(go.Panel.TableRow).add(
+      new go.Panel(go.Panel.Horizontal, {
+        column: 0,
+        margin: 1,
+        alignment: go.Spot.Left
+      })
+        .add(
+          new go.TextBlock({
+            font: '9pt sans-serif',
+            stroke: '#000',
+            margin: new go.Margin(0, 3, 0, 0),
+            width: 52,
+            textAlign: 'right'
+          }).bind('text', 'prefixo')
+        )
+        .add(
+          new go.Shape('Circle', {
+            stroke: 'black',
+            strokeWidth: 1.5,
+            desiredSize: new go.Size(14, 14)
+          }).bind('fill', 'cor')
+        )
+        .add(
+          new go.TextBlock({
+            font: '9pt sans-serif',
+            stroke: '#000',
+            margin: new go.Margin(0, 0, 0, 4),
+            width: 200,
+            textAlign: 'left',
+            overflow: go.TextOverflow.Ellipsis,
+            wrap: go.Wrap.None
+          }).bind('text', 'labelConexao')
+        )
+    );
+
+    return new go.Node(go.Panel.Auto, {
+      movable: true,
+      selectable: true,
+      selectionAdorned: true,
+      layerName: 'Foreground'
+    })
+      .bind(new go.Binding('location', 'loc', go.Point.parse).makeTwoWay(go.Point.stringify))
+      .add(
+        new go.Shape('RoundedRectangle', {
+          fill: '#fafafa',
+          stroke: '#0097A9',
+          strokeWidth: 1.5
+        })
+      )
+      .add(
+        new go.Panel(go.Panel.Vertical, {
+          margin: 6,
+          defaultAlignment: go.Spot.Left
+        })
+          .add(
+            new go.Panel(go.Panel.Horizontal)
+              .add(
+                new go.Panel(go.Panel.Horizontal, {
+                  margin: new go.Margin(0, 8, 4, 0),
+                  maxSize: new go.Size(420, NaN)
+                })
+                  .add(
+                    new go.TextBlock({
+                      font: 'bold 11pt sans-serif',
+                      stroke: '#212121',
+                      wrap: go.Wrap.None
+                    }).bind('text', 'tituloAntes')
+                  )
+                  .add(
+                    new go.TextBlock({
+                      font: 'bold 11pt sans-serif',
+                      stroke: '#1565c0',
+                      wrap: go.Wrap.None,
+                      margin: new go.Margin(0, 2, 0, 2)
+                    }).bind('text', 'tituloSplitter')
+                  )
+                  .add(
+                    new go.TextBlock({
+                      font: 'bold 11pt sans-serif',
+                      stroke: '#212121',
+                      overflow: go.TextOverflow.Ellipsis,
+                      wrap: go.Wrap.None,
+                      maxSize: new go.Size(280, NaN)
+                    }).bind('text', 'tituloDepois')
+                  )
+              )
+              .add(
+                new go.TextBlock({
+                  text: '✕',
+                  font: 'bold 12pt sans-serif',
+                  stroke: '#c62828',
+                  cursor: 'pointer',
+                  margin: new go.Margin(0, 0, 4, 0),
+                  click: (_e, obj) => {
+                    const node = obj.part;
+                    const diagram = node?.diagram;
+                    if (diagram && node?.data) {
+                      const splitterKey = String(node.data.splitterKey ?? '');
+                      diagram.model.removeNodeData(node.data);
+                      if (splitterKey) {
+                        this.setSplitterFibrasPainelAberto({ key: splitterKey }, false);
+                      }
+                    }
+                  }
+                })
+              )
+          )
+          .add(
+            new go.Panel(go.Panel.Table, {
+              defaultSeparatorPadding: new go.Margin(1, 2),
+              defaultRowSeparatorStroke: '#e0e0e0',
+              itemTemplate: rowTemplate
+            }).bind('itemArray', 'fibras')
+          )
+      );
+  } /*************************************************************************************************************
+
+
+
+  /*************************************************************************************************************
+   * Painel Visualizar fibras do splitter: Entrada (círculo branco) + S1..Sn.
+   */
+  private async mostrarTabelaFibrasSplitter(splitterData: any): Promise<void> {
+    if (!this.diagram || !splitterData) {
+      console.warn('⚠️ [FIBRA-TABELA-SP] Diagrama ou dados do splitter indisponíveis');
+      return;
+    }
+
+    const idmeta = splitterData.idmeta ?? (splitterData.key ? String(splitterData.key).replace(/^Splitter/i, '') : null);
+    if (idmeta == null || idmeta === '') {
+      console.warn('⚠️ [FIBRA-TABELA-SP] idmeta vazio');
+      return;
+    }
+
+    const capacidade = Math.max(1, this.getCapacidadeFromTipo(Number(splitterData.tipoSplitter)) || 8);
+    const labelText = String(splitterData.labelText ?? splitterData.label ?? '').trim();
+    const { tituloAntes, tituloSplitter, tituloDepois } = this.montarTituloPainelSplitter(
+      idmeta,
+      labelText,
+      capacidade
+    );
+    const tabelaKey = this.chaveFibraTabelaSplitter(idmeta);
+    const splitterKey = `Splitter${idmeta}`;
+
+    const montarFibras = (labelPorPorta: Map<string, string>) => {
+      const linhas: Array<{ prefixo: string; labelConexao: string; cor: string }> = [
+        {
+          prefixo: 'Entrada',
+          labelConexao: labelPorPorta.get('ENTRADA') ?? '-- VAGA',
+          cor: 'white'
+        }
+      ];
+      for (let i = 1; i <= capacidade; i++) {
+        linhas.push({
+          prefixo: `S${i}`,
+          labelConexao: labelPorPorta.get(`F${i}`) ?? '-- VAGA',
+          cor: this.obterCorFibraDoSplitter(splitterKey, i)
+        });
+      }
+      return linhas;
+    };
+
+    let fibras = montarFibras(new Map());
+    const model = this.diagram.model as go.GraphLinksModel;
+
+    try {
+      const existing = model.findNodeDataForKey(tabelaKey);
+
+      this.diagram.startTransaction('mostrarFibraTabelaSplitter');
+      if (existing) {
+        model.setDataProperty(existing, 'tituloAntes', tituloAntes);
+        model.setDataProperty(existing, 'tituloSplitter', tituloSplitter);
+        model.setDataProperty(existing, 'tituloDepois', tituloDepois);
+        model.setDataProperty(existing, 'splitterKey', splitterKey);
+        model.setDataProperty(existing, 'fibras', fibras);
+        // Se o painel ficou fora da vista, reposiciona embaixo (lado a lado com os outros)
+        const existingNode = this.diagram.findNodeForKey(tabelaKey);
+        const vp = this.diagram.viewportBounds;
+        if (
+          existingNode?.actualBounds?.isReal() &&
+          vp?.isReal() &&
+          !vp.intersectsRect(existingNode.actualBounds)
+        ) {
+          model.setDataProperty(
+            existing,
+            'loc',
+            go.Point.stringify(this.obterLocProximoPainelFibras())
+          );
+        }
+      } else {
+        const loc = this.obterLocProximoPainelFibras();
+        model.addNodeData({
+          key: tabelaKey,
+          category: 'FibraTabelaSplitter',
+          tituloAntes,
+          tituloSplitter,
+          tituloDepois,
+          splitterKey,
+          fibras,
+          loc: go.Point.stringify(loc)
+        });
+      }
+      this.diagram.commitTransaction('mostrarFibraTabelaSplitter');
+
+      try {
+        const conexoes = await this.conexSplitterService.selecionarAsync(capacidade, Number(idmeta));
+        const labelPorPorta = new Map<string, string>();
+        for (const c of conexoes) {
+          if (!c.fibraOrigem || !c.bocaDestino || !c.fibraDestino) {
+            continue;
+          }
+          labelPorPorta.set(
+            c.fibraOrigem,
+            `--> ${this.formatarOcupacaoSplitter(
+              c.bocaDestino,
+              c.fibraDestino,
+              splitterKey,
+              c.fibraOrigem
+            )}`
+          );
+        }
+        fibras = montarFibras(labelPorPorta);
+        const nodeData = model.findNodeDataForKey(tabelaKey);
+        if (nodeData && this.diagram) {
+          this.diagram.startTransaction('atualizarFibraTabelaSplitter');
+          model.setDataProperty(nodeData, 'fibras', fibras);
+          this.diagram.commitTransaction('atualizarFibraTabelaSplitter');
+        }
+        console.log('✅ [FIBRA-TABELA-SP] Conexões carregadas para', idmeta, labelPorPorta.size, 'ligadas');
+      } catch (error) {
+        console.error('❌ [FIBRA-TABELA-SP] Erro ao carregar conex_sp:', error);
+      }
+
+      console.log('✅ [FIBRA-TABELA-SP] Painel para Splitter', idmeta, `(1:${capacidade})`);
+    } catch (error) {
+      console.error('❌ [FIBRA-TABELA-SP] Falha ao criar/atualizar painel:', error);
+      try {
+        this.diagram?.rollbackTransaction();
+      } catch {
+        /* ignore */
+      }
+    }
+  }
+
+  /**
+   * Boca99 = Cliente;
+   * Boca97 = saída → entrada de outro SP (resolve destino via SpSp);
+   * Boca98 = entrada ← saída de outro SP (resolve origem via SpSp);
+   * demais = BocaX FY.
+   */
+  private formatarOcupacaoSplitter(
+    bocaDestino: string,
+    fibraDestino: string,
+    splitterKey?: string,
+    fibraOrigem?: string
+  ): string {
+    if (/^Boca99$/i.test(bocaDestino)) {
+      return 'Cliente';
+    }
+    if (/^Boca97$/i.test(bocaDestino)) {
+      const destId = this.resolverDestinoSpSp(splitterKey, fibraOrigem);
+      return destId != null ? `Entrada Splitter ${destId}` : 'Ligação Splitter';
+    }
+    if (/^Boca98$/i.test(bocaDestino)) {
+      const origem = this.resolverOrigemSpSp(splitterKey);
+      return origem ?? 'Ligação Splitter';
+    }
+    return `${bocaDestino} ${fibraDestino}`;
+  }
+
+  /** Idmeta do splitter destino (ENTRADA) a partir do mapa 97/98 já carregado. */
+  private resolverDestinoSpSp(
+    splitterKey: string | undefined,
+    fibraOrigem: string | undefined
+  ): string | null {
+    if (!splitterKey || !fibraOrigem || !this.conexoesCarregadasSpSp?.length) {
+      return null;
+    }
+    const hit = this.conexoesCarregadasSpSp.find(
+      (c) =>
+        c.bocaOrigem === splitterKey &&
+        String(c.fibraOrigem).toUpperCase() === String(fibraOrigem).toUpperCase()
+    );
+    if (!hit?.bocaDestino) {
+      return null;
+    }
+    const m = String(hit.bocaDestino).match(/^Splitter(\d+)$/i);
+    return m ? m[1] : null;
+  }
+
+  /**
+   * Entrada deste splitter vem de Boca98 → origem na boca 97:
+   * `Splitter{id} Saida{n}` (ex.: Splitter766649 Saida1).
+   */
+  private resolverOrigemSpSp(splitterKey: string | undefined): string | null {
+    if (!splitterKey || !this.conexoesCarregadasSpSp?.length) {
+      return null;
+    }
+    const hit = this.conexoesCarregadasSpSp.find(
+      (c) =>
+        c.bocaDestino === splitterKey &&
+        String(c.fibraDestino).toUpperCase() === 'ENTRADA'
+    );
+    if (!hit?.bocaOrigem) {
+      return null;
+    }
+    const porta = String(hit.fibraOrigem ?? '').replace(/^F/i, '');
+    if (!porta) {
+      return hit.bocaOrigem;
+    }
+    return `${hit.bocaOrigem} Saida${porta}`;
   }
 
 //=========================================================== FUNÇÃO ESPELHAR BOCAS (via context menu do cabo) ==============================

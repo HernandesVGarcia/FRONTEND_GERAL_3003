@@ -1,0 +1,26 @@
+---
+description: Contexto geral Fiberworks Angular (mapa, API, convenções)
+alwaysApply: true
+---
+
+# Fiberworks — Angular Google Maps
+
+App Angular de mapa óptico (Fiberworks). API Node em EC2; front no Amplify.
+
+## Stack e pastas
+
+- Código: `src/app/` (componentes, `servico/`, `Stencil/` GoJS)
+- Environments: `src/app/environments/environment.ts` (dev) e `enviroments.prod.ts` (prod)
+- Docs locais (não versionar): pasta raiz `documentação/` está no `.gitignore`
+- Docs de ERP: `documentação/Integrações_erp/` (só local)
+
+## Segurança
+
+- Tokens/credenciais de ERP **nunca** no frontend — proxy no backend Node
+- Não commitar `.env`, chaves Google, nem conteúdo sensível de `documentação/`
+
+## Convenções ao alterar código
+
+- Preferir editar arquivos existentes; seguir padrões do módulo vizinho
+- Logs de domínio com prefixo claro: `[VIGO]`, `[FIBRA-TABELA]`, `[CABO-CONTEXT]`
+- Portas API: 3001/3002 conforme environment; não hardcodar se já houver `apiUrlAbsolute`

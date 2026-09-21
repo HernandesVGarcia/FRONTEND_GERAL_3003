@@ -1,0 +1,28 @@
+---
+description: Integração ERP VIGO (sync, insert, geocode)
+globs: "**/consulta-api-vigo*.ts,**/inserir-cliente-vigo*.ts,**/polo-erp*.ts,**/erp.constants.ts,**/login.component.ts"
+alwaysApply: false
+---
+
+# VIGO ERP (`ID_ERP = 9`)
+
+## Fluxo
+
+1. Login → `POST /polo_erp` → guarda `ID_ERP` no `authService`
+2. Cidade selecionada → se `ID_ERP === 9` → `ConsultaApiVigoService.iniciarSyncClientes()`
+3. Sync: `POST /consulta-vigo/sincronizar-clientes` (token VIGO só no backend)
+4. Insert: `InserirClienteVigoService` → `POST /insert_cliente` (mesma rota do RBX)
+
+Constantes: `erp.constants.ts` (`ERP_VIGO = 9`, `ERP_RBX = 1`).
+
+## Geocode (Parte 4)
+
+- Se LAT/LNG VIGO vazios/`0` → geocode no **front** (`google.maps.Geocoder`) com endereço VIGO
+- Sucesso: preencher LAT/LNG; acrescentar em OBS: `Coordenada inserida por consulta de endereço na integração.`
+- Falha: insert só em `tst.estações` (comportamento atual)
+- Sem chave Google no backend
+
+## Limites
+
+- Dev: `vigoSyncMaxClientes` (ex. 5); prod: `0` = sem limite
+- Guards: serviços VIGO checam `getIdErp() === ERP_VIGO`

@@ -1,0 +1,16 @@
+---
+description: Cadastro de cliente e insert_cliente
+globs: "**/insert-cliente*.ts,**/inserir-cliente-vigo*.ts,**/cadastro-cliente/**"
+alwaysApply: false
+---
+
+# Insert cliente
+
+- Front: `insert-cliente.service.ts` / VIGO via `inserir-cliente-vigo.service.ts`
+- API: `POST /insert_cliente` (JWT Fiberworks)
+- Sem LAT/LNG válidos → só `tst.estações`; com coords → estações + POP (`ID_META`)
+
+## Backend (referência)
+
+- Helper `normalizarIdIntegracao` deve existir no `insert_cliente.js` da API implantada
+- Erro `normalizarIdIntegracao is not defined` = deploy incompleto / PM2 sem restart naquela porta (ex. 3002 vs 3001)

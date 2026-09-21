@@ -60,17 +60,46 @@ export class ConexBocasTotalService {
     dadosArray.forEach(boca => {
       Object.entries(boca).forEach(([chave, valor]) => { //F1='id()'  : F1 => chave  'id() =>valor
         if (valor && valor !== '=id()') {
+          const valorStr = String(valor);
+
           // Extrair os números da string "prop.bocaX_Y.label"
-          const match = valor.match(/prop\.boca(\d+)_(\d+)\.label/);
+          const match = valorStr.match(/prop\.boca(\d+)_(\d+)\.label/i);
           if (match) {
-            const bocaDestino = parseInt(match[1]);
-            const fibraDestino = parseInt(match[2]);
-            
+            const bocaDestino = parseInt(match[1], 10);
+            const fibraDestino = parseInt(match[2], 10);
+
             conexoes.push({
               bocaOrigem: `Boca${bocaNumero}`,
               fibraOrigem: chave, // F1, F2, etc
               bocaDestino: `Boca${bocaDestino}`,
-              fibraDestino: `F${fibraDestino}`
+              fibraDestino: `F${fibraDestino}`,
+              tipoDestino: 'boca'
+            });
+            return;
+          }
+
+          // Entrada de splitter: "prop.splitter_e302074.label"
+          const matchSpEnt = valorStr.match(/prop\.splitter_e(\d+)\.label/i);
+          if (matchSpEnt) {
+            conexoes.push({
+              bocaOrigem: `Boca${bocaNumero}`,
+              fibraOrigem: chave,
+              bocaDestino: 'Splitter',
+              fibraDestino: matchSpEnt[1],
+              tipoDestino: 'splitter'
+            });
+            return;
+          }
+
+          // Saída de splitter: "prop.splitter302083_5.label" (sem "e")
+          const matchSpSai = valorStr.match(/prop\.splitter(\d+)_(\d+)\.label/i);
+          if (matchSpSai) {
+            conexoes.push({
+              bocaOrigem: `Boca${bocaNumero}`,
+              fibraOrigem: chave,
+              bocaDestino: `Splitter${matchSpSai[1]}`,
+              fibraDestino: matchSpSai[2],
+              tipoDestino: 'splitter_saida'
             });
           }
         }

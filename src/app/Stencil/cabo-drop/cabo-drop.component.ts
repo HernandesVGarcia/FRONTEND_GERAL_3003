@@ -55,7 +55,9 @@ export class Cabo1FNacComponent implements OnInit {
                 }));
               }
             }
-          }).add(new go.TextBlock(' 👁 Visualizar fibras', { textAlign: 'left', alignment: go.Spot.Left }))
+          })
+            .bind('visible', 'key', (k: unknown) => !/^Drop/i.test(String(k ?? '')))
+            .add(new go.TextBlock(' 👁 Visualizar fibras', { textAlign: 'left', alignment: go.Spot.Left }))
         )
         .add(
           go.GraphObject.build('ContextMenuButton', {

@@ -29,6 +29,22 @@ export class Splitter18Component {
             click: (e, obj) => {
               const contextmenu = obj.part;
               if (contextmenu && contextmenu.data) {
+                window.dispatchEvent(new CustomEvent('splitterContextMenu', {
+                  detail: { action: 'visualizarFibras', data: contextmenu.data }
+                }));
+              }
+            }
+          })
+          .add(new go.TextBlock(" 👁 Visualizar fibras", {
+            textAlign: "left",
+            alignment: go.Spot.Left
+          }))
+        )
+        .add(
+          go.GraphObject.build("ContextMenuButton", {
+            click: (e, obj) => {
+              const contextmenu = obj.part;
+              if (contextmenu && contextmenu.data) {
                 const splitterData = contextmenu.data;
                 console.log('🔀 [SPLITTER-TEMPLATE] Mapear Splitter clicado:', splitterData);
                 // Disparar evento customizado para o componente pai
@@ -80,6 +96,7 @@ export class Splitter18Component {
             alignment: go.Spot.Left
           }))
         )
+
     })
       .add(
         new go.Panel("Spot")
@@ -272,7 +289,6 @@ export class Splitter18Component {
           .bind("fromSpot", "espelhado", (esp: boolean) => esp ? go.Spot.Left : go.Spot.Right)
           .bind("toSpot", "espelhado", (esp: boolean) => esp ? go.Spot.Left : go.Spot.Right)
       );
-
 
   }
 

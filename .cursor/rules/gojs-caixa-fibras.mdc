@@ -1,0 +1,47 @@
+---
+description: Diagrama GoJS da caixa e painel Visualizar fibras
+globs: "**/gojs-demo/**/*.ts,**/Stencil/cabo-*/**/*.ts"
+alwaysApply: false
+---
+
+# GoJS — caixa e Visualizar fibras
+
+## Host
+
+- Modal da caixa: `gojs-demo.component.ts` (`app-gojs-demo`)
+- Stencils de cabo em `src/app/Stencil/cabo-*` disparam:
+
+```ts
+window.dispatchEvent(new CustomEvent('caboContextMenu', {
+  detail: { action: 'visualizarFibras', data: cableData }
+}));
+```
+
+## Painel FibraTabela (nó GoJS)
+
+- Category `FibraTabela`; key `FibraTabela_${caboKey}` (um painel por cabo)
+- Linhas = capacidade real (`VetorTipoCabos`); sem teto 12
+- Novo painel: lado a lado (`obterLocProximoPainelFibras`) — **não** rearranjar os já movidos
+- Layout da linha: `F{n}` + círculo colorido + `--> BocaX FY` (ou `-- VAGA`)
+- Dados: `ConexBocasTotalService.selecionarAsync` → `POST /conex_bc`
+- Labels: `--> BocaX FY` ou `--> Entrada Splitter {idMeta}` (`prop.splitter_e{id}.label`)
+- Título: trecho `Boca:N` em azul (`tituloAntes` / `tituloBoca` / `tituloDepois`); após `Boca:N` quebra linha
+- Toggle `+/−` acima do nó do cabo (`decorateCableWithFibraToggle`): abre/fecha FibraTabela; oculto em Drop*; sync com menu e ✕ do painel
+- Sem scroll automático ao abrir FibraTabela (cabo)
+- Nunca atribuir `diagram.scrollToRect = scroll` (quebra scroll); usar `commandHandler.scrollToPart`
+
+## Painel FibraTabelaSplitter
+
+- Stencils `spliter-*`: `splitterContextMenu` / `visualizarFibras`
+- Category `FibraTabelaSplitter`; key `FibraTabelaSplitter_${idmeta}`
+- Só coluna direita: `Entrada` (círculo branco) + `S1`..`Sn` (cores do port `F{n}` do nó GoJS; fallback sequência nac.)
+- Título: trecho `Splitter{id}` em azul (`tituloAntes` / `tituloSplitter` / `tituloDepois`)
+- Dados: `ConexSplitterService.selecionarAsync` → `POST /conex_sp{capacidade}`
+- Labels: `--> BocaX FY`, `--> Cliente` (Boca99), ou `-- VAGA` (API `ENTRADA`/`F{n}` → painel `Entrada`/`S{n}`)
+- Boca97 (`prop.boca97_N.label`): saída ligada à entrada de outro splitter — lookup SpSp → `--> Entrada Splitter {id}`; se não achar, `Ligação Splitter`
+- Boca98 (`prop.boca98_N.label`): entrada alimentada pela saída de outro splitter — lookup SpSp inverso → `--> Splitter{id} Saida{n}`; se não achar, `Ligação Splitter`
+- Toggle `+/−` acima do nó (`decorateSplitterWithFibraToggle`): abre/fecha FibraTabelaSplitter; sync com menu e ✕; sem scroll ao abrir
+
+## Outras actions do cabo
+
+- `fusaoPorTubos`, `espelhar`, `powerMeter` — já no `handleCaboContextMenu`
