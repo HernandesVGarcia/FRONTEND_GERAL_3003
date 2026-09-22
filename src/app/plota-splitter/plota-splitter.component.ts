@@ -136,14 +136,29 @@ export class PlotaSplitterComponent implements OnInit, AfterViewInit, OnDestroy 
 
   onPlotar(): void {
     if (this.selectedSplitter) {
+      const labelSanitizado = this.splitterLabel.trim()
+        ? this.sanitizarLabelSplitter(this.splitterLabel.trim())
+        : '';
+      const labelFinal = labelSanitizado !== '' ? labelSanitizado : null;
       console.log('🔗 [PLOTA-SPLITTER] Splitter selecionado para plotar:', this.selectedSplitter);
-      console.log('🔗 [PLOTA-SPLITTER] Label:', this.splitterLabel);
+      console.log('🔗 [PLOTA-SPLITTER] Label informado:', this.splitterLabel, '| sanitizado:', labelFinal);
       console.log('🔗 [PLOTA-SPLITTER] Coordenadas:', this.data.x, this.data.y);
-      this.dialogRef.close({ 
+      this.dialogRef.close({
         tipoSplitter: this.selectedSplitter,
-        label: this.splitterLabel.trim() || null
+        label: labelFinal
       });
     }
+  }
+
+  /**
+   * Graphviz-safe: só A-Za-z0-9; resto vira _; colapsa __ e trim de _.
+   * Mesma regra do plota-caixa.
+   */
+  private sanitizarLabelSplitter(label: string): string {
+    return String(label ?? '')
+      .replace(/[^A-Za-z0-9]+/g, '_')
+      .replace(/_+/g, '_')
+      .replace(/^_|_$/g, '');
   }
 
   // ================================ Funcionalidade de Arrastar Modal ================================

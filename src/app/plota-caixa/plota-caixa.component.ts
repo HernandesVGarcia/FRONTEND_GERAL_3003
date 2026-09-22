@@ -273,10 +273,11 @@ export class PlotaCaixaComponent implements OnInit, OnChanges {
     }
 
     // Se labelCaixa não foi informado, usar "0" temporariamente (será substituído pelo id_meta)
-    const numeroLabel = this.form.labelCaixa && this.form.labelCaixa.trim() !== '' 
-      ? this.form.labelCaixa 
-      : '0';
-
+    const labelInformado =
+      this.form.labelCaixa && this.form.labelCaixa.trim() !== ''
+        ? this.sanitizarLabelCaixa(this.form.labelCaixa.trim())
+        : '';
+    const numeroLabel = labelInformado !== '' ? labelInformado : '0';
     // Preparar dados para a API
     const dadosCaixa: InsertCaixaRequest = {
       ID_TIPO: ID_TIPO,
@@ -307,10 +308,8 @@ export class PlotaCaixaComponent implements OnInit, OnChanges {
         console.log('✅ [PLOTA-CAIXA] Caixa criada com sucesso:', response);
         this.salvando = false;
 
-        // Se label não foi informado, usar o id_meta como label
-        const labelFinal = (this.form.labelCaixa && this.form.labelCaixa.trim() !== '') 
-          ? this.form.labelCaixa 
-          : response.id_meta.toString();
+        // Se label não foi informado (ou ficou vazio após sanitizar), usar o id_meta
+        const labelFinal = labelInformado !== '' ? labelInformado : response.id_meta.toString();
 
         // Preparar dados para retorno (incluindo os IDs retornados)
         const resultado = {
@@ -336,6 +335,16 @@ export class PlotaCaixaComponent implements OnInit, OnChanges {
         alert(`Erro ao criar caixa: ${error}`);
       }
     });
+  }
+
+  /**
+   * Graphviz-safe: só A-Za-z0-9; resto vira _; colapsa __ e trim de _.
+   */
+  private sanitizarLabelCaixa(label: string): string {
+    return String(label ?? '')
+      .replace(/[^A-Za-z0-9]+/g, '_')
+      .replace(/_+/g, '_')
+      .replace(/^_|_$/g, '');
   }
 
   fechar(): void {
