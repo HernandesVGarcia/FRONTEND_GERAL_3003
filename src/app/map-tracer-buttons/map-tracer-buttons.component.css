@@ -1,17 +1,44 @@
 .tracer-buttons-container {
   position: fixed;
-  top: 30px;
+  top: 6px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
   flex-direction: row;
   gap: 12px;
   z-index: 1000;
+  padding: 4px 14px 6px;
+  border-radius: 10px;
+  background: rgba(111, 136, 192, 0.72);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }
 
 /* Cada grupo precisa de posição relativa para o tooltip */
 .group {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.button-label {
+  font-size: 10px;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  color: rgba(252, 250, 250, 0.747);
+  text-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.35),
+    0 -1px 0 rgba(255, 255, 255, 0.274);
+  user-select: none;
+  pointer-events: none;
+  white-space: nowrap;
+  max-width: 64px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
 }
 
 /* Estilos para os botões de tracer */
@@ -19,27 +46,30 @@
   position: relative;
   background-color: #dc2626;
   color: white;
-  padding: 12px;
-  border-radius: 50%;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  padding: 6px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
   transition: all 0.2s ease-in-out;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 45px;
+  height: 40px;
   min-width: 34px;
   min-height: 34px;
-  border: none;
+  border: 1px solid rgba(255, 255, 255, 0.3);
   cursor: pointer;
+  box-sizing: border-box;
 }
 
 .map-tracer-button:hover {
   background-color: #b91c1c;
-  transform: scale(1.05);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  transform: scale(1.03);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.16);
 }
 
 .map-tracer-button:active {
-  transform: scale(0.75);
+  transform: scale(0.95);
 }
 
 /* Botões com cores diferentes */
@@ -191,8 +221,9 @@
 /* Responsividade para tablet */
 @media (max-width: 1024px) and (min-width: 769px) {
   .tracer-buttons-container {
-    top: 60px; /* Posição intermediária para tablets */
+    top: 36px; /* Posição intermediária para tablets */
     gap: 10px;
+    padding: 4px 12px 6px;
   }
 }
 
@@ -201,12 +232,17 @@
   .tracer-buttons-container {
     top: 100px; /* Mais abaixo para evitar conflito com toolbar */
     gap: 8px;
+    padding: 4px 10px 6px;
+    border-radius: 8px;
   }
 
   .map-tracer-button {
-    padding: 10px;
-    min-width: 40px;
-    min-height: 40px;
+    padding: 6px;
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    min-height: 36px;
+    border-radius: 6px;
   }
   
   .map-tracer-button mat-icon {
@@ -227,6 +263,11 @@
     font-size: 12px;
     padding: 6px 8px;
   }
+
+  .button-label {
+    font-size: 8px;
+    max-width: 56px;
+  }
 }
 
 /* Mobile muito pequeno */
@@ -234,12 +275,16 @@
   .tracer-buttons-container {
     top: 90px; /* Ajustado para telas muito pequenas */
     gap: 6px;
+    padding: 4px 8px 6px;
   }
 
   .map-tracer-button {
-    padding: 8px;
-    min-width: 36px;
-    min-height: 36px;
+    padding: 5px;
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    min-height: 32px;
+    border-radius: 6px;
   }
   
   .map-tracer-button mat-icon {

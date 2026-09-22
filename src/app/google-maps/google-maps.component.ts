@@ -35,6 +35,7 @@ import { AuthService } from '../servico/auth.service';
 import { MapLayerVisibilityService } from '../servico/map-layer-visibility.service';
 import { animate, animation } from '@angular/animations';
 
+import { MapLayersDrawerComponent } from '../map-layers-drawer/map-layers-drawer.component';
 import { MapSearchButtonsComponent } from '../map-search-buttons/map-search-buttons.component';
 import { MapTracerButtonsComponent } from '../map-tracer-buttons/map-tracer-buttons.component';
 import { MapContextMenuComponent } from '../map-context-menu/map-context-menu.component';
@@ -271,7 +272,7 @@ import { BuscaObjetoConexPontaService, ObjetoConectado } from '../servico/busca-
   templateUrl: './google-maps.component.html',
   styleUrls: ['./google-maps.component.css'],
   standalone: true,
-  imports: [CommonModule, GoogleMapsModule, MapSearchButtonsComponent, MapTracerButtonsComponent, MapContextMenuComponent, TipagemCabosModalComponent, TipagemPoligonoComponent, MatIconModule, MatButtonModule, NgbModalModule],
+  imports: [CommonModule, GoogleMapsModule, MapLayersDrawerComponent, MapSearchButtonsComponent, MapTracerButtonsComponent, MapContextMenuComponent, TipagemCabosModalComponent, TipagemPoligonoComponent, MatIconModule, MatButtonModule, NgbModalModule],
 })
 export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy {
   

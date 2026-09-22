@@ -136,6 +136,12 @@ import { UpdateSplitterAngleService } from '../servico/update-splitter-angle.ser
 import { UpdateBocaLadoService} from '../servico/update-boca-lado.service';
 import { PesquisaSiglaService } from '../servico/pesquisa-sigla.service';
 import jsPDF from 'jspdf';
+import QRCode from 'qrcode';
+import {
+  buildGoogleMapsSearchUrl,
+  isValidMapCoordinate,
+  parseCaixaCoordinate,
+} from '../util/google-maps-url.util';
 import { Cabo_destino_CX } from '../modelo/Cabo_destino_CX';
 import { DestinoSigla } from '../modelo/DestinoSigla';
 import { NgbModal, NgbModalModule, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
@@ -226,6 +232,7 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnDestroy {
   
   // 🏠 NOVO: Propriedade para armazenar o número da caixa
   public caixaNumerocx: string = 'N/A';
+  private googleMapsUrl: string | null = null;
   private conexoesSPCarregadas: ConexaoSplitter[] = [];
   private conexoesPorBoca: Map<number, ConexaoBoca[]> = new Map();
   private conexoesPorSplitter: Map<number, ConexaoSplitter[]> = new Map();
@@ -452,33 +459,61 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnDestroy {
   
 
   /**
-   * 🏠 NOVO: Carrega o número da caixa (numerocx) usando o idmeta disponível
+   * Carrega numerocx e coordenadas da caixa (idmeta) e gera QR para Google Maps.
    */
   private async carregarNumerocxCaixa(): Promise<void> {
+    this.googleMapsUrl = null;
+
     try {
       const idmeta = this.authService.getIDmetaCaixa();
-      if (idmeta) {
-        console.log('🏠 [GOJS] Consultando numerocx para idmeta:', idmeta);
-        
-        const response = await this.fiberApiService.executeDynamicQuery(
-          `SELECT numerocx FROM tstmeta.caixa WHERE id_meta = {idmeta}`,
-          { idmeta: idmeta }
-        ).toPromise();
-        
-        if (response?.success && response.data && response.data.length > 0) {
-          this.caixaNumerocx = response.data[0].numerocx || 'N/A';
-          console.log('🏠 [GOJS] Numerocx da caixa carregado:', this.caixaNumerocx);
-        } else {
-          this.caixaNumerocx = 'N/A';
-          console.log('🏠 [GOJS] Numerocx não encontrado para idmeta:', idmeta);
-        }
-      } else {
+      if (!idmeta) {
         this.caixaNumerocx = 'N/A';
         console.log('🏠 [GOJS] IDMETA da caixa não disponível');
+        return;
       }
+
+      console.log('🏠 [GOJS] Consultando dados da caixa para idmeta:', idmeta);
+
+      const response = await this.fiberApiService
+        .executeDynamicQuery(
+          `SELECT numerocx, LAT, LONGI FROM tstmeta.caixa WHERE id_meta = {idmeta}`,
+          { idmeta },
+        )
+        .toPromise();
+
+      if (!response?.success || !response.data?.length) {
+        this.caixaNumerocx = 'N/A';
+        return;
+      }
+
+      const row = response.data[0];
+      this.caixaNumerocx = row.numerocx || 'N/A';
+
+      const lat = parseCaixaCoordinate(row.LAT);
+      const lng = parseCaixaCoordinate(row.LONGI);
+
+      if (lat == null || lng == null || !isValidMapCoordinate(lat, lng)) {
+        return;
+      }
+
+      this.googleMapsUrl = buildGoogleMapsSearchUrl(lat, lng);
     } catch (error) {
-      console.error('❌ [GOJS] Erro ao carregar numerocx da caixa:', error);
+      console.error('❌ [GOJS] Erro ao carregar dados da caixa:', error);
       this.caixaNumerocx = 'N/A';
+    }
+  }
+
+  /** QR só entra no PDF exportado (não é exibido no modal). */
+  private async gerarQrDataUrl(text: string): Promise<string | null> {
+    try {
+      return await QRCode.toDataURL(text, {
+        errorCorrectionLevel: 'M',
+        margin: 1,
+        width: 140,
+      });
+    } catch (error) {
+      console.error('❌ [GOJS] Erro ao gerar QR para PDF:', error);
+      return null;
     }
   }
 
@@ -5415,7 +5450,7 @@ private restaurarCursor(): void {
   /** Limite por lado no bitmap GoJS (canvas do browser; alinhado ao fluxo Graphviz). */
   private static readonly GOJS_PDF_EXPORT_MAX_PX = 16384;
 
-  exportarDiagramaParaPDF(): void {
+  async exportarDiagramaParaPDF(): Promise<void> {
     if (!this.diagram) {
       console.log('Diagrama não está disponível para exportação');
       return;
@@ -5423,6 +5458,14 @@ private restaurarCursor(): void {
 
     try {
       console.log('Iniciando exportação do diagrama para PDF...');
+
+      if (!this.googleMapsUrl) {
+        await this.carregarNumerocxCaixa();
+      }
+      const googleMapsUrl = this.googleMapsUrl;
+      const qrDataUrl = googleMapsUrl
+        ? await this.gerarQrDataUrl(googleMapsUrl)
+        : null;
 
       const bounds = this.diagram.documentBounds;
       const rawW = Math.max(1, Math.ceil(bounds.width) + 4);
@@ -5486,15 +5529,34 @@ private restaurarCursor(): void {
         const y = contentTop + (maxHeight - finalHeight) / 2;
 
         pdf.setFontSize(12);
-        pdf.text('Diagrama de Conexões - FiberWorks', pageWidth / 2, 15, {
-          align: 'center',
-        });
+        pdf.text(
+          `Diagrama de Conexões - Caixa ${this.caixaNumerocx}`,
+          pageWidth / 2,
+          15,
+          { align: 'center' },
+        );
 
         pdf.addImage(imageData, 'PNG', x, y, finalWidth, finalHeight);
+
+        // QR depois do diagrama: no PDF a última imagem fica por cima (antes era coberta).
+        if (qrDataUrl) {
+          const qrMm = 26;
+          const qrX = pageWidth - margin - qrMm;
+          const qrY = 20;
+          pdf.setFontSize(8);
+          pdf.setTextColor(0, 0, 0);
+          pdf.text('Localização (Maps)', qrX + qrMm / 2, qrY - 2, { align: 'center' });
+          pdf.addImage(qrDataUrl, 'PNG', qrX, qrY, qrMm, qrMm);
+        }
 
         pdf.setFontSize(10);
         const dataAtual = new Date().toLocaleDateString('pt-BR');
         pdf.text(`Gerado em: ${dataAtual}`, margin, pageHeight - 10);
+        if (googleMapsUrl) {
+          pdf.setFontSize(7);
+          const linkLines = pdf.splitTextToSize(googleMapsUrl, pageWidth - margin * 2);
+          pdf.text(linkLines, margin, pageHeight - 16);
+        }
 
         const nomeArquivo = `diagrama-conexoes-${new Date().getTime()}.pdf`;
         pdf.save(nomeArquivo);

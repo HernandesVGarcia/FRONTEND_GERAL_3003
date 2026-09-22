@@ -1,0 +1,28 @@
+<div class="layers-drawer" [class.is-open]="panelOpen">
+  <div class="layers-drawer__panel" id="map-layers-drawer-panel">
+    <header class="layers-drawer__header">
+      <mat-icon class="layers-drawer__header-icon" aria-hidden="true">layers</mat-icon>
+      <span class="layers-drawer__title">Camadas Rede</span>
+    </header>
+    <div class="layers-drawer__body">
+      <label class="layer-row" *ngFor="let opt of layerOptions">
+        <mat-checkbox
+          [checked]="isLayerSelected(opt.id)"
+          (change)="onLayerChange(opt.id, $event.checked)"
+          [attr.aria-label]="opt.label">
+        </mat-checkbox>
+        <span class="layer-row__label">{{ opt.label }}</span>
+      </label>
+    </div>
+  </div>
+
+  <button
+    type="button"
+    class="layers-drawer__tab"
+    (click)="togglePanel()"
+    [attr.aria-expanded]="panelOpen"
+    aria-controls="map-layers-drawer-panel"
+    [attr.aria-label]="panelOpen ? 'Recolher camadas' : 'Expandir camadas'">
+    <mat-icon>{{ panelOpen ? 'chevron_left' : 'chevron_right' }}</mat-icon>
+  </button>
+</div>

@@ -14,42 +14,23 @@
 
  <div class="toolbar-buttons">
   <button mat-raised-button 
-          class="rel-btn"
+          class="toolbar-glass-btn"
           aria-label="Relatório geral do mapa"
           matTooltip="Relatório geral do mapa"
           matTooltipPosition="below"
           (click)="onOpenMapReport()">Rel</button>
   <button mat-raised-button 
-          class="kml-btn" 
+          class="toolbar-glass-btn" 
           aria-label="Exportar para KML" 
           matTooltip="Exportar para Google Earth (KML)" 
           matTooltipPosition="below"
           (click)="onExportKML()">KML</button>
   <button mat-raised-button 
-          class="log-btn"
+          class="toolbar-glass-btn"
           aria-label="Log da cidade" 
           matTooltip="Log da cidade" 
           matTooltipPosition="below"
           (click)="abrirLogCidade()">Log</button>
-  <mat-form-field
-    #layersSelectTrigger
-    class="layers-select-field"
-    appearance="outline"
-    subscriptSizing="dynamic"
-    matTooltip="Visualização em Camadas"
-    matTooltipPosition="below">
-    <mat-label>Camadas Rede</mat-label>
-    <mat-select
-      #layersSelect
-      multiple
-      panelClass="layers-select-panel"
-      [(ngModel)]="selectedLayers"
-      (openedChange)="onLayersSelectOpened($event)"
-      (selectionChange)="onLayersSelectionChange($event.value)"
-      aria-label="Camadas do mapa">
-      <mat-option *ngFor="let opt of layerOptions" [value]="opt.id">{{ opt.label }}</mat-option>
-    </mat-select>
-  </mat-form-field>
   <!--
   <button mat-icon-button class="example-icon" aria-label="Compartilhar">
     <mat-icon>share</mat-icon>

@@ -1,6 +1,7 @@
 <div class="tracer-buttons-container">
   <!-- Limpa Tracer -->
   <div class="group">
+    <span class="button-label">Limpa</span>
     <button 
       class="map-tracer-button limpa-tracer"
       (click)="onLimpaTracer()"
@@ -12,6 +13,7 @@
 
   <!-- Régua -->
   <div class="group">
+    <span class="button-label">Régua</span>
     <button 
       class="map-tracer-button medir-distancia"
       [class.ativo]="modoMedicaoAtivo"
@@ -24,6 +26,7 @@
 
   <!-- Minha Localização -->
   <div class="group">
+    <span class="button-label">Local</span>
     <button 
       class="map-tracer-button minha-localizacao"
       (click)="onMinhaLocalizacao()"
@@ -35,6 +38,7 @@
 
   <!-- Selecionar Cidades -->
   <div class="group">
+    <span class="button-label">Cidades</span>
     <button 
       class="map-tracer-button selecionar-cidades"
       (click)="onSelecionarCidades()"
@@ -62,6 +66,7 @@
 
 <!-- Desenha Cabo -->
 <div class="group" *ngIf="!isMobile()">
+    <span class="button-label">Cabo</span>
     <button 
       class="map-tracer-button desenha-cabo"
       (click)="onDesenhaCabo()"
@@ -73,6 +78,7 @@
 
   <!-- Finaliza Cabo -->
   <div class="group" *ngIf="!isMobile()">
+    <span class="button-label">Cabo Fim</span>
     <button 
       class="map-tracer-button finaliza-cabo"
       (click)="onFinalizaCabo()"
@@ -84,6 +90,7 @@
 
   <!-- Desenha Polígono -->
   <div class="group" *ngIf="!isMobile()">
+    <span class="button-label">Poligono</span>
     <button 
       class="map-tracer-button desenha-poligono"
       (click)="onDesenhaPoligono()"
@@ -95,6 +102,7 @@
 
   <!-- Finaliza Polígono -->
   <div class="group" *ngIf="!isMobile()">
+    <span class="button-label">Poly Fim</span>
     <button 
       class="map-tracer-button finaliza-poligono"
       (click)="onFinalizaPoligono()"
@@ -106,6 +114,7 @@
 
   <!-- Editar polígono: duplo clique no polígono (tipo cabo) -->
   <div class="group" *ngIf="!isMobile()">
+    <span class="button-label">Poly Editar</span>
     <button 
       class="map-tracer-button editar-poligono"
       [class.ativo]="modoEdicaoPoligonoAtivo"

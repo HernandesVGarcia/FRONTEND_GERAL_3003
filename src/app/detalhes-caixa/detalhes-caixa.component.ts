@@ -261,7 +261,14 @@ export class DetalhesCaixaComponent implements OnInit, OnChanges {
     }
     const ID_TIPO = (indiceTipagem + 1).toString();
 
-    const numeroLabel = this.form.labelCaixa?.trim() || this.data.id_meta?.toString() || '0';
+    const labelInformado =
+      this.form.labelCaixa && this.form.labelCaixa.trim() !== ''
+        ? this.sanitizarLabelCaixa(this.form.labelCaixa.trim())
+        : '';
+    const numeroLabel =
+      labelInformado !== ''
+        ? labelInformado
+        : this.data.id_meta?.toString() || '0';
 
     const request: UpdateTipagemCaixaRequest = {
       id_meta: this.data.id_meta,
@@ -299,6 +306,16 @@ export class DetalhesCaixaComponent implements OnInit, OnChanges {
         alert(`Erro ao atualizar caixa: ${error}`);
       }
     });
+  }
+
+  /**
+   * Graphviz-safe: só A-Za-z0-9; resto vira _; colapsa __ e trim de _.
+   */
+  private sanitizarLabelCaixa(label: string): string {
+    return String(label ?? '')
+      .replace(/[^A-Za-z0-9]+/g, '_')
+      .replace(/_+/g, '_')
+      .replace(/^_|_$/g, '');
   }
 
   fechar(): void {
