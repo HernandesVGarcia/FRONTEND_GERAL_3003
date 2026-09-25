@@ -1,0 +1,72 @@
+.toolbar-glass-btn.mat-mdc-raised-button {
+  --mdc-protected-button-container-color: rgba(255, 255, 255, 0.22);
+  --mdc-protected-button-label-text-color: #fff;
+  --mdc-protected-button-container-elevation-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  --mdc-protected-button-hover-container-elevation-shadow: 0 2px 6px rgba(0, 0, 0, 0.16);
+  --mdc-protected-button-focus-container-elevation-shadow: 0 2px 6px rgba(0, 0, 0, 0.16);
+  --mdc-protected-button-pressed-container-elevation-shadow: 0 1px 2px rgba(0, 0, 0, 0.14);
+
+  height: 32px;
+  min-width: 44px;
+  padding: 0 12px;
+  margin-left: 0;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.toolbar-glass-btn.mat-mdc-raised-button:not(:disabled) {
+  border: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+.toolbar-glass-btn.mat-mdc-raised-button:hover:not(:disabled) {
+  --mdc-protected-button-container-color: rgba(255, 255, 255, 0.32);
+}
+
+.toolbar-glass-btn.mat-mdc-raised-button:active:not(:disabled) {
+  --mdc-protected-button-container-color: rgba(255, 255, 255, 0.18);
+}
+
+.toolbar-glass-btn.mat-mdc-raised-button.cdk-focused:not(:disabled),
+.toolbar-glass-btn.mat-mdc-raised-button:focus-visible:not(:disabled) {
+  outline: 2px solid rgba(255, 255, 255, 0.65);
+  outline-offset: 2px;
+}
+
+/* Sobre o mapa (ex.: Logout): azul Fiberworks semitransparente, igual tracer/pesquisa */
+.toolbar-glass-btn.toolbar-glass-btn--blue.mat-mdc-raised-button:not(:disabled) {
+  --mdc-protected-button-container-color: rgba(111, 136, 192, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.toolbar-glass-btn.toolbar-glass-btn--blue.mat-mdc-raised-button:hover:not(:disabled) {
+  --mdc-protected-button-container-color: rgba(111, 136, 192, 0.88);
+}
+
+.toolbar-glass-btn.toolbar-glass-btn--blue.mat-mdc-raised-button:active:not(:disabled) {
+  --mdc-protected-button-container-color: rgba(90, 112, 168, 0.82);
+}
+
+/* Tamanhos mobile só na toolbar (Rel/KML/Log); Logout define o seu em logout-button.component.css */
+@media (max-width: 768px) {
+  .toolbar-buttons .toolbar-glass-btn.mat-mdc-raised-button {
+    height: 28px;
+    min-width: 38px;
+    padding: 0 8px;
+    font-size: 11px;
+    border-radius: 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  .toolbar-buttons .toolbar-glass-btn.mat-mdc-raised-button {
+    height: 26px;
+    min-width: 34px;
+    padding: 0 6px;
+    font-size: 10px;
+    border-radius: 6px;
+  }
+}

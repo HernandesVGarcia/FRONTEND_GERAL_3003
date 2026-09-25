@@ -146,7 +146,11 @@ import { Cabo_destino_CX } from '../modelo/Cabo_destino_CX';
 import { DestinoSigla } from '../modelo/DestinoSigla';
 import { NgbModal, NgbModalModule, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { PowerMeterModalComponent } from '../power-meter-modal/power-meter-modal.component';
-import { buildCableAnalisaRequest } from '../servico/analisa-conexao-nivel.service';
+import {
+  AnalisaConexaoNivelResponse,
+  AnalisaConexaoNivelService,
+  buildCableAnalisaRequest,
+} from '../servico/analisa-conexao-nivel.service';
 
 /**
  * ============================================================================
@@ -424,7 +428,8 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnDestroy {
     private updateExcluiFusaoSaidaEntradaSPService: UpdateExcluiFusaoSaidaEntradaSPService, // 🗑️ NOVO: Serviço para excluir fusão splitter-splitter (saída-entrada)
     private insertSplitterService: InsertSplitterService, // 🔀 NOVO: Serviço para inserir splitter
     private excluiSplitterService: ExcluiSplitterService, // 🗑️ NOVO: Serviço para excluir splitter
-    private insertLogService: InsertLogService // 📝 NOVO: Serviço para inserir logs
+    private insertLogService: InsertLogService, // 📝 NOVO: Serviço para inserir logs
+    private analisaConexaoNivelService: AnalisaConexaoNivelService,
    ) {}
 
   /** Modal Bootstrap (ng-bootstrap) com imagem do power meter — cabo ou splitter. */
@@ -5499,7 +5504,8 @@ private restaurarCursor(): void {
       const pageHeight = 297;
       const margin = 10;
       const headerReserveMm = 22;
-      const footerReserveMm = 18;
+      const qrMm = 26;
+      const footerReserveMm = qrDataUrl ? 38 : 18;
 
       const tempImg = new Image();
       tempImg.onload = () => {
@@ -5538,11 +5544,10 @@ private restaurarCursor(): void {
 
         pdf.addImage(imageData, 'PNG', x, y, finalWidth, finalHeight);
 
-        // QR depois do diagrama: no PDF a última imagem fica por cima (antes era coberta).
+        // QR canto inferior direito, depois do diagrama (última camada por cima).
         if (qrDataUrl) {
-          const qrMm = 26;
           const qrX = pageWidth - margin - qrMm;
-          const qrY = 20;
+          const qrY = pageHeight - margin - qrMm;
           pdf.setFontSize(8);
           pdf.setTextColor(0, 0, 0);
           pdf.text('Localização (Maps)', qrX + qrMm / 2, qrY - 2, { align: 'center' });
@@ -5554,7 +5559,10 @@ private restaurarCursor(): void {
         pdf.text(`Gerado em: ${dataAtual}`, margin, pageHeight - 10);
         if (googleMapsUrl) {
           pdf.setFontSize(7);
-          const linkLines = pdf.splitTextToSize(googleMapsUrl, pageWidth - margin * 2);
+          const footerTextWidth = qrDataUrl
+            ? pageWidth - margin * 2 - qrMm - 4
+            : pageWidth - margin * 2;
+          const linkLines = pdf.splitTextToSize(googleMapsUrl, footerTextWidth);
           pdf.text(linkLines, margin, pageHeight - 16);
         }
 
@@ -5823,6 +5831,8 @@ private restaurarCursor(): void {
   ];
   /** Evita clique duplo no Tracer por painel (caboKey). */
   private readonly fibraTabelaTracerBusy = new Set<string>();
+  /** Evita clique duplo na Metragem por fibra (caboKey:numero). */
+  private readonly fibraTabelaMetragemBusy = new Set<string>();
 
   private isFibraTabelaKey(key: unknown): boolean {
     return (
@@ -5981,8 +5991,50 @@ private restaurarCursor(): void {
     ];
   }
 
+  private criarCabecalhoColunaFibraTabela(texto: string, column: number, width: number): go.TextBlock {
+    return new go.TextBlock({
+      column,
+      text: texto,
+      margin: 2,
+      font: 'bold 9pt sans-serif',
+      stroke: '#37474f',
+      width,
+      textAlign: column === 1 || column === 5 ? 'center' : 'left',
+      overflow: go.TextOverflow.Ellipsis,
+      wrap: go.Wrap.None
+    });
+  }
+
   private createFibraTabelaTemplate(): go.Node {
+    const headerRow = new go.Panel(go.Panel.TableRow, {
+      background: '#eceff1'
+    })
+      .add(this.criarCabecalhoColunaFibraTabela('Equipamento', 0, 100))
+      .add(this.criarCabecalhoColunaFibraTabela('Fibra', 1, 36))
+      .add(this.criarCabecalhoColunaFibraTabela('Destino', 2, 140))
+      .add(this.criarCabecalhoColunaFibraTabela('Fibra Cabo', 3, 52))
+      .add(this.criarCabecalhoColunaFibraTabela('Conexão', 4, 200))
+      .add(this.criarCabecalhoColunaFibraTabela('Metragem', 5, 150));
+
+    // Texto preenchido no mouseHover: o Adornment é compartilhado e o data dele é o do nó, não o da linha.
+    const metragemToolTipText = new go.TextBlock({
+      margin: 4,
+      font: '9pt sans-serif',
+      stroke: '#212121',
+      maxSize: new go.Size(240, NaN)
+    });
+    const metragemToolTip = new go.Adornment(go.Panel.Auto)
+      .add(
+        new go.Shape('RoundedRectangle', {
+          fill: '#ffffe0',
+          stroke: '#9e9e9e',
+          strokeWidth: 0.5
+        })
+      )
+      .add(metragemToolTipText);
+
     const rowTemplate = new go.Panel(go.Panel.TableRow)
+      // Coluna 0 — "Equipamento" (obs_dio do Tracer)
       .add(
         new go.TextBlock({
           column: 0,
@@ -5994,6 +6046,7 @@ private restaurarCursor(): void {
           wrap: go.Wrap.None
         }).bind('text', 'origemObs')
       )
+      // Coluna 1 — "Fibra" (fibra na ponta oposta, do Tracer)
       .add(
         new go.TextBlock({
           column: 1,
@@ -6004,6 +6057,7 @@ private restaurarCursor(): void {
           textAlign: 'center'
         }).bind('text', 'origemFibra')
       )
+      // Coluna 2 — "Destino" (tipo_objeto do Tracer)
       .add(
         new go.TextBlock({
           column: 2,
@@ -6015,6 +6069,7 @@ private restaurarCursor(): void {
           wrap: go.Wrap.None
         }).bind('text', 'origemTipo')
       )
+      // Coluna 3 — "Fibra Cabo" (F{n} + bolinha da cor da fibra)
       .add(
         new go.Panel(go.Panel.Horizontal, {
           column: 3,
@@ -6037,16 +6092,75 @@ private restaurarCursor(): void {
               desiredSize: new go.Size(14, 14)
             }).bind('fill', 'cor')
           )
+      )
+      // Coluna 4 — "Conexão" (fusão dentro da caixa, via conex_bc)
+      .add(
+        new go.TextBlock({
+          column: 4,
+          margin: 2,
+          font: '9pt sans-serif',
+          stroke: '#333',
+          width: 200,
+          textAlign: 'left',
+          overflow: go.TextOverflow.Ellipsis,
+          wrap: go.Wrap.None
+        }).bind('text', 'labelConexao')
+      )
+      // Coluna 5 — "Metragem" (botão 📏 + resultado de /analisa-conexao-nivel)
+      .add(
+        new go.Panel(go.Panel.Horizontal, {
+          column: 5,
+          margin: 1,
+          alignment: go.Spot.Center
+        })
+          .add(
+            new go.Panel(go.Panel.Auto, {
+              cursor: 'pointer',
+              click: (_e, obj) => {
+                const rowData = this.obterDataLinhaFibraTabela(obj);
+                const caboKey = String(rowData?.caboKey ?? '');
+                const numero = Number(rowData?.numero);
+                if (!caboKey || !Number.isFinite(numero)) {
+                  return;
+                }
+                this.ngZone.run(() => {
+                  void this.onMetragemFibraCaboClick(caboKey, numero);
+                });
+              }
+            })
+              .add(
+                new go.Shape('RoundedRectangle', {
+                  fill: '#f5f5f5',
+                  stroke: '#90a4ae',
+                  strokeWidth: 1,
+                  parameter1: 2
+                })
+              )
+              // Coluna 5 — ícone do botão
+              .add(
+                new go.TextBlock({
+                  text: '📏',
+                  font: '10pt sans-serif',
+                  margin: new go.Margin(1, 4, 1, 4)
+                })
+              )
+          )
+          // Coluna 5 — texto do resultado ("2920 m · 5.5 dBm"); `width` define o corte por ellipsis
           .add(
             new go.TextBlock({
-              font: '9pt sans-serif',
-              stroke: '#000',
-              margin: new go.Margin(0, 0, 0, 4),
-              width: 200,
+              font: '8pt sans-serif',
+              stroke: '#546e7a',
+              margin: new go.Margin(0, 0, 0, 3),
+              width: 110,
               textAlign: 'left',
               overflow: go.TextOverflow.Ellipsis,
-              wrap: go.Wrap.None
-            }).bind('text', 'labelConexao')
+              wrap: go.Wrap.None,
+              toolTip: metragemToolTip,
+              mouseHover: (_e, obj) => {
+                const rowData = this.obterDataLinhaFibraTabela(obj);
+                metragemToolTipText.text = String(rowData?.metragemTooltip ?? '');
+              }
+            }).bind('text', 'metragemText')
           )
       );
 
@@ -6156,12 +6270,167 @@ private restaurarCursor(): void {
             new go.Panel(go.Panel.Table, {
               defaultSeparatorPadding: new go.Margin(1, 2),
               defaultColumnSeparatorStroke: '#bdbdbd',
+              defaultRowSeparatorStroke: '#e0e0e0'
+            }).add(headerRow)
+          )
+          .add(
+            new go.Panel(go.Panel.Table, {
+              defaultSeparatorPadding: new go.Margin(1, 2),
+              defaultColumnSeparatorStroke: '#bdbdbd',
               defaultRowSeparatorStroke: '#e0e0e0',
               itemTemplate: rowTemplate
             }).bind('itemArray', 'fibras')
           )
       );
-  } /*************************************************************************************************************
+  }
+  //=============================================== METRAGEM / NÍVEL POR FIBRA (painel cabo) ======================
+
+  /** Data da linha de `fibras`: sobe os panels até o item panel, pois `obj.part.data` é o do painel. */
+  private obterDataLinhaFibraTabela(
+    obj: go.GraphObject,
+  ): { caboKey?: string; numero?: number; metragemTooltip?: string } | null {
+    const part = obj.part;
+    let panel: go.Panel | null = obj.panel;
+    while (panel && panel !== part) {
+      const data = panel.data as
+        | { caboKey?: string; numero?: number; metragemTooltip?: string }
+        | null;
+      if (data) {
+        return data;
+      }
+      panel = panel.panel;
+    }
+    return null;
+  }
+
+  private formatarNivelCompactoAnalisa(res: AnalisaConexaoNivelResponse): string {
+    if (
+      res.nivels === -399 ||
+      String(res.nivels ?? '')
+        .trim()
+        .toUpperCase() === 'OFF'
+    ) {
+      return 'OFF';
+    }
+    if (res.motivo === 'DIO' && res.nivels != null) {
+      const nivelDio = Number(res.nivels);
+      if (!Number.isNaN(nivelDio)) {
+        const atenuacao = Number(res.atenuacao ?? 0);
+        const exibido = nivelDio - (Number.isFinite(atenuacao) ? atenuacao : 0);
+        return `${(Number.isFinite(exibido) ? exibido : nivelDio).toFixed(2)} dBm`;
+      }
+    }
+    return '--.-- dBm';
+  }
+
+  private formatarTooltipAnalisa(res: AnalisaConexaoNivelResponse): string {
+    const lines: string[] = [];
+    if (res.metragem != null) {
+      lines.push(`Metragem: ${Math.floor(Number(res.metragem))} m`);
+    }
+    if (res.atenuacao != null) {
+      lines.push(`Atenuação: ${Number(res.atenuacao).toFixed(2)} dB`);
+    }
+    lines.push(`Nível: ${this.formatarNivelCompactoAnalisa(res)}`);
+    if (res.motivo) {
+      lines.push(String(res.motivo));
+    }
+    return lines.join('\n');
+  }
+
+  private atualizarLinhaMetragemFibraTabela(
+    caboKey: string,
+    numeroFibra: number,
+    patch: { metragemText: string; metragemTooltip?: string },
+  ): void {
+    if (!this.diagram) {
+      return;
+    }
+    const tabelaKey = this.chaveFibraTabela(caboKey);
+    const model = this.diagram.model as go.GraphLinksModel;
+    const nodeData = model.findNodeDataForKey(tabelaKey);
+    if (!nodeData) {
+      return;
+    }
+    const fibras = Array.isArray(nodeData['fibras']) ? [...nodeData['fibras']] : [];
+    const idx = fibras.findIndex((r: { numero?: number }) => Number(r?.numero) === numeroFibra);
+    if (idx < 0) {
+      return;
+    }
+    fibras[idx] = { ...fibras[idx], ...patch };
+    this.diagram.startTransaction('fibraTabelaMetragem');
+    model.setDataProperty(nodeData, 'fibras', fibras);
+    this.diagram.commitTransaction('fibraTabelaMetragem');
+  }
+
+  /** Metragem/nível via POST /analisa-conexao-nivel (mesmo payload do Power Meter). */
+  private async onMetragemFibraCaboClick(caboKey: string, numeroFibra: number): Promise<void> {
+    const busyKey = `${caboKey}:${numeroFibra}`;
+    if (this.fibraTabelaMetragemBusy.has(busyKey)) {
+      return;
+    }
+
+    const bocaNum = parseInt(caboKey.replace(/^Boca/i, ''), 10);
+    if (!this.diagram || !Number.isFinite(bocaNum) || bocaNum < 1 || bocaNum > 18) {
+      return;
+    }
+    if (!Number.isFinite(numeroFibra) || numeroFibra < 1 || numeroFibra > 144) {
+      return;
+    }
+
+    const analisaReq = buildCableAnalisaRequest({
+      bocaKey: caboKey,
+      portId: `F${numeroFibra}`,
+      bocaValue: this.getBocaValue(bocaNum),
+      idMetaCabo: this.VetorTipoCabos[bocaNum - 1]?.id_meta_cabo,
+    });
+    if (!analisaReq) {
+      this.atualizarLinhaMetragemFibraTabela(caboKey, numeroFibra, {
+        metragemText: '—',
+        metragemTooltip: 'Dados do cabo insuficientes para analisar.',
+      });
+      return;
+    }
+
+    this.fibraTabelaMetragemBusy.add(busyKey);
+    this.atualizarLinhaMetragemFibraTabela(caboKey, numeroFibra, {
+      metragemText: '...',
+      metragemTooltip: '',
+    });
+
+    try {
+      const res = await firstValueFrom(
+        this.analisaConexaoNivelService.analisa({
+          ...analisaReq,
+          metragem: 0,
+          atenuacao: 0,
+          nivels: 0,
+        }),
+      );
+      if (!res.success) {
+        this.atualizarLinhaMetragemFibraTabela(caboKey, numeroFibra, {
+          metragemText: 'Erro',
+          metragemTooltip: res.error ?? 'Análise sem sucesso.',
+        });
+        return;
+      }
+      const metros =
+        res.metragem != null ? `${Math.floor(Number(res.metragem))} m` : '— m';
+      const nivel = this.formatarNivelCompactoAnalisa(res);
+      this.atualizarLinhaMetragemFibraTabela(caboKey, numeroFibra, {
+        metragemText: `${metros} · ${nivel}`,
+        metragemTooltip: this.formatarTooltipAnalisa(res),
+      });
+    } catch (err: unknown) {
+      const msg = typeof err === 'string' ? err : 'Erro ao analisar conexão.';
+      this.atualizarLinhaMetragemFibraTabela(caboKey, numeroFibra, {
+        metragemText: 'Erro',
+        metragemTooltip: msg,
+      });
+    } finally {
+      this.fibraTabelaMetragemBusy.delete(busyKey);
+    }
+  }
 
 
 
@@ -6273,16 +6542,23 @@ private restaurarCursor(): void {
       capacidade
     );
 
-    const montarFibras = (labelPorFibra: Map<string, string>) =>
+    const montarFibras = (
+      labelPorFibra: Map<string, string>,
+      anterior?: Array<Record<string, unknown>>
+    ) =>
       Array.from({ length: capacidade }, (_, i) => {
         const numero = i + 1;
         const chaveFibra = `F${numero}`;
+        const prev = anterior?.find((r) => Number(r['numero']) === numero);
         return {
-          origemObs: '---',
-          origemFibra: '---',
-          origemTipo: '---',
+          caboKey,
+          origemObs: (prev?.['origemObs'] as string) ?? '---',
+          origemFibra: (prev?.['origemFibra'] as string) ?? '---',
+          origemTipo: (prev?.['origemTipo'] as string) ?? '---',
           numero,
           labelConexao: labelPorFibra.get(chaveFibra) ?? '-- VAGA',
+          metragemText: (prev?.['metragemText'] as string) ?? '---',
+          metragemTooltip: (prev?.['metragemTooltip'] as string) ?? '',
           cor: this.obterCorFibraDoCabo(caboKey, numero)
         };
       });
@@ -6334,7 +6610,11 @@ private restaurarCursor(): void {
             labelPorFibra.set(c.fibraOrigem, `--> ${c.bocaDestino} ${c.fibraDestino}`);
           }
         }
-        fibras = montarFibras(labelPorFibra);
+        const nodeDataAntes = model.findNodeDataForKey(tabelaKey);
+        const fibrasAnteriores = Array.isArray(nodeDataAntes?.['fibras'])
+          ? (nodeDataAntes['fibras'] as Array<Record<string, unknown>>)
+          : undefined;
+        fibras = montarFibras(labelPorFibra, fibrasAnteriores);
         const nodeData = model.findNodeDataForKey(tabelaKey);
         if (nodeData) {
           this.diagram.startTransaction('atualizarFibraTabelaConex');
@@ -6431,7 +6711,13 @@ private restaurarCursor(): void {
                 origemFibra: row?.origemFibra ?? '---',
                 origemTipo: row?.origemTipo ?? '---'
               };
-        return { ...row, ...cols };
+        return {
+          ...row,
+          ...cols,
+          metragemText: row?.metragemText ?? '---',
+          metragemTooltip: row?.metragemTooltip ?? '',
+          caboKey: row?.caboKey ?? caboKey
+        };
       });
 
       this.diagram.startTransaction('fibraTabelaTracer');

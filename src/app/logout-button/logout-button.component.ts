@@ -1,17 +1,22 @@
 import { Component } from '@angular/core';
+import { MatButtonModule } from '@angular/material/button';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { AppLifecycleService } from '../servico/app-lifecycle.service';
 import { AuthService } from '../servico/auth.service';
 
 @Component({
   selector: 'app-logout-button',
   standalone: true,
+  imports: [MatButtonModule, MatTooltipModule],
   template: `
     <button
+      mat-raised-button
       type="button"
-      class="logout-btn"
+      class="toolbar-glass-btn toolbar-glass-btn--blue logout-btn"
       (click)="onLogout()"
       aria-label="Sair do sistema"
-      [title]="usuario ? 'Sair (' + usuario + ')' : 'Sair'">
+      matTooltipPosition="above"
+      [matTooltip]="tooltipText">
       Logout
     </button>
   `,
@@ -19,6 +24,10 @@ import { AuthService } from '../servico/auth.service';
 })
 export class LogoutButtonComponent {
   usuario: string | null = null;
+
+  get tooltipText(): string {
+    return this.usuario ? `Sair (${this.usuario})` : 'Sair do sistema';
+  }
 
   constructor(
     private appLifecycle: AppLifecycleService,

@@ -130,6 +130,10 @@ export interface AnalisaConexaoNivelPasso {
   regist: string;
   resultado: string;
   destinoTab: string;
+  /** Metragem acumulada até o fim desta iteração (m). */
+  metragem?: number;
+  /** Quanto esta iteração somou à metragem; 0 fora de entrada em cabo pela ponta A. */
+  metragemTrecho?: number;
 }
 
 export interface AnalisaConexaoNivelResponse {
