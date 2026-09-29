@@ -10,6 +10,7 @@ import { CaixaSearchModalComponent } from '../caixa-search-modal/caixa-search-mo
 import { ClienteSearchModalComponent } from '../cliente-search-modal/cliente-search-modal.component';
 import { EstacaoSearchModalComponent } from '../estacao-search-modal/estacao-search-modal.component';
 import { LogradouroSearchModalComponent } from '../logradouro-search-modal/logradouro-search-modal.component';
+import { CoordenadasSearchModalComponent } from '../coordenadas-search-modal/coordenadas-search-modal.component';
 import { ViabilidadeModalComponent } from '../viabilidade-modal/viabilidade-modal.component';
 import { Caixa } from '../modelo/Caixa';
 import { Cto_SP } from '../modelo/Cto_SP';
@@ -81,6 +82,15 @@ export class MapSearchButtonsComponent {
       backdrop: false,
       centered: true,
       windowClass: 'logradouro-search-modal-window',
+    });
+  }
+
+  onPesquisarCoordenadas(): void {
+    this.ngbModal.open(CoordenadasSearchModalComponent, {
+      size: 'lg',
+      backdrop: false,
+      centered: true,
+      windowClass: 'coordenadas-search-modal-window',
     });
   }
 

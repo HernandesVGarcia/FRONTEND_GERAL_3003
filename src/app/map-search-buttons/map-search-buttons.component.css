@@ -99,6 +99,7 @@
 .tooltip-cliente,
 .tooltip-estacao,
 .tooltip-logradouro,
+.tooltip-coordenadas,
 .tooltip-viabilidade,
 .tooltip-postes-concessionaria {
   position: absolute;
@@ -123,6 +124,7 @@
 .group:hover .tooltip-cliente,
 .group:hover .tooltip-estacao,
 .group:hover .tooltip-logradouro,
+.group:hover .tooltip-coordenadas,
 .group:hover .tooltip-viabilidade,
 .group:hover .tooltip-postes-concessionaria {
   opacity: 1;
@@ -134,6 +136,7 @@
 .tooltip-cliente::after,
 .tooltip-estacao::after,
 .tooltip-logradouro::after,
+.tooltip-coordenadas::after,
 .tooltip-viabilidade::after,
 .tooltip-postes-concessionaria::after {
   content: '';

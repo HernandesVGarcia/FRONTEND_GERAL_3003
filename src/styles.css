@@ -240,6 +240,14 @@ body.modal-open .modal-content {
 .logradouro-search-modal-window app-logradouro-search-modal .modal-content * { pointer-events: auto !important; }
 .logradouro-search-modal-window app-logradouro-search-modal .modal-content { user-select: none !important; }
 
+/* Coordenadas (lat/lng manual) */
+.coordenadas-search-modal-window,
+.coordenadas-search-modal-window * { pointer-events: none !important; }
+.coordenadas-search-modal-window .modal-dialog > .modal-content { pointer-events: none !important; }
+.coordenadas-search-modal-window app-coordenadas-search-modal .modal-content,
+.coordenadas-search-modal-window app-coordenadas-search-modal .modal-content * { pointer-events: auto !important; }
+.coordenadas-search-modal-window app-coordenadas-search-modal .modal-content { user-select: none !important; }
+
 /* Viabilidade (caixas por raio) */
 .viabilidade-modal-window,
 .viabilidade-modal-window * { pointer-events: none !important; }

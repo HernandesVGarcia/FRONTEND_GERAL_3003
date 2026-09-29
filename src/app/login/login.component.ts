@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -11,6 +11,7 @@ import { ConsultaApiVigoService } from '../servico/consulta-api-vigo.service';
 import { PoloErpService } from '../servico/polo-erp.service';
 import { ERP_RBX, ERP_VIGO } from '../servico/erp.constants';
 import { InsertLogService } from '../servico/insert-log.service';
+import { VersiculoAleatorioService } from '../servico/versiculo-aleatorio.service';
 
 @Component({
   selector: 'app-login',
@@ -19,12 +20,14 @@ import { InsertLogService } from '../servico/insert-log.service';
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   chave: string = '';
   senha: string = '';
   errorMessage: string = '';
   loading: boolean = false;
   showCityModal: boolean = false;
+  versiculoTexto: string = '';
+  versiculoEndereco: string = '';
 
   constructor(
     private tokenService: TokenService,
@@ -35,7 +38,21 @@ export class LoginComponent {
     private consultaApiVigoService: ConsultaApiVigoService,
     private poloErpService: PoloErpService,
     private insertLogService: InsertLogService,
+    private versiculoAleatorioService: VersiculoAleatorioService,
   ) {}
+
+  ngOnInit(): void {
+    this.versiculoAleatorioService.obterAleatorio().subscribe({
+      next: (v) => {
+        this.versiculoTexto = v.vers?.trim() ?? '';
+        this.versiculoEndereco = v.endereco?.trim() ?? '';
+      },
+      error: () => {
+        this.versiculoTexto = '';
+        this.versiculoEndereco = '';
+      },
+    });
+  }
 
   private async carregarErpDoPolo(idPolo: string | number | null | undefined): Promise<void> {
     if (idPolo === null || idPolo === undefined || String(idPolo).trim() === '') {
