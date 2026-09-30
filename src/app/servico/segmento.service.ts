@@ -6,6 +6,14 @@ import { retry, timeout, catchError } from 'rxjs/operators';
 import { AuthService } from '../servico/auth.service';
 import { environment } from '../environments/environment';
 
+export interface UpdateSegmentoCoordenadasResponse {
+  success: boolean;
+  id_meta?: number;
+  message?: string;
+  affectedRows?: number;
+  error?: string;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -53,6 +61,34 @@ export class SegmentoService {
     const url = `${this.baseUrl}${route}`;
 
     return this.http.post(url, body, { headers }).pipe(
+      timeout(this.TIMEOUT),
+      retry(this.RETRY_ATTEMPTS),
+      catchError(this.handleError),
+    );
+  }
+
+  atualizarCoordenadas(params: {
+    id_meta: number;
+    lat: number;
+    lng: number;
+  }): Observable<UpdateSegmentoCoordenadasResponse> {
+    const route = `/update_geometria_segmento`;
+    const token = this.authService.getToken();
+    const id_city = this.authService.getIdCity();
+
+    const headers = new HttpHeaders()
+      .set('Content-Type', 'application/json')
+      .set('Authorization', `Bearer ${token}`);
+
+    const body = {
+      id_city,
+      id_meta: params.id_meta,
+      lat: params.lat,
+      lng: params.lng,
+    };
+    const url = `${this.baseUrl}${route}`;
+
+    return this.http.post<UpdateSegmentoCoordenadasResponse>(url, body, { headers }).pipe(
       timeout(this.TIMEOUT),
       retry(this.RETRY_ATTEMPTS),
       catchError(this.handleError),

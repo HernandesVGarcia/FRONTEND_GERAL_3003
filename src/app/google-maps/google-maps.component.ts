@@ -488,6 +488,12 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
   private caixaEmEdicaoOriginalIcon: google.maps.Icon | null = null; // Ícone original para restaurar
   private listenerMapaSalvarCaixa: google.maps.MapsEventListener | null = null; // Listener para salvar ao clicar no mapa
   private listenerEscCancelarCaixa: any = null; // Listener para cancelar com ESC
+  // Edição de sobra (segmento)
+  private sobraEmEdicao: google.maps.Marker | null = null;
+  private sobraEmEdicaoIndex: number | null = null;
+  private sobraEmEdicaoOriginalPosition: { lat: number; lng: number } | null = null;
+  private listenerMapaSalvarSobra: google.maps.MapsEventListener | null = null;
+  private listenerEscCancelarSobra: ((event: KeyboardEvent) => void) | null = null;
   // 🔧 Propriedades para edição de DIO
   private dioEmEdicao: google.maps.Marker | null = null; // Marcador DIO em edição
   private dioEmEdicaoIndex: number | null = null; // Índice do DIO em edição
@@ -6224,7 +6230,7 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
       this.markerSegmentos = [];
     }
 
-    this.destinoSegmentos.forEach(location => {
+    this.destinoSegmentos.forEach((location, index) => {
       const position = {
         lat: Number(location.LAT),
         lng: Number(location.LNG),
@@ -6262,6 +6268,26 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
           console.log('🔍 [Sobra] Clique simples detectado na Sobra:', location.id_meta);
           this.showSobraInfoWindow(marker, event, location);
         }, 300);
+      });
+
+      marker.addListener('dblclick', (event: google.maps.MapMouseEvent) => {
+        console.log('🖱️ [Sobra] Double-click na Sobra:', location.id_meta);
+
+        if (clickTimeout) {
+          clearTimeout(clickTimeout);
+          clickTimeout = null;
+        }
+
+        if (this.currentMarkerInfoWindow) {
+          this.currentMarkerInfoWindow.close();
+        }
+
+        if (event.domEvent) {
+          event.domEvent.preventDefault?.();
+          event.domEvent.stopPropagation?.();
+        }
+
+        this.habilitarEdicaoSobra(index);
       });
 
       marker.addListener('rightclick', (event: google.maps.MapMouseEvent) => {
@@ -9835,6 +9861,9 @@ private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = fal
     if (this.caixaEmEdicao) {
       this.desabilitarEdicaoCaixa();
     }
+    if (this.sobraEmEdicao) {
+      this.desabilitarEdicaoSobra();
+    }
 
     // Salvar posição original para poder cancelar
     const position = marker.getPosition();
@@ -9909,6 +9938,9 @@ private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = fal
     // Se já há um item em edição, desabilitar o anterior
     if (this.caixaEmEdicao) {
       this.desabilitarEdicaoCaixa();
+    }
+    if (this.sobraEmEdicao) {
+      this.desabilitarEdicaoSobra();
     }
 
     // Salvar posição original para poder cancelar
@@ -9990,6 +10022,9 @@ private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = fal
     // Se já há um item em edição, desabilitar o anterior
     if (this.caixaEmEdicao) {
       this.desabilitarEdicaoCaixa();
+    }
+    if (this.sobraEmEdicao) {
+      this.desabilitarEdicaoSobra();
     }
 
     // Salvar posição original para poder cancelar
@@ -10415,6 +10450,99 @@ private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = fal
       lat: novaCoordenada.lat(),
       lng: novaCoordenada.lng()
     });
+  }
+
+  /** Caboxd/Caboxe da sobra: `cabo` + id_meta + `A`|`B`; `Z` ou vazio = desconectado. */
+  private parseReferenciaCaboSobra(
+    ref: string | undefined | null,
+  ): { idMetaCabo: number; ponta: 'A' | 'B' } | null {
+    const trimmed = String(ref ?? '').trim();
+    if (!trimmed || trimmed.toUpperCase() === 'Z') {
+      return null;
+    }
+    const match = trimmed.match(/^cabo(\d+)([AB])$/i);
+    if (!match) {
+      return null;
+    }
+    return {
+      idMetaCabo: parseInt(match[1], 10),
+      ponta: match[2].toUpperCase() as 'A' | 'B',
+    };
+  }
+
+  private persistirPolylineCabo(
+    polyline: google.maps.Polyline,
+    idMetaCabo: number,
+    logPrefix: string,
+  ): Promise<void> {
+    return new Promise<void>((resolve) => {
+      const coordenadasAtualizadas = this.updateCaboService.extrairCoordenadasPolyline(polyline);
+      const novoComprimento = this.updateCaboService.calcularComprimentoPolyline(polyline);
+      const caboData = {
+        id_meta: idMetaCabo,
+        length: novoComprimento,
+        GOOGLE_LATLNG: coordenadasAtualizadas,
+      };
+
+      console.log(`${logPrefix} Salvando cabo ${idMetaCabo} no banco...`, caboData);
+
+      this.updateCaboService.atualizarCabo(caboData).subscribe({
+        next: (response) => {
+          console.log(`${logPrefix} Cabo ${idMetaCabo} salvo com sucesso:`, response);
+          resolve();
+        },
+        error: (error) => {
+          console.error(`${logPrefix} Erro ao salvar cabo ${idMetaCabo}:`, error);
+          resolve();
+        },
+      });
+    });
+  }
+
+  /**
+   * Atualiza pontas dos cabos referenciados em Caboxd/Caboxe ao mover a sobra.
+   */
+  private async atualizarCabosConectadosASobra(
+    caboxd: string,
+    caboxe: string,
+    novaCoordenada: google.maps.LatLng,
+  ): Promise<void> {
+    const logPrefix = '🔌 [CABOS-CONECTADOS-SOBRA]';
+    try {
+      const refs = [
+        { campo: 'Caboxd', parsed: this.parseReferenciaCaboSobra(caboxd) },
+        { campo: 'Caboxe', parsed: this.parseReferenciaCaboSobra(caboxe) },
+      ];
+
+      const promessasSalvamento: Promise<void>[] = [];
+
+      for (const { campo, parsed } of refs) {
+        if (!parsed) {
+          continue;
+        }
+
+        const { idMetaCabo, ponta } = parsed;
+        console.log(`${logPrefix} ${campo}: cabo ${idMetaCabo}, ponta ${ponta}`);
+
+        const polyline = this.encontrarPolylinePorIdMeta(idMetaCabo);
+        if (!polyline) {
+          console.warn(`${logPrefix} Polyline não encontrada para cabo ${idMetaCabo}`);
+          continue;
+        }
+
+        this.atualizarPontaCabo(polyline, ponta, novaCoordenada);
+        promessasSalvamento.push(
+          this.persistirPolylineCabo(polyline, idMetaCabo, logPrefix),
+        );
+      }
+
+      await Promise.allSettled(promessasSalvamento);
+      console.log(
+        `${logPrefix} Processamento concluído. ${promessasSalvamento.length} cabo(s) processado(s)`,
+      );
+    } catch (error) {
+      console.error(`${logPrefix} Erro ao atualizar cabos conectados:`, error);
+    }
   }
 
   /**
@@ -11672,9 +11800,171 @@ private excluirCliente(): void {
   });
 }
 
-/**
- * 🔓 Libera sobra (desconecta cabos e seta Caboxd/Caboxe = Z)
- */
+/** Habilita edição da sobra (duplo clique): arrastar, clique no mapa salva, ESC cancela. */
+private habilitarEdicaoSobra(index: number): void {
+  if (index < 0 || index >= this.markerSegmentos.length) {
+    console.error('❌ [EDITAR-SOBRA] Índice inválido:', index);
+    return;
+  }
+
+  const marker = this.markerSegmentos[index];
+  const segmento = this.destinoSegmentos[index];
+
+  if (!marker || !segmento) {
+    console.error('❌ [EDITAR-SOBRA] Marcador ou segmento não encontrados');
+    return;
+  }
+
+  if (this.sobraEmEdicao) {
+    this.desabilitarEdicaoSobra();
+  }
+  if (this.caixaEmEdicao) {
+    this.desabilitarEdicaoCaixa();
+  }
+
+  const position = marker.getPosition();
+  if (position) {
+    this.sobraEmEdicaoOriginalPosition = {
+      lat: position.lat(),
+      lng: position.lng(),
+    };
+  }
+
+  marker.setDraggable(true);
+  marker.setOpacity(0.7);
+
+  this.sobraEmEdicao = marker;
+  this.sobraEmEdicaoIndex = index;
+
+  console.log('✅ [EDITAR-SOBRA] Edição habilitada para id_meta:', segmento.id_meta);
+
+  if (this.map && !this.listenerMapaSalvarSobra) {
+    this.listenerMapaSalvarSobra = this.map.addListener('click', () => {
+      if (this.sobraEmEdicao) {
+        this.salvarEdicaoSobra();
+      }
+    });
+  }
+
+  if (!this.listenerEscCancelarSobra) {
+    this.listenerEscCancelarSobra = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && this.sobraEmEdicao) {
+        this.cancelarEdicaoSobra();
+      }
+    };
+    document.addEventListener('keydown', this.listenerEscCancelarSobra);
+  }
+}
+
+private desabilitarEdicaoSobra(): void {
+  if (this.sobraEmEdicao) {
+    this.sobraEmEdicao.setDraggable(false);
+    this.sobraEmEdicao.setOpacity(1.0);
+  }
+
+  if (this.listenerMapaSalvarSobra) {
+    google.maps.event.removeListener(this.listenerMapaSalvarSobra);
+    this.listenerMapaSalvarSobra = null;
+  }
+
+  if (this.listenerEscCancelarSobra) {
+    document.removeEventListener('keydown', this.listenerEscCancelarSobra);
+    this.listenerEscCancelarSobra = null;
+  }
+
+  this.sobraEmEdicao = null;
+  this.sobraEmEdicaoIndex = null;
+  this.sobraEmEdicaoOriginalPosition = null;
+}
+
+private salvarEdicaoSobra(): void {
+  if (!this.sobraEmEdicao || this.sobraEmEdicaoIndex === null) {
+    return;
+  }
+
+  const position = this.sobraEmEdicao.getPosition();
+  if (!position) {
+    console.error('❌ [EDITAR-SOBRA] Posição não disponível');
+    return;
+  }
+
+  const segmento = this.destinoSegmentos[this.sobraEmEdicaoIndex];
+  if (!segmento?.id_meta) {
+    alert('❌ Erro: id_meta da sobra não encontrado');
+    return;
+  }
+
+  const newLat = position.lat();
+  const newLng = position.lng();
+
+  console.log('💾 [EDITAR-SOBRA] Salvando nova posição:', {
+    id_meta: segmento.id_meta,
+    lat: newLat,
+    lng: newLng,
+  });
+
+  this.segmentoService
+    .atualizarCoordenadas({
+      id_meta: segmento.id_meta,
+      lat: newLat,
+      lng: newLng,
+    })
+    .subscribe({
+      next: (response) => {
+        if (response?.success) {
+          segmento.LAT = newLat;
+          segmento.LNG = newLng;
+          console.log('✅ [EDITAR-SOBRA] Coordenadas atualizadas:', response.message);
+
+          const novaCoordenada = new google.maps.LatLng(newLat, newLng);
+          this.atualizarCabosConectadosASobra(
+            segmento.Caboxd,
+            segmento.Caboxe,
+            novaCoordenada,
+          )
+            .then(() => {
+              console.log('✅ [EDITAR-SOBRA] Cabos conectados atualizados');
+            })
+            .catch((err) => {
+              console.error('❌ [EDITAR-SOBRA] Erro ao atualizar cabos:', err);
+            });
+
+          this.desabilitarEdicaoSobra();
+        } else {
+          alert(response?.message || 'Erro ao atualizar coordenadas da sobra');
+        }
+      },
+      error: (error) => {
+        console.error('❌ [EDITAR-SOBRA] Erro ao atualizar coordenadas:', error);
+        const originalPos = this.sobraEmEdicaoOriginalPosition;
+        if (this.sobraEmEdicao && originalPos) {
+          this.sobraEmEdicao.setPosition({
+            lat: originalPos.lat,
+            lng: originalPos.lng,
+          });
+          segmento.LAT = originalPos.lat;
+          segmento.LNG = originalPos.lng;
+        }
+        alert(`❌ Erro ao atualizar coordenadas da sobra!\n\n${error}`);
+        this.desabilitarEdicaoSobra();
+      },
+    });
+}
+
+private cancelarEdicaoSobra(): void {
+  if (!this.sobraEmEdicao || !this.sobraEmEdicaoOriginalPosition) {
+    return;
+  }
+
+  this.sobraEmEdicao.setPosition({
+    lat: this.sobraEmEdicaoOriginalPosition.lat,
+    lng: this.sobraEmEdicaoOriginalPosition.lng,
+  });
+
+  this.desabilitarEdicaoSobra();
+  console.log('❌ [EDITAR-SOBRA] Edição cancelada, posição restaurada');
+}
+
 private liberaSobra(): void {
   console.log('🔓 [CONTEXT-MENU] Liberando sobra...', this.clickedSobraData);
 
