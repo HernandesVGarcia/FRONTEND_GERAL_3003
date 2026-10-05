@@ -17,7 +17,19 @@ import { LogCidadeComponent } from '../log-cidade/log-cidade.component';
 import { VigoCtoSyncModalComponent } from '../vigo-cto-sync-modal/vigo-cto-sync-modal.component';
 import { VigoSanearStatusModalComponent } from '../vigo-sanear-status-modal/vigo-sanear-status-modal.component';
 import { ERP_VIGO } from '../servico/erp.constants';
-import { environment } from '../environments/environment';
+
+declare global {
+  interface Window {
+    FIBERWORKS_SHOW_VIGO_TOOLBAR?: boolean;
+  }
+}
+
+function vigoToolbarHabilitado(): boolean {
+  if (typeof window === 'undefined') {
+    return false;
+  }
+  return window.FIBERWORKS_SHOW_VIGO_TOOLBAR === true;
+}
 
 @Component({
   selector: 'app-toolbars',
@@ -42,7 +54,7 @@ export class ToolbarsComponent implements OnInit {
   showCaixaInterna=false;
 
   get mostrarBotaoVigo(): boolean {
-    return !environment.production && this.authService.getIdErp() === ERP_VIGO;
+    return vigoToolbarHabilitado() && this.authService.getIdErp() === ERP_VIGO;
   }
  
    
