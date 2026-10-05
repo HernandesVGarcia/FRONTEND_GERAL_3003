@@ -123,6 +123,8 @@ import { UpdateFusaoSaidaEntradaSPService, UpdateFusaoSaidaEntradaSPRequest } fr
 import { UpdateExcluiFusaoSaidaEntradaSPService, ExcluiFusaoSaidaEntradaSPRequest, ExcluiFusaoSaidaEntradaSPResponse } from '../servico/update-exclui-fusao-saida-entradaSP.service'; // 🗑️ NOVO: Import UpdateExcluiFusaoSaidaEntradaSPService
 import { AuthService } from '../servico/auth.service'; // 🏠 NOVO: Import AuthService
 import { FiberApiService } from '../servico/fiber-api.service'; // 🏠 NOVO: Import FiberApiService
+import { ConsultaApiVigoService } from '../servico/consulta-api-vigo.service';
+import { ERP_VIGO } from '../servico/erp.constants';
 import { PlotaSplitterComponent, PlotaSplitterData, PlotaSplitterResult } from '../plota-splitter/plota-splitter.component';
 import { LogCaixaComponent } from '../log-caixa/log-caixa.component';
 import { FusaoPorTubosComponent } from '../fusao-por-tubos/fusao-por-tubos.component';
@@ -236,7 +238,25 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnDestroy {
   
   // 🏠 NOVO: Propriedade para armazenar o número da caixa
   public caixaNumerocx: string = 'N/A';
+  /** ID CTO no VIGO (`tstmeta.caixa.ID_INTEGRACAO`) da caixa aberta. */
+  public idCtoVigo: number | null = null;
+  public vigoConectividadeEmAndamento = false;
+  private vigoSyncJaDisparadoNoOpen = false;
   private googleMapsUrl: string | null = null;
+
+  // testar se o erp é o vigo==========================================
+  get mostrarVigoConectar(): boolean { // testar se o erp é o vigo
+    return this.authService.getIdErp() === ERP_VIGO;
+  }
+
+  get podeConectarVigo(): boolean {//
+    return (
+      this.mostrarVigoConectar &&
+      this.idCtoVigo != null &&
+      Number.isFinite(this.idCtoVigo) &&
+      this.idCtoVigo > 0
+    );
+  }//=================================================================
   private conexoesSPCarregadas: ConexaoSplitter[] = [];
   private conexoesPorBoca: Map<number, ConexaoBoca[]> = new Map();
   private conexoesPorSplitter: Map<number, ConexaoSplitter[]> = new Map();
@@ -430,6 +450,7 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnDestroy {
     private excluiSplitterService: ExcluiSplitterService, // 🗑️ NOVO: Serviço para excluir splitter
     private insertLogService: InsertLogService, // 📝 NOVO: Serviço para inserir logs
     private analisaConexaoNivelService: AnalisaConexaoNivelService,
+    private consultaApiVigoService: ConsultaApiVigoService,
    ) {}
 
   /** Modal Bootstrap (ng-bootstrap) com imagem do power meter — cabo ou splitter. */
@@ -468,6 +489,7 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnDestroy {
    */
   private async carregarNumerocxCaixa(): Promise<void> {
     this.googleMapsUrl = null;
+    this.idCtoVigo = null;
 
     try {
       const idmeta = this.authService.getIDmetaCaixa();
@@ -481,7 +503,7 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnDestroy {
 
       const response = await this.fiberApiService
         .executeDynamicQuery(
-          `SELECT numerocx, LAT, LONGI FROM tstmeta.caixa WHERE id_meta = {idmeta}`,
+          `SELECT numerocx, LAT, LONGI, ID_INTEGRACAO, conta_splitter FROM tstmeta.caixa WHERE id_meta = {idmeta}`,
           { idmeta },
         )
         .toPromise();
@@ -494,6 +516,14 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnDestroy {
       const row = response.data[0];
       this.caixaNumerocx = row.numerocx || 'N/A';
 
+      // recuperar o id_integracao da caixa utilizado no VIGO=============
+      const idIntegracaoRaw = row.ID_INTEGRACAO ?? row.id_integracao;
+      const idIntegracaoNum = Number.parseInt(String(idIntegracaoRaw ?? '').trim(), 10);
+      if (Number.isFinite(idIntegracaoNum) && idIntegracaoNum > 0) {
+        this.idCtoVigo = idIntegracaoNum;
+        console.log(`🏠 [GOJS-VIGO] ID_INTEGRACAO=${this.idCtoVigo} (conta_splitter=${row.conta_splitter ?? '?'})`);
+      }
+      //=================================================================
       const lat = parseCaixaCoordinate(row.LAT);
       const lng = parseCaixaCoordinate(row.LONGI);
 
@@ -505,6 +535,66 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnDestroy {
     } catch (error) {
       console.error('❌ [GOJS] Erro ao carregar dados da caixa:', error);
       this.caixaNumerocx = 'N/A';
+      this.idCtoVigo = null;
+    }
+  }
+
+  private agendarSyncVigoAposCargaInicial(): void {
+    if (this.vigoSyncJaDisparadoNoOpen || !this.podeConectarVigo) {
+      return;
+    }
+    this.vigoSyncJaDisparadoNoOpen = true;
+    void this.conectarClientesVigoNaCaixa({ origem: 'auto' });
+  }
+
+  async conectarClientesVigoNaCaixa(opts?: { origem?: 'auto' | 'manual' }): Promise<void> {
+    const origem = opts?.origem ?? 'manual';
+
+    if (!this.podeConectarVigo || this.vigoConectividadeEmAndamento || this.idCtoVigo == null) {
+      return;
+    }
+
+    if (origem === 'manual') {
+      const ok = window.confirm(
+        'Consultar ocupações VIGO nesta caixa e aplicar conexões splitter ↔ cliente?',
+      );
+      if (!ok) {
+        return;
+      }
+    }
+
+    this.vigoConectividadeEmAndamento = true;
+    this.cdr.detectChanges();
+
+    try {
+      console.log(`🔗 [GOJS-VIGO] Sync caixa id_cto=${this.idCtoVigo} (${origem})...`);
+      const resumo = await this.consultaApiVigoService.aplicarOcupacaoCto(this.idCtoVigo);
+
+      console.log(
+        `🔗 [GOJS-VIGO] Fim: ${resumo.ok.length} OK, ${resumo.ignorados.length} ignorado(s), ${resumo.erros.length} falha(s).`,
+      );
+
+      if (origem === 'manual') {
+        window.alert(
+          `VIGO — caixa ${this.caixaNumerocx}\n` +
+            `Conectados: ${resumo.ok.length}\n` +
+            `Já conectados (ignorados): ${resumo.ignorados.length}\n` +
+            `Falhas: ${resumo.erros.length}`,
+        );
+      }
+
+      if (resumo.ok.length > 0 || resumo.ignorados.length > 0) {
+        this.redesenharDiagrama();
+      }
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      console.error('❌ [GOJS-VIGO] Erro na conectividade:', msg);
+      if (origem === 'manual') {
+        window.alert(`Erro ao conectar VIGO: ${msg}`);
+      }
+    } finally {
+      this.vigoConectividadeEmAndamento = false;
+      this.cdr.detectChanges();
     }
   }
 
@@ -612,6 +702,7 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnDestroy {
       */
       
       console.log('✅ Carregamento completo concluído com sucesso!');
+      this.agendarSyncVigoAposCargaInicial();
       
     } catch (error) {
       console.error('❌ Erro durante o carregamento completo:', error);

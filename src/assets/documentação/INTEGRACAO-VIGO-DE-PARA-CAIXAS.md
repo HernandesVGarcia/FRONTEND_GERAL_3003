@@ -9,7 +9,7 @@ O **de-para** é feito pelo **nome da caixa**:
 | Sistema | Campo usado no match | Valor gravado após o match |
 |---------|----------------------|----------------------------|
 | VIGO | `descricao` (ex.: `CTO_SF_SM_05`) | — |
-| Fiberworks | `NUMEROCX` (mesmo texto, após `TRIM`) | `ID_INTEGRACAO` = **`id`** do CTO no VIGO |
+| Fiberworks | `NUMEROCX` (mesmo texto, após `TRIM`) | `ID_INTEGRACAO` = **`id`** do CTO no VIGO; **`portas`** = **`portas`** do VIGO (saídas do splitter) |
 
 **Importante:** o ID de cidade retornado pelo VIGO (ex.: `"1 - SALINAS"`) **não** é comparado com o Fiberworks. Os códigos de cidade não são equivalentes entre os sistemas. O vínculo no banco restringe apenas pela **`id_city`** Fiberworks enviada na requisição.
 
@@ -18,7 +18,7 @@ O **de-para** é feito pelo **nome da caixa**:
 ## 2. Pré-requisitos
 
 - Polo configurado em **`tst.polos`** com **`ID_ERP = 9`** (VIGO), URL **`HTTP`**, credenciais e token (`KEY_ERP` / renovação via `/api/auth`).
-- Coluna **`ID_INTEGRACAO`** existente em **`tstmeta.caixa`** (sem acento no nome da coluna).
+- Colunas **`ID_INTEGRACAO`** e **`portas`** existentes em **`tstmeta.caixa`** (sem acento no nome da coluna).
 - Caixas já cadastradas no Fiberworks com **`NUMEROCX`** igual à **`descricao`** do CTO no VIGO (mesma cidade: **`id_city`** = **`idCIDADES`** do POST).
 
 ---
@@ -37,8 +37,8 @@ sequenceDiagram
   API->>Sync: idPolo do usuario
   loop id 1..N ate 15 vazios consecutivos
     Sync->>Vigo: POST id CTO
-    Vigo-->>Sync: id descricao
-    Sync->>DB: UPDATE ID_INTEGRACAO WHERE id_city e NUMEROCX
+    Vigo-->>Sync: id descricao portas
+    Sync->>DB: UPDATE ID_INTEGRACAO e portas WHERE id_city e NUMEROCX
   end
   Sync-->>API: resumo JSON
   API-->>Client: success totais listas
@@ -55,7 +55,8 @@ sequenceDiagram
 
 ```sql
 UPDATE tstmeta.caixa
-SET ID_INTEGRACAO = ?
+SET ID_INTEGRACAO = ?,
+    portas = COALESCE(?, portas)
 WHERE id_city = ?
   AND TRIM(NUMEROCX) = ?
 ```
@@ -63,14 +64,15 @@ WHERE id_city = ?
 Parâmetros:
 
 1. **`ID_INTEGRACAO`** ← `id` do registro VIGO  
-2. **`id_city`** ← **`idCIDADES`** do body (cidade Fiberworks selecionada)  
-3. **`NUMEROCX`** ← `TRIM(descricao)` do VIGO  
+2. **`portas`** ← `portas` do VIGO (inteiro ≥ 0); se ausente ou inválido no VIGO, passa `NULL` e **`COALESCE`** mantém o valor já gravado na caixa  
+3. **`id_city`** ← **`idCIDADES`** do body (cidade Fiberworks selecionada)  
+4. **`NUMEROCX`** ← `TRIM(descricao)` do VIGO  
 
 - **`affectedRows = 0`**: nome no VIGO sem caixa correspondente na cidade → entra em **`semCorrespondencia`**.
 - **`affectedRows > 1`**: mais de uma linha com o mesmo **`NUMEROCX`** na cidade → **`multiplasCaixas`** (todas recebem o mesmo **`ID_INTEGRACAO`**).
 - **`affectedRows = 1`**: vínculo normal → **`totalVinculados++`**.
 
-A rota **não cria** caixas no Fiberworks; apenas atualiza **`ID_INTEGRACAO`** quando o nome bate.
+A rota **não cria** caixas no Fiberworks; apenas atualiza **`ID_INTEGRACAO`** e **`portas`** quando o nome bate.
 
 ---
 
@@ -149,14 +151,14 @@ Resposta típica de **`app_getctosid`**:
 ]
 ```
 
-Para o de-para de caixas usam-se **`id`** e **`descricao`**. O campo **`cidade`** é informativo; **não** entra na lógica de filtro da sync.
+Para o de-para de caixas usam-se **`id`**, **`descricao`** e **`portas`** (quantidade de saídas do splitter na CTO, gravada em **`tstmeta.caixa.portas`**). O campo **`cidade`** é informativo; **não** entra na lógica de filtro da sync.
 
 ---
 
 ## 6. Conferência no MySQL
 
 ```sql
-SELECT ID_META, NUMEROCX, id_city, ID_INTEGRACAO
+SELECT ID_META, NUMEROCX, id_city, ID_INTEGRACAO, portas
 FROM tstmeta.caixa
 WHERE id_city = 1
   AND ID_INTEGRACAO IS NOT NULL
@@ -167,13 +169,13 @@ ORDER BY NUMEROCX;
 
 ## 7. Arquivos no repositório (NODE API 2025)
 
-| Arquivo | Função |
-|---------|--------|
-| `routes/api_consulta_vigo.js` | Expõe **`POST /sincronizar-caixas`** |
-| `services/vigo-sync-caixas.js` | Loop VIGO + UPDATE **`ID_INTEGRACAO`** |
-| `services/vigo-client.js` | **`consultarCtoComRetry`** → **`/api/app_getctosid`** |
-| `services/vigo-auth.js` | Token VIGO (`ID_ERP = 9`) |
-| `services/erp-polo.js` | **`HTTP`**, polo do usuário |
+| Arquivo                        | Função                                                 |
+|---------                       |--------                                                |
+| `routes/api_consulta_vigo.js`  | Expõe **`POST /sincronizar-caixas`**                   |
+| `services/vigo-sync-caixas.js` | Loop VIGO + UPDATE **`ID_INTEGRACAO`** e **`portas`**  |
+| `services/vigo-client.js`      | **`consultarCtoComRetry`** → **`/api/app_getctosid`**  |
+| `services/vigo-auth.js`        | Token VIGO (`ID_ERP = 9`)                              |
+| `services/erp-polo.js`         | **`HTTP`**, polo do usuário                            |
 
 Outras rotas sob **`/consulta-vigo`** (status, token, sync de clientes) fazem parte da integração VIGO geral; o **de-para de caixas** é exclusivo de **`/sincronizar-caixas`**.
 

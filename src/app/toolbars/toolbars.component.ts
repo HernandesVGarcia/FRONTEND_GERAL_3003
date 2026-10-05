@@ -14,6 +14,10 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { CitySelectModalComponent } from '../city-select-modal/city-select-modal.component';
 import { LogCidadeComponent } from '../log-cidade/log-cidade.component';
+import { VigoCtoSyncModalComponent } from '../vigo-cto-sync-modal/vigo-cto-sync-modal.component';
+import { VigoSanearStatusModalComponent } from '../vigo-sanear-status-modal/vigo-sanear-status-modal.component';
+import { ERP_VIGO } from '../servico/erp.constants';
+import { environment } from '../environments/environment';
 
 @Component({
   selector: 'app-toolbars',
@@ -36,6 +40,10 @@ export class ToolbarsComponent implements OnInit {
   cityModalOpen = false;
   showCityModal = false;
   showCaixaInterna=false;
+
+  get mostrarBotaoVigo(): boolean {
+    return !environment.production && this.authService.getIdErp() === ERP_VIGO;
+  }
  
    
   constructor(
@@ -140,6 +148,36 @@ export class ToolbarsComponent implements OnInit {
         nomeCidade: cidade?.nome ?? cidade?.nome_cidade
       },
       disableClose: false
+    });
+  }
+
+  abrirSyncVigoCto(): void {
+    const idCidade = this.authService.getIdCity();
+    if (!idCidade) {
+      window.alert('Selecione a cidade antes de sincronizar conectividade VIGO.');
+      return;
+    }
+
+    this.dialog.open(VigoCtoSyncModalComponent, {
+      width: '480px',
+      maxWidth: '95vw',
+      data: { idCidade },
+      disableClose: false,
+    });
+  }
+
+  abrirSanearStatusVigo(): void {
+    const idCidade = this.authService.getIdCity();
+    if (!idCidade) {
+      window.alert('Selecione a cidade antes de sanear o STATUS dos clientes.');
+      return;
+    }
+
+    this.dialog.open(VigoSanearStatusModalComponent, {
+      width: '520px',
+      maxWidth: '95vw',
+      data: { idCidade },
+      disableClose: false,
     });
   }
 }

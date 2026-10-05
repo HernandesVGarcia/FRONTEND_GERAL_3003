@@ -7147,6 +7147,31 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
     };
   }
 
+  /** Cliente com saída de splitter (`tstmeta.pop.recurso_sp` ≠ 0). */
+  private clienteConectadoSplitter(location: PopsCli | Record<string, unknown>): boolean {
+    const raw =
+      (location as PopsCli).recurso_sp ??
+      (location as Record<string, unknown>)['recurso_sp'];
+    const n = Number.parseInt(String(raw ?? 0), 10);
+    return Number.isFinite(n) && n !== 0;
+  }
+
+  private estiloMarcadorClientePorRecursoSp(location: PopsCli | Record<string, unknown>): {
+    icon: google.maps.Symbol;
+    labelColor: string;
+  } {
+    if (this.clienteConectadoSplitter(location)) {
+      return {
+        icon: this.iconeMarcadorClienteCirculoAtivo(),
+        labelColor: 'blue',
+      };
+    }
+    return {
+      icon: this.iconeMarcadorClienteCirculoPadrao(),
+      labelColor: 'gray',
+    };
+  }
+
   /** Círculo cyan/azul de `updateMarkersPopsCliAtv` — reutilizado pós-activação no modal. */
   private iconeMarcadorClienteCirculoAtivo(): google.maps.Symbol {
     return {
@@ -7199,6 +7224,7 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
     
 
       const siglaTexto = (location as any).sigla || (location as any).SIGLA || 'S/N';
+      const estiloCli = this.estiloMarcadorClientePorRecursoSp(location);
       const markerOptions: google.maps.MarkerOptions = {
         position: position,
         title: siglaTexto,
@@ -7206,10 +7232,10 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
         opacity: 0.8,
         label: {
           text: siglaTexto,
-          color: 'gray',
+          color: estiloCli.labelColor,
           fontSize: '10px'
         } as google.maps.MarkerLabel,
-        icon: this.iconeMarcadorClienteCirculoPadrao(), // alterado para permitir na desativação do cliente mudar a cor do marcador
+        icon: estiloCli.icon,
 
         visible: this.currentZoom >= this.ZOOM_LEVEL_CLIENTES
         ///visible: false
@@ -7321,6 +7347,7 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
     
 
       const siglaTexto = (location as any).sigla || (location as any).SIGLA || 'S/N';
+      const estiloAtv = this.estiloMarcadorClientePorRecursoSp(location);
       const markerOptions: google.maps.MarkerOptions = {
         position: position,
         title: siglaTexto,
@@ -7328,10 +7355,10 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
         opacity: 0.8,
         label: {
           text: siglaTexto,
-          color: 'blue',
+          color: estiloAtv.labelColor,
           fontSize: '10px'
         } as google.maps.MarkerLabel,
-        icon: this.iconeMarcadorClienteCirculoAtivo(), // alterado para permitir na ativação do cliente mudar a cor do marcador
+        icon: estiloAtv.icon,
 
         visible: this.currentZoom >= this.ZOOM_LEVEL_CLIENTES_ATIVOS
         ///visible: false

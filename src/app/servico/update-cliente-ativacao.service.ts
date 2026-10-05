@@ -23,6 +23,17 @@ export interface UpdateClienteAtivacaoResponse {
   [key: string]: unknown;
 }
 
+/** Erro HTTP da rota de ativação (ex.: `CLIENTE_JA_CONECTADO`). */
+export class UpdateClienteAtivacaoError extends Error {
+  constructor(
+    message: string,
+    readonly code?: string,
+  ) {
+    super(message);
+    this.name = 'UpdateClienteAtivacaoError';
+  }
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -50,12 +61,18 @@ export class UpdateClienteAtivacaoService {
       timeout(this.TIMEOUT_MS),
       catchError((error: unknown) => {
         let msg = 'Erro ao ativar ocupação do cliente.';
+        let code: string | undefined;
         if (error instanceof HttpErrorResponse) {
           const er = error.error;
-          if (er != null && typeof er === 'object' && 'message' in er && typeof (er as { message?: string }).message === 'string') {
-            msg = (er as { message: string }).message;
-          } else if (er != null && typeof er === 'object' && 'error' in er) {
-            msg = String((er as { error: unknown }).error);
+          if (er != null && typeof er === 'object') {
+            if ('code' in er && typeof (er as { code?: string }).code === 'string') {
+              code = (er as { code: string }).code;
+            }
+            if ('message' in er && typeof (er as { message?: string }).message === 'string') {
+              msg = (er as { message: string }).message;
+            } else if ('error' in er) {
+              msg = String((er as { error: unknown }).error);
+            }
           } else if (typeof error.message === 'string') {
             msg = error.message;
           }
@@ -63,7 +80,7 @@ export class UpdateClienteAtivacaoService {
           msg = error.message;
         }
         console.warn('[update_clientes_ativacao]', msg);
-        return throwError(() => new Error(msg));
+        return throwError(() => new UpdateClienteAtivacaoError(msg, code));
       }),
     );
   }

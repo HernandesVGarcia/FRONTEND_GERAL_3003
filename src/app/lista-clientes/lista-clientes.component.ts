@@ -28,8 +28,8 @@ export class ListaPopsCLIComponent implements OnInit {
   }
 
   selecionar() {
-    console.log('Iniciando seleção de Clientes.../id_condominio=0/status=1/filtro_olt=zero');
-    this.servicoPopsCli.selecionar(0, 1, 'zero').subscribe({
+    console.log('Iniciando seleção de Clientes.../id_condominio=0/status=1/recurso_sp=zero');
+    this.servicoPopsCli.selecionar(0, 1, undefined, 'zero').subscribe({
       next: (retorno) => {
         console.log('========================>Dados Clientes recebidos:', retorno);
         if ('response' in retorno) {

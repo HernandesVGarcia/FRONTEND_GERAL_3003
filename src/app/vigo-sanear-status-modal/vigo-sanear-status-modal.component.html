@@ -1,0 +1,91 @@
+<h2 mat-dialog-title>Saneamento STATUS — clientes VIGO</h2>
+
+<mat-dialog-content>
+  <p class="hint">
+    Cidade (idCIDADES): <strong>{{ data.idCidade }}</strong>.
+    Suba o JSON do VIGO com clientes inativos (<code>situacao</code> diferente de <code>L</code>, ex. <code>X</code> ou <code>B</code>).
+    O campo <code>id</code> é o <code>CONTRATO_GPON</code> para gravar <code>tstmeta.pop.STATUS = 0</code>.
+  </p>
+
+  @if (!aplicado) {
+    <div class="arquivo">
+      <input
+        type="file"
+        accept="application/json,.json"
+        [disabled]="processando"
+        (change)="onArquivoSelecionado($event)" />
+
+      @if (nomeArquivo) {
+        <span>
+          <strong>{{ nomeArquivo }}</strong> — {{ totalItensArquivo }} item(ns),
+          {{ contratos.length }} contrato(s) para sanear.
+        </span>
+      }
+
+      @if (semCampoSituacao && contratos.length) {
+        <span class="aviso">
+          Nenhum item traz o campo <code>situacao</code>; serão usados todos os <code>id</code> do arquivo.
+        </span>
+      }
+    </div>
+  }
+
+  @if (processando) {
+    <div class="loading">
+      <mat-spinner diameter="36"></mat-spinner>
+      <span>Consultando clientes na cidade…</span>
+    </div>
+  }
+
+  @if (erro) {
+    <p class="erro">{{ erro }}</p>
+  }
+
+  @if (previa && !aplicado) {
+    <div class="resumo">
+      <h3>Prévia (nada foi gravado)</h3>
+      <p><strong>Contratos válidos:</strong> {{ previa.totalValidos ?? 0 }}</p>
+      <p><strong>Encontrados na cidade:</strong> {{ previa.totalEncontrados ?? 0 }}</p>
+      <p><strong>Já com STATUS 0:</strong> {{ previa.totalJaZerados ?? 0 }}</p>
+      <p><strong>Serão atualizados:</strong> {{ previa.totalParaAtualizar ?? 0 }}</p>
+      <p><strong>Sem correspondência:</strong> {{ previa.totalNaoEncontrados ?? 0 }}</p>
+      @if (previa.naoEncontrados?.length) {
+        <p class="lista-nao-encontrados">
+          Contratos não encontrados: {{ previa.naoEncontrados!.join(', ') }}
+        </p>
+      }
+    </div>
+  }
+
+  @if (aplicado) {
+    <div class="resumo">
+      <h3>Saneamento aplicado</h3>
+      <p><strong>Registros com STATUS = 0:</strong> {{ aplicado.totalAtualizados ?? 0 }}</p>
+      <p><strong>Já estavam em 0:</strong> {{ aplicado.totalJaZerados ?? 0 }}</p>
+      <p><strong>Sem correspondência:</strong> {{ aplicado.totalNaoEncontrados ?? 0 }}</p>
+    </div>
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  @if (aplicado) {
+    <button mat-flat-button color="primary" type="button" (click)="fechar()">Fechar</button>
+  } @else {
+    <button mat-button type="button" [disabled]="processando" (click)="fechar()">Cancelar</button>
+    <button
+      mat-button
+      type="button"
+      [disabled]="processando || !contratos.length"
+      (click)="preVisualizar()">
+      Pré-visualizar
+    </button>
+    <button
+      mat-flat-button
+      color="primary"
+      type="button"
+      [disabled]="processando || !previa || !previa.totalParaAtualizar"
+      (click)="aplicar()">
+      Aplicar STATUS = 0
+    </button>
+  }
+</mat-dialog-actions>

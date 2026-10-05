@@ -175,6 +175,7 @@ export class LoginComponent implements OnInit {
         if (idErp === ERP_VIGO) {
           console.log('🚀 Iniciando sync VIGO após seleção da cidade...');
           this.consultaApiVigoService.iniciarSyncClientes();
+          this.consultaApiVigoService.iniciarSyncCaixas();
           return;
         }
     

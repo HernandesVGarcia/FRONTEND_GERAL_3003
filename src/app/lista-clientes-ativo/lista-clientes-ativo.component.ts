@@ -27,8 +27,8 @@ export class ListaPopsCLIAtvComponent implements OnInit {
   }
 
   selecionar() {
-    console.log('Iniciando seleção de Clientes Ativo.../id_condominio=0/status=1/filtro_olt=nao_zero');
-    this.servicoPopsCliAtv.selecionar(0, 1,'nao_zero').subscribe({
+    console.log('Iniciando seleção de Clientes Ativo.../id_condominio=0/status=1/recurso_sp=nao_zero');
+    this.servicoPopsCliAtv.selecionar(0, 1, undefined, 'nao_zero').subscribe({
       next: (retorno) => {
         console.log('==================================>Dados recebidos Clientes Ativos:', retorno);
         if ('response' in retorno) {

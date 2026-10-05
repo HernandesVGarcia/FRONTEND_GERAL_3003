@@ -19,6 +19,19 @@
       <button class="log-button" (click)="abrirLogCaixa()">
         📋 Log
       </button>
+      @if (mostrarVigoConectar) {
+        @if (vigoConectividadeEmAndamento) {
+          <span class="vigo-sync-hint">Sincronizando VIGO…</span>
+        }
+        <button
+          class="vigo-button redraw-button"
+          type="button"
+          [disabled]="!podeConectarVigo || vigoConectividadeEmAndamento"
+          [title]="podeConectarVigo ? 'Consultar VIGO e aplicar conexões nesta caixa' : 'Caixa sem ID_INTEGRACAO — rode sincronizar-caixas'"
+          (click)="conectarClientesVigoNaCaixa({ origem: 'manual' })">
+          🔗 Conectar VIGO
+        </button>
+      }
 
     </div>
 

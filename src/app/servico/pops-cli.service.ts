@@ -33,7 +33,8 @@ export class PopsCliService {
   selecionar(
     id_condominio?: number,
     status?: number,
-    olt_filter?: string,
+    olt_filter?: string | number,
+    recurso_sp_filter?: string | number,
   ): Observable<PopsCli[]> {
     const route = `/clientes_coordenadas`;
     const token = this.authService.getToken();
@@ -47,14 +48,19 @@ export class PopsCliService {
       
       .set('Authorization',`Bearer ${token}`);
 
-      const body = {
-        id_city: idcidade,        
-        tamanho:1,
-        id_condominio: id_condominio ?? 0,  // usa 0 como padrão se não fornecido
-        status: status ?? 1,                // usa 1 como padrão se não fornecido
-        olt_filter: olt_filter ?? "zero"    // usa "zero" como padrão se não fornecido
-        
+      const body: Record<string, unknown> = {
+        id_city: idcidade,
+        tamanho: 1,
+        id_condominio: id_condominio ?? 0,
+        status: status ?? 1,
       };
+
+      if (olt_filter !== undefined) {
+        body['olt_filter'] = olt_filter;
+      }
+      if (recurso_sp_filter !== undefined) {
+        body['recurso_sp_filter'] = recurso_sp_filter;
+      }
 
       const url = `${this.baseUrl}${route}`; 
 

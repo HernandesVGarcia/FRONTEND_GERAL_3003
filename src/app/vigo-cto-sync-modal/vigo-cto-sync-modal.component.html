@@ -1,0 +1,56 @@
+<h2 mat-dialog-title>Conectividade VIGO — CTO</h2>
+
+<mat-dialog-content>
+  <p class="hint">
+    Cidade (idCIDADES): <strong>{{ data.idCidade }}</strong>.
+    Serão processadas <strong>todas</strong> as <strong>CTO-SP</strong> (com splitter) com
+    <code>ID_INTEGRACAO</code> (lista via <code>POST /ctos_sp</code>, ordem <code>NUMEROCX</code>).
+  </p>
+
+  @if (processando) {
+    <div class="loading">
+      <mat-spinner diameter="36"></mat-spinner>
+      <span>Mapeando e conectando clientes por caixa…</span>
+    </div>
+  }
+
+  @if (erro) {
+    <p class="erro">{{ erro }}</p>
+  }
+
+  @if (resumo) {
+    <div class="resumo">
+      <p><strong>Caixas com integração:</strong> {{ resumo.caixasEncontradas }}</p>
+      <p><strong>Caixas processadas:</strong> {{ resumo.caixasProcessadas }}</p>
+      <p><strong>Ativações OK:</strong> {{ resumo.totalOk }}</p>
+      <p><strong>Já conectados (ignorados):</strong> {{ resumo.totalIgnorados }}</p>
+      <p><strong>Falhas de saída:</strong> {{ resumo.totalErrosAtivacao }}</p>
+      <p><strong>Caixas com erro de mapeamento:</strong> {{ resumo.caixasFalha.length }}</p>
+      @if (resumo.caixasFalha.length) {
+        <ul class="lista-erros">
+          @for (item of resumo.caixasFalha; track item.idCtoVigo) {
+            <li>
+              CTO {{ item.idCtoVigo }}
+              @if (item.numerocx) {
+                ({{ item.numerocx }})
+              }
+              : {{ item.message }}
+            </li>
+          }
+        </ul>
+      }
+      <p class="avisos">Detalhes por caixa no console ([VIGO]).</p>
+    </div>
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  @if (!resumo) {
+    <button mat-button type="button" [disabled]="processando" (click)="fechar()">Cancelar</button>
+    <button mat-flat-button color="primary" type="button" [disabled]="processando" (click)="conectar()">
+      Conectar
+    </button>
+  } @else {
+    <button mat-flat-button color="primary" type="button" (click)="fechar()">Fechar</button>
+  }
+</mat-dialog-actions>

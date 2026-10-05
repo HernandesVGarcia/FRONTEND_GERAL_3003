@@ -31,6 +31,20 @@
           matTooltip="Log da cidade" 
           matTooltipPosition="below"
           (click)="abrirLogCidade()">Log</button>
+  <button mat-raised-button
+          class="toolbar-glass-btn"
+          *ngIf="mostrarBotaoVigo"
+          aria-label="Conectar clientes VIGO na CTO"
+          matTooltip="Conectar clientes VIGO (CTO-SP com ID_INTEGRACAO)"
+          matTooltipPosition="below"
+          (click)="abrirSyncVigoCto()">Vigo</button>
+  <button mat-raised-button
+          class="toolbar-glass-btn"
+          *ngIf="mostrarBotaoVigo"
+          aria-label="Sanear STATUS de clientes VIGO"
+          matTooltip="Sanear STATUS VIGO (situacao ≠ L, ex. X ou B → 0)"
+          matTooltipPosition="below"
+          (click)="abrirSanearStatusVigo()">Stat</button>
   <!--
   <button mat-icon-button class="example-icon" aria-label="Compartilhar">
     <mat-icon>share</mat-icon>

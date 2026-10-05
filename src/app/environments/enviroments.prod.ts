@@ -5,6 +5,7 @@ export const environment = {
     apiUrlAbsolute: 'https://www.fiberworks-api.com:3001', // URL absoluta segura para testes diretos
     rbxSyncMaxClientes: 0, // 0 = sem limite
     vigoSyncMaxClientes: 100, // 0 = sem limite
+    vigoSyncMaxCaixasLogin: 10,
 
     //googleMapsApiKey: (globalThis as any).GOOGLE_MAPS_API_KEY // Chave do Amplify para produção
   };
