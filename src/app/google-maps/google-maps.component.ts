@@ -4906,6 +4906,18 @@ polylineOptions144f: google.maps.PolylineOptions = {
       this.exportMapToKML();
     });
 
+    window.addEventListener('reloadMapCaixas', () => {
+      console.log(
+        '🗺️ [GOOGLE-MAPS] Recarga de caixas/CTOs solicitada (listas reconsultam API; ngOnChanges atualiza marcadores).',
+      );
+    });
+
+    window.addEventListener('reloadMapCabos', () => {
+      console.log(
+        '🗺️ [GOOGLE-MAPS] Recarga de cabos solicitada (listas por capacidade reconsultam API).',
+      );
+    });
+
     window.addEventListener('openMapReport', () => {// para relatorio geral do mapa
       console.log('📊 [GOOGLE-MAPS] Recebendo evento de relatório geral da toolbar');
       this.abrirDashboardMapa();

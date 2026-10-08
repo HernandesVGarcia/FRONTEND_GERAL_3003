@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { NgbActiveModal, NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { TiposService } from '../servico/tipos.service';
 import { UpdateTipagemCaixaService, UpdateTipagemCaixaRequest } from '../servico/update-tipagem-caixa.service';
+import { sanitizarLabelCaixa } from '../util/caixa-label.util';
 import { UpdateCaixaInstaladaService } from '../servico/update-caixa-instalada.service';
 import { AuthService } from '../servico/auth.service';
 import { PesquisaCaixaService } from '../servico/pesquisa-caixa.service';
@@ -263,7 +264,7 @@ export class DetalhesCaixaComponent implements OnInit, OnChanges {
 
     const labelInformado =
       this.form.labelCaixa && this.form.labelCaixa.trim() !== ''
-        ? this.sanitizarLabelCaixa(this.form.labelCaixa.trim())
+        ? sanitizarLabelCaixa(this.form.labelCaixa.trim())
         : '';
     const numeroLabel =
       labelInformado !== ''
@@ -306,16 +307,6 @@ export class DetalhesCaixaComponent implements OnInit, OnChanges {
         alert(`Erro ao atualizar caixa: ${error}`);
       }
     });
-  }
-
-  /**
-   * Graphviz-safe: só A-Za-z0-9; resto vira _; colapsa __ e trim de _.
-   */
-  private sanitizarLabelCaixa(label: string): string {
-    return String(label ?? '')
-      .replace(/[^A-Za-z0-9]+/g, '_')
-      .replace(/_+/g, '_')
-      .replace(/^_|_$/g, '');
   }
 
   fechar(): void {

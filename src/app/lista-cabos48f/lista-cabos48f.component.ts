@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, OnDestroy, Output, EventEmitter } from '@angular/core';
 import { Cabos48f } from '../modelo/Cabos48f';
 import { CaboService } from '../servico/cabo.service';
 import { AuthService} from '../servico/auth.service'
@@ -11,9 +11,17 @@ import { AuthService} from '../servico/auth.service'
   templateUrl: './lista-cabos48f.component.html',
   styleUrl: './lista-cabos48f.component.css'
 })
-export class ListaCabos48fComponent implements OnInit {
+export class ListaCabos48fComponent implements OnInit, OnDestroy {
   vetorCabos: Cabos48f[] = [];
   @Output() caboSelecionada = new EventEmitter<any[]>();
+
+  private readonly capacidade = 48;
+  private readonly onReloadMapCabos = (): void => {
+    const id_cidade = this.authService.getIdCity();
+    if (id_cidade) {
+      this.selecionar(id_cidade, this.capacidade);
+    }
+  };
   
   constructor(private servicoCabos: CaboService,private authService: AuthService) {
     console.log('ListaCabosComponent construído');
@@ -24,6 +32,11 @@ export class ListaCabos48fComponent implements OnInit {
     const id_cidade = this.authService.getIdCity();
         if(id_cidade){
         this.selecionar(id_cidade,48)};
+    window.addEventListener('reloadMapCabos', this.onReloadMapCabos);
+  }
+
+  ngOnDestroy(): void {
+    window.removeEventListener('reloadMapCabos', this.onReloadMapCabos);
   }
 
   selecionar(idCidade:number,capacidade:number) {

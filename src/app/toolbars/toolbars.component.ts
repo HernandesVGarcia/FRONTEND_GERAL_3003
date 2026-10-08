@@ -16,6 +16,7 @@ import { CitySelectModalComponent } from '../city-select-modal/city-select-modal
 import { LogCidadeComponent } from '../log-cidade/log-cidade.component';
 import { VigoCtoSyncModalComponent } from '../vigo-cto-sync-modal/vigo-cto-sync-modal.component';
 import { VigoSanearStatusModalComponent } from '../vigo-sanear-status-modal/vigo-sanear-status-modal.component';
+import { KmlImportModalComponent } from '../kml-import-modal/kml-import-modal.component';
 import { ERP_VIGO } from '../servico/erp.constants';
 
 declare global {
@@ -142,6 +143,23 @@ export class ToolbarsComponent implements OnInit {
     console.log('🗺️ [TOOLBAR] Botão Exportar KML clicado');
     const event = new CustomEvent('exportKML');
     window.dispatchEvent(event);
+  }
+
+  abrirImportKml(): void {
+    const idCidade = this.authService.getIdCity();
+    if (!idCidade) {
+      window.alert('Selecione a cidade antes de importar KML.');
+      return;
+    }
+
+    this.dialog.open(KmlImportModalComponent, {
+      width: 'min(1150px, 96vw)',
+      maxWidth: '96vw',
+      maxHeight: '90vh',
+      panelClass: 'kml-import-dialog-panel',
+      data: { idCidade },
+      disableClose: false,
+    });
   }
 
   onOpenMapReport(): void {

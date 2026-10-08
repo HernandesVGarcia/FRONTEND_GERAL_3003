@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, Output, EventEmitter, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, Output, EventEmitter } from '@angular/core';
 import { Caixa } from '../modelo/Caixa';
 import { CaixaService } from '../servico/caixa.service';
 
@@ -11,9 +11,13 @@ import { CaixaService } from '../servico/caixa.service';
   templateUrl: './lista-caixas.component.html',
   styleUrls: ['./lista-caixas.component.css']
 })
-export class ListaCaixasComponent implements OnInit {
+export class ListaCaixasComponent implements OnInit, OnDestroy {
   vetor: Caixa[] = [];
   @Output() caixaSelecionada = new EventEmitter<any[]>();
+
+  private readonly onReloadMapCaixas = (): void => {
+    this.selecionar();
+  };
   
   
   constructor(private servico: CaixaService) {
@@ -27,6 +31,11 @@ export class ListaCaixasComponent implements OnInit {
   ngOnInit() {
     console.log('inicialização do app-lista-caixa1-ok');
     this.selecionar();
+    window.addEventListener('reloadMapCaixas', this.onReloadMapCaixas);
+  }
+
+  ngOnDestroy(): void {
+    window.removeEventListener('reloadMapCaixas', this.onReloadMapCaixas);
   }
 
   

@@ -5,6 +5,7 @@ import { NgbActiveModal, NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { TiposService } from '../servico/tipos.service';
 import { InsertCaixaService, InsertCaixaRequest } from '../servico/insert-caixa.service';
 import { AuthService } from '../servico/auth.service';
+import { sanitizarLabelCaixa } from '../util/caixa-label.util';
 
 export interface PlotaCaixaData {
   tipagem?: string;
@@ -275,7 +276,7 @@ export class PlotaCaixaComponent implements OnInit, OnChanges {
     // Se labelCaixa não foi informado, usar "0" temporariamente (será substituído pelo id_meta)
     const labelInformado =
       this.form.labelCaixa && this.form.labelCaixa.trim() !== ''
-        ? this.sanitizarLabelCaixa(this.form.labelCaixa.trim())
+        ? sanitizarLabelCaixa(this.form.labelCaixa.trim())
         : '';
     const numeroLabel = labelInformado !== '' ? labelInformado : '0';
     // Preparar dados para a API
@@ -335,16 +336,6 @@ export class PlotaCaixaComponent implements OnInit, OnChanges {
         alert(`Erro ao criar caixa: ${error}`);
       }
     });
-  }
-
-  /**
-   * Graphviz-safe: só A-Za-z0-9; resto vira _; colapsa __ e trim de _.
-   */
-  private sanitizarLabelCaixa(label: string): string {
-    return String(label ?? '')
-      .replace(/[^A-Za-z0-9]+/g, '_')
-      .replace(/_+/g, '_')
-      .replace(/^_|_$/g, '');
   }
 
   fechar(): void {

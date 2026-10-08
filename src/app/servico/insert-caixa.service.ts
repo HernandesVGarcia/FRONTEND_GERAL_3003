@@ -20,6 +20,7 @@ export interface InsertCaixaRequest {
   LAT: string;
   LNG: string;
   id_condominio: number;
+  id_importacao?: number;
 }
 
 /**

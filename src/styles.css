@@ -308,6 +308,25 @@ body.modal-open .modal-content {
   pointer-events: none !important;
 }
 
+/* Import KML — contorno cinza (panelClass no cdk-overlay-pane, como graphviz-modal-container) */
+.kml-import-dialog-panel .mat-mdc-dialog-container {
+  padding: 0 !important;
+  overflow: visible !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.kml-import-dialog-panel .mat-mdc-dialog-container .mat-mdc-dialog-surface,
+.kml-import-dialog-panel .mat-mdc-dialog-container .mdc-dialog__surface,
+.mat-mdc-dialog-container.kml-import-dialog-panel .mat-mdc-dialog-surface,
+.mat-mdc-dialog-container.kml-import-dialog-panel .mdc-dialog__surface {
+  border: 3px solid #8fa3c7 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.2) !important;
+  box-sizing: border-box !important;
+  background: #fff !important;
+}
+
 /* Dropdown Camadas (toolbar) — painel no cdk-overlay, fora do componente */
 .layers-select-panel.mat-mdc-select-panel {
   --mat-option-label-text-size: 13px;

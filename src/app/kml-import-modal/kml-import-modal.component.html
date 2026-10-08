@@ -1,0 +1,234 @@
+<h2 mat-dialog-title>Importar KML</h2>
+
+<mat-dialog-content class="kml-import-content">
+  <p class="hint">Workspace: <strong>{{ data.idCidade }}</strong>.</p>
+
+  <p class="hint">
+    Arquivo kml com pastas <strong>CEO</strong> ,
+    <strong>CTO</strong>,
+    <strong>CABO1F</strong> … <strong>CABO144F</strong>.
+    Selecione as pastas a tipagem (caixas) e código/fibras por tubo (cabos).
+  </p>
+
+  <div class="arquivo-row">
+    <input
+      type="file"
+      accept=".kml,application/vnd.google-earth.kml+xml,application/xml,text/xml"
+      [disabled]="implantando"
+      (change)="onArquivoKmlSelecionado($event)" />
+    @if (nomeArquivo) {
+      <span class="nome-arquivo">{{ nomeArquivo }}</span>
+    }
+  </div>
+
+  @if (carregandoTipos) {
+    <p class="loading-tipos">Carregando tipagens…</p>
+  }
+
+  @if (erroParse) {
+    <p class="erro">{{ erroParse }}</p>
+  }
+
+  @if (avisosParse.length > 0 && parseOk) {
+    <div class="avisos-parse">
+      @for (aviso of avisosParse; track $index) {
+        <p class="aviso">{{ aviso }}</p>
+      }
+    </div>
+  }
+
+  @if (parseOk) {
+    <p class="resumo-counts">
+      @if (items.length > 0) {
+        {{ items.length }} ponto(s) — CEO: {{ countCaixas }} · CTO: {{ countCtos }}
+      }
+      @if (items.length > 0 && itemsCabos.length > 0) {
+        ·
+      }
+      @if (itemsCabos.length > 0) {
+        {{ itemsCabos.length }} cabo(s)
+      }
+      @if (ignoredNonPoints) {
+        · geometrias não-ponto ignoradas: {{ ignoredNonPoints }}
+      }
+      @if (ignoredNonLines) {
+        · geometrias não-linha ignoradas: {{ ignoredNonLines }}
+      }
+    </p>
+
+    <div class="layout">
+      <div class="pastas-panel">
+        @for (pasta of pastasUi; track pasta.kind) {
+          <section class="pasta-bloco">
+            <header class="pasta-cabecalho">
+              <mat-checkbox
+                [(ngModel)]="pasta.importar"
+                [disabled]="implantando"
+                (ngModelChange)="onPastaImportarChange(pasta)">
+                <span class="pasta-titulo">{{ pasta.titulo }}</span>
+                <span class="pasta-contagem">({{ pasta.items.length }} ponto(s))</span>
+              </mat-checkbox>
+              <label class="pasta-tipagem-label">
+                Tipagem
+                <select
+                  class="pasta-tipagem-select"
+                  [ngModel]="pasta.idTipo"
+                  (ngModelChange)="onPastaTipagemChange(pasta, $event)"
+                  [disabled]="implantando || !pasta.importar">
+                  @for (t of tipagensParaPasta(pasta); track t.idTipo) {
+                    <option [value]="t.idTipo">{{ t.label }}</option>
+                  }
+                </select>
+              </label>
+            </header>
+            <ul class="pasta-lista">
+              @for (item of pasta.items; track item.id) {
+                <li
+                  class="pasta-item"
+                  [class.pasta-item--off]="!pasta.importar"
+                  [title]="tituloKmlItem(item)"
+                  (click)="destacarNoMapa(item)">
+                  <span class="item-rotulo">{{ rotuloItem(item) }}</span>
+                  <span class="item-meta">{{ item.lat | number:'1.5-5' }}, {{ item.lng | number:'1.5-5' }}</span>
+                  @if (item.implantStatus === 'ok') {
+                    <span class="item-status ok">OK</span>
+                  } @else if (item.implantStatus === 'duplicate') {
+                    <span class="item-status dup" [title]="item.implantMessage">Duplicada</span>
+                  } @else if (item.implantStatus === 'error') {
+                    <span class="item-status fail" [title]="item.implantMessage">Erro</span>
+                  }
+                </li>
+              }
+            </ul>
+          </section>
+        }
+
+        @for (pasta of pastasCabosUi; track pasta.capacidadeF) {
+          <section class="pasta-bloco">
+            <header class="pasta-cabecalho pasta-cabecalho--cabos">
+              <mat-checkbox
+                [(ngModel)]="pasta.importar"
+                [disabled]="implantando"
+                (ngModelChange)="onPastaCaboImportarChange(pasta)">
+                <span class="pasta-titulo">{{ pasta.titulo }}</span>
+                <span class="pasta-contagem">({{ pasta.items.length }} trecho(s))</span>
+              </mat-checkbox>
+              <div class="pasta-cabo-opcoes">
+                <span class="pasta-opcao-label">Código</span>
+                <mat-radio-group
+                  class="pasta-radio-grupo"
+                  [(ngModel)]="pasta.codigoScope"
+                  (ngModelChange)="onPastaCaboCodigoChange(pasta)"
+                  [disabled]="implantando || !pasta.importar">
+                  <mat-radio-button value="nacional">Nacional</mat-radio-button>
+                  <mat-radio-button value="internacional">Internacional</mat-radio-button>
+                </mat-radio-group>
+                <label class="pasta-tipagem-label">
+                  Fibras/tubo
+                  <select
+                    class="pasta-tipagem-select"
+                    [ngModel]="pasta.fibrasPorTubo"
+                    (ngModelChange)="onPastaCaboTuboChange(pasta, $event)"
+                    [disabled]="implantando || !pasta.importar">
+                    @for (f of opcoesFibrasPorTubo; track f) {
+                      <option [value]="f">{{ f }}</option>
+                    }
+                  </select>
+                </label>
+              </div>
+            </header>
+            <ul class="pasta-lista">
+              @for (item of pasta.items; track item.id) {
+                <li
+                  class="pasta-item"
+                  [class.pasta-item--off]="!pasta.importar"
+                  (click)="destacarCaboNoMapa(item)">
+                  <span class="item-rotulo">{{ item.label }}</span>
+                  <span class="item-meta">
+                    {{ item.path.length }} pts ·
+                    {{ comprimentoCaboItem(item) | number:'1.0-0' }} m
+                  </span>
+                  @if (item.implantStatus === 'ok') {
+                    <span class="item-status ok">OK</span>
+                  } @else if (item.implantStatus === 'duplicate') {
+                    <span class="item-status dup" [title]="item.implantMessage">Duplicada</span>
+                  } @else if (item.implantStatus === 'error') {
+                    <span class="item-status fail" [title]="item.implantMessage">Erro</span>
+                  }
+                </li>
+              }
+            </ul>
+          </section>
+        }
+      </div>
+      <div class="map-shell map-host">
+        <google-map
+          [center]="previewCenter"
+          [zoom]="previewZoom"
+          [options]="previewMapOptions"
+          width="100%"
+          height="100%"
+          (mapInitialized)="onPreviewMapInitialized($event)">
+        </google-map>
+      </div>
+    </div>
+  }
+
+  @if (implantando) {
+    <div class="implantando">
+      <mat-spinner diameter="32"></mat-spinner>
+      <span>{{ progressoImplant }}</span>
+    </div>
+  }
+
+  @if (resumoImplantacao) {
+    <section class="resumo-implant-panel">
+      <p class="resumo-implant-texto">{{ resumoImplantacao }}</p>
+    </section>
+  }
+
+  @if (resumoImplantacaoCabos) {
+    <section class="resumo-implant-panel">
+      <p class="resumo-implant-texto">{{ resumoImplantacaoCabos }}</p>
+    </section>
+  }
+
+  @if (idImportacaoLote) {
+    <section class="resumo-implant-panel">
+      <p class="resumo-implant-texto">
+        Lote <strong>id_importacao</strong>: {{ idImportacaoLote }}
+        (id_meta do primeiro objeto implantado neste clique — use para reverter na base).
+      </p>
+    </section>
+  }
+
+  @if (duplicadosNaoImplantados.length > 0) {
+    <section class="duplicatas-panel">
+      <h3 class="duplicatas-titulo">Caixas duplicadas não implantadas</h3>
+      <ul class="duplicatas-lista">
+        @for (nome of duplicadosNaoImplantados; track $index) {
+          <li>{{ nome }}</li>
+        }
+      </ul>
+    </section>
+  }
+
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button
+    mat-button
+    type="button"
+    (click)="fechar()"
+    [disabled]="implantando">
+    Fechar
+  </button>
+  <button
+    mat-flat-button
+    color="primary"
+    type="button"
+    (click)="implantarTudo()"
+    [disabled]="!podeImplantarUnificado">
+    Implantar ({{ totalSelecionadosUnificado }})
+  </button>
+</mat-dialog-actions>

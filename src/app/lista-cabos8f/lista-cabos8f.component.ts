@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, OnDestroy, Output, EventEmitter } from '@angular/core';
 import { Cabos8f } from '../modelo/Cabos8f'
 import { CaboService } from '../servico/cabo.service';
 import { AuthService} from '../servico/auth.service'
@@ -11,9 +11,17 @@ import { AuthService} from '../servico/auth.service'
   styleUrl: './lista-cabos8f.component.css'
   
 })
-export class ListaCabos8fComponent implements OnInit {
+export class ListaCabos8fComponent implements OnInit, OnDestroy {
   vetorCabos: Cabos8f[] = [];
     @Output() caboSelecionada = new EventEmitter<any[]>();
+
+    private readonly capacidade = 8;
+    private readonly onReloadMapCabos = (): void => {
+      const id_cidade = this.authService.getIdCity();
+      if (id_cidade) {
+        this.selecionar(id_cidade, this.capacidade);
+      }
+    };
     
     constructor(private servicoCabos: CaboService,private authService: AuthService) {
       console.log('ListaCabosComponent construído');
@@ -24,6 +32,11 @@ export class ListaCabos8fComponent implements OnInit {
       const id_cidade = this.authService.getIdCity();
         if(id_cidade){
         this.selecionar(id_cidade,8)};
+      window.addEventListener('reloadMapCabos', this.onReloadMapCabos);
+    }
+
+    ngOnDestroy(): void {
+      window.removeEventListener('reloadMapCabos', this.onReloadMapCabos);
     }
   
     selecionar(idCidade:number,capacidade:number) {

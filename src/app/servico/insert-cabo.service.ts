@@ -24,6 +24,7 @@ export interface InsertCaboData {
   length: number;               // Comprimento em metros
   GOOGLE_LATLNG: Array<{lng: number, lat: number}>; // Array de coordenadas
   id_condominio?: number;       // Opcional, padrão 0
+  id_importacao?: number;
 }
 
 /**
@@ -84,7 +85,11 @@ export class InsertCaboService {
     console.log('🗺️ [INSERT-CABO] ID da cidade:', idCity);
 
     // 1️⃣ PASSO 1: Obter novo id_meta
-    return this.obterNovoIdMeta(idCity, caboData.id_condominio || 0).pipe(
+    return this.obterNovoIdMeta(
+      idCity,
+      caboData.id_condominio || 0,
+      caboData.id_importacao,
+    ).pipe(
       switchMap((responseIdMeta: InsertIdMetaResponse) => {
         const novoIdMeta = responseIdMeta.id_meta;
         console.log('🗺️ [INSERT-CABO] Novo id_meta obtido:', novoIdMeta);
@@ -103,7 +108,11 @@ export class InsertCaboService {
    * @param idCondominio - ID do condomínio (0 para fora de condomínio)
    * @returns Observable com o novo id_meta
    */
-  private obterNovoIdMeta(idCity: number, idCondominio: number): Observable<InsertIdMetaResponse> {
+  private obterNovoIdMeta(
+    idCity: number,
+    idCondominio: number,
+    idImportacao?: number,
+  ): Observable<InsertIdMetaResponse> {
     const route = '/insert_idmeta';
     const url = `${this.baseUrl}${route}`;
     
@@ -112,11 +121,14 @@ export class InsertCaboService {
       .set('Content-Type', 'application/json')
       .set('Authorization', `Bearer ${token}`);
 
-    const body = {
+    const body: Record<string, unknown> = {
       Tipo_objeto: 'cabo',
       id_city: idCity,
-      id_condominio: idCondominio
+      id_condominio: idCondominio,
     };
+    if (idImportacao !== undefined && idImportacao !== null) {
+      body['id_importacao'] = idImportacao;
+    }
 
     console.log('🗺️ [INSERT-CABO] Requisitando novo id_meta...', body);
 
