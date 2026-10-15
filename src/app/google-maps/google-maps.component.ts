@@ -1032,7 +1032,8 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
             numero: result.labelCaixa,
             LAT: result.lat,
             LONGI: result.lng,
-            ID_TIPO: result.ID_TIPO || '1' // Usar ID_TIPO do resultado ou padrão
+            ID_TIPO: result.ID_TIPO || '1',
+            INSTALADA: result.INSTALADA ?? 1,
           });
           
           console.log('✅ [PLOTA-CAIXA] Caixa adicionada ao mapa');
@@ -4915,6 +4916,48 @@ polylineOptions144f: google.maps.PolylineOptions = {
     window.addEventListener('reloadMapCabos', () => {
       console.log(
         '🗺️ [GOOGLE-MAPS] Recarga de cabos solicitada (listas por capacidade reconsultam API).',
+      );
+    });
+
+    window.addEventListener('reloadMapPopsEst', () => {
+      console.log(
+        '🗺️ [GOOGLE-MAPS] Recarga de POPs/estações solicitada (lista-pops-est reconsulta API).',
+      );
+    });
+
+    window.addEventListener('reloadMapDios', () => {
+      console.log(
+        '🗺️ [GOOGLE-MAPS] Recarga de DIOs solicitada (lista-dios reconsulta API).',
+      );
+    });
+
+    window.addEventListener('reloadMapPoligonos', () => {
+      console.log(
+        '🗺️ [GOOGLE-MAPS] Recarga de polígonos solicitada (lista-poligonos reconsulta API).',
+      );
+    });
+
+    window.addEventListener('reloadMapClientes', () => {
+      console.log(
+        '🗺️ [GOOGLE-MAPS] Recarga de clientes solicitada (listas clientes / ativo / disable reconsultam API).',
+      );
+    });
+
+    window.addEventListener('reloadMapAnotacoes', () => {
+      console.log(
+        '🗺️ [GOOGLE-MAPS] Recarga de anotações solicitada (lista-anotacoes reconsulta API).',
+      );
+    });
+
+    window.addEventListener('reloadMapCondominios', () => {
+      console.log(
+        '🗺️ [GOOGLE-MAPS] Recarga de condomínios solicitada (lista-condominios reconsulta API).',
+      );
+    });
+
+    window.addEventListener('reloadMapSegmentos', () => {
+      console.log(
+        '🗺️ [GOOGLE-MAPS] Recarga de segmentos solicitada (lista-segmentos reconsulta API).',
       );
     });
 

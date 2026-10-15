@@ -327,6 +327,16 @@ body.modal-open .modal-content {
   background: #fff !important;
 }
 
+.rack-preview-dialog-panel .mat-mdc-dialog-container {
+  padding: 0 !important;
+}
+
+.rack-preview-dialog-panel .mat-mdc-dialog-container .mat-mdc-dialog-surface,
+.rack-preview-dialog-panel .mat-mdc-dialog-container .mdc-dialog__surface {
+  border-radius: 8px !important;
+  overflow: hidden !important;
+}
+
 /* Dropdown Camadas (toolbar) — painel no cdk-overlay, fora do componente */
 .layers-select-panel.mat-mdc-select-panel {
   --mat-option-label-text-size: 13px;

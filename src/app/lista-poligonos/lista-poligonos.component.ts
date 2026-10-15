@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, OnDestroy, Output, EventEmitter } from '@angular/core';
 import { Poligonos } from '../modelo/poligonos';
 import { PoligonosService } from '../servico/poligonos.service';
 
@@ -11,9 +11,13 @@ import { PoligonosService } from '../servico/poligonos.service';
   templateUrl: './lista-poligonos.component.html',
   styleUrls: ['./lista-poligonos.component.css']
 })
-export class ListaPoligonosComponent implements OnInit {
+export class ListaPoligonosComponent implements OnInit, OnDestroy {
   vetorPoligonos: Poligonos[] = [];
   @Output() PoligonosSelecionada = new EventEmitter<any[]>();
+
+  private readonly onReloadMapPoligonos = (): void => {
+    this.selecionar();
+  };
   
   constructor(private servicoPoligonos: PoligonosService) {
     console.log('ListaPoligonosComponent construído');
@@ -22,6 +26,11 @@ export class ListaPoligonosComponent implements OnInit {
   ngOnInit() {
     console.log('inicialização do app-lista-poligonos');
     this.selecionar();
+    window.addEventListener('reloadMapPoligonos', this.onReloadMapPoligonos);
+  }
+
+  ngOnDestroy(): void {
+    window.removeEventListener('reloadMapPoligonos', this.onReloadMapPoligonos);
   }
 
   selecionar() {

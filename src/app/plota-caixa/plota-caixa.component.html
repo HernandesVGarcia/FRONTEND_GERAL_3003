@@ -132,6 +132,22 @@
                   rows="2"
                   class="form-control form-control-sm"></textarea>
               </div>
+
+              <div class="mb-3">
+                <label
+                  class="form-label fw-semibold caixa-instalada-label mb-0"
+                  for="caixaInstaladaPlota">
+                  <span class="badge bg-secondary me-1"></span>
+                  <input
+                    type="checkbox"
+                    class="form-check-input caixa-instalada-input"
+                    id="caixaInstaladaPlota"
+                    [(ngModel)]="form.instalada"
+                    name="caixaInstalada"
+                    [disabled]="salvando">
+                  <span class="caixa-instalada-text">Caixa Instalada</span>
+                </label>
+              </div>
             </div>
           </div>
         </div>

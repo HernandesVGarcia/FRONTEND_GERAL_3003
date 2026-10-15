@@ -26,6 +26,7 @@ import { ListaSegmentosComponent } from '../lista-segmentos/lista-segmentos.comp
 import { ListaAnotacoesComponent} from '../lista-anotacoes/lista-anotacoes.component';
 import { ListaPoligonosComponent} from '../lista-poligonos/lista-poligonos.component';
 import { LogoutButtonComponent } from '../logout-button/logout-button.component';
+import { RedrawMapButtonComponent } from '../redraw-map-button/redraw-map-button.component';
 import { Cabos1f } from '../modelo/Cabos1f';
 import { Cabos2f } from '../modelo/Cabos2f';
 import { Cabos4f } from '../modelo/Cabos4f';
@@ -82,7 +83,9 @@ import { Poligonos } from '../modelo/poligonos';
     ListaSegmentosComponent,
     ListaAnotacoesComponent,
     ListaPoligonosComponent,
-    LogoutButtonComponent]
+    LogoutButtonComponent,
+    RedrawMapButtonComponent,
+  ],
 })
 export class FiberMapComponent {
   caixasCEO: any[] = [];

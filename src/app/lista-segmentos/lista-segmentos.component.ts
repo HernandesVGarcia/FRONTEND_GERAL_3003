@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, OnDestroy, Output, EventEmitter } from '@angular/core';
 import { Segmento } from '../modelo/segmento';
 import { SegmentoService } from '../servico/segmento.service';
 
@@ -10,9 +10,13 @@ import { SegmentoService } from '../servico/segmento.service';
   templateUrl: './lista-segmentos.component.html',
   styleUrls: ['./lista-segmentos.component.css'],
 })
-export class ListaSegmentosComponent implements OnInit {
+export class ListaSegmentosComponent implements OnInit, OnDestroy {
   vetorSegmentos: Segmento[] = [];
   @Output() SegmentosSelecionados = new EventEmitter<Segmento[]>();
+
+  private readonly onReloadMapSegmentos = (): void => {
+    this.selecionar();
+  };
 
   constructor(private servicoSegmento: SegmentoService) {
     console.log('ListaSegmentosComponent construído');
@@ -21,6 +25,11 @@ export class ListaSegmentosComponent implements OnInit {
   ngOnInit() {
     console.log('inicialização do app-lista-segmentos');
     this.selecionar();
+    window.addEventListener('reloadMapSegmentos', this.onReloadMapSegmentos);
+  }
+
+  ngOnDestroy(): void {
+    window.removeEventListener('reloadMapSegmentos', this.onReloadMapSegmentos);
   }
 
   selecionar() {

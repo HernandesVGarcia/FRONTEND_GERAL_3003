@@ -12,7 +12,7 @@ import { AuthService } from '../servico/auth.service';
     <button
       mat-raised-button
       type="button"
-      class="toolbar-glass-btn toolbar-glass-btn--blue logout-btn"
+      class="toolbar-glass-btn toolbar-glass-btn--blue map-corner-btn logout-btn"
       (click)="onLogout()"
       aria-label="Sair do sistema"
       matTooltipPosition="above"

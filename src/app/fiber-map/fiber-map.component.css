@@ -17,3 +17,22 @@ app-google-maps {
   height: 100%;
   width: 100%;
 }
+
+.map-bottom-left-actions {
+  position: fixed;
+  bottom: 40px;
+  left: 20px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+
+@media (max-width: 768px) {
+  .map-bottom-left-actions {
+    bottom: 16px;
+    left: 16px;
+    gap: 8px;
+  }
+}

@@ -62,10 +62,14 @@ export class TokenService {
       errorMessage = `Erro: ${error.error.message}`;
 
     } else if (error.status === 401) {
-      errorMessage = 'Chave ou senha invalidos.';  
-     
+      errorMessage = 'Chave ou senha invalidos.';
+    } else if (error.status === 429) {
+      const apiMsg = error.error?.erro?.mensagem as string | undefined;
+      errorMessage =
+        apiMsg && apiMsg.trim() !== ''
+          ? `${apiMsg.trim()} Tente novamente em cerca de 5 minutos.`
+          : 'Muitas tentativas de login. Tente novamente em cerca de 5 minutos.';
     } else {
-      // Erro do servidor
       errorMessage = `Código do erro: ${error.status}, mensagem: ${error.message}`;
     }
     

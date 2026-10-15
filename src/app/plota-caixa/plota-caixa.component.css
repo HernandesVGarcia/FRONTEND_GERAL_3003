@@ -262,7 +262,7 @@ textarea.form-control-sm {
   align-items: center;
 }
 
-.form-check {
+.radio-group .form-check {
   margin: 0;
   padding: 8px 10px; /* Espaçamento interno dos radios y x*/
   border-radius: 10px;
@@ -272,11 +272,11 @@ textarea.form-control-sm {
   width: 100%;
 }
 
-.form-check:hover {
+.radio-group .form-check:hover {
   background-color: rgba(0, 0, 0, 0.02);
 }
 
-.form-check-label {
+.radio-group .form-check-label {
   font-size: 0.75rem;
   cursor: pointer;
   margin-left: 0.5px;
@@ -286,13 +286,13 @@ textarea.form-control-sm {
   justify-content: flex-start;
 }
 
-.form-check-label .badge {
+.radio-group .form-check-label .badge {
   font-size: 0.75rem; /* Altere este valor */
   margin-left: 0;
   white-space: nowrap;
 }
 
-.form-check-input {
+.radio-group .form-check-input {
   margin-top: 0.25em;
   cursor: pointer;
   width: 1.1em;
@@ -301,22 +301,51 @@ textarea.form-control-sm {
   transition: all 0.2s;
 }
 
-.form-check-input:checked {
+.radio-group .form-check-input:checked {
   background-color: #345677;
   border-color: #345677;
 }
 
-.form-check-input:disabled {
+.radio-group .form-check-input:disabled {
   cursor: not-allowed;
   opacity: 0.5;
 }
 
-
-.form-check-label .badge /* ajusta os labels do radios */
+.radio-group .form-check-label .badge /* ajusta os labels do radios */
  { 
   font-size: 0.75rem;
   padding: 4px 1px;
   border-radius: 4px;
+}
+
+/* Caixa instalada — mesma linha visual dos rótulos (badge + texto) */
+.card.border-primary .caixa-instalada-label {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  cursor: pointer;
+}
+
+.card.border-primary .caixa-instalada-input {
+  float: none;
+  margin: 0;
+  flex-shrink: 0;
+  width: 1.125rem;
+  height: 1.125rem;
+  border: 2px solid #495057;
+  cursor: pointer;
+}
+
+.card.border-primary .caixa-instalada-input:checked {
+  background-color: #629ef8;
+  border-color: #629ef8;
+}
+
+.card.border-primary .caixa-instalada-text {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #495057;
 }
 
 .text-muted {

@@ -2,7 +2,7 @@
 
 
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, OnDestroy, Output, EventEmitter } from '@angular/core';
 import { Dios } from '../modelo/dios';
 import { DiosService } from '../servico/dios.service';
 
@@ -14,9 +14,13 @@ import { DiosService } from '../servico/dios.service';
   templateUrl: './lista-dios.component.html',
   styleUrls: ['./lista-dios.component.css']
 })
-export class ListaDiosComponent implements OnInit {
+export class ListaDiosComponent implements OnInit, OnDestroy {
   vetorDios: Dios[] = [];
   @Output() DiosSelecionada = new EventEmitter<any[]>();
+
+  private readonly onReloadMapDios = (): void => {
+    this.selecionar();
+  };
   
   constructor(private servicoDios: DiosService) {
     console.log('ListaDiosComponent construído');
@@ -25,6 +29,11 @@ export class ListaDiosComponent implements OnInit {
   ngOnInit() {
     console.log('inicialização do app-lista-dios');
     this.selecionar();
+    window.addEventListener('reloadMapDios', this.onReloadMapDios);
+  }
+
+  ngOnDestroy(): void {
+    window.removeEventListener('reloadMapDios', this.onReloadMapDios);
   }
 
   selecionar() {

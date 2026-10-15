@@ -52,9 +52,16 @@ Estilo diagrama de blocos (camadas), equivalente a um desenho Visio simplificado
                                  │ CustomEvent (após implantar OK)
 ┌────────────────────────────────▼────────────────────────────────────────────────┐
 │                         CAMADA MAPA PRINCIPAL (reload)                            │
-│  reloadMapCaixas  ──▶  lista-caixas.component.ts · lista-ctos.component.ts      │
-│  reloadMapCabos   ──▶  lista-cabos1f … lista-cabos144f.component.ts (11 listas) │
-│  (opcional log)   ──▶  google-maps.component.ts                                 │
+│  reloadMapCaixas    ──▶  lista-caixas · lista-ctos                                │
+│  reloadMapCabos     ──▶  lista-cabos1f … lista-cabos144f (11 listas)              │
+│  reloadMapPopsEst   ──▶  lista-pops-est.component.ts                              │
+│  reloadMapDios      ──▶  lista-dios.component.ts                                │
+│  reloadMapPoligonos ──▶  lista-poligonos.component.ts                             │
+│  reloadMapClientes    ──▶  lista-clientes · lista-clientes-ativo · disable      │
+│  reloadMapAnotacoes   ──▶  lista-anotacoes.component.ts                         │
+│  reloadMapCondominios ──▶  lista-condominios.component.ts                       │
+│  reloadMapSegmentos   ──▶  lista-segmentos.component.ts                         │
+│  (opcional log)       ──▶  google-maps.component.ts                             │
 └───────────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -122,7 +129,17 @@ Fluxo de dados resumido (mesmo clique **Implantar**):
 | [`src/app/lista-cabos48f/lista-cabos48f.component.ts`](../../app/lista-cabos48f/lista-cabos48f.component.ts) | Idem. |
 | [`src/app/lista-cabos72f/lista-cabos72f.component.ts`](../../app/lista-cabos72f/lista-cabos72f.component.ts) | Idem. |
 | [`src/app/lista-cabos144f/lista-cabos144f.component.ts`](../../app/lista-cabos144f/lista-cabos144f.component.ts) | Idem. |
+| [`src/app/lista-pops-est/lista-pops-est.component.ts`](../../app/lista-pops-est/lista-pops-est.component.ts) | Escuta `reloadMapPopsEst`. |
+| [`src/app/lista-dios/lista-dios.component.ts`](../../app/lista-dios/lista-dios.component.ts) | Escuta `reloadMapDios`. |
+| [`src/app/lista-poligonos/lista-poligonos.component.ts`](../../app/lista-poligonos/lista-poligonos.component.ts) | Escuta `reloadMapPoligonos`. |
+| [`src/app/lista-clientes/lista-clientes.component.ts`](../../app/lista-clientes/lista-clientes.component.ts) | Escuta `reloadMapClientes`. |
+| [`src/app/lista-clientes-ativo/lista-clientes-ativo.component.ts`](../../app/lista-clientes-ativo/lista-clientes-ativo.component.ts) | Escuta `reloadMapClientes`. |
+| [`src/app/lista-clientes-disable/lista-clientes-disable.component.ts`](../../app/lista-clientes-disable/lista-clientes-disable.component.ts) | Escuta `reloadMapClientes`. |
+| [`src/app/lista-anotacoes/lista-anotacoes.component.ts`](../../app/lista-anotacoes/lista-anotacoes.component.ts) | Escuta `reloadMapAnotacoes`. |
+| [`src/app/lista-condominios/lista-condominios.component.ts`](../../app/lista-condominios/lista-condominios.component.ts) | Escuta `reloadMapCondominios`. |
+| [`src/app/lista-segmentos/lista-segmentos.component.ts`](../../app/lista-segmentos/lista-segmentos.component.ts) | Escuta `reloadMapSegmentos`. |
 | [`src/app/google-maps/google-maps.component.ts`](../../app/google-maps/google-maps.component.ts) | Pode registrar log dos eventos reload (diagnóstico). |
+| [`src/app/redraw-map-button/redraw-map-button.component.ts`](../../app/redraw-map-button/redraw-map-button.component.ts) | Botão **Redraw** (canto inferior esquerdo): dispara os nove eventos reload (caixas/cabos + demais camadas). |
 
 ### Documentação e amostra
 
@@ -168,7 +185,7 @@ Rotas de **leitura** usadas só para duplicata de caixa (não criam objetos):
 | Cabo | POST | `/insert_idmeta` | Um por trecho (dentro de `InsertCaboService`) |
 | Cabo | POST | `/insert_cabo` | Imediatamente após idmeta |
 | Lote | POST | `/update_id_importacao` | Uma vez, após 1º insert OK do clique Implantar |
-| Reload | — | `reloadMapCaixas` / `reloadMapCabos` | `window.dispatchEvent` no modal |
+| Reload | — | `reloadMapCaixas`, `reloadMapCabos`, `reloadMapPopsEst`, `reloadMapDios`, `reloadMapPoligonos`, `reloadMapClientes`, `reloadMapAnotacoes`, `reloadMapCondominios`, `reloadMapSegmentos` | `window.dispatchEvent` no modal (caixas/cabos) ou botão **Redraw** (todos) |
 
 ---
 
@@ -220,8 +237,13 @@ flowchart TB
   subgraph map [Mapa principal]
     LC[lista-caixas / ctos]
     LK[lista-cabos 1f-144f]
+    LP[pops / dios / poligonos / clientes / anot / cond / seg]
+    RD[redraw-map-button]
     MOD -->|reloadMapCaixas| LC
     MOD -->|reloadMapCabos| LK
+    RD -->|9 eventos reload| LC
+    RD --> LK
+    RD --> LP
   end
 ```
 

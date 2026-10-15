@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, OnDestroy, Output, EventEmitter } from '@angular/core';
 import { Condominios } from '../modelo/Condominios';
 import { CondominiosService } from '../servico/condominios.service';
 
@@ -11,9 +11,13 @@ import { CondominiosService } from '../servico/condominios.service';
   templateUrl: './lista-condominios.component.html',
   styleUrls: ['./lista-condominios.component.css']
 })
-export class ListaCondominiosComponent implements OnInit {
+export class ListaCondominiosComponent implements OnInit, OnDestroy {
   vetorCondominios: Condominios[] = [];
   @Output() CondominiosSelecionada = new EventEmitter<any[]>();
+
+  private readonly onReloadMapCondominios = (): void => {
+    this.selecionar();
+  };
   
   constructor(private servicoCondominios: CondominiosService) {
     console.log('ListaCondominiosComponent construído');
@@ -22,6 +26,11 @@ export class ListaCondominiosComponent implements OnInit {
   ngOnInit() {
     console.log('inicialização do app-lista-cto1-ok');
     this.selecionar();
+    window.addEventListener('reloadMapCondominios', this.onReloadMapCondominios);
+  }
+
+  ngOnDestroy(): void {
+    window.removeEventListener('reloadMapCondominios', this.onReloadMapCondominios);
   }
 
   selecionar() {

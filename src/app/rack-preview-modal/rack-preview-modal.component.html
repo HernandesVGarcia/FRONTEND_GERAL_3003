@@ -1,0 +1,12 @@
+<div class="rack-preview-modal">
+  <div class="rack-preview-header">
+    <h3>Rack 42U — preview</h3>
+    <button type="button" class="close-button" (click)="close()" aria-label="Fechar">&times;</button>
+  </div>
+  <p class="rack-preview-hint">
+    Dois DIOs: orelhas cinza = mover; ligue só entre <strong>pontos verdes</strong> (porta a porta, como no gojs-demo). Arraste de um conector no DIO 1 até outro no DIO 2.
+    Após export Visio, salve em <code>dio1.svg</code> e rode <code>node scripts/crop-dio-svg.mjs</code> — não substitua
+    <code>dio-visio.svg</code> pelo export bruto (página inteira).
+  </p>
+  <div #diagramDiv class="rack-preview-diagram"></div>
+</div>

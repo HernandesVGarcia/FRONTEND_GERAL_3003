@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { NgbActiveModal, NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { TiposService } from '../servico/tipos.service';
 import { InsertCaixaService, InsertCaixaRequest } from '../servico/insert-caixa.service';
+import { UpdateCaixaInstaladaService } from '../servico/update-caixa-instalada.service';
 import { AuthService } from '../servico/auth.service';
 import { sanitizarLabelCaixa } from '../util/caixa-label.util';
 
@@ -41,7 +42,8 @@ export class PlotaCaixaComponent implements OnInit, OnChanges {
     lng: '',
     labelCaixa: '',
     endereco: '',
-    obs: ''
+    obs: '',
+    instalada: true,
   };
 
   @Input() data: PlotaCaixaData = {};
@@ -61,6 +63,7 @@ export class PlotaCaixaComponent implements OnInit, OnChanges {
     public activeModal: NgbActiveModal,
     private tiposService: TiposService,
     private insertCaixaService: InsertCaixaService,
+    private updateCaixaInstaladaService: UpdateCaixaInstaladaService,
     private authService: AuthService
   ) {}
 
@@ -91,6 +94,7 @@ export class PlotaCaixaComponent implements OnInit, OnChanges {
       this.form.labelCaixa = ''; // Sempre vazio
       this.form.endereco = this.data.endereco || '';
       this.form.obs = this.data.obs || '';
+      this.form.instalada = true;
 
       console.log('📝 [PLOTA-CAIXA] Formulário atualizado com coordenadas:', {
         lat: this.form.lat,
@@ -304,31 +308,39 @@ export class PlotaCaixaComponent implements OnInit, OnChanges {
     this.salvando = true;
 
     // Chamar o serviço para criar a caixa
+    const instalada: 0 | 1 = this.form.instalada ? 1 : 0;
+
     this.insertCaixaService.criarCaixa(dadosCaixa).subscribe({
       next: (response) => {
         console.log('✅ [PLOTA-CAIXA] Caixa criada com sucesso:', response);
-        this.salvando = false;
 
-        // Se label não foi informado (ou ficou vazio após sanitizar), usar o id_meta
         const labelFinal = labelInformado !== '' ? labelInformado : response.id_meta.toString();
 
-        // Preparar dados para retorno (incluindo os IDs retornados)
-        const resultado = {
-          id_meta: response.id_meta,
-          id_caixa: response.id_caixa,
-          tipagem: this.form.tipagem,
-          ID_TIPO: ID_TIPO,
-          lat: parseFloat(lat),
-          lng: parseFloat(lng),
-          labelCaixa: labelFinal, // Usa id_meta se label não foi informado
-          endereco: this.form.endereco || undefined,
-          obs: this.form.obs || undefined
-        };
+        if (instalada === 0) {
+          this.updateCaixaInstaladaService.atualizarInstalada({
+            ID_META: response.id_meta,
+            INSTALADA: 0,
+          }).subscribe({
+            next: (updateResponse) => {
+              this.salvando = false;
+              if (updateResponse.success !== false) {
+                console.log('📦 [PLOTA-CAIXA] Label final usado:', labelFinal);
+                this.fecharComResultado(response, ID_TIPO, lat, lng, labelFinal, 0);
+              } else {
+                alert(updateResponse.error || 'Caixa criada, mas falhou ao marcar como não instalada.');
+              }
+            },
+            error: (error) => {
+              this.salvando = false;
+              alert(`Caixa criada (ID_META ${response.id_meta}), mas erro ao atualizar instalação: ${error}`);
+            },
+          });
+          return;
+        }
 
+        this.salvando = false;
         console.log('📦 [PLOTA-CAIXA] Label final usado:', labelFinal);
-
-        // Fechar modal e retornar dados
-        this.activeModal.close(resultado);
+        this.fecharComResultado(response, ID_TIPO, lat, lng, labelFinal, 1);
       },
       error: (error) => {
         console.error('❌ [PLOTA-CAIXA] Erro ao criar caixa:', error);
@@ -336,6 +348,29 @@ export class PlotaCaixaComponent implements OnInit, OnChanges {
         alert(`Erro ao criar caixa: ${error}`);
       }
     });
+  }
+
+  private fecharComResultado(
+    response: { id_meta: number; id_caixa: number },
+    ID_TIPO: string,
+    lat: string,
+    lng: string,
+    labelFinal: string,
+    instalada: 0 | 1,
+  ): void {
+    const resultado = {
+      id_meta: response.id_meta,
+      id_caixa: response.id_caixa,
+      tipagem: this.form.tipagem,
+      ID_TIPO,
+      lat: parseFloat(lat),
+      lng: parseFloat(lng),
+      labelCaixa: labelFinal,
+      endereco: this.form.endereco || undefined,
+      obs: this.form.obs || undefined,
+      INSTALADA: instalada,
+    };
+    this.activeModal.close(resultado);
   }
 
   fechar(): void {

@@ -1,0 +1,3015 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd">
+<!-- Gerado pelo Microsoft Office Visio 11.0, SVG Export, v1.0 dio_SVG.svg POP -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:v="http://schemas.microsoft.com/visio/2003/SVGExtensions/" width="24.0157in"
+		height="11.6929in" viewBox="0 0 1729.13 841.89" xml:space="preserve" color-interpolation-filters="sRGB" class="st8">
+	<v:documentProperties v:langID="1046" v:metric="true" v:viewMarkup="false"/>
+
+	<style type="text/css">
+	<![CDATA[
+		.st1 {fill:none;stroke:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.72}
+		.st2 {fill:#1a1a1a;stroke:#1a1a1a;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.24}
+		.st3 {fill:#92d050;stroke:#000000;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.1}
+		.st4 {fill:none;stroke:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.75}
+		.st5 {fill:#d9d9d9;font-family:Arial;font-size:0.133324em}
+		.st6 {font-size:1em}
+		.st7 {fill:#d9d9d9;font-family:Arial;font-size:0.416656em}
+		.st8 {fill:none;fill-rule:evenodd;font-size:12;overflow:visible;stroke-linecap:square;stroke-miterlimit:3}
+	]]>
+	</style>
+
+	<g v:mID="0" v:index="1" v:groupContext="foregroundPage">
+		<title>POP</title>
+		<v:pageProperties v:drawingScale="0.0393701" v:pageScale="0.0393701" v:drawingUnits="24" v:shadowOffsetX="8.50394"
+				v:shadowOffsetY="-8.50394"/>
+		<v:layer v:name="RACKS" v:index="0"/>
+		<v:layer v:name="DIOS" v:index="1"/>
+		<v:layer v:name="EQUIPAMENTOS" v:index="2"/>
+		<g id="group15-1" transform="translate(127.644,-651.969)" v:mID="15" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="NetZoomEQID" v:lbl="EQID" v:prompt="EQID" v:format="" v:sortKey="" v:invis="false" v:ask="false"
+						v:langID="1033" v:cal="0" v:val="VT4(BBOX058)"/>
+				<v:cp v:nameU="NetZoomMfgAcronym" v:lbl="MfgAcronym" v:prompt="MfgAcronym" v:format="" v:sortKey="" v:invis="false"
+						v:ask="false" v:langID="1033" v:cal="0" v:val="VT4(BBOX)"/>
+				<v:cp v:nameU="NetZoomManufacturer" v:lbl="Manufacturer" v:prompt="Manufacturer" v:format="" v:sortKey=""
+						v:invis="false" v:ask="false" v:langID="1033" v:cal="0" v:val="VT4(Black Box)"/>
+				<v:cp v:nameU="NetZoomEqType" v:lbl="EqType" v:prompt="EqType" v:format="" v:sortKey="" v:invis="false"
+						v:ask="false" v:langID="1033" v:cal="0" v:val="VT4(Panel)"/>
+				<v:cp v:nameU="NetZoomMfgProdLine" v:lbl="MfgProdLine" v:prompt="MfgProdLine" v:format="" v:sortKey=""
+						v:invis="false" v:ask="false" v:langID="1033" v:cal="0" v:val="VT4(RM Series)"/>
+				<v:cp v:nameU="NetZoomMfgProdNo" v:lbl="MfgProdNo" v:prompt="MfgProdNo" v:format="" v:sortKey="" v:invis="false"
+						v:ask="false" v:langID="1033" v:cal="0" v:val="VT4(RMTB03)"/>
+				<v:cp v:nameU="NetZoomMfgDesc" v:lbl="MfgDesc" v:prompt="MfgDesc" v:format="" v:sortKey="" v:invis="false"
+						v:ask="false" v:langID="1033" v:cal="0" v:val="VT4(Filler Panel, Black 3 RU)"/>
+				<v:cp v:nameU="NetZoomMfgURL" v:lbl="MfgURL" v:prompt="MfgURL" v:format="" v:sortKey="" v:invis="false"
+						v:ask="false" v:langID="1033" v:cal="0" v:val="VT4(www.blackbox.com)"/>
+			</v:custProps>
+			<v:userDefs>
+				<v:ud v:nameU="EQID" v:prompt="Equipment ID." v:val="VT4(BBOX0581)"/>
+				<v:ud v:nameU="Rack" v:prompt="Rack" v:val="VT4(False)"/>
+			</v:userDefs>
+			<title>RMTB03 (Front)</title>
+			<desc>RMTB03</desc>
+			<g id="shape16-2" v:mID="16" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.16</title>
+				<rect v:rectContext="foreign" x="0" y="803.896" width="136.517" height="37.9935" class="st1"/>
+				<switch>
+					<foreignObject x="0" y="803.896" width="136.517" height="37.9935"
+							requiredExtensions="http://schemas.microsoft.com/visio/2003/SVGExtensions/">
+						<v:foreignData v:orgSize="3104" v:data="data:metafile;base64,eNrNVk1IXFcUPtczscfEhGpbMbUNWr23ShpptY1YiRV
+									0jGJshYYYCtISG0KtWo3tUFNRMRCzMClWXAy1Gh0kGzd1pSsTkJAKqRBcRIgLgzD1B1JCINEE7PfGO53XqfYHssh7nJn
+									z7jnnO993fx5PEdEVilw+D1GBijz/lkhUvIso1VtZSqQoNZ7oM4wz7FVYvc27jLy6ZKJf4Me56p3ruwSm7jgPfUin6Wv
+									6hL7C3YBxLzXTN/QFNeHpNDUilkofwztLvtCvcyXA0JLE/r/owt1jn78F50L0jLPP3XCuxhDtts8OxkuwdFhqqLLzgwh
+									KxM+wtlMcbSjNcmmxfJzrNTumI2OdYf8Fl78P/n7rb25uUrILI9H6MZar4zvT+LL198JecY0nuWr3Rs3L+zbm6E+JiiW
+									4MHZHxcLzE4ztLAyP5SVF/PD87BT3RM0LNgx9DjsBO1pSXhzj6jUHImsoeB1+PuXSW+j8Dv7fDXn5uN+zfk7IdzKIWl3
+									3s+P8LDF+vnq5JDx+4sefiqMxdoq7MX7I+v1IePzYr/ePRGPsFP8njI7yvuvft05e3wkjHHcwjN3TyoUbvrRr/7wJS7Z
+									71rnKy8v/khO9l5198PY275pdzjvI3MR7yLGyPVeMYzf/xBHXGUJuZ6YLM9PVK8w7zEdtwzvGxTscd85itLa/8VZb5+U
+									jWBbs09D7i2hdjfG6GuXHaogfKT8/VH38QF3i++oir6rzHFTtfE+d4wXl4zuqhW+rZr6lGvmGauBrqp4nYfmwXNghjBn
+									E0pCTgtwk1CSgNh4YAiwPMBWwN6mPn5Kfn9AQb9Aor9NYyDZoHGMTiE0hZxq5M6iZRe0cMOaBtQDMRWAvoUcQvZbRcwW
+									9V8FhDVzWwGkV3FbAcRlcg+C8BO6L0LAALfPQNAdts9A4A63T0DwF7ROYg3Hemosx/rd1i3Gtm9pmv6n/uN+i1227/ZZ
+									p1+2uXbc1WHFo3WplXdXIY1Utj1SVPFQV8kB55b4qklVVIEF1WO6pHFlQ2XJHHZTbKlNuKSM3lJZrKkMmVbrkw3LhH8K
+									YQSwNOSnITUJNAmrjgSHA8gBTAXuTKuQpVckTqpYNqpF1qsV/HZ6bMO5DvA15XcjvRl0P6nuB0w88P3AHgD+IPsPoN4K
+									+AfQPgEcAfALgNQJ+w+A5CL4D4O0H/37o6IWeHujqhr4u6GyDXh90N0F/nTjz8Lyds2OerXP2pSdyzkrNGHvNKJeYIS4
+									2fi4yfVxoLnGBuch55jznmnbONuc4y/g4w7TwAdPM+00jJ5oGjjf1HAu7oOu5A9aqG/isbuQG3cxndAuf0j6u0ef4pG7
+									n4/o8V+mLXKkvcYXu4zLt56N6iEv1KGzM2jjGJhCbQs40cmdQM4vaOWDMA2sBmIvAXkKPIHoto+cKeq+Cwxq4rIHTKri
+									tgOMyuAbBeQncF6FhAVrmoWkO2mahcQZap6F5CtonMAfj7MyFY8/bOXPW7a5dt/A5KzW14jU1UmKqpdhUSZGpkELjlQJ
+									TJHmmQHLNYck2OZJlsiXDHJQDJlP2GyOJRku8yZBYky4XdLp06Axp1VrOaiMNOlPO6INySmdLjc6Rk/qwHNcFUqWLpFJ
+									7pUJXSJmukqO6Wkp1DawWVofnJoz7EG9DXhfyu1HXg/pe4PQDzw/cAeAPos8w+o2gbwD9A+ARAJ8AeI2A3zB4DoLvAHj
+									7wb8fOnqhpwe6uqGvCzrboNcH3U3QXyfOPPzfc+bOKbXfgmK/pZzv7zci35Kbz+Lbdp/tQfa70PH/AIfOuuM="/>
+					</foreignObject>
+					<svg viewBox="0 0 1143.8 317.69" enable-background="new" color-interpolation-filters="sRGB" height="37.9935"
+							preserveAspectRatio="none" width="136.517" x="0" y="803.896">
+						<defs>
+							<clipPath id="mfid5">
+								<rect id="mfid6" x="0" y="0" width="1143.8" height="317.69"/>
+							</clipPath>
+						</defs>
+						<g clip-path="url(#mfid5)">
+							<g transform="matrix(0.11727, 0, 0, 0.11709, -18.411, -23.184)">
+								<g fill-rule="evenodd" stroke-width="4" stroke="#000000" stroke-linecap="round"
+										stroke-linejoin="round" fill="#494949">
+									<polygon points="9888,200 160,200 160,2888 9888,2888 9888,200"/>
+								</g>
+								<g fill-rule="evenodd" stroke-width="53.585" stroke="#000000" fill="#ffffff">
+									<polygon
+											points="505,940 505,933 504,927 503,921 500,915 498,909 495,904 491,899 487,894 482,890 477,886 472,883 466,881 461,878 454,877 448,876 441,876 313,876 307,876 301,877 294,878 289,881 283,883 278,886 273,890 268,894 264,899 260,904 257,909 255,915 252,921 251,927 250,933 249,940 249,940 250,946 251,952 252,959 255,964 257,970 260,975 264,980 268,985 273,989 278,993 283,996 289,999 294,1001 301,1002 307,1003 313,1004 441,1004 448,1003 454,1002 461,1001 466,999 472,996 477,993 482,989 487,985 491,980 495,975 498,970 500,964 503,959 504,952 505,946 505,940 505,940"/>
+								</g>
+								<g fill-rule="evenodd" stroke-width="53.585" stroke="#000000" fill="#ffffff">
+									<polygon
+											points="505,2147 505,2141 504,2135 503,2128 500,2123 498,2117 495,2112 491,2107 487,2102 482,2098 477,2094 472,2091 466,2088 461,2086 454,2085 448,2084 441,2083 313,2083 307,2084 301,2085 294,2086 289,2088 283,2091 278,2094 273,2098 268,2102 264,2107 260,2112 257,2117 255,2123 252,2128 251,2135 250,2141 249,2147 250,2154 251,2160 252,2166 255,2172 257,2178 260,2183 264,2188 268,2193 273,2197 278,2201 283,2204 289,2206 294,2209 301,2210 307,2211 313,2211 441,2211 448,2211 454,2210 461,2209 466,2206 472,2204 477,2201 482,2197 487,2193 491,2188 495,2183 498,2178 500,2172 503,2166 504,2160 505,2154 505,2147"/>
+								</g>
+								<g fill-rule="evenodd" stroke-width="53.585" stroke="#000000" fill="#ffffff">
+									<polygon
+											points="9798,940 9797,933 9796,927 9795,921 9792,915 9790,909 9787,904 9783,899 9779,894 9774,890 9769,886 9764,883 9758,881 9753,878 9746,877 9740,876 9734,876 9606,876 9599,876 9593,877 9586,878 9581,881 9575,883 9570,886 9565,890 9560,894 9556,899 9552,904 9549,909 9547,915 9544,921 9543,927 9542,933 9542,940 9542,940 9542,946 9543,952 9544,959 9547,964 9549,970 9552,975 9556,980 9560,985 9565,989 9570,993 9575,996 9581,999 9586,1001 9593,1002 9599,1003 9606,1004 9734,1004 9740,1003 9746,1002 9753,1001 9758,999 9764,996 9769,993 9774,989 9779,985 9783,980 9787,975 9790,970 9792,964 9795,959 9796,952 9797,946 9798,940 9798,940"/>
+								</g>
+								<g fill-rule="evenodd" stroke-width="53.585" stroke="#000000" fill="#ffffff">
+									<polygon
+											points="9798,2147 9797,2141 9796,2135 9795,2128 9792,2123 9790,2117 9787,2112 9783,2107 9779,2102 9774,2098 9769,2094 9764,2091 9758,2088 9753,2086 9746,2085 9740,2084 9734,2083 9606,2083 9599,2084 9593,2085 9586,2086 9581,2088 9575,2091 9570,2094 9565,2098 9560,2102 9556,2107 9552,2112 9549,2117 9547,2123 9544,2128 9543,2135 9542,2141 9542,2147 9542,2154 9543,2160 9544,2166 9547,2172 9549,2178 9552,2183 9556,2188 9560,2193 9565,2197 9570,2201 9575,2204 9581,2206 9586,2209 9593,2210 9599,2211 9606,2211 9734,2211 9740,2211 9746,2210 9753,2209 9758,2206 9764,2204 9769,2201 9774,2197 9779,2193 9783,2188 9787,2183 9790,2178 9792,2172 9795,2166 9796,2160 9797,2154 9798,2147"/>
+								</g>
+							</g>
+						</g>
+					</svg>
+				</switch>
+				<rect v:rectContext="foreign" x="0" y="803.896" width="136.517" height="37.9935" class="st1"/>
+			</g>
+		</g>
+		<g id="group17-5" transform="translate(127.361,-665.291)" v:mID="17" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="NetZoomEQID" v:lbl="EQID" v:prompt="EQID" v:format="" v:sortKey="" v:invis="false" v:ask="false"
+						v:langID="1033" v:cal="0" v:val="VT4(BBOX046)"/>
+				<v:cp v:nameU="NetZoomMfgAcronym" v:lbl="MfgAcronym" v:prompt="MfgAcronym" v:format="" v:sortKey="" v:invis="false"
+						v:ask="false" v:langID="1033" v:cal="0" v:val="VT4(BBOX)"/>
+				<v:cp v:nameU="NetZoomManufacturer" v:lbl="Manufacturer" v:prompt="Manufacturer" v:format="" v:sortKey=""
+						v:invis="false" v:ask="false" v:langID="1033" v:cal="0" v:val="VT4(Black Box)"/>
+				<v:cp v:nameU="NetZoomEqType" v:lbl="EqType" v:prompt="EqType" v:format="" v:sortKey="" v:invis="false"
+						v:ask="false" v:langID="1033" v:cal="0" v:val="VT4(Panel)"/>
+				<v:cp v:nameU="NetZoomMfgProdLine" v:lbl="MfgProdLine" v:prompt="MfgProdLine" v:format="" v:sortKey=""
+						v:invis="false" v:ask="false" v:langID="1033" v:cal="0" v:val="VT4(RM Series)"/>
+				<v:cp v:nameU="NetZoomMfgProdNo" v:lbl="MfgProdNo" v:prompt="MfgProdNo" v:format="" v:sortKey="" v:invis="false"
+						v:ask="false" v:langID="1033" v:cal="0" v:val="VT4(RMTB02)"/>
+				<v:cp v:nameU="NetZoomMfgDesc" v:lbl="MfgDesc" v:prompt="MfgDesc" v:format="" v:sortKey="" v:invis="false"
+						v:ask="false" v:langID="1033" v:cal="0" v:val="VT4(2U Filler panel, Black Color)"/>
+				<v:cp v:nameU="NetZoomMfgURL" v:lbl="MfgURL" v:prompt="MfgURL" v:format="" v:sortKey="" v:invis="false"
+						v:ask="false" v:langID="1033" v:cal="0" v:val="VT4(www.blackbox.com)"/>
+			</v:custProps>
+			<v:userDefs>
+				<v:ud v:nameU="EQID" v:prompt="Equipment ID." v:val="VT4(BBOX0461)"/>
+				<v:ud v:nameU="Rack" v:prompt="Rack" v:val="VT4(False)"/>
+			</v:userDefs>
+			<title>RMTB02 (Front).11</title>
+			<desc>RMTB02</desc>
+		</g>
+		<g id="group18-6" transform="translate(147.36,-680.166)" v:mID="18" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(127120000)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC simplex/LC Duplex Type Adapter Support Module, w/o Adapter Loaded, Black)"/>
+			</v:custProps>
+			<title>fiber optic adapter support module.231</title>
+			<g id="shape19-7" v:mID="19" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.19</title>
+				<path d="M2.83 837.64 L2.83 837.35 L3.39 837.35 L3.96 837.35 L3.96 837.64 L3.96 841.46 L3.96 841.89 L3.39 841.89
+							 L0.57 841.89 L0 841.89 L0 841.46 L0 837.64 L0 837.35 L0.57 837.35 L1.13 837.35 L1.13 837.64 L0.57 837.64
+							 L0.57 841.46 L3.39 841.46 L3.39 837.64 L2.83 837.64 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="group32-9" transform="translate(164.05,-680.166)" v:mID="32" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(127120000)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC simplex/LC Duplex Type Adapter Support Module, w/o Adapter Loaded, Black)"/>
+			</v:custProps>
+			<title>fiber optic adapter support module.392</title>
+			<g id="shape33-10" v:mID="33" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.33</title>
+				<path d="M2.83 837.64 L2.83 837.35 L3.39 837.35 L3.96 837.35 L3.96 837.64 L3.96 841.46 L3.96 841.89 L3.39 841.89
+							 L0.57 841.89 L0 841.89 L0 841.46 L0 837.64 L0 837.35 L0.57 837.35 L1.13 837.35 L1.13 837.64 L0.57 837.64
+							 L0.57 841.46 L3.39 841.46 L3.39 837.64 L2.83 837.64 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="group44-12" transform="translate(164.703,-679.316)" v:mID="44" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(231121108)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC/PC Simplex MM Adapter, Zirconia Sleeve)"/>
+				<v:cp v:nameU="Row_4" v:lbl="Installed Date" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_5" v:lbl="Warranty Exp" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_6" v:lbl="Location" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_7" v:lbl="Building" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_8" v:lbl="Room" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_9" v:lbl="Comments" v:type="0" v:langID="1033"/>
+			</v:custProps>
+			<title>SC MM adapter simplex.404</title>
+			<g id="shape45-13" v:mID="45" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.45</title>
+				<path d="M1.63 841.32 a0.311501 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M1.63 836.22 a0.311501
+							 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M2.63 835.94 L2.35 835.65 L0.28 835.65
+							 L0 835.94 L0 841.61 L0.28 841.89 L2.35 841.89 L2.63 841.61 L2.63 835.94 Z" class="st3"/>
+			</g>
+			<g id="shape46-15" v:mID="46" v:groupContext="shape" v:layerMember="1" transform="translate(-5.7454E-015,-1.31811)">
+				<title>Planilha.46</title>
+				<rect x="0" y="838.29" width="2.6336" height="3.6" class="st3"/>
+			</g>
+			<g id="shape47-17" v:mID="47" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.256,839.069) rotate(-90)">
+				<title>Planilha.47</title>
+				<rect x="0" y="841.607" width="0.595276" height="0.283183" class="st3"/>
+			</g>
+			<g id="shape48-19" v:mID="48" v:groupContext="shape" v:layerMember="1" transform="translate(0.254864,-1.70079)">
+				<title>Planilha.48</title>
+				<rect x="0" y="839.055" width="2.12387" height="2.83465" class="st3"/>
+			</g>
+			<g id="shape49-21" v:mID="49" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,837.804) rotate(-90)">
+				<title>Planilha.49</title>
+				<path d="M0.13 840.6 L0 840.6 L0 841.72 L0.13 841.72 L0.13 840.6 Z M0.24 840.6 L0.13 840.6 L0.13 841.72 L0.24 841.72
+							 L0.24 840.6 Z M0.24 840.6 L0.24 841.72 L0.28 841.72 L0.28 841.89 L0.45 841.89 L0.45 840.43 L0.28 840.43
+							 L0.28 840.6 L0.24 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape50-23" v:mID="50" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,840.189) rotate(-90)">
+				<title>Planilha.50</title>
+				<path d="M0.21 840.6 L0.17 840.6 L0.17 840.43 L0 840.43 L0 841.89 L0.17 841.89 L0.17 841.72 L0.21 841.72 L0.21 840.6
+							 Z M0.21 840.6 L0.21 841.72 L0.32 841.72 L0.32 840.6 L0.21 840.6 Z M0.32 840.6 L0.32 841.72 L0.45 841.72
+							 L0.45 840.6 L0.32 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape51-25" v:mID="51" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.899,839.447) rotate(-90)">
+				<title>Planilha.51</title>
+				<ellipse cx="0.675" cy="841.215" rx="0.675" ry="0.674329" class="st3"/>
+			</g>
+			<g id="shape52-27" v:mID="52" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.039,839.306) rotate(-90)">
+				<title>Planilha.52</title>
+				<ellipse cx="0.534375" cy="841.356" rx="0.534375" ry="0.533843" class="st3"/>
+			</g>
+			<g id="shape53-29" v:mID="53" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.194,839.151) rotate(-90)">
+				<title>Planilha.53</title>
+				<ellipse cx="0.379688" cy="841.51" rx="0.379688" ry="0.37931" class="st3"/>
+			</g>
+		</g>
+		<g id="group54-31" transform="translate(172.819,-680.166)" v:mID="54" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(127120000)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC simplex/LC Duplex Type Adapter Support Module, w/o Adapter Loaded, Black)"/>
+			</v:custProps>
+			<title>fiber optic adapter support module.414</title>
+			<g id="shape55-32" v:mID="55" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.55</title>
+				<path d="M2.83 837.64 L2.83 837.35 L3.39 837.35 L3.96 837.35 L3.96 837.64 L3.96 841.46 L3.96 841.89 L3.39 841.89
+							 L0.57 841.89 L0 841.89 L0 841.46 L0 837.64 L0 837.35 L0.57 837.35 L1.13 837.35 L1.13 837.64 L0.57 837.64
+							 L0.57 841.46 L3.39 841.46 L3.39 837.64 L2.83 837.64 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="group56-34" transform="translate(173.473,-679.316)" v:mID="56" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(231121108)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC/PC Simplex MM Adapter, Zirconia Sleeve)"/>
+				<v:cp v:nameU="Row_4" v:lbl="Installed Date" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_5" v:lbl="Warranty Exp" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_6" v:lbl="Location" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_7" v:lbl="Building" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_8" v:lbl="Room" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_9" v:lbl="Comments" v:type="0" v:langID="1033"/>
+			</v:custProps>
+			<title>SC MM adapter simplex.416</title>
+			<g id="shape57-35" v:mID="57" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.57</title>
+				<path d="M1.63 841.32 a0.311501 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M1.63 836.22 a0.311501
+							 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M2.63 835.94 L2.35 835.65 L0.28 835.65
+							 L0 835.94 L0 841.61 L0.28 841.89 L2.35 841.89 L2.63 841.61 L2.63 835.94 Z" class="st3"/>
+			</g>
+			<g id="shape58-37" v:mID="58" v:groupContext="shape" v:layerMember="1" transform="translate(-5.7454E-015,-1.31811)">
+				<title>Planilha.58</title>
+				<rect x="0" y="838.29" width="2.6336" height="3.6" class="st3"/>
+			</g>
+			<g id="shape59-39" v:mID="59" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.256,839.069) rotate(-90)">
+				<title>Planilha.59</title>
+				<rect x="0" y="841.607" width="0.595276" height="0.283183" class="st3"/>
+			</g>
+			<g id="shape60-41" v:mID="60" v:groupContext="shape" v:layerMember="1" transform="translate(0.254864,-1.70079)">
+				<title>Planilha.60</title>
+				<rect x="0" y="839.055" width="2.12387" height="2.83465" class="st3"/>
+			</g>
+			<g id="shape61-43" v:mID="61" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,837.804) rotate(-90)">
+				<title>Planilha.61</title>
+				<path d="M0.13 840.6 L0 840.6 L0 841.72 L0.13 841.72 L0.13 840.6 Z M0.24 840.6 L0.13 840.6 L0.13 841.72 L0.24 841.72
+							 L0.24 840.6 Z M0.24 840.6 L0.24 841.72 L0.28 841.72 L0.28 841.89 L0.45 841.89 L0.45 840.43 L0.28 840.43
+							 L0.28 840.6 L0.24 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape62-45" v:mID="62" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,840.189) rotate(-90)">
+				<title>Planilha.62</title>
+				<path d="M0.21 840.6 L0.17 840.6 L0.17 840.43 L0 840.43 L0 841.89 L0.17 841.89 L0.17 841.72 L0.21 841.72 L0.21 840.6
+							 Z M0.21 840.6 L0.21 841.72 L0.32 841.72 L0.32 840.6 L0.21 840.6 Z M0.32 840.6 L0.32 841.72 L0.45 841.72
+							 L0.45 840.6 L0.32 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape63-47" v:mID="63" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.899,839.447) rotate(-90)">
+				<title>Planilha.63</title>
+				<ellipse cx="0.675" cy="841.215" rx="0.675" ry="0.674329" class="st3"/>
+			</g>
+			<g id="shape64-49" v:mID="64" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.039,839.306) rotate(-90)">
+				<title>Planilha.64</title>
+				<ellipse cx="0.534375" cy="841.356" rx="0.534375" ry="0.533843" class="st3"/>
+			</g>
+			<g id="shape65-51" v:mID="65" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.194,839.151) rotate(-90)">
+				<title>Planilha.65</title>
+				<ellipse cx="0.379688" cy="841.51" rx="0.379688" ry="0.37931" class="st3"/>
+			</g>
+		</g>
+		<g id="group66-53" transform="translate(181.306,-680.166)" v:mID="66" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(127120000)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC simplex/LC Duplex Type Adapter Support Module, w/o Adapter Loaded, Black)"/>
+			</v:custProps>
+			<title>fiber optic adapter support module.426</title>
+			<g id="shape67-54" v:mID="67" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.67</title>
+				<path d="M2.83 837.64 L2.83 837.35 L3.39 837.35 L3.96 837.35 L3.96 837.64 L3.96 841.46 L3.96 841.89 L3.39 841.89
+							 L0.57 841.89 L0 841.89 L0 841.46 L0 837.64 L0 837.35 L0.57 837.35 L1.13 837.35 L1.13 837.64 L0.57 837.64
+							 L0.57 841.46 L3.39 841.46 L3.39 837.64 L2.83 837.64 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="group68-56" transform="translate(189.792,-680.166)" v:mID="68" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(127120000)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC simplex/LC Duplex Type Adapter Support Module, w/o Adapter Loaded, Black)"/>
+			</v:custProps>
+			<title>fiber optic adapter support module.428</title>
+			<g id="shape69-57" v:mID="69" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.69</title>
+				<path d="M2.83 837.64 L2.83 837.35 L3.39 837.35 L3.96 837.35 L3.96 837.64 L3.96 841.46 L3.96 841.89 L3.39 841.89
+							 L0.57 841.89 L0 841.89 L0 841.46 L0 837.64 L0 837.35 L0.57 837.35 L1.13 837.35 L1.13 837.64 L0.57 837.64
+							 L0.57 841.46 L3.39 841.46 L3.39 837.64 L2.83 837.64 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="group70-59" transform="translate(181.959,-679.316)" v:mID="70" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(231121108)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC/PC Simplex MM Adapter, Zirconia Sleeve)"/>
+				<v:cp v:nameU="Row_4" v:lbl="Installed Date" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_5" v:lbl="Warranty Exp" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_6" v:lbl="Location" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_7" v:lbl="Building" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_8" v:lbl="Room" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_9" v:lbl="Comments" v:type="0" v:langID="1033"/>
+			</v:custProps>
+			<title>SC MM adapter simplex.430</title>
+			<g id="shape71-60" v:mID="71" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.71</title>
+				<path d="M1.63 841.32 a0.311501 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M1.63 836.22 a0.311501
+							 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M2.63 835.94 L2.35 835.65 L0.28 835.65
+							 L0 835.94 L0 841.61 L0.28 841.89 L2.35 841.89 L2.63 841.61 L2.63 835.94 Z" class="st3"/>
+			</g>
+			<g id="shape72-62" v:mID="72" v:groupContext="shape" v:layerMember="1" transform="translate(-5.7454E-015,-1.31811)">
+				<title>Planilha.72</title>
+				<rect x="0" y="838.29" width="2.6336" height="3.6" class="st3"/>
+			</g>
+			<g id="shape73-64" v:mID="73" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.256,839.069) rotate(-90)">
+				<title>Planilha.73</title>
+				<rect x="0" y="841.607" width="0.595276" height="0.283183" class="st3"/>
+			</g>
+			<g id="shape74-66" v:mID="74" v:groupContext="shape" v:layerMember="1" transform="translate(0.254864,-1.70079)">
+				<title>Planilha.74</title>
+				<rect x="0" y="839.055" width="2.12387" height="2.83465" class="st3"/>
+			</g>
+			<g id="shape75-68" v:mID="75" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,837.804) rotate(-90)">
+				<title>Planilha.75</title>
+				<path d="M0.13 840.6 L0 840.6 L0 841.72 L0.13 841.72 L0.13 840.6 Z M0.24 840.6 L0.13 840.6 L0.13 841.72 L0.24 841.72
+							 L0.24 840.6 Z M0.24 840.6 L0.24 841.72 L0.28 841.72 L0.28 841.89 L0.45 841.89 L0.45 840.43 L0.28 840.43
+							 L0.28 840.6 L0.24 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape76-70" v:mID="76" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,840.189) rotate(-90)">
+				<title>Planilha.76</title>
+				<path d="M0.21 840.6 L0.17 840.6 L0.17 840.43 L0 840.43 L0 841.89 L0.17 841.89 L0.17 841.72 L0.21 841.72 L0.21 840.6
+							 Z M0.21 840.6 L0.21 841.72 L0.32 841.72 L0.32 840.6 L0.21 840.6 Z M0.32 840.6 L0.32 841.72 L0.45 841.72
+							 L0.45 840.6 L0.32 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape77-72" v:mID="77" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.899,839.447) rotate(-90)">
+				<title>Planilha.77</title>
+				<ellipse cx="0.675" cy="841.215" rx="0.675" ry="0.674329" class="st3"/>
+			</g>
+			<g id="shape78-74" v:mID="78" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.039,839.306) rotate(-90)">
+				<title>Planilha.78</title>
+				<ellipse cx="0.534375" cy="841.356" rx="0.534375" ry="0.533843" class="st3"/>
+			</g>
+			<g id="shape79-76" v:mID="79" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.194,839.151) rotate(-90)">
+				<title>Planilha.79</title>
+				<ellipse cx="0.379688" cy="841.51" rx="0.379688" ry="0.37931" class="st3"/>
+			</g>
+		</g>
+		<g id="group80-78" transform="translate(190.445,-679.316)" v:mID="80" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(231121108)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC/PC Simplex MM Adapter, Zirconia Sleeve)"/>
+				<v:cp v:nameU="Row_4" v:lbl="Installed Date" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_5" v:lbl="Warranty Exp" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_6" v:lbl="Location" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_7" v:lbl="Building" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_8" v:lbl="Room" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_9" v:lbl="Comments" v:type="0" v:langID="1033"/>
+			</v:custProps>
+			<title>SC MM adapter simplex.440</title>
+			<g id="shape81-79" v:mID="81" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.81</title>
+				<path d="M1.63 841.32 a0.311501 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M1.63 836.22 a0.311501
+							 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M2.63 835.94 L2.35 835.65 L0.28 835.65
+							 L0 835.94 L0 841.61 L0.28 841.89 L2.35 841.89 L2.63 841.61 L2.63 835.94 Z" class="st3"/>
+			</g>
+			<g id="shape82-81" v:mID="82" v:groupContext="shape" v:layerMember="1" transform="translate(-5.7454E-015,-1.31811)">
+				<title>Planilha.82</title>
+				<rect x="0" y="838.29" width="2.6336" height="3.6" class="st3"/>
+			</g>
+			<g id="shape83-83" v:mID="83" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.256,839.069) rotate(-90)">
+				<title>Planilha.83</title>
+				<rect x="0" y="841.607" width="0.595276" height="0.283183" class="st3"/>
+			</g>
+			<g id="shape84-85" v:mID="84" v:groupContext="shape" v:layerMember="1" transform="translate(0.254864,-1.70079)">
+				<title>Planilha.84</title>
+				<rect x="0" y="839.055" width="2.12387" height="2.83465" class="st3"/>
+			</g>
+			<g id="shape85-87" v:mID="85" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,837.804) rotate(-90)">
+				<title>Planilha.85</title>
+				<path d="M0.13 840.6 L0 840.6 L0 841.72 L0.13 841.72 L0.13 840.6 Z M0.24 840.6 L0.13 840.6 L0.13 841.72 L0.24 841.72
+							 L0.24 840.6 Z M0.24 840.6 L0.24 841.72 L0.28 841.72 L0.28 841.89 L0.45 841.89 L0.45 840.43 L0.28 840.43
+							 L0.28 840.6 L0.24 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape86-89" v:mID="86" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,840.189) rotate(-90)">
+				<title>Planilha.86</title>
+				<path d="M0.21 840.6 L0.17 840.6 L0.17 840.43 L0 840.43 L0 841.89 L0.17 841.89 L0.17 841.72 L0.21 841.72 L0.21 840.6
+							 Z M0.21 840.6 L0.21 841.72 L0.32 841.72 L0.32 840.6 L0.21 840.6 Z M0.32 840.6 L0.32 841.72 L0.45 841.72
+							 L0.45 840.6 L0.32 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape87-91" v:mID="87" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.899,839.447) rotate(-90)">
+				<title>Planilha.87</title>
+				<ellipse cx="0.675" cy="841.215" rx="0.675" ry="0.674329" class="st3"/>
+			</g>
+			<g id="shape88-93" v:mID="88" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.039,839.306) rotate(-90)">
+				<title>Planilha.88</title>
+				<ellipse cx="0.534375" cy="841.356" rx="0.534375" ry="0.533843" class="st3"/>
+			</g>
+			<g id="shape89-95" v:mID="89" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.194,839.151) rotate(-90)">
+				<title>Planilha.89</title>
+				<ellipse cx="0.379688" cy="841.51" rx="0.379688" ry="0.37931" class="st3"/>
+			</g>
+		</g>
+		<g id="group90-97" transform="translate(198.278,-680.166)" v:mID="90" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(127120000)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC simplex/LC Duplex Type Adapter Support Module, w/o Adapter Loaded, Black)"/>
+			</v:custProps>
+			<title>fiber optic adapter support module.450</title>
+			<g id="shape91-98" v:mID="91" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.91</title>
+				<path d="M2.83 837.64 L2.83 837.35 L3.39 837.35 L3.96 837.35 L3.96 837.64 L3.96 841.46 L3.96 841.89 L3.39 841.89
+							 L0.57 841.89 L0 841.89 L0 841.46 L0 837.64 L0 837.35 L0.57 837.35 L1.13 837.35 L1.13 837.64 L0.57 837.64
+							 L0.57 841.46 L3.39 841.46 L3.39 837.64 L2.83 837.64 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="group92-100" transform="translate(198.932,-679.316)" v:mID="92" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(231121108)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC/PC Simplex MM Adapter, Zirconia Sleeve)"/>
+				<v:cp v:nameU="Row_4" v:lbl="Installed Date" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_5" v:lbl="Warranty Exp" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_6" v:lbl="Location" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_7" v:lbl="Building" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_8" v:lbl="Room" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_9" v:lbl="Comments" v:type="0" v:langID="1033"/>
+			</v:custProps>
+			<title>SC MM adapter simplex.452</title>
+			<g id="shape93-101" v:mID="93" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.93</title>
+				<path d="M1.63 841.32 a0.311501 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M1.63 836.22 a0.311501
+							 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M2.63 835.94 L2.35 835.65 L0.28 835.65
+							 L0 835.94 L0 841.61 L0.28 841.89 L2.35 841.89 L2.63 841.61 L2.63 835.94 Z" class="st3"/>
+			</g>
+			<g id="shape94-103" v:mID="94" v:groupContext="shape" v:layerMember="1" transform="translate(-5.7454E-015,-1.31811)">
+				<title>Planilha.94</title>
+				<rect x="0" y="838.29" width="2.6336" height="3.6" class="st3"/>
+			</g>
+			<g id="shape95-105" v:mID="95" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.256,839.069) rotate(-90)">
+				<title>Planilha.95</title>
+				<rect x="0" y="841.607" width="0.595276" height="0.283183" class="st3"/>
+			</g>
+			<g id="shape96-107" v:mID="96" v:groupContext="shape" v:layerMember="1" transform="translate(0.254864,-1.70079)">
+				<title>Planilha.96</title>
+				<rect x="0" y="839.055" width="2.12387" height="2.83465" class="st3"/>
+			</g>
+			<g id="shape97-109" v:mID="97" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,837.804) rotate(-90)">
+				<title>Planilha.97</title>
+				<path d="M0.13 840.6 L0 840.6 L0 841.72 L0.13 841.72 L0.13 840.6 Z M0.24 840.6 L0.13 840.6 L0.13 841.72 L0.24 841.72
+							 L0.24 840.6 Z M0.24 840.6 L0.24 841.72 L0.28 841.72 L0.28 841.89 L0.45 841.89 L0.45 840.43 L0.28 840.43
+							 L0.28 840.6 L0.24 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape98-111" v:mID="98" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,840.189) rotate(-90)">
+				<title>Planilha.98</title>
+				<path d="M0.21 840.6 L0.17 840.6 L0.17 840.43 L0 840.43 L0 841.89 L0.17 841.89 L0.17 841.72 L0.21 841.72 L0.21 840.6
+							 Z M0.21 840.6 L0.21 841.72 L0.32 841.72 L0.32 840.6 L0.21 840.6 Z M0.32 840.6 L0.32 841.72 L0.45 841.72
+							 L0.45 840.6 L0.32 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape99-113" v:mID="99" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.899,839.447) rotate(-90)">
+				<title>Planilha.99</title>
+				<ellipse cx="0.675" cy="841.215" rx="0.675" ry="0.674329" class="st3"/>
+			</g>
+			<g id="shape100-115" v:mID="100" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.039,839.306) rotate(-90)">
+				<title>Planilha.100</title>
+				<ellipse cx="0.534375" cy="841.356" rx="0.534375" ry="0.533843" class="st3"/>
+			</g>
+			<g id="shape101-117" v:mID="101" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.194,839.151) rotate(-90)">
+				<title>Planilha.101</title>
+				<ellipse cx="0.379688" cy="841.51" rx="0.379688" ry="0.37931" class="st3"/>
+			</g>
+		</g>
+		<g id="group102-119" transform="translate(206.765,-680.166)" v:mID="102" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(127120000)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC simplex/LC Duplex Type Adapter Support Module, w/o Adapter Loaded, Black)"/>
+			</v:custProps>
+			<title>fiber optic adapter support module.462</title>
+			<g id="shape103-120" v:mID="103" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.103</title>
+				<path d="M2.83 837.64 L2.83 837.35 L3.39 837.35 L3.96 837.35 L3.96 837.64 L3.96 841.46 L3.96 841.89 L3.39 841.89
+							 L0.57 841.89 L0 841.89 L0 841.46 L0 837.64 L0 837.35 L0.57 837.35 L1.13 837.35 L1.13 837.64 L0.57 837.64
+							 L0.57 841.46 L3.39 841.46 L3.39 837.64 L2.83 837.64 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="group104-122" transform="translate(215.251,-680.166)" v:mID="104" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(127120000)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC simplex/LC Duplex Type Adapter Support Module, w/o Adapter Loaded, Black)"/>
+			</v:custProps>
+			<title>fiber optic adapter support module.464</title>
+			<g id="shape105-123" v:mID="105" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.105</title>
+				<path d="M2.83 837.64 L2.83 837.35 L3.39 837.35 L3.96 837.35 L3.96 837.64 L3.96 841.46 L3.96 841.89 L3.39 841.89
+							 L0.57 841.89 L0 841.89 L0 841.46 L0 837.64 L0 837.35 L0.57 837.35 L1.13 837.35 L1.13 837.64 L0.57 837.64
+							 L0.57 841.46 L3.39 841.46 L3.39 837.64 L2.83 837.64 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="group106-125" transform="translate(207.418,-679.316)" v:mID="106" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(231121108)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC/PC Simplex MM Adapter, Zirconia Sleeve)"/>
+				<v:cp v:nameU="Row_4" v:lbl="Installed Date" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_5" v:lbl="Warranty Exp" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_6" v:lbl="Location" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_7" v:lbl="Building" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_8" v:lbl="Room" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_9" v:lbl="Comments" v:type="0" v:langID="1033"/>
+			</v:custProps>
+			<title>SC MM adapter simplex.466</title>
+			<g id="shape107-126" v:mID="107" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.107</title>
+				<path d="M1.63 841.32 a0.311501 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M1.63 836.22 a0.311501
+							 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M2.63 835.94 L2.35 835.65 L0.28 835.65
+							 L0 835.94 L0 841.61 L0.28 841.89 L2.35 841.89 L2.63 841.61 L2.63 835.94 Z" class="st3"/>
+			</g>
+			<g id="shape108-128" v:mID="108" v:groupContext="shape" v:layerMember="1" transform="translate(-5.7454E-015,-1.31811)">
+				<title>Planilha.108</title>
+				<rect x="0" y="838.29" width="2.6336" height="3.6" class="st3"/>
+			</g>
+			<g id="shape109-130" v:mID="109" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.256,839.069) rotate(-90)">
+				<title>Planilha.109</title>
+				<rect x="0" y="841.607" width="0.595276" height="0.283183" class="st3"/>
+			</g>
+			<g id="shape110-132" v:mID="110" v:groupContext="shape" v:layerMember="1" transform="translate(0.254864,-1.70079)">
+				<title>Planilha.110</title>
+				<rect x="0" y="839.055" width="2.12387" height="2.83465" class="st3"/>
+			</g>
+			<g id="shape111-134" v:mID="111" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,837.804) rotate(-90)">
+				<title>Planilha.111</title>
+				<path d="M0.13 840.6 L0 840.6 L0 841.72 L0.13 841.72 L0.13 840.6 Z M0.24 840.6 L0.13 840.6 L0.13 841.72 L0.24 841.72
+							 L0.24 840.6 Z M0.24 840.6 L0.24 841.72 L0.28 841.72 L0.28 841.89 L0.45 841.89 L0.45 840.43 L0.28 840.43
+							 L0.28 840.6 L0.24 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape112-136" v:mID="112" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,840.189) rotate(-90)">
+				<title>Planilha.112</title>
+				<path d="M0.21 840.6 L0.17 840.6 L0.17 840.43 L0 840.43 L0 841.89 L0.17 841.89 L0.17 841.72 L0.21 841.72 L0.21 840.6
+							 Z M0.21 840.6 L0.21 841.72 L0.32 841.72 L0.32 840.6 L0.21 840.6 Z M0.32 840.6 L0.32 841.72 L0.45 841.72
+							 L0.45 840.6 L0.32 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape113-138" v:mID="113" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.899,839.447) rotate(-90)">
+				<title>Planilha.113</title>
+				<ellipse cx="0.675" cy="841.215" rx="0.675" ry="0.674329" class="st3"/>
+			</g>
+			<g id="shape114-140" v:mID="114" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.039,839.306) rotate(-90)">
+				<title>Planilha.114</title>
+				<ellipse cx="0.534375" cy="841.356" rx="0.534375" ry="0.533843" class="st3"/>
+			</g>
+			<g id="shape115-142" v:mID="115" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.194,839.151) rotate(-90)">
+				<title>Planilha.115</title>
+				<ellipse cx="0.379688" cy="841.51" rx="0.379688" ry="0.37931" class="st3"/>
+			</g>
+		</g>
+		<g id="group116-144" transform="translate(215.904,-679.316)" v:mID="116" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(231121108)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC/PC Simplex MM Adapter, Zirconia Sleeve)"/>
+				<v:cp v:nameU="Row_4" v:lbl="Installed Date" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_5" v:lbl="Warranty Exp" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_6" v:lbl="Location" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_7" v:lbl="Building" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_8" v:lbl="Room" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_9" v:lbl="Comments" v:type="0" v:langID="1033"/>
+			</v:custProps>
+			<title>SC MM adapter simplex.476</title>
+			<g id="shape117-145" v:mID="117" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.117</title>
+				<path d="M1.63 841.32 a0.311501 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M1.63 836.22 a0.311501
+							 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M2.63 835.94 L2.35 835.65 L0.28 835.65
+							 L0 835.94 L0 841.61 L0.28 841.89 L2.35 841.89 L2.63 841.61 L2.63 835.94 Z" class="st3"/>
+			</g>
+			<g id="shape118-147" v:mID="118" v:groupContext="shape" v:layerMember="1" transform="translate(-5.7454E-015,-1.31811)">
+				<title>Planilha.118</title>
+				<rect x="0" y="838.29" width="2.6336" height="3.6" class="st3"/>
+			</g>
+			<g id="shape119-149" v:mID="119" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.256,839.069) rotate(-90)">
+				<title>Planilha.119</title>
+				<rect x="0" y="841.607" width="0.595276" height="0.283183" class="st3"/>
+			</g>
+			<g id="shape120-151" v:mID="120" v:groupContext="shape" v:layerMember="1" transform="translate(0.254864,-1.70079)">
+				<title>Planilha.120</title>
+				<rect x="0" y="839.055" width="2.12387" height="2.83465" class="st3"/>
+			</g>
+			<g id="shape121-153" v:mID="121" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,837.804) rotate(-90)">
+				<title>Planilha.121</title>
+				<path d="M0.13 840.6 L0 840.6 L0 841.72 L0.13 841.72 L0.13 840.6 Z M0.24 840.6 L0.13 840.6 L0.13 841.72 L0.24 841.72
+							 L0.24 840.6 Z M0.24 840.6 L0.24 841.72 L0.28 841.72 L0.28 841.89 L0.45 841.89 L0.45 840.43 L0.28 840.43
+							 L0.28 840.6 L0.24 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape122-155" v:mID="122" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,840.189) rotate(-90)">
+				<title>Planilha.122</title>
+				<path d="M0.21 840.6 L0.17 840.6 L0.17 840.43 L0 840.43 L0 841.89 L0.17 841.89 L0.17 841.72 L0.21 841.72 L0.21 840.6
+							 Z M0.21 840.6 L0.21 841.72 L0.32 841.72 L0.32 840.6 L0.21 840.6 Z M0.32 840.6 L0.32 841.72 L0.45 841.72
+							 L0.45 840.6 L0.32 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape123-157" v:mID="123" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.899,839.447) rotate(-90)">
+				<title>Planilha.123</title>
+				<ellipse cx="0.675" cy="841.215" rx="0.675" ry="0.674329" class="st3"/>
+			</g>
+			<g id="shape124-159" v:mID="124" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.039,839.306) rotate(-90)">
+				<title>Planilha.124</title>
+				<ellipse cx="0.534375" cy="841.356" rx="0.534375" ry="0.533843" class="st3"/>
+			</g>
+			<g id="shape125-161" v:mID="125" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.194,839.151) rotate(-90)">
+				<title>Planilha.125</title>
+				<ellipse cx="0.379688" cy="841.51" rx="0.379688" ry="0.37931" class="st3"/>
+			</g>
+		</g>
+		<g id="group126-163" transform="translate(223.737,-680.166)" v:mID="126" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(127120000)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC simplex/LC Duplex Type Adapter Support Module, w/o Adapter Loaded, Black)"/>
+			</v:custProps>
+			<title>fiber optic adapter support module.486</title>
+			<g id="shape127-164" v:mID="127" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.127</title>
+				<path d="M2.83 837.64 L2.83 837.35 L3.39 837.35 L3.96 837.35 L3.96 837.64 L3.96 841.46 L3.96 841.89 L3.39 841.89
+							 L0.57 841.89 L0 841.89 L0 841.46 L0 837.64 L0 837.35 L0.57 837.35 L1.13 837.35 L1.13 837.64 L0.57 837.64
+							 L0.57 841.46 L3.39 841.46 L3.39 837.64 L2.83 837.64 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="group128-166" transform="translate(224.391,-679.316)" v:mID="128" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(231121108)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC/PC Simplex MM Adapter, Zirconia Sleeve)"/>
+				<v:cp v:nameU="Row_4" v:lbl="Installed Date" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_5" v:lbl="Warranty Exp" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_6" v:lbl="Location" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_7" v:lbl="Building" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_8" v:lbl="Room" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_9" v:lbl="Comments" v:type="0" v:langID="1033"/>
+			</v:custProps>
+			<title>SC MM adapter simplex.488</title>
+			<g id="shape129-167" v:mID="129" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.129</title>
+				<path d="M1.63 841.32 a0.311501 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M1.63 836.22 a0.311501
+							 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M2.63 835.94 L2.35 835.65 L0.28 835.65
+							 L0 835.94 L0 841.61 L0.28 841.89 L2.35 841.89 L2.63 841.61 L2.63 835.94 Z" class="st3"/>
+			</g>
+			<g id="shape130-169" v:mID="130" v:groupContext="shape" v:layerMember="1" transform="translate(-5.7454E-015,-1.31811)">
+				<title>Planilha.130</title>
+				<rect x="0" y="838.29" width="2.6336" height="3.6" class="st3"/>
+			</g>
+			<g id="shape131-171" v:mID="131" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.256,839.069) rotate(-90)">
+				<title>Planilha.131</title>
+				<rect x="0" y="841.607" width="0.595276" height="0.283183" class="st3"/>
+			</g>
+			<g id="shape132-173" v:mID="132" v:groupContext="shape" v:layerMember="1" transform="translate(0.254864,-1.70079)">
+				<title>Planilha.132</title>
+				<rect x="0" y="839.055" width="2.12387" height="2.83465" class="st3"/>
+			</g>
+			<g id="shape133-175" v:mID="133" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,837.804) rotate(-90)">
+				<title>Planilha.133</title>
+				<path d="M0.13 840.6 L0 840.6 L0 841.72 L0.13 841.72 L0.13 840.6 Z M0.24 840.6 L0.13 840.6 L0.13 841.72 L0.24 841.72
+							 L0.24 840.6 Z M0.24 840.6 L0.24 841.72 L0.28 841.72 L0.28 841.89 L0.45 841.89 L0.45 840.43 L0.28 840.43
+							 L0.28 840.6 L0.24 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape134-177" v:mID="134" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,840.189) rotate(-90)">
+				<title>Planilha.134</title>
+				<path d="M0.21 840.6 L0.17 840.6 L0.17 840.43 L0 840.43 L0 841.89 L0.17 841.89 L0.17 841.72 L0.21 841.72 L0.21 840.6
+							 Z M0.21 840.6 L0.21 841.72 L0.32 841.72 L0.32 840.6 L0.21 840.6 Z M0.32 840.6 L0.32 841.72 L0.45 841.72
+							 L0.45 840.6 L0.32 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape135-179" v:mID="135" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.899,839.447) rotate(-90)">
+				<title>Planilha.135</title>
+				<ellipse cx="0.675" cy="841.215" rx="0.675" ry="0.674329" class="st3"/>
+			</g>
+			<g id="shape136-181" v:mID="136" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.039,839.306) rotate(-90)">
+				<title>Planilha.136</title>
+				<ellipse cx="0.534375" cy="841.356" rx="0.534375" ry="0.533843" class="st3"/>
+			</g>
+			<g id="shape137-183" v:mID="137" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.194,839.151) rotate(-90)">
+				<title>Planilha.137</title>
+				<ellipse cx="0.379688" cy="841.51" rx="0.379688" ry="0.37931" class="st3"/>
+			</g>
+		</g>
+		<g id="group138-185" transform="translate(232.224,-680.166)" v:mID="138" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(127120000)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC simplex/LC Duplex Type Adapter Support Module, w/o Adapter Loaded, Black)"/>
+			</v:custProps>
+			<title>fiber optic adapter support module.498</title>
+			<g id="shape139-186" v:mID="139" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.139</title>
+				<path d="M2.83 837.64 L2.83 837.35 L3.39 837.35 L3.96 837.35 L3.96 837.64 L3.96 841.46 L3.96 841.89 L3.39 841.89
+							 L0.57 841.89 L0 841.89 L0 841.46 L0 837.64 L0 837.35 L0.57 837.35 L1.13 837.35 L1.13 837.64 L0.57 837.64
+							 L0.57 841.46 L3.39 841.46 L3.39 837.64 L2.83 837.64 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="group142-188" transform="translate(232.877,-679.316)" v:mID="142" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(231121108)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC/PC Simplex MM Adapter, Zirconia Sleeve)"/>
+				<v:cp v:nameU="Row_4" v:lbl="Installed Date" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_5" v:lbl="Warranty Exp" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_6" v:lbl="Location" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_7" v:lbl="Building" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_8" v:lbl="Room" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_9" v:lbl="Comments" v:type="0" v:langID="1033"/>
+			</v:custProps>
+			<title>SC MM adapter simplex.502</title>
+			<g id="shape143-189" v:mID="143" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.143</title>
+				<path d="M1.63 841.32 a0.311501 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M1.63 836.22 a0.311501
+							 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M2.63 835.94 L2.35 835.65 L0.28 835.65
+							 L0 835.94 L0 841.61 L0.28 841.89 L2.35 841.89 L2.63 841.61 L2.63 835.94 Z" class="st3"/>
+			</g>
+			<g id="shape144-191" v:mID="144" v:groupContext="shape" v:layerMember="1" transform="translate(-5.7454E-015,-1.31811)">
+				<title>Planilha.144</title>
+				<rect x="0" y="838.29" width="2.6336" height="3.6" class="st3"/>
+			</g>
+			<g id="shape145-193" v:mID="145" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.256,839.069) rotate(-90)">
+				<title>Planilha.145</title>
+				<rect x="0" y="841.607" width="0.595276" height="0.283183" class="st3"/>
+			</g>
+			<g id="shape146-195" v:mID="146" v:groupContext="shape" v:layerMember="1" transform="translate(0.254864,-1.70079)">
+				<title>Planilha.146</title>
+				<rect x="0" y="839.055" width="2.12387" height="2.83465" class="st3"/>
+			</g>
+			<g id="shape147-197" v:mID="147" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,837.804) rotate(-90)">
+				<title>Planilha.147</title>
+				<path d="M0.13 840.6 L0 840.6 L0 841.72 L0.13 841.72 L0.13 840.6 Z M0.24 840.6 L0.13 840.6 L0.13 841.72 L0.24 841.72
+							 L0.24 840.6 Z M0.24 840.6 L0.24 841.72 L0.28 841.72 L0.28 841.89 L0.45 841.89 L0.45 840.43 L0.28 840.43
+							 L0.28 840.6 L0.24 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape148-199" v:mID="148" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,840.189) rotate(-90)">
+				<title>Planilha.148</title>
+				<path d="M0.21 840.6 L0.17 840.6 L0.17 840.43 L0 840.43 L0 841.89 L0.17 841.89 L0.17 841.72 L0.21 841.72 L0.21 840.6
+							 Z M0.21 840.6 L0.21 841.72 L0.32 841.72 L0.32 840.6 L0.21 840.6 Z M0.32 840.6 L0.32 841.72 L0.45 841.72
+							 L0.45 840.6 L0.32 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape149-201" v:mID="149" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.899,839.447) rotate(-90)">
+				<title>Planilha.149</title>
+				<ellipse cx="0.675" cy="841.215" rx="0.675" ry="0.674329" class="st3"/>
+			</g>
+			<g id="shape150-203" v:mID="150" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.039,839.306) rotate(-90)">
+				<title>Planilha.150</title>
+				<ellipse cx="0.534375" cy="841.356" rx="0.534375" ry="0.533843" class="st3"/>
+			</g>
+			<g id="shape151-205" v:mID="151" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.194,839.151) rotate(-90)">
+				<title>Planilha.151</title>
+				<ellipse cx="0.379688" cy="841.51" rx="0.379688" ry="0.37931" class="st3"/>
+			</g>
+		</g>
+		<g id="group163-207" transform="translate(147.36,-669.394)" v:mID="163" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(127120000)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC simplex/LC Duplex Type Adapter Support Module, w/o Adapter Loaded, Black)"/>
+			</v:custProps>
+			<title>fiber optic adapter support module.523</title>
+			<g id="shape164-208" v:mID="164" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.164</title>
+				<path d="M2.83 837.64 L2.83 837.35 L3.39 837.35 L3.96 837.35 L3.96 837.64 L3.96 841.46 L3.96 841.89 L3.39 841.89
+							 L0.57 841.89 L0 841.89 L0 841.46 L0 837.64 L0 837.35 L0.57 837.35 L1.13 837.35 L1.13 837.64 L0.57 837.64
+							 L0.57 841.46 L3.39 841.46 L3.39 837.64 L2.83 837.64 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="group165-210" transform="translate(148.014,-668.544)" v:mID="165" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(231121108)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC/PC Simplex MM Adapter, Zirconia Sleeve)"/>
+				<v:cp v:nameU="Row_4" v:lbl="Installed Date" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_5" v:lbl="Warranty Exp" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_6" v:lbl="Location" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_7" v:lbl="Building" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_8" v:lbl="Room" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_9" v:lbl="Comments" v:type="0" v:langID="1033"/>
+			</v:custProps>
+			<title>SC MM adapter simplex.525</title>
+			<g id="shape166-211" v:mID="166" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.166</title>
+				<path d="M1.63 841.32 a0.311501 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M1.63 836.22 a0.311501
+							 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M2.63 835.94 L2.35 835.65 L0.28 835.65
+							 L0 835.94 L0 841.61 L0.28 841.89 L2.35 841.89 L2.63 841.61 L2.63 835.94 Z" class="st3"/>
+			</g>
+			<g id="shape167-213" v:mID="167" v:groupContext="shape" v:layerMember="1" transform="translate(-5.7454E-015,-1.31811)">
+				<title>Planilha.167</title>
+				<rect x="0" y="838.29" width="2.6336" height="3.6" class="st3"/>
+			</g>
+			<g id="shape168-215" v:mID="168" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.256,839.069) rotate(-90)">
+				<title>Planilha.168</title>
+				<rect x="0" y="841.607" width="0.595276" height="0.283183" class="st3"/>
+			</g>
+			<g id="shape169-217" v:mID="169" v:groupContext="shape" v:layerMember="1" transform="translate(0.254864,-1.70079)">
+				<title>Planilha.169</title>
+				<rect x="0" y="839.055" width="2.12387" height="2.83465" class="st3"/>
+			</g>
+			<g id="shape170-219" v:mID="170" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,837.804) rotate(-90)">
+				<title>Planilha.170</title>
+				<path d="M0.13 840.6 L0 840.6 L0 841.72 L0.13 841.72 L0.13 840.6 Z M0.24 840.6 L0.13 840.6 L0.13 841.72 L0.24 841.72
+							 L0.24 840.6 Z M0.24 840.6 L0.24 841.72 L0.28 841.72 L0.28 841.89 L0.45 841.89 L0.45 840.43 L0.28 840.43
+							 L0.28 840.6 L0.24 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape171-221" v:mID="171" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,840.189) rotate(-90)">
+				<title>Planilha.171</title>
+				<path d="M0.21 840.6 L0.17 840.6 L0.17 840.43 L0 840.43 L0 841.89 L0.17 841.89 L0.17 841.72 L0.21 841.72 L0.21 840.6
+							 Z M0.21 840.6 L0.21 841.72 L0.32 841.72 L0.32 840.6 L0.21 840.6 Z M0.32 840.6 L0.32 841.72 L0.45 841.72
+							 L0.45 840.6 L0.32 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape172-223" v:mID="172" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.899,839.447) rotate(-90)">
+				<title>Planilha.172</title>
+				<ellipse cx="0.675" cy="841.215" rx="0.675" ry="0.674329" class="st3"/>
+			</g>
+			<g id="shape173-225" v:mID="173" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.039,839.306) rotate(-90)">
+				<title>Planilha.173</title>
+				<ellipse cx="0.534375" cy="841.356" rx="0.534375" ry="0.533843" class="st3"/>
+			</g>
+			<g id="shape174-227" v:mID="174" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.194,839.151) rotate(-90)">
+				<title>Planilha.174</title>
+				<ellipse cx="0.379688" cy="841.51" rx="0.379688" ry="0.37931" class="st3"/>
+			</g>
+		</g>
+		<g id="group175-229" transform="translate(155.846,-669.394)" v:mID="175" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(127120000)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC simplex/LC Duplex Type Adapter Support Module, w/o Adapter Loaded, Black)"/>
+			</v:custProps>
+			<title>fiber optic adapter support module.535</title>
+			<g id="shape176-230" v:mID="176" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.176</title>
+				<path d="M2.83 837.64 L2.83 837.35 L3.39 837.35 L3.96 837.35 L3.96 837.64 L3.96 841.46 L3.96 841.89 L3.39 841.89
+							 L0.57 841.89 L0 841.89 L0 841.46 L0 837.64 L0 837.35 L0.57 837.35 L1.13 837.35 L1.13 837.64 L0.57 837.64
+							 L0.57 841.46 L3.39 841.46 L3.39 837.64 L2.83 837.64 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="group177-232" transform="translate(164.05,-669.394)" v:mID="177" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(127120000)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC simplex/LC Duplex Type Adapter Support Module, w/o Adapter Loaded, Black)"/>
+			</v:custProps>
+			<title>fiber optic adapter support module.537</title>
+			<g id="shape178-233" v:mID="178" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.178</title>
+				<path d="M2.83 837.64 L2.83 837.35 L3.39 837.35 L3.96 837.35 L3.96 837.64 L3.96 841.46 L3.96 841.89 L3.39 841.89
+							 L0.57 841.89 L0 841.89 L0 841.46 L0 837.64 L0 837.35 L0.57 837.35 L1.13 837.35 L1.13 837.64 L0.57 837.64
+							 L0.57 841.46 L3.39 841.46 L3.39 837.64 L2.83 837.64 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="group179-235" transform="translate(156.5,-668.544)" v:mID="179" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(231121108)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC/PC Simplex MM Adapter, Zirconia Sleeve)"/>
+				<v:cp v:nameU="Row_4" v:lbl="Installed Date" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_5" v:lbl="Warranty Exp" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_6" v:lbl="Location" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_7" v:lbl="Building" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_8" v:lbl="Room" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_9" v:lbl="Comments" v:type="0" v:langID="1033"/>
+			</v:custProps>
+			<title>SC MM adapter simplex.539</title>
+			<g id="shape180-236" v:mID="180" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.180</title>
+				<path d="M1.63 841.32 a0.311501 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M1.63 836.22 a0.311501
+							 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M2.63 835.94 L2.35 835.65 L0.28 835.65
+							 L0 835.94 L0 841.61 L0.28 841.89 L2.35 841.89 L2.63 841.61 L2.63 835.94 Z" class="st3"/>
+			</g>
+			<g id="shape181-238" v:mID="181" v:groupContext="shape" v:layerMember="1" transform="translate(-5.7454E-015,-1.31811)">
+				<title>Planilha.181</title>
+				<rect x="0" y="838.29" width="2.6336" height="3.6" class="st3"/>
+			</g>
+			<g id="shape182-240" v:mID="182" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.256,839.069) rotate(-90)">
+				<title>Planilha.182</title>
+				<rect x="0" y="841.607" width="0.595276" height="0.283183" class="st3"/>
+			</g>
+			<g id="shape183-242" v:mID="183" v:groupContext="shape" v:layerMember="1" transform="translate(0.254864,-1.70079)">
+				<title>Planilha.183</title>
+				<rect x="0" y="839.055" width="2.12387" height="2.83465" class="st3"/>
+			</g>
+			<g id="shape184-244" v:mID="184" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,837.804) rotate(-90)">
+				<title>Planilha.184</title>
+				<path d="M0.13 840.6 L0 840.6 L0 841.72 L0.13 841.72 L0.13 840.6 Z M0.24 840.6 L0.13 840.6 L0.13 841.72 L0.24 841.72
+							 L0.24 840.6 Z M0.24 840.6 L0.24 841.72 L0.28 841.72 L0.28 841.89 L0.45 841.89 L0.45 840.43 L0.28 840.43
+							 L0.28 840.6 L0.24 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape185-246" v:mID="185" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,840.189) rotate(-90)">
+				<title>Planilha.185</title>
+				<path d="M0.21 840.6 L0.17 840.6 L0.17 840.43 L0 840.43 L0 841.89 L0.17 841.89 L0.17 841.72 L0.21 841.72 L0.21 840.6
+							 Z M0.21 840.6 L0.21 841.72 L0.32 841.72 L0.32 840.6 L0.21 840.6 Z M0.32 840.6 L0.32 841.72 L0.45 841.72
+							 L0.45 840.6 L0.32 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape186-248" v:mID="186" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.899,839.447) rotate(-90)">
+				<title>Planilha.186</title>
+				<ellipse cx="0.675" cy="841.215" rx="0.675" ry="0.674329" class="st3"/>
+			</g>
+			<g id="shape187-250" v:mID="187" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.039,839.306) rotate(-90)">
+				<title>Planilha.187</title>
+				<ellipse cx="0.534375" cy="841.356" rx="0.534375" ry="0.533843" class="st3"/>
+			</g>
+			<g id="shape188-252" v:mID="188" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.194,839.151) rotate(-90)">
+				<title>Planilha.188</title>
+				<ellipse cx="0.379688" cy="841.51" rx="0.379688" ry="0.37931" class="st3"/>
+			</g>
+		</g>
+		<g id="group189-254" transform="translate(164.703,-668.544)" v:mID="189" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(231121108)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC/PC Simplex MM Adapter, Zirconia Sleeve)"/>
+				<v:cp v:nameU="Row_4" v:lbl="Installed Date" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_5" v:lbl="Warranty Exp" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_6" v:lbl="Location" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_7" v:lbl="Building" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_8" v:lbl="Room" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_9" v:lbl="Comments" v:type="0" v:langID="1033"/>
+			</v:custProps>
+			<title>SC MM adapter simplex.549</title>
+			<g id="shape190-255" v:mID="190" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.190</title>
+				<path d="M1.63 841.32 a0.311501 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M1.63 836.22 a0.311501
+							 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M2.63 835.94 L2.35 835.65 L0.28 835.65
+							 L0 835.94 L0 841.61 L0.28 841.89 L2.35 841.89 L2.63 841.61 L2.63 835.94 Z" class="st3"/>
+			</g>
+			<g id="shape191-257" v:mID="191" v:groupContext="shape" v:layerMember="1" transform="translate(-5.7454E-015,-1.31811)">
+				<title>Planilha.191</title>
+				<rect x="0" y="838.29" width="2.6336" height="3.6" class="st3"/>
+			</g>
+			<g id="shape192-259" v:mID="192" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.256,839.069) rotate(-90)">
+				<title>Planilha.192</title>
+				<rect x="0" y="841.607" width="0.595276" height="0.283183" class="st3"/>
+			</g>
+			<g id="shape193-261" v:mID="193" v:groupContext="shape" v:layerMember="1" transform="translate(0.254864,-1.70079)">
+				<title>Planilha.193</title>
+				<rect x="0" y="839.055" width="2.12387" height="2.83465" class="st3"/>
+			</g>
+			<g id="shape194-263" v:mID="194" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,837.804) rotate(-90)">
+				<title>Planilha.194</title>
+				<path d="M0.13 840.6 L0 840.6 L0 841.72 L0.13 841.72 L0.13 840.6 Z M0.24 840.6 L0.13 840.6 L0.13 841.72 L0.24 841.72
+							 L0.24 840.6 Z M0.24 840.6 L0.24 841.72 L0.28 841.72 L0.28 841.89 L0.45 841.89 L0.45 840.43 L0.28 840.43
+							 L0.28 840.6 L0.24 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape195-265" v:mID="195" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,840.189) rotate(-90)">
+				<title>Planilha.195</title>
+				<path d="M0.21 840.6 L0.17 840.6 L0.17 840.43 L0 840.43 L0 841.89 L0.17 841.89 L0.17 841.72 L0.21 841.72 L0.21 840.6
+							 Z M0.21 840.6 L0.21 841.72 L0.32 841.72 L0.32 840.6 L0.21 840.6 Z M0.32 840.6 L0.32 841.72 L0.45 841.72
+							 L0.45 840.6 L0.32 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape196-267" v:mID="196" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.899,839.447) rotate(-90)">
+				<title>Planilha.196</title>
+				<ellipse cx="0.675" cy="841.215" rx="0.675" ry="0.674329" class="st3"/>
+			</g>
+			<g id="shape197-269" v:mID="197" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.039,839.306) rotate(-90)">
+				<title>Planilha.197</title>
+				<ellipse cx="0.534375" cy="841.356" rx="0.534375" ry="0.533843" class="st3"/>
+			</g>
+			<g id="shape198-271" v:mID="198" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.194,839.151) rotate(-90)">
+				<title>Planilha.198</title>
+				<ellipse cx="0.379688" cy="841.51" rx="0.379688" ry="0.37931" class="st3"/>
+			</g>
+		</g>
+		<g id="group199-273" transform="translate(172.819,-669.394)" v:mID="199" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(127120000)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC simplex/LC Duplex Type Adapter Support Module, w/o Adapter Loaded, Black)"/>
+			</v:custProps>
+			<title>fiber optic adapter support module.559</title>
+			<g id="shape200-274" v:mID="200" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.200</title>
+				<path d="M2.83 837.64 L2.83 837.35 L3.39 837.35 L3.96 837.35 L3.96 837.64 L3.96 841.46 L3.96 841.89 L3.39 841.89
+							 L0.57 841.89 L0 841.89 L0 841.46 L0 837.64 L0 837.35 L0.57 837.35 L1.13 837.35 L1.13 837.64 L0.57 837.64
+							 L0.57 841.46 L3.39 841.46 L3.39 837.64 L2.83 837.64 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="group201-276" transform="translate(173.473,-668.544)" v:mID="201" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(231121108)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC/PC Simplex MM Adapter, Zirconia Sleeve)"/>
+				<v:cp v:nameU="Row_4" v:lbl="Installed Date" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_5" v:lbl="Warranty Exp" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_6" v:lbl="Location" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_7" v:lbl="Building" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_8" v:lbl="Room" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_9" v:lbl="Comments" v:type="0" v:langID="1033"/>
+			</v:custProps>
+			<title>SC MM adapter simplex.561</title>
+			<g id="shape202-277" v:mID="202" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.202</title>
+				<path d="M1.63 841.32 a0.311501 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M1.63 836.22 a0.311501
+							 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M2.63 835.94 L2.35 835.65 L0.28 835.65
+							 L0 835.94 L0 841.61 L0.28 841.89 L2.35 841.89 L2.63 841.61 L2.63 835.94 Z" class="st3"/>
+			</g>
+			<g id="shape203-279" v:mID="203" v:groupContext="shape" v:layerMember="1" transform="translate(-5.7454E-015,-1.31811)">
+				<title>Planilha.203</title>
+				<rect x="0" y="838.29" width="2.6336" height="3.6" class="st3"/>
+			</g>
+			<g id="shape204-281" v:mID="204" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.256,839.069) rotate(-90)">
+				<title>Planilha.204</title>
+				<rect x="0" y="841.607" width="0.595276" height="0.283183" class="st3"/>
+			</g>
+			<g id="shape205-283" v:mID="205" v:groupContext="shape" v:layerMember="1" transform="translate(0.254864,-1.70079)">
+				<title>Planilha.205</title>
+				<rect x="0" y="839.055" width="2.12387" height="2.83465" class="st3"/>
+			</g>
+			<g id="shape206-285" v:mID="206" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,837.804) rotate(-90)">
+				<title>Planilha.206</title>
+				<path d="M0.13 840.6 L0 840.6 L0 841.72 L0.13 841.72 L0.13 840.6 Z M0.24 840.6 L0.13 840.6 L0.13 841.72 L0.24 841.72
+							 L0.24 840.6 Z M0.24 840.6 L0.24 841.72 L0.28 841.72 L0.28 841.89 L0.45 841.89 L0.45 840.43 L0.28 840.43
+							 L0.28 840.6 L0.24 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape207-287" v:mID="207" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,840.189) rotate(-90)">
+				<title>Planilha.207</title>
+				<path d="M0.21 840.6 L0.17 840.6 L0.17 840.43 L0 840.43 L0 841.89 L0.17 841.89 L0.17 841.72 L0.21 841.72 L0.21 840.6
+							 Z M0.21 840.6 L0.21 841.72 L0.32 841.72 L0.32 840.6 L0.21 840.6 Z M0.32 840.6 L0.32 841.72 L0.45 841.72
+							 L0.45 840.6 L0.32 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape208-289" v:mID="208" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.899,839.447) rotate(-90)">
+				<title>Planilha.208</title>
+				<ellipse cx="0.675" cy="841.215" rx="0.675" ry="0.674329" class="st3"/>
+			</g>
+			<g id="shape209-291" v:mID="209" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.039,839.306) rotate(-90)">
+				<title>Planilha.209</title>
+				<ellipse cx="0.534375" cy="841.356" rx="0.534375" ry="0.533843" class="st3"/>
+			</g>
+			<g id="shape210-293" v:mID="210" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.194,839.151) rotate(-90)">
+				<title>Planilha.210</title>
+				<ellipse cx="0.379688" cy="841.51" rx="0.379688" ry="0.37931" class="st3"/>
+			</g>
+		</g>
+		<g id="group211-295" transform="translate(181.306,-669.394)" v:mID="211" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(127120000)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC simplex/LC Duplex Type Adapter Support Module, w/o Adapter Loaded, Black)"/>
+			</v:custProps>
+			<title>fiber optic adapter support module.571</title>
+			<g id="shape212-296" v:mID="212" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.212</title>
+				<path d="M2.83 837.64 L2.83 837.35 L3.39 837.35 L3.96 837.35 L3.96 837.64 L3.96 841.46 L3.96 841.89 L3.39 841.89
+							 L0.57 841.89 L0 841.89 L0 841.46 L0 837.64 L0 837.35 L0.57 837.35 L1.13 837.35 L1.13 837.64 L0.57 837.64
+							 L0.57 841.46 L3.39 841.46 L3.39 837.64 L2.83 837.64 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="group213-298" transform="translate(189.792,-669.394)" v:mID="213" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(127120000)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC simplex/LC Duplex Type Adapter Support Module, w/o Adapter Loaded, Black)"/>
+			</v:custProps>
+			<title>fiber optic adapter support module.573</title>
+			<g id="shape214-299" v:mID="214" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.214</title>
+				<path d="M2.83 837.64 L2.83 837.35 L3.39 837.35 L3.96 837.35 L3.96 837.64 L3.96 841.46 L3.96 841.89 L3.39 841.89
+							 L0.57 841.89 L0 841.89 L0 841.46 L0 837.64 L0 837.35 L0.57 837.35 L1.13 837.35 L1.13 837.64 L0.57 837.64
+							 L0.57 841.46 L3.39 841.46 L3.39 837.64 L2.83 837.64 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="group215-301" transform="translate(181.959,-668.544)" v:mID="215" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(231121108)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC/PC Simplex MM Adapter, Zirconia Sleeve)"/>
+				<v:cp v:nameU="Row_4" v:lbl="Installed Date" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_5" v:lbl="Warranty Exp" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_6" v:lbl="Location" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_7" v:lbl="Building" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_8" v:lbl="Room" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_9" v:lbl="Comments" v:type="0" v:langID="1033"/>
+			</v:custProps>
+			<title>SC MM adapter simplex.575</title>
+			<g id="shape216-302" v:mID="216" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.216</title>
+				<path d="M1.63 841.32 a0.311501 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M1.63 836.22 a0.311501
+							 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M2.63 835.94 L2.35 835.65 L0.28 835.65
+							 L0 835.94 L0 841.61 L0.28 841.89 L2.35 841.89 L2.63 841.61 L2.63 835.94 Z" class="st3"/>
+			</g>
+			<g id="shape217-304" v:mID="217" v:groupContext="shape" v:layerMember="1" transform="translate(-5.7454E-015,-1.31811)">
+				<title>Planilha.217</title>
+				<rect x="0" y="838.29" width="2.6336" height="3.6" class="st3"/>
+			</g>
+			<g id="shape218-306" v:mID="218" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.256,839.069) rotate(-90)">
+				<title>Planilha.218</title>
+				<rect x="0" y="841.607" width="0.595276" height="0.283183" class="st3"/>
+			</g>
+			<g id="shape219-308" v:mID="219" v:groupContext="shape" v:layerMember="1" transform="translate(0.254864,-1.70079)">
+				<title>Planilha.219</title>
+				<rect x="0" y="839.055" width="2.12387" height="2.83465" class="st3"/>
+			</g>
+			<g id="shape220-310" v:mID="220" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,837.804) rotate(-90)">
+				<title>Planilha.220</title>
+				<path d="M0.13 840.6 L0 840.6 L0 841.72 L0.13 841.72 L0.13 840.6 Z M0.24 840.6 L0.13 840.6 L0.13 841.72 L0.24 841.72
+							 L0.24 840.6 Z M0.24 840.6 L0.24 841.72 L0.28 841.72 L0.28 841.89 L0.45 841.89 L0.45 840.43 L0.28 840.43
+							 L0.28 840.6 L0.24 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape221-312" v:mID="221" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,840.189) rotate(-90)">
+				<title>Planilha.221</title>
+				<path d="M0.21 840.6 L0.17 840.6 L0.17 840.43 L0 840.43 L0 841.89 L0.17 841.89 L0.17 841.72 L0.21 841.72 L0.21 840.6
+							 Z M0.21 840.6 L0.21 841.72 L0.32 841.72 L0.32 840.6 L0.21 840.6 Z M0.32 840.6 L0.32 841.72 L0.45 841.72
+							 L0.45 840.6 L0.32 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape222-314" v:mID="222" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.899,839.447) rotate(-90)">
+				<title>Planilha.222</title>
+				<ellipse cx="0.675" cy="841.215" rx="0.675" ry="0.674329" class="st3"/>
+			</g>
+			<g id="shape223-316" v:mID="223" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.039,839.306) rotate(-90)">
+				<title>Planilha.223</title>
+				<ellipse cx="0.534375" cy="841.356" rx="0.534375" ry="0.533843" class="st3"/>
+			</g>
+			<g id="shape224-318" v:mID="224" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.194,839.151) rotate(-90)">
+				<title>Planilha.224</title>
+				<ellipse cx="0.379688" cy="841.51" rx="0.379688" ry="0.37931" class="st3"/>
+			</g>
+		</g>
+		<g id="group225-320" transform="translate(190.445,-668.544)" v:mID="225" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(231121108)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC/PC Simplex MM Adapter, Zirconia Sleeve)"/>
+				<v:cp v:nameU="Row_4" v:lbl="Installed Date" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_5" v:lbl="Warranty Exp" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_6" v:lbl="Location" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_7" v:lbl="Building" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_8" v:lbl="Room" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_9" v:lbl="Comments" v:type="0" v:langID="1033"/>
+			</v:custProps>
+			<title>SC MM adapter simplex.585</title>
+			<g id="shape226-321" v:mID="226" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.226</title>
+				<path d="M1.63 841.32 a0.311501 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M1.63 836.22 a0.311501
+							 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M2.63 835.94 L2.35 835.65 L0.28 835.65
+							 L0 835.94 L0 841.61 L0.28 841.89 L2.35 841.89 L2.63 841.61 L2.63 835.94 Z" class="st3"/>
+			</g>
+			<g id="shape227-323" v:mID="227" v:groupContext="shape" v:layerMember="1" transform="translate(-5.7454E-015,-1.31811)">
+				<title>Planilha.227</title>
+				<rect x="0" y="838.29" width="2.6336" height="3.6" class="st3"/>
+			</g>
+			<g id="shape228-325" v:mID="228" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.256,839.069) rotate(-90)">
+				<title>Planilha.228</title>
+				<rect x="0" y="841.607" width="0.595276" height="0.283183" class="st3"/>
+			</g>
+			<g id="shape229-327" v:mID="229" v:groupContext="shape" v:layerMember="1" transform="translate(0.254864,-1.70079)">
+				<title>Planilha.229</title>
+				<rect x="0" y="839.055" width="2.12387" height="2.83465" class="st3"/>
+			</g>
+			<g id="shape230-329" v:mID="230" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,837.804) rotate(-90)">
+				<title>Planilha.230</title>
+				<path d="M0.13 840.6 L0 840.6 L0 841.72 L0.13 841.72 L0.13 840.6 Z M0.24 840.6 L0.13 840.6 L0.13 841.72 L0.24 841.72
+							 L0.24 840.6 Z M0.24 840.6 L0.24 841.72 L0.28 841.72 L0.28 841.89 L0.45 841.89 L0.45 840.43 L0.28 840.43
+							 L0.28 840.6 L0.24 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape231-331" v:mID="231" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,840.189) rotate(-90)">
+				<title>Planilha.231</title>
+				<path d="M0.21 840.6 L0.17 840.6 L0.17 840.43 L0 840.43 L0 841.89 L0.17 841.89 L0.17 841.72 L0.21 841.72 L0.21 840.6
+							 Z M0.21 840.6 L0.21 841.72 L0.32 841.72 L0.32 840.6 L0.21 840.6 Z M0.32 840.6 L0.32 841.72 L0.45 841.72
+							 L0.45 840.6 L0.32 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape232-333" v:mID="232" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.899,839.447) rotate(-90)">
+				<title>Planilha.232</title>
+				<ellipse cx="0.675" cy="841.215" rx="0.675" ry="0.674329" class="st3"/>
+			</g>
+			<g id="shape233-335" v:mID="233" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.039,839.306) rotate(-90)">
+				<title>Planilha.233</title>
+				<ellipse cx="0.534375" cy="841.356" rx="0.534375" ry="0.533843" class="st3"/>
+			</g>
+			<g id="shape234-337" v:mID="234" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.194,839.151) rotate(-90)">
+				<title>Planilha.234</title>
+				<ellipse cx="0.379688" cy="841.51" rx="0.379688" ry="0.37931" class="st3"/>
+			</g>
+		</g>
+		<g id="group235-339" transform="translate(198.278,-669.394)" v:mID="235" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(127120000)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC simplex/LC Duplex Type Adapter Support Module, w/o Adapter Loaded, Black)"/>
+			</v:custProps>
+			<title>fiber optic adapter support module.595</title>
+			<g id="shape236-340" v:mID="236" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.236</title>
+				<path d="M2.83 837.64 L2.83 837.35 L3.39 837.35 L3.96 837.35 L3.96 837.64 L3.96 841.46 L3.96 841.89 L3.39 841.89
+							 L0.57 841.89 L0 841.89 L0 841.46 L0 837.64 L0 837.35 L0.57 837.35 L1.13 837.35 L1.13 837.64 L0.57 837.64
+							 L0.57 841.46 L3.39 841.46 L3.39 837.64 L2.83 837.64 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="group237-342" transform="translate(198.932,-668.544)" v:mID="237" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(231121108)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC/PC Simplex MM Adapter, Zirconia Sleeve)"/>
+				<v:cp v:nameU="Row_4" v:lbl="Installed Date" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_5" v:lbl="Warranty Exp" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_6" v:lbl="Location" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_7" v:lbl="Building" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_8" v:lbl="Room" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_9" v:lbl="Comments" v:type="0" v:langID="1033"/>
+			</v:custProps>
+			<title>SC MM adapter simplex.597</title>
+			<g id="shape238-343" v:mID="238" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.238</title>
+				<path d="M1.63 841.32 a0.311501 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M1.63 836.22 a0.311501
+							 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M2.63 835.94 L2.35 835.65 L0.28 835.65
+							 L0 835.94 L0 841.61 L0.28 841.89 L2.35 841.89 L2.63 841.61 L2.63 835.94 Z" class="st3"/>
+			</g>
+			<g id="shape239-345" v:mID="239" v:groupContext="shape" v:layerMember="1" transform="translate(-5.7454E-015,-1.31811)">
+				<title>Planilha.239</title>
+				<rect x="0" y="838.29" width="2.6336" height="3.6" class="st3"/>
+			</g>
+			<g id="shape240-347" v:mID="240" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.256,839.069) rotate(-90)">
+				<title>Planilha.240</title>
+				<rect x="0" y="841.607" width="0.595276" height="0.283183" class="st3"/>
+			</g>
+			<g id="shape241-349" v:mID="241" v:groupContext="shape" v:layerMember="1" transform="translate(0.254864,-1.70079)">
+				<title>Planilha.241</title>
+				<rect x="0" y="839.055" width="2.12387" height="2.83465" class="st3"/>
+			</g>
+			<g id="shape242-351" v:mID="242" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,837.804) rotate(-90)">
+				<title>Planilha.242</title>
+				<path d="M0.13 840.6 L0 840.6 L0 841.72 L0.13 841.72 L0.13 840.6 Z M0.24 840.6 L0.13 840.6 L0.13 841.72 L0.24 841.72
+							 L0.24 840.6 Z M0.24 840.6 L0.24 841.72 L0.28 841.72 L0.28 841.89 L0.45 841.89 L0.45 840.43 L0.28 840.43
+							 L0.28 840.6 L0.24 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape243-353" v:mID="243" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,840.189) rotate(-90)">
+				<title>Planilha.243</title>
+				<path d="M0.21 840.6 L0.17 840.6 L0.17 840.43 L0 840.43 L0 841.89 L0.17 841.89 L0.17 841.72 L0.21 841.72 L0.21 840.6
+							 Z M0.21 840.6 L0.21 841.72 L0.32 841.72 L0.32 840.6 L0.21 840.6 Z M0.32 840.6 L0.32 841.72 L0.45 841.72
+							 L0.45 840.6 L0.32 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape244-355" v:mID="244" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.899,839.447) rotate(-90)">
+				<title>Planilha.244</title>
+				<ellipse cx="0.675" cy="841.215" rx="0.675" ry="0.674329" class="st3"/>
+			</g>
+			<g id="shape245-357" v:mID="245" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.039,839.306) rotate(-90)">
+				<title>Planilha.245</title>
+				<ellipse cx="0.534375" cy="841.356" rx="0.534375" ry="0.533843" class="st3"/>
+			</g>
+			<g id="shape246-359" v:mID="246" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.194,839.151) rotate(-90)">
+				<title>Planilha.246</title>
+				<ellipse cx="0.379688" cy="841.51" rx="0.379688" ry="0.37931" class="st3"/>
+			</g>
+		</g>
+		<g id="group247-361" transform="translate(206.765,-669.394)" v:mID="247" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(127120000)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC simplex/LC Duplex Type Adapter Support Module, w/o Adapter Loaded, Black)"/>
+			</v:custProps>
+			<title>fiber optic adapter support module.607</title>
+			<g id="shape248-362" v:mID="248" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.248</title>
+				<path d="M2.83 837.64 L2.83 837.35 L3.39 837.35 L3.96 837.35 L3.96 837.64 L3.96 841.46 L3.96 841.89 L3.39 841.89
+							 L0.57 841.89 L0 841.89 L0 841.46 L0 837.64 L0 837.35 L0.57 837.35 L1.13 837.35 L1.13 837.64 L0.57 837.64
+							 L0.57 841.46 L3.39 841.46 L3.39 837.64 L2.83 837.64 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="group249-364" transform="translate(215.251,-669.394)" v:mID="249" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(127120000)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC simplex/LC Duplex Type Adapter Support Module, w/o Adapter Loaded, Black)"/>
+			</v:custProps>
+			<title>fiber optic adapter support module.609</title>
+			<g id="shape250-365" v:mID="250" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.250</title>
+				<path d="M2.83 837.64 L2.83 837.35 L3.39 837.35 L3.96 837.35 L3.96 837.64 L3.96 841.46 L3.96 841.89 L3.39 841.89
+							 L0.57 841.89 L0 841.89 L0 841.46 L0 837.64 L0 837.35 L0.57 837.35 L1.13 837.35 L1.13 837.64 L0.57 837.64
+							 L0.57 841.46 L3.39 841.46 L3.39 837.64 L2.83 837.64 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="group251-367" transform="translate(207.418,-668.544)" v:mID="251" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(231121108)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC/PC Simplex MM Adapter, Zirconia Sleeve)"/>
+				<v:cp v:nameU="Row_4" v:lbl="Installed Date" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_5" v:lbl="Warranty Exp" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_6" v:lbl="Location" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_7" v:lbl="Building" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_8" v:lbl="Room" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_9" v:lbl="Comments" v:type="0" v:langID="1033"/>
+			</v:custProps>
+			<title>SC MM adapter simplex.611</title>
+			<g id="shape252-368" v:mID="252" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.252</title>
+				<path d="M1.63 841.32 a0.311501 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M1.63 836.22 a0.311501
+							 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M2.63 835.94 L2.35 835.65 L0.28 835.65
+							 L0 835.94 L0 841.61 L0.28 841.89 L2.35 841.89 L2.63 841.61 L2.63 835.94 Z" class="st3"/>
+			</g>
+			<g id="shape253-370" v:mID="253" v:groupContext="shape" v:layerMember="1" transform="translate(-5.7454E-015,-1.31811)">
+				<title>Planilha.253</title>
+				<rect x="0" y="838.29" width="2.6336" height="3.6" class="st3"/>
+			</g>
+			<g id="shape254-372" v:mID="254" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.256,839.069) rotate(-90)">
+				<title>Planilha.254</title>
+				<rect x="0" y="841.607" width="0.595276" height="0.283183" class="st3"/>
+			</g>
+			<g id="shape255-374" v:mID="255" v:groupContext="shape" v:layerMember="1" transform="translate(0.254864,-1.70079)">
+				<title>Planilha.255</title>
+				<rect x="0" y="839.055" width="2.12387" height="2.83465" class="st3"/>
+			</g>
+			<g id="shape256-376" v:mID="256" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,837.804) rotate(-90)">
+				<title>Planilha.256</title>
+				<path d="M0.13 840.6 L0 840.6 L0 841.72 L0.13 841.72 L0.13 840.6 Z M0.24 840.6 L0.13 840.6 L0.13 841.72 L0.24 841.72
+							 L0.24 840.6 Z M0.24 840.6 L0.24 841.72 L0.28 841.72 L0.28 841.89 L0.45 841.89 L0.45 840.43 L0.28 840.43
+							 L0.28 840.6 L0.24 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape257-378" v:mID="257" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,840.189) rotate(-90)">
+				<title>Planilha.257</title>
+				<path d="M0.21 840.6 L0.17 840.6 L0.17 840.43 L0 840.43 L0 841.89 L0.17 841.89 L0.17 841.72 L0.21 841.72 L0.21 840.6
+							 Z M0.21 840.6 L0.21 841.72 L0.32 841.72 L0.32 840.6 L0.21 840.6 Z M0.32 840.6 L0.32 841.72 L0.45 841.72
+							 L0.45 840.6 L0.32 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape258-380" v:mID="258" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.899,839.447) rotate(-90)">
+				<title>Planilha.258</title>
+				<ellipse cx="0.675" cy="841.215" rx="0.675" ry="0.674329" class="st3"/>
+			</g>
+			<g id="shape259-382" v:mID="259" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.039,839.306) rotate(-90)">
+				<title>Planilha.259</title>
+				<ellipse cx="0.534375" cy="841.356" rx="0.534375" ry="0.533843" class="st3"/>
+			</g>
+			<g id="shape260-384" v:mID="260" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.194,839.151) rotate(-90)">
+				<title>Planilha.260</title>
+				<ellipse cx="0.379688" cy="841.51" rx="0.379688" ry="0.37931" class="st3"/>
+			</g>
+		</g>
+		<g id="group261-386" transform="translate(215.904,-668.544)" v:mID="261" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(231121108)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC/PC Simplex MM Adapter, Zirconia Sleeve)"/>
+				<v:cp v:nameU="Row_4" v:lbl="Installed Date" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_5" v:lbl="Warranty Exp" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_6" v:lbl="Location" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_7" v:lbl="Building" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_8" v:lbl="Room" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_9" v:lbl="Comments" v:type="0" v:langID="1033"/>
+			</v:custProps>
+			<title>SC MM adapter simplex.621</title>
+			<g id="shape262-387" v:mID="262" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.262</title>
+				<path d="M1.63 841.32 a0.311501 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M1.63 836.22 a0.311501
+							 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M2.63 835.94 L2.35 835.65 L0.28 835.65
+							 L0 835.94 L0 841.61 L0.28 841.89 L2.35 841.89 L2.63 841.61 L2.63 835.94 Z" class="st3"/>
+			</g>
+			<g id="shape263-389" v:mID="263" v:groupContext="shape" v:layerMember="1" transform="translate(-5.7454E-015,-1.31811)">
+				<title>Planilha.263</title>
+				<rect x="0" y="838.29" width="2.6336" height="3.6" class="st3"/>
+			</g>
+			<g id="shape264-391" v:mID="264" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.256,839.069) rotate(-90)">
+				<title>Planilha.264</title>
+				<rect x="0" y="841.607" width="0.595276" height="0.283183" class="st3"/>
+			</g>
+			<g id="shape265-393" v:mID="265" v:groupContext="shape" v:layerMember="1" transform="translate(0.254864,-1.70079)">
+				<title>Planilha.265</title>
+				<rect x="0" y="839.055" width="2.12387" height="2.83465" class="st3"/>
+			</g>
+			<g id="shape266-395" v:mID="266" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,837.804) rotate(-90)">
+				<title>Planilha.266</title>
+				<path d="M0.13 840.6 L0 840.6 L0 841.72 L0.13 841.72 L0.13 840.6 Z M0.24 840.6 L0.13 840.6 L0.13 841.72 L0.24 841.72
+							 L0.24 840.6 Z M0.24 840.6 L0.24 841.72 L0.28 841.72 L0.28 841.89 L0.45 841.89 L0.45 840.43 L0.28 840.43
+							 L0.28 840.6 L0.24 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape267-397" v:mID="267" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,840.189) rotate(-90)">
+				<title>Planilha.267</title>
+				<path d="M0.21 840.6 L0.17 840.6 L0.17 840.43 L0 840.43 L0 841.89 L0.17 841.89 L0.17 841.72 L0.21 841.72 L0.21 840.6
+							 Z M0.21 840.6 L0.21 841.72 L0.32 841.72 L0.32 840.6 L0.21 840.6 Z M0.32 840.6 L0.32 841.72 L0.45 841.72
+							 L0.45 840.6 L0.32 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape268-399" v:mID="268" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.899,839.447) rotate(-90)">
+				<title>Planilha.268</title>
+				<ellipse cx="0.675" cy="841.215" rx="0.675" ry="0.674329" class="st3"/>
+			</g>
+			<g id="shape269-401" v:mID="269" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.039,839.306) rotate(-90)">
+				<title>Planilha.269</title>
+				<ellipse cx="0.534375" cy="841.356" rx="0.534375" ry="0.533843" class="st3"/>
+			</g>
+			<g id="shape270-403" v:mID="270" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.194,839.151) rotate(-90)">
+				<title>Planilha.270</title>
+				<ellipse cx="0.379688" cy="841.51" rx="0.379688" ry="0.37931" class="st3"/>
+			</g>
+		</g>
+		<g id="group271-405" transform="translate(223.737,-669.394)" v:mID="271" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(127120000)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC simplex/LC Duplex Type Adapter Support Module, w/o Adapter Loaded, Black)"/>
+			</v:custProps>
+			<title>fiber optic adapter support module.631</title>
+			<g id="shape272-406" v:mID="272" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.272</title>
+				<path d="M2.83 837.64 L2.83 837.35 L3.39 837.35 L3.96 837.35 L3.96 837.64 L3.96 841.46 L3.96 841.89 L3.39 841.89
+							 L0.57 841.89 L0 841.89 L0 841.46 L0 837.64 L0 837.35 L0.57 837.35 L1.13 837.35 L1.13 837.64 L0.57 837.64
+							 L0.57 841.46 L3.39 841.46 L3.39 837.64 L2.83 837.64 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="group273-408" transform="translate(224.391,-668.544)" v:mID="273" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(231121108)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC/PC Simplex MM Adapter, Zirconia Sleeve)"/>
+				<v:cp v:nameU="Row_4" v:lbl="Installed Date" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_5" v:lbl="Warranty Exp" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_6" v:lbl="Location" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_7" v:lbl="Building" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_8" v:lbl="Room" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_9" v:lbl="Comments" v:type="0" v:langID="1033"/>
+			</v:custProps>
+			<title>SC MM adapter simplex.633</title>
+			<g id="shape274-409" v:mID="274" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.274</title>
+				<path d="M1.63 841.32 a0.311501 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M1.63 836.22 a0.311501
+							 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M2.63 835.94 L2.35 835.65 L0.28 835.65
+							 L0 835.94 L0 841.61 L0.28 841.89 L2.35 841.89 L2.63 841.61 L2.63 835.94 Z" class="st3"/>
+			</g>
+			<g id="shape275-411" v:mID="275" v:groupContext="shape" v:layerMember="1" transform="translate(-5.7454E-015,-1.31811)">
+				<title>Planilha.275</title>
+				<rect x="0" y="838.29" width="2.6336" height="3.6" class="st3"/>
+			</g>
+			<g id="shape276-413" v:mID="276" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.256,839.069) rotate(-90)">
+				<title>Planilha.276</title>
+				<rect x="0" y="841.607" width="0.595276" height="0.283183" class="st3"/>
+			</g>
+			<g id="shape277-415" v:mID="277" v:groupContext="shape" v:layerMember="1" transform="translate(0.254864,-1.70079)">
+				<title>Planilha.277</title>
+				<rect x="0" y="839.055" width="2.12387" height="2.83465" class="st3"/>
+			</g>
+			<g id="shape278-417" v:mID="278" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,837.804) rotate(-90)">
+				<title>Planilha.278</title>
+				<path d="M0.13 840.6 L0 840.6 L0 841.72 L0.13 841.72 L0.13 840.6 Z M0.24 840.6 L0.13 840.6 L0.13 841.72 L0.24 841.72
+							 L0.24 840.6 Z M0.24 840.6 L0.24 841.72 L0.28 841.72 L0.28 841.89 L0.45 841.89 L0.45 840.43 L0.28 840.43
+							 L0.28 840.6 L0.24 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape279-419" v:mID="279" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,840.189) rotate(-90)">
+				<title>Planilha.279</title>
+				<path d="M0.21 840.6 L0.17 840.6 L0.17 840.43 L0 840.43 L0 841.89 L0.17 841.89 L0.17 841.72 L0.21 841.72 L0.21 840.6
+							 Z M0.21 840.6 L0.21 841.72 L0.32 841.72 L0.32 840.6 L0.21 840.6 Z M0.32 840.6 L0.32 841.72 L0.45 841.72
+							 L0.45 840.6 L0.32 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape280-421" v:mID="280" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.899,839.447) rotate(-90)">
+				<title>Planilha.280</title>
+				<ellipse cx="0.675" cy="841.215" rx="0.675" ry="0.674329" class="st3"/>
+			</g>
+			<g id="shape281-423" v:mID="281" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.039,839.306) rotate(-90)">
+				<title>Planilha.281</title>
+				<ellipse cx="0.534375" cy="841.356" rx="0.534375" ry="0.533843" class="st3"/>
+			</g>
+			<g id="shape282-425" v:mID="282" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.194,839.151) rotate(-90)">
+				<title>Planilha.282</title>
+				<ellipse cx="0.379688" cy="841.51" rx="0.379688" ry="0.37931" class="st3"/>
+			</g>
+		</g>
+		<g id="group283-427" transform="translate(232.224,-669.394)" v:mID="283" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(127120000)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC simplex/LC Duplex Type Adapter Support Module, w/o Adapter Loaded, Black)"/>
+			</v:custProps>
+			<title>fiber optic adapter support module.643</title>
+			<g id="shape284-428" v:mID="284" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.284</title>
+				<path d="M2.83 837.64 L2.83 837.35 L3.39 837.35 L3.96 837.35 L3.96 837.64 L3.96 841.46 L3.96 841.89 L3.39 841.89
+							 L0.57 841.89 L0 841.89 L0 841.46 L0 837.64 L0 837.35 L0.57 837.35 L1.13 837.35 L1.13 837.64 L0.57 837.64
+							 L0.57 841.46 L3.39 841.46 L3.39 837.64 L2.83 837.64 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="group285-430" transform="translate(240.71,-669.394)" v:mID="285" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(127120000)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC simplex/LC Duplex Type Adapter Support Module, w/o Adapter Loaded, Black)"/>
+			</v:custProps>
+			<title>fiber optic adapter support module.645</title>
+			<g id="shape286-431" v:mID="286" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.286</title>
+				<path d="M2.83 837.64 L2.83 837.35 L3.39 837.35 L3.96 837.35 L3.96 837.64 L3.96 841.46 L3.96 841.89 L3.39 841.89
+							 L0.57 841.89 L0 841.89 L0 841.46 L0 837.64 L0 837.35 L0.57 837.35 L1.13 837.35 L1.13 837.64 L0.57 837.64
+							 L0.57 841.46 L3.39 841.46 L3.39 837.64 L2.83 837.64 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="group287-433" transform="translate(232.877,-668.544)" v:mID="287" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(231121108)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC/PC Simplex MM Adapter, Zirconia Sleeve)"/>
+				<v:cp v:nameU="Row_4" v:lbl="Installed Date" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_5" v:lbl="Warranty Exp" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_6" v:lbl="Location" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_7" v:lbl="Building" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_8" v:lbl="Room" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_9" v:lbl="Comments" v:type="0" v:langID="1033"/>
+			</v:custProps>
+			<title>SC MM adapter simplex.647</title>
+			<g id="shape288-434" v:mID="288" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.288</title>
+				<path d="M1.63 841.32 a0.311501 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M1.63 836.22 a0.311501
+							 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M2.63 835.94 L2.35 835.65 L0.28 835.65
+							 L0 835.94 L0 841.61 L0.28 841.89 L2.35 841.89 L2.63 841.61 L2.63 835.94 Z" class="st3"/>
+			</g>
+			<g id="shape289-436" v:mID="289" v:groupContext="shape" v:layerMember="1" transform="translate(-5.7454E-015,-1.31811)">
+				<title>Planilha.289</title>
+				<rect x="0" y="838.29" width="2.6336" height="3.6" class="st3"/>
+			</g>
+			<g id="shape290-438" v:mID="290" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.256,839.069) rotate(-90)">
+				<title>Planilha.290</title>
+				<rect x="0" y="841.607" width="0.595276" height="0.283183" class="st3"/>
+			</g>
+			<g id="shape291-440" v:mID="291" v:groupContext="shape" v:layerMember="1" transform="translate(0.254864,-1.70079)">
+				<title>Planilha.291</title>
+				<rect x="0" y="839.055" width="2.12387" height="2.83465" class="st3"/>
+			</g>
+			<g id="shape292-442" v:mID="292" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,837.804) rotate(-90)">
+				<title>Planilha.292</title>
+				<path d="M0.13 840.6 L0 840.6 L0 841.72 L0.13 841.72 L0.13 840.6 Z M0.24 840.6 L0.13 840.6 L0.13 841.72 L0.24 841.72
+							 L0.24 840.6 Z M0.24 840.6 L0.24 841.72 L0.28 841.72 L0.28 841.89 L0.45 841.89 L0.45 840.43 L0.28 840.43
+							 L0.28 840.6 L0.24 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape293-444" v:mID="293" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,840.189) rotate(-90)">
+				<title>Planilha.293</title>
+				<path d="M0.21 840.6 L0.17 840.6 L0.17 840.43 L0 840.43 L0 841.89 L0.17 841.89 L0.17 841.72 L0.21 841.72 L0.21 840.6
+							 Z M0.21 840.6 L0.21 841.72 L0.32 841.72 L0.32 840.6 L0.21 840.6 Z M0.32 840.6 L0.32 841.72 L0.45 841.72
+							 L0.45 840.6 L0.32 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape294-446" v:mID="294" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.899,839.447) rotate(-90)">
+				<title>Planilha.294</title>
+				<ellipse cx="0.675" cy="841.215" rx="0.675" ry="0.674329" class="st3"/>
+			</g>
+			<g id="shape295-448" v:mID="295" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.039,839.306) rotate(-90)">
+				<title>Planilha.295</title>
+				<ellipse cx="0.534375" cy="841.356" rx="0.534375" ry="0.533843" class="st3"/>
+			</g>
+			<g id="shape296-450" v:mID="296" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.194,839.151) rotate(-90)">
+				<title>Planilha.296</title>
+				<ellipse cx="0.379688" cy="841.51" rx="0.379688" ry="0.37931" class="st3"/>
+			</g>
+		</g>
+		<g id="group297-452" transform="translate(241.363,-668.544)" v:mID="297" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(231121108)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC/PC Simplex MM Adapter, Zirconia Sleeve)"/>
+				<v:cp v:nameU="Row_4" v:lbl="Installed Date" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_5" v:lbl="Warranty Exp" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_6" v:lbl="Location" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_7" v:lbl="Building" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_8" v:lbl="Room" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_9" v:lbl="Comments" v:type="0" v:langID="1033"/>
+			</v:custProps>
+			<title>SC MM adapter simplex.657</title>
+			<g id="shape298-453" v:mID="298" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.298</title>
+				<path d="M1.63 841.32 a0.311501 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M1.63 836.22 a0.311501
+							 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M2.63 835.94 L2.35 835.65 L0.28 835.65
+							 L0 835.94 L0 841.61 L0.28 841.89 L2.35 841.89 L2.63 841.61 L2.63 835.94 Z" class="st3"/>
+			</g>
+			<g id="shape299-455" v:mID="299" v:groupContext="shape" v:layerMember="1" transform="translate(-5.7454E-015,-1.31811)">
+				<title>Planilha.299</title>
+				<rect x="0" y="838.29" width="2.6336" height="3.6" class="st3"/>
+			</g>
+			<g id="shape300-457" v:mID="300" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.256,839.069) rotate(-90)">
+				<title>Planilha.300</title>
+				<rect x="0" y="841.607" width="0.595276" height="0.283183" class="st3"/>
+			</g>
+			<g id="shape301-459" v:mID="301" v:groupContext="shape" v:layerMember="1" transform="translate(0.254864,-1.70079)">
+				<title>Planilha.301</title>
+				<rect x="0" y="839.055" width="2.12387" height="2.83465" class="st3"/>
+			</g>
+			<g id="shape302-461" v:mID="302" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,837.804) rotate(-90)">
+				<title>Planilha.302</title>
+				<path d="M0.13 840.6 L0 840.6 L0 841.72 L0.13 841.72 L0.13 840.6 Z M0.24 840.6 L0.13 840.6 L0.13 841.72 L0.24 841.72
+							 L0.24 840.6 Z M0.24 840.6 L0.24 841.72 L0.28 841.72 L0.28 841.89 L0.45 841.89 L0.45 840.43 L0.28 840.43
+							 L0.28 840.6 L0.24 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape303-463" v:mID="303" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,840.189) rotate(-90)">
+				<title>Planilha.303</title>
+				<path d="M0.21 840.6 L0.17 840.6 L0.17 840.43 L0 840.43 L0 841.89 L0.17 841.89 L0.17 841.72 L0.21 841.72 L0.21 840.6
+							 Z M0.21 840.6 L0.21 841.72 L0.32 841.72 L0.32 840.6 L0.21 840.6 Z M0.32 840.6 L0.32 841.72 L0.45 841.72
+							 L0.45 840.6 L0.32 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape304-465" v:mID="304" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.899,839.447) rotate(-90)">
+				<title>Planilha.304</title>
+				<ellipse cx="0.675" cy="841.215" rx="0.675" ry="0.674329" class="st3"/>
+			</g>
+			<g id="shape305-467" v:mID="305" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.039,839.306) rotate(-90)">
+				<title>Planilha.305</title>
+				<ellipse cx="0.534375" cy="841.356" rx="0.534375" ry="0.533843" class="st3"/>
+			</g>
+			<g id="shape306-469" v:mID="306" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.194,839.151) rotate(-90)">
+				<title>Planilha.306</title>
+				<ellipse cx="0.379688" cy="841.51" rx="0.379688" ry="0.37931" class="st3"/>
+			</g>
+		</g>
+		<g id="shape307-471" v:mID="307" v:groupContext="shape" v:layerMember="1" transform="translate(144.531,-674.764)">
+			<title>Planilha.307</title>
+			<desc>13 14 15 16 17 18 19 20 21 22 23 24</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="52.0496" cy="840.189" width="104.1" height="3.40157"/>
+			<rect x="0" y="838.488" width="104.099" height="3.40157" class="st4"/>
+			<text x="4" y="840.67" class="st5" v:langID="2052"><v:paragraph/><v:tabList/>13      <tspan class="st6" v:langID="1046"> </tspan>  14        15         16      <tspan
+						class="st6" v:langID="1046"> </tspan>  17         18         19     <tspan class="st6" v:langID="1046"> </tspan>   20    <tspan
+						class="st6" v:langID="1046"> </tspan>    21      <tspan class="st6" v:langID="1046">    </tspan> 22    <tspan
+						class="st6" v:langID="1046">    </tspan>  23  <tspan class="st6" v:langID="1046">   </tspan>     24</text>		</g>
+		<g id="group308-481" transform="translate(147.332,-658.205)" v:mID="308" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(127120000)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC simplex/LC Duplex Type Adapter Support Module, w/o Adapter Loaded, Black)"/>
+			</v:custProps>
+			<title>fiber optic adapter support module.12</title>
+			<g id="shape309-482" v:mID="309" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.309</title>
+				<path d="M2.83 837.64 L2.83 837.35 L3.39 837.35 L3.96 837.35 L3.96 837.64 L3.96 841.46 L3.96 841.89 L3.39 841.89
+							 L0.57 841.89 L0 841.89 L0 841.46 L0 837.64 L0 837.35 L0.57 837.35 L1.13 837.35 L1.13 837.64 L0.57 837.64
+							 L0.57 841.46 L3.39 841.46 L3.39 837.64 L2.83 837.64 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="group310-484" transform="translate(147.985,-657.354)" v:mID="310" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(231121108)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC/PC Simplex MM Adapter, Zirconia Sleeve)"/>
+				<v:cp v:nameU="Row_4" v:lbl="Installed Date" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_5" v:lbl="Warranty Exp" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_6" v:lbl="Location" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_7" v:lbl="Building" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_8" v:lbl="Room" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_9" v:lbl="Comments" v:type="0" v:langID="1033"/>
+			</v:custProps>
+			<title>SC MM adapter simplex.601</title>
+			<g id="shape311-485" v:mID="311" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.311</title>
+				<path d="M1.63 841.32 a0.311501 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M1.63 836.22 a0.311501
+							 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M2.63 835.94 L2.35 835.65 L0.28 835.65
+							 L0 835.94 L0 841.61 L0.28 841.89 L2.35 841.89 L2.63 841.61 L2.63 835.94 Z" class="st3"/>
+			</g>
+			<g id="shape312-487" v:mID="312" v:groupContext="shape" v:layerMember="1" transform="translate(-5.7454E-015,-1.31811)">
+				<title>Planilha.312</title>
+				<rect x="0" y="838.29" width="2.6336" height="3.6" class="st3"/>
+			</g>
+			<g id="shape313-489" v:mID="313" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.256,839.069) rotate(-90)">
+				<title>Planilha.313</title>
+				<rect x="0" y="841.607" width="0.595276" height="0.283183" class="st3"/>
+			</g>
+			<g id="shape314-491" v:mID="314" v:groupContext="shape" v:layerMember="1" transform="translate(0.254864,-1.70079)">
+				<title>Planilha.314</title>
+				<rect x="0" y="839.055" width="2.12387" height="2.83465" class="st3"/>
+			</g>
+			<g id="shape315-493" v:mID="315" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,837.804) rotate(-90)">
+				<title>Planilha.315</title>
+				<path d="M0.13 840.6 L0 840.6 L0 841.72 L0.13 841.72 L0.13 840.6 Z M0.24 840.6 L0.13 840.6 L0.13 841.72 L0.24 841.72
+							 L0.24 840.6 Z M0.24 840.6 L0.24 841.72 L0.28 841.72 L0.28 841.89 L0.45 841.89 L0.45 840.43 L0.28 840.43
+							 L0.28 840.6 L0.24 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape316-495" v:mID="316" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,840.189) rotate(-90)">
+				<title>Planilha.316</title>
+				<path d="M0.21 840.6 L0.17 840.6 L0.17 840.43 L0 840.43 L0 841.89 L0.17 841.89 L0.17 841.72 L0.21 841.72 L0.21 840.6
+							 Z M0.21 840.6 L0.21 841.72 L0.32 841.72 L0.32 840.6 L0.21 840.6 Z M0.32 840.6 L0.32 841.72 L0.45 841.72
+							 L0.45 840.6 L0.32 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape317-497" v:mID="317" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.899,839.447) rotate(-90)">
+				<title>Planilha.317</title>
+				<ellipse cx="0.675" cy="841.215" rx="0.675" ry="0.674329" class="st3"/>
+			</g>
+			<g id="shape318-499" v:mID="318" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.039,839.306) rotate(-90)">
+				<title>Planilha.318</title>
+				<ellipse cx="0.534375" cy="841.356" rx="0.534375" ry="0.533843" class="st3"/>
+			</g>
+			<g id="shape319-501" v:mID="319" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.194,839.151) rotate(-90)">
+				<title>Planilha.319</title>
+				<ellipse cx="0.379688" cy="841.51" rx="0.379688" ry="0.37931" class="st3"/>
+			</g>
+		</g>
+		<g id="group320-503" transform="translate(155.818,-658.205)" v:mID="320" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(127120000)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC simplex/LC Duplex Type Adapter Support Module, w/o Adapter Loaded, Black)"/>
+			</v:custProps>
+			<title>fiber optic adapter support module.611</title>
+			<g id="shape321-504" v:mID="321" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.321</title>
+				<path d="M2.83 837.64 L2.83 837.35 L3.39 837.35 L3.96 837.35 L3.96 837.64 L3.96 841.46 L3.96 841.89 L3.39 841.89
+							 L0.57 841.89 L0 841.89 L0 841.46 L0 837.64 L0 837.35 L0.57 837.35 L1.13 837.35 L1.13 837.64 L0.57 837.64
+							 L0.57 841.46 L3.39 841.46 L3.39 837.64 L2.83 837.64 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="group322-506" transform="translate(164.022,-658.205)" v:mID="322" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(127120000)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC simplex/LC Duplex Type Adapter Support Module, w/o Adapter Loaded, Black)"/>
+			</v:custProps>
+			<title>fiber optic adapter support module.613</title>
+			<g id="shape323-507" v:mID="323" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.323</title>
+				<path d="M2.83 837.64 L2.83 837.35 L3.39 837.35 L3.96 837.35 L3.96 837.64 L3.96 841.46 L3.96 841.89 L3.39 841.89
+							 L0.57 841.89 L0 841.89 L0 841.46 L0 837.64 L0 837.35 L0.57 837.35 L1.13 837.35 L1.13 837.64 L0.57 837.64
+							 L0.57 841.46 L3.39 841.46 L3.39 837.64 L2.83 837.64 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="group324-509" transform="translate(156.472,-657.354)" v:mID="324" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(231121108)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC/PC Simplex MM Adapter, Zirconia Sleeve)"/>
+				<v:cp v:nameU="Row_4" v:lbl="Installed Date" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_5" v:lbl="Warranty Exp" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_6" v:lbl="Location" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_7" v:lbl="Building" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_8" v:lbl="Room" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_9" v:lbl="Comments" v:type="0" v:langID="1033"/>
+			</v:custProps>
+			<title>SC MM adapter simplex.615</title>
+			<g id="shape325-510" v:mID="325" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.325</title>
+				<path d="M1.63 841.32 a0.311501 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M1.63 836.22 a0.311501
+							 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M2.63 835.94 L2.35 835.65 L0.28 835.65
+							 L0 835.94 L0 841.61 L0.28 841.89 L2.35 841.89 L2.63 841.61 L2.63 835.94 Z" class="st3"/>
+			</g>
+			<g id="shape326-512" v:mID="326" v:groupContext="shape" v:layerMember="1" transform="translate(-5.7454E-015,-1.31811)">
+				<title>Planilha.326</title>
+				<rect x="0" y="838.29" width="2.6336" height="3.6" class="st3"/>
+			</g>
+			<g id="shape327-514" v:mID="327" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.256,839.069) rotate(-90)">
+				<title>Planilha.327</title>
+				<rect x="0" y="841.607" width="0.595276" height="0.283183" class="st3"/>
+			</g>
+			<g id="shape328-516" v:mID="328" v:groupContext="shape" v:layerMember="1" transform="translate(0.254864,-1.70079)">
+				<title>Planilha.328</title>
+				<rect x="0" y="839.055" width="2.12387" height="2.83465" class="st3"/>
+			</g>
+			<g id="shape329-518" v:mID="329" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,837.804) rotate(-90)">
+				<title>Planilha.329</title>
+				<path d="M0.13 840.6 L0 840.6 L0 841.72 L0.13 841.72 L0.13 840.6 Z M0.24 840.6 L0.13 840.6 L0.13 841.72 L0.24 841.72
+							 L0.24 840.6 Z M0.24 840.6 L0.24 841.72 L0.28 841.72 L0.28 841.89 L0.45 841.89 L0.45 840.43 L0.28 840.43
+							 L0.28 840.6 L0.24 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape330-520" v:mID="330" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,840.189) rotate(-90)">
+				<title>Planilha.330</title>
+				<path d="M0.21 840.6 L0.17 840.6 L0.17 840.43 L0 840.43 L0 841.89 L0.17 841.89 L0.17 841.72 L0.21 841.72 L0.21 840.6
+							 Z M0.21 840.6 L0.21 841.72 L0.32 841.72 L0.32 840.6 L0.21 840.6 Z M0.32 840.6 L0.32 841.72 L0.45 841.72
+							 L0.45 840.6 L0.32 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape331-522" v:mID="331" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.899,839.447) rotate(-90)">
+				<title>Planilha.331</title>
+				<ellipse cx="0.675" cy="841.215" rx="0.675" ry="0.674329" class="st3"/>
+			</g>
+			<g id="shape332-524" v:mID="332" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.039,839.306) rotate(-90)">
+				<title>Planilha.332</title>
+				<ellipse cx="0.534375" cy="841.356" rx="0.534375" ry="0.533843" class="st3"/>
+			</g>
+			<g id="shape333-526" v:mID="333" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.194,839.151) rotate(-90)">
+				<title>Planilha.333</title>
+				<ellipse cx="0.379688" cy="841.51" rx="0.379688" ry="0.37931" class="st3"/>
+			</g>
+		</g>
+		<g id="group334-528" transform="translate(164.675,-657.354)" v:mID="334" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(231121108)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC/PC Simplex MM Adapter, Zirconia Sleeve)"/>
+				<v:cp v:nameU="Row_4" v:lbl="Installed Date" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_5" v:lbl="Warranty Exp" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_6" v:lbl="Location" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_7" v:lbl="Building" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_8" v:lbl="Room" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_9" v:lbl="Comments" v:type="0" v:langID="1033"/>
+			</v:custProps>
+			<title>SC MM adapter simplex.625</title>
+			<g id="shape335-529" v:mID="335" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.335</title>
+				<path d="M1.63 841.32 a0.311501 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M1.63 836.22 a0.311501
+							 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M2.63 835.94 L2.35 835.65 L0.28 835.65
+							 L0 835.94 L0 841.61 L0.28 841.89 L2.35 841.89 L2.63 841.61 L2.63 835.94 Z" class="st3"/>
+			</g>
+			<g id="shape336-531" v:mID="336" v:groupContext="shape" v:layerMember="1" transform="translate(-5.7454E-015,-1.31811)">
+				<title>Planilha.336</title>
+				<rect x="0" y="838.29" width="2.6336" height="3.6" class="st3"/>
+			</g>
+			<g id="shape337-533" v:mID="337" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.256,839.069) rotate(-90)">
+				<title>Planilha.337</title>
+				<rect x="0" y="841.607" width="0.595276" height="0.283183" class="st3"/>
+			</g>
+			<g id="shape338-535" v:mID="338" v:groupContext="shape" v:layerMember="1" transform="translate(0.254864,-1.70079)">
+				<title>Planilha.338</title>
+				<rect x="0" y="839.055" width="2.12387" height="2.83465" class="st3"/>
+			</g>
+			<g id="shape339-537" v:mID="339" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,837.804) rotate(-90)">
+				<title>Planilha.339</title>
+				<path d="M0.13 840.6 L0 840.6 L0 841.72 L0.13 841.72 L0.13 840.6 Z M0.24 840.6 L0.13 840.6 L0.13 841.72 L0.24 841.72
+							 L0.24 840.6 Z M0.24 840.6 L0.24 841.72 L0.28 841.72 L0.28 841.89 L0.45 841.89 L0.45 840.43 L0.28 840.43
+							 L0.28 840.6 L0.24 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape340-539" v:mID="340" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,840.189) rotate(-90)">
+				<title>Planilha.340</title>
+				<path d="M0.21 840.6 L0.17 840.6 L0.17 840.43 L0 840.43 L0 841.89 L0.17 841.89 L0.17 841.72 L0.21 841.72 L0.21 840.6
+							 Z M0.21 840.6 L0.21 841.72 L0.32 841.72 L0.32 840.6 L0.21 840.6 Z M0.32 840.6 L0.32 841.72 L0.45 841.72
+							 L0.45 840.6 L0.32 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape341-541" v:mID="341" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.899,839.447) rotate(-90)">
+				<title>Planilha.341</title>
+				<ellipse cx="0.675" cy="841.215" rx="0.675" ry="0.674329" class="st3"/>
+			</g>
+			<g id="shape342-543" v:mID="342" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.039,839.306) rotate(-90)">
+				<title>Planilha.342</title>
+				<ellipse cx="0.534375" cy="841.356" rx="0.534375" ry="0.533843" class="st3"/>
+			</g>
+			<g id="shape343-545" v:mID="343" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.194,839.151) rotate(-90)">
+				<title>Planilha.343</title>
+				<ellipse cx="0.379688" cy="841.51" rx="0.379688" ry="0.37931" class="st3"/>
+			</g>
+		</g>
+		<g id="group344-547" transform="translate(172.791,-658.205)" v:mID="344" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(127120000)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC simplex/LC Duplex Type Adapter Support Module, w/o Adapter Loaded, Black)"/>
+			</v:custProps>
+			<title>fiber optic adapter support module.635</title>
+			<g id="shape345-548" v:mID="345" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.345</title>
+				<path d="M2.83 837.64 L2.83 837.35 L3.39 837.35 L3.96 837.35 L3.96 837.64 L3.96 841.46 L3.96 841.89 L3.39 841.89
+							 L0.57 841.89 L0 841.89 L0 841.46 L0 837.64 L0 837.35 L0.57 837.35 L1.13 837.35 L1.13 837.64 L0.57 837.64
+							 L0.57 841.46 L3.39 841.46 L3.39 837.64 L2.83 837.64 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="group346-550" transform="translate(173.444,-657.354)" v:mID="346" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(231121108)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC/PC Simplex MM Adapter, Zirconia Sleeve)"/>
+				<v:cp v:nameU="Row_4" v:lbl="Installed Date" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_5" v:lbl="Warranty Exp" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_6" v:lbl="Location" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_7" v:lbl="Building" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_8" v:lbl="Room" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_9" v:lbl="Comments" v:type="0" v:langID="1033"/>
+			</v:custProps>
+			<title>SC MM adapter simplex.637</title>
+			<g id="shape347-551" v:mID="347" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.347</title>
+				<path d="M1.63 841.32 a0.311501 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M1.63 836.22 a0.311501
+							 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M2.63 835.94 L2.35 835.65 L0.28 835.65
+							 L0 835.94 L0 841.61 L0.28 841.89 L2.35 841.89 L2.63 841.61 L2.63 835.94 Z" class="st3"/>
+			</g>
+			<g id="shape348-553" v:mID="348" v:groupContext="shape" v:layerMember="1" transform="translate(-5.7454E-015,-1.31811)">
+				<title>Planilha.348</title>
+				<rect x="0" y="838.29" width="2.6336" height="3.6" class="st3"/>
+			</g>
+			<g id="shape349-555" v:mID="349" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.256,839.069) rotate(-90)">
+				<title>Planilha.349</title>
+				<rect x="0" y="841.607" width="0.595276" height="0.283183" class="st3"/>
+			</g>
+			<g id="shape350-557" v:mID="350" v:groupContext="shape" v:layerMember="1" transform="translate(0.254864,-1.70079)">
+				<title>Planilha.350</title>
+				<rect x="0" y="839.055" width="2.12387" height="2.83465" class="st3"/>
+			</g>
+			<g id="shape351-559" v:mID="351" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,837.804) rotate(-90)">
+				<title>Planilha.351</title>
+				<path d="M0.13 840.6 L0 840.6 L0 841.72 L0.13 841.72 L0.13 840.6 Z M0.24 840.6 L0.13 840.6 L0.13 841.72 L0.24 841.72
+							 L0.24 840.6 Z M0.24 840.6 L0.24 841.72 L0.28 841.72 L0.28 841.89 L0.45 841.89 L0.45 840.43 L0.28 840.43
+							 L0.28 840.6 L0.24 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape352-561" v:mID="352" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,840.189) rotate(-90)">
+				<title>Planilha.352</title>
+				<path d="M0.21 840.6 L0.17 840.6 L0.17 840.43 L0 840.43 L0 841.89 L0.17 841.89 L0.17 841.72 L0.21 841.72 L0.21 840.6
+							 Z M0.21 840.6 L0.21 841.72 L0.32 841.72 L0.32 840.6 L0.21 840.6 Z M0.32 840.6 L0.32 841.72 L0.45 841.72
+							 L0.45 840.6 L0.32 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape353-563" v:mID="353" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.899,839.447) rotate(-90)">
+				<title>Planilha.353</title>
+				<ellipse cx="0.675" cy="841.215" rx="0.675" ry="0.674329" class="st3"/>
+			</g>
+			<g id="shape354-565" v:mID="354" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.039,839.306) rotate(-90)">
+				<title>Planilha.354</title>
+				<ellipse cx="0.534375" cy="841.356" rx="0.534375" ry="0.533843" class="st3"/>
+			</g>
+			<g id="shape355-567" v:mID="355" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.194,839.151) rotate(-90)">
+				<title>Planilha.355</title>
+				<ellipse cx="0.379688" cy="841.51" rx="0.379688" ry="0.37931" class="st3"/>
+			</g>
+		</g>
+		<g id="group356-569" transform="translate(181.277,-658.205)" v:mID="356" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(127120000)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC simplex/LC Duplex Type Adapter Support Module, w/o Adapter Loaded, Black)"/>
+			</v:custProps>
+			<title>fiber optic adapter support module.647</title>
+			<g id="shape357-570" v:mID="357" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.357</title>
+				<path d="M2.83 837.64 L2.83 837.35 L3.39 837.35 L3.96 837.35 L3.96 837.64 L3.96 841.46 L3.96 841.89 L3.39 841.89
+							 L0.57 841.89 L0 841.89 L0 841.46 L0 837.64 L0 837.35 L0.57 837.35 L1.13 837.35 L1.13 837.64 L0.57 837.64
+							 L0.57 841.46 L3.39 841.46 L3.39 837.64 L2.83 837.64 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="group358-572" transform="translate(189.764,-658.205)" v:mID="358" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(127120000)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC simplex/LC Duplex Type Adapter Support Module, w/o Adapter Loaded, Black)"/>
+			</v:custProps>
+			<title>fiber optic adapter support module.649</title>
+			<g id="shape359-573" v:mID="359" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.359</title>
+				<path d="M2.83 837.64 L2.83 837.35 L3.39 837.35 L3.96 837.35 L3.96 837.64 L3.96 841.46 L3.96 841.89 L3.39 841.89
+							 L0.57 841.89 L0 841.89 L0 841.46 L0 837.64 L0 837.35 L0.57 837.35 L1.13 837.35 L1.13 837.64 L0.57 837.64
+							 L0.57 841.46 L3.39 841.46 L3.39 837.64 L2.83 837.64 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="group360-575" transform="translate(181.931,-657.354)" v:mID="360" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(231121108)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC/PC Simplex MM Adapter, Zirconia Sleeve)"/>
+				<v:cp v:nameU="Row_4" v:lbl="Installed Date" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_5" v:lbl="Warranty Exp" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_6" v:lbl="Location" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_7" v:lbl="Building" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_8" v:lbl="Room" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_9" v:lbl="Comments" v:type="0" v:langID="1033"/>
+			</v:custProps>
+			<title>SC MM adapter simplex.651</title>
+			<g id="shape361-576" v:mID="361" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.361</title>
+				<path d="M1.63 841.32 a0.311501 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M1.63 836.22 a0.311501
+							 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M2.63 835.94 L2.35 835.65 L0.28 835.65
+							 L0 835.94 L0 841.61 L0.28 841.89 L2.35 841.89 L2.63 841.61 L2.63 835.94 Z" class="st3"/>
+			</g>
+			<g id="shape362-578" v:mID="362" v:groupContext="shape" v:layerMember="1" transform="translate(-5.7454E-015,-1.31811)">
+				<title>Planilha.362</title>
+				<rect x="0" y="838.29" width="2.6336" height="3.6" class="st3"/>
+			</g>
+			<g id="shape363-580" v:mID="363" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.256,839.069) rotate(-90)">
+				<title>Planilha.363</title>
+				<rect x="0" y="841.607" width="0.595276" height="0.283183" class="st3"/>
+			</g>
+			<g id="shape364-582" v:mID="364" v:groupContext="shape" v:layerMember="1" transform="translate(0.254864,-1.70079)">
+				<title>Planilha.364</title>
+				<rect x="0" y="839.055" width="2.12387" height="2.83465" class="st3"/>
+			</g>
+			<g id="shape365-584" v:mID="365" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,837.804) rotate(-90)">
+				<title>Planilha.365</title>
+				<path d="M0.13 840.6 L0 840.6 L0 841.72 L0.13 841.72 L0.13 840.6 Z M0.24 840.6 L0.13 840.6 L0.13 841.72 L0.24 841.72
+							 L0.24 840.6 Z M0.24 840.6 L0.24 841.72 L0.28 841.72 L0.28 841.89 L0.45 841.89 L0.45 840.43 L0.28 840.43
+							 L0.28 840.6 L0.24 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape366-586" v:mID="366" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,840.189) rotate(-90)">
+				<title>Planilha.366</title>
+				<path d="M0.21 840.6 L0.17 840.6 L0.17 840.43 L0 840.43 L0 841.89 L0.17 841.89 L0.17 841.72 L0.21 841.72 L0.21 840.6
+							 Z M0.21 840.6 L0.21 841.72 L0.32 841.72 L0.32 840.6 L0.21 840.6 Z M0.32 840.6 L0.32 841.72 L0.45 841.72
+							 L0.45 840.6 L0.32 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape367-588" v:mID="367" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.899,839.447) rotate(-90)">
+				<title>Planilha.367</title>
+				<ellipse cx="0.675" cy="841.215" rx="0.675" ry="0.674329" class="st3"/>
+			</g>
+			<g id="shape368-590" v:mID="368" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.039,839.306) rotate(-90)">
+				<title>Planilha.368</title>
+				<ellipse cx="0.534375" cy="841.356" rx="0.534375" ry="0.533843" class="st3"/>
+			</g>
+			<g id="shape369-592" v:mID="369" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.194,839.151) rotate(-90)">
+				<title>Planilha.369</title>
+				<ellipse cx="0.379688" cy="841.51" rx="0.379688" ry="0.37931" class="st3"/>
+			</g>
+		</g>
+		<g id="group370-594" transform="translate(190.417,-657.354)" v:mID="370" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(231121108)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC/PC Simplex MM Adapter, Zirconia Sleeve)"/>
+				<v:cp v:nameU="Row_4" v:lbl="Installed Date" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_5" v:lbl="Warranty Exp" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_6" v:lbl="Location" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_7" v:lbl="Building" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_8" v:lbl="Room" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_9" v:lbl="Comments" v:type="0" v:langID="1033"/>
+			</v:custProps>
+			<title>SC MM adapter simplex.661</title>
+			<g id="shape371-595" v:mID="371" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.371</title>
+				<path d="M1.63 841.32 a0.311501 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M1.63 836.22 a0.311501
+							 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M2.63 835.94 L2.35 835.65 L0.28 835.65
+							 L0 835.94 L0 841.61 L0.28 841.89 L2.35 841.89 L2.63 841.61 L2.63 835.94 Z" class="st3"/>
+			</g>
+			<g id="shape372-597" v:mID="372" v:groupContext="shape" v:layerMember="1" transform="translate(-5.7454E-015,-1.31811)">
+				<title>Planilha.372</title>
+				<rect x="0" y="838.29" width="2.6336" height="3.6" class="st3"/>
+			</g>
+			<g id="shape373-599" v:mID="373" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.256,839.069) rotate(-90)">
+				<title>Planilha.373</title>
+				<rect x="0" y="841.607" width="0.595276" height="0.283183" class="st3"/>
+			</g>
+			<g id="shape374-601" v:mID="374" v:groupContext="shape" v:layerMember="1" transform="translate(0.254864,-1.70079)">
+				<title>Planilha.374</title>
+				<rect x="0" y="839.055" width="2.12387" height="2.83465" class="st3"/>
+			</g>
+			<g id="shape375-603" v:mID="375" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,837.804) rotate(-90)">
+				<title>Planilha.375</title>
+				<path d="M0.13 840.6 L0 840.6 L0 841.72 L0.13 841.72 L0.13 840.6 Z M0.24 840.6 L0.13 840.6 L0.13 841.72 L0.24 841.72
+							 L0.24 840.6 Z M0.24 840.6 L0.24 841.72 L0.28 841.72 L0.28 841.89 L0.45 841.89 L0.45 840.43 L0.28 840.43
+							 L0.28 840.6 L0.24 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape376-605" v:mID="376" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,840.189) rotate(-90)">
+				<title>Planilha.376</title>
+				<path d="M0.21 840.6 L0.17 840.6 L0.17 840.43 L0 840.43 L0 841.89 L0.17 841.89 L0.17 841.72 L0.21 841.72 L0.21 840.6
+							 Z M0.21 840.6 L0.21 841.72 L0.32 841.72 L0.32 840.6 L0.21 840.6 Z M0.32 840.6 L0.32 841.72 L0.45 841.72
+							 L0.45 840.6 L0.32 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape377-607" v:mID="377" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.899,839.447) rotate(-90)">
+				<title>Planilha.377</title>
+				<ellipse cx="0.675" cy="841.215" rx="0.675" ry="0.674329" class="st3"/>
+			</g>
+			<g id="shape378-609" v:mID="378" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.039,839.306) rotate(-90)">
+				<title>Planilha.378</title>
+				<ellipse cx="0.534375" cy="841.356" rx="0.534375" ry="0.533843" class="st3"/>
+			</g>
+			<g id="shape379-611" v:mID="379" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.194,839.151) rotate(-90)">
+				<title>Planilha.379</title>
+				<ellipse cx="0.379688" cy="841.51" rx="0.379688" ry="0.37931" class="st3"/>
+			</g>
+		</g>
+		<g id="group380-613" transform="translate(198.25,-658.205)" v:mID="380" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(127120000)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC simplex/LC Duplex Type Adapter Support Module, w/o Adapter Loaded, Black)"/>
+			</v:custProps>
+			<title>fiber optic adapter support module.671</title>
+			<g id="shape381-614" v:mID="381" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.381</title>
+				<path d="M2.83 837.64 L2.83 837.35 L3.39 837.35 L3.96 837.35 L3.96 837.64 L3.96 841.46 L3.96 841.89 L3.39 841.89
+							 L0.57 841.89 L0 841.89 L0 841.46 L0 837.64 L0 837.35 L0.57 837.35 L1.13 837.35 L1.13 837.64 L0.57 837.64
+							 L0.57 841.46 L3.39 841.46 L3.39 837.64 L2.83 837.64 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="group382-616" transform="translate(198.903,-657.354)" v:mID="382" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(231121108)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC/PC Simplex MM Adapter, Zirconia Sleeve)"/>
+				<v:cp v:nameU="Row_4" v:lbl="Installed Date" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_5" v:lbl="Warranty Exp" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_6" v:lbl="Location" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_7" v:lbl="Building" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_8" v:lbl="Room" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_9" v:lbl="Comments" v:type="0" v:langID="1033"/>
+			</v:custProps>
+			<title>SC MM adapter simplex.673</title>
+			<g id="shape383-617" v:mID="383" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.383</title>
+				<path d="M1.63 841.32 a0.311501 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M1.63 836.22 a0.311501
+							 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M2.63 835.94 L2.35 835.65 L0.28 835.65
+							 L0 835.94 L0 841.61 L0.28 841.89 L2.35 841.89 L2.63 841.61 L2.63 835.94 Z" class="st3"/>
+			</g>
+			<g id="shape384-619" v:mID="384" v:groupContext="shape" v:layerMember="1" transform="translate(-5.7454E-015,-1.31811)">
+				<title>Planilha.384</title>
+				<rect x="0" y="838.29" width="2.6336" height="3.6" class="st3"/>
+			</g>
+			<g id="shape385-621" v:mID="385" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.256,839.069) rotate(-90)">
+				<title>Planilha.385</title>
+				<rect x="0" y="841.607" width="0.595276" height="0.283183" class="st3"/>
+			</g>
+			<g id="shape386-623" v:mID="386" v:groupContext="shape" v:layerMember="1" transform="translate(0.254864,-1.70079)">
+				<title>Planilha.386</title>
+				<rect x="0" y="839.055" width="2.12387" height="2.83465" class="st3"/>
+			</g>
+			<g id="shape387-625" v:mID="387" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,837.804) rotate(-90)">
+				<title>Planilha.387</title>
+				<path d="M0.13 840.6 L0 840.6 L0 841.72 L0.13 841.72 L0.13 840.6 Z M0.24 840.6 L0.13 840.6 L0.13 841.72 L0.24 841.72
+							 L0.24 840.6 Z M0.24 840.6 L0.24 841.72 L0.28 841.72 L0.28 841.89 L0.45 841.89 L0.45 840.43 L0.28 840.43
+							 L0.28 840.6 L0.24 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape388-627" v:mID="388" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,840.189) rotate(-90)">
+				<title>Planilha.388</title>
+				<path d="M0.21 840.6 L0.17 840.6 L0.17 840.43 L0 840.43 L0 841.89 L0.17 841.89 L0.17 841.72 L0.21 841.72 L0.21 840.6
+							 Z M0.21 840.6 L0.21 841.72 L0.32 841.72 L0.32 840.6 L0.21 840.6 Z M0.32 840.6 L0.32 841.72 L0.45 841.72
+							 L0.45 840.6 L0.32 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape389-629" v:mID="389" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.899,839.447) rotate(-90)">
+				<title>Planilha.389</title>
+				<ellipse cx="0.675" cy="841.215" rx="0.675" ry="0.674329" class="st3"/>
+			</g>
+			<g id="shape390-631" v:mID="390" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.039,839.306) rotate(-90)">
+				<title>Planilha.390</title>
+				<ellipse cx="0.534375" cy="841.356" rx="0.534375" ry="0.533843" class="st3"/>
+			</g>
+			<g id="shape391-633" v:mID="391" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.194,839.151) rotate(-90)">
+				<title>Planilha.391</title>
+				<ellipse cx="0.379688" cy="841.51" rx="0.379688" ry="0.37931" class="st3"/>
+			</g>
+		</g>
+		<g id="group392-635" transform="translate(206.736,-658.205)" v:mID="392" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(127120000)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC simplex/LC Duplex Type Adapter Support Module, w/o Adapter Loaded, Black)"/>
+			</v:custProps>
+			<title>fiber optic adapter support module.683</title>
+			<g id="shape393-636" v:mID="393" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.393</title>
+				<path d="M2.83 837.64 L2.83 837.35 L3.39 837.35 L3.96 837.35 L3.96 837.64 L3.96 841.46 L3.96 841.89 L3.39 841.89
+							 L0.57 841.89 L0 841.89 L0 841.46 L0 837.64 L0 837.35 L0.57 837.35 L1.13 837.35 L1.13 837.64 L0.57 837.64
+							 L0.57 841.46 L3.39 841.46 L3.39 837.64 L2.83 837.64 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="group394-638" transform="translate(215.223,-658.205)" v:mID="394" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(127120000)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC simplex/LC Duplex Type Adapter Support Module, w/o Adapter Loaded, Black)"/>
+			</v:custProps>
+			<title>fiber optic adapter support module.685</title>
+			<g id="shape395-639" v:mID="395" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.395</title>
+				<path d="M2.83 837.64 L2.83 837.35 L3.39 837.35 L3.96 837.35 L3.96 837.64 L3.96 841.46 L3.96 841.89 L3.39 841.89
+							 L0.57 841.89 L0 841.89 L0 841.46 L0 837.64 L0 837.35 L0.57 837.35 L1.13 837.35 L1.13 837.64 L0.57 837.64
+							 L0.57 841.46 L3.39 841.46 L3.39 837.64 L2.83 837.64 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="group396-641" transform="translate(207.39,-657.354)" v:mID="396" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(231121108)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC/PC Simplex MM Adapter, Zirconia Sleeve)"/>
+				<v:cp v:nameU="Row_4" v:lbl="Installed Date" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_5" v:lbl="Warranty Exp" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_6" v:lbl="Location" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_7" v:lbl="Building" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_8" v:lbl="Room" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_9" v:lbl="Comments" v:type="0" v:langID="1033"/>
+			</v:custProps>
+			<title>SC MM adapter simplex.687</title>
+			<g id="shape397-642" v:mID="397" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.397</title>
+				<path d="M1.63 841.32 a0.311501 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M1.63 836.22 a0.311501
+							 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M2.63 835.94 L2.35 835.65 L0.28 835.65
+							 L0 835.94 L0 841.61 L0.28 841.89 L2.35 841.89 L2.63 841.61 L2.63 835.94 Z" class="st3"/>
+			</g>
+			<g id="shape398-644" v:mID="398" v:groupContext="shape" v:layerMember="1" transform="translate(-5.7454E-015,-1.31811)">
+				<title>Planilha.398</title>
+				<rect x="0" y="838.29" width="2.6336" height="3.6" class="st3"/>
+			</g>
+			<g id="shape399-646" v:mID="399" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.256,839.069) rotate(-90)">
+				<title>Planilha.399</title>
+				<rect x="0" y="841.607" width="0.595276" height="0.283183" class="st3"/>
+			</g>
+			<g id="shape400-648" v:mID="400" v:groupContext="shape" v:layerMember="1" transform="translate(0.254864,-1.70079)">
+				<title>Planilha.400</title>
+				<rect x="0" y="839.055" width="2.12387" height="2.83465" class="st3"/>
+			</g>
+			<g id="shape401-650" v:mID="401" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,837.804) rotate(-90)">
+				<title>Planilha.401</title>
+				<path d="M0.13 840.6 L0 840.6 L0 841.72 L0.13 841.72 L0.13 840.6 Z M0.24 840.6 L0.13 840.6 L0.13 841.72 L0.24 841.72
+							 L0.24 840.6 Z M0.24 840.6 L0.24 841.72 L0.28 841.72 L0.28 841.89 L0.45 841.89 L0.45 840.43 L0.28 840.43
+							 L0.28 840.6 L0.24 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape402-652" v:mID="402" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,840.189) rotate(-90)">
+				<title>Planilha.402</title>
+				<path d="M0.21 840.6 L0.17 840.6 L0.17 840.43 L0 840.43 L0 841.89 L0.17 841.89 L0.17 841.72 L0.21 841.72 L0.21 840.6
+							 Z M0.21 840.6 L0.21 841.72 L0.32 841.72 L0.32 840.6 L0.21 840.6 Z M0.32 840.6 L0.32 841.72 L0.45 841.72
+							 L0.45 840.6 L0.32 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape403-654" v:mID="403" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.899,839.447) rotate(-90)">
+				<title>Planilha.403</title>
+				<ellipse cx="0.675" cy="841.215" rx="0.675" ry="0.674329" class="st3"/>
+			</g>
+			<g id="shape404-656" v:mID="404" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.039,839.306) rotate(-90)">
+				<title>Planilha.404</title>
+				<ellipse cx="0.534375" cy="841.356" rx="0.534375" ry="0.533843" class="st3"/>
+			</g>
+			<g id="shape405-658" v:mID="405" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.194,839.151) rotate(-90)">
+				<title>Planilha.405</title>
+				<ellipse cx="0.379688" cy="841.51" rx="0.379688" ry="0.37931" class="st3"/>
+			</g>
+		</g>
+		<g id="group406-660" transform="translate(215.876,-657.354)" v:mID="406" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(231121108)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC/PC Simplex MM Adapter, Zirconia Sleeve)"/>
+				<v:cp v:nameU="Row_4" v:lbl="Installed Date" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_5" v:lbl="Warranty Exp" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_6" v:lbl="Location" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_7" v:lbl="Building" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_8" v:lbl="Room" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_9" v:lbl="Comments" v:type="0" v:langID="1033"/>
+			</v:custProps>
+			<title>SC MM adapter simplex.697</title>
+			<g id="shape407-661" v:mID="407" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.407</title>
+				<path d="M1.63 841.32 a0.311501 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M1.63 836.22 a0.311501
+							 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M2.63 835.94 L2.35 835.65 L0.28 835.65
+							 L0 835.94 L0 841.61 L0.28 841.89 L2.35 841.89 L2.63 841.61 L2.63 835.94 Z" class="st3"/>
+			</g>
+			<g id="shape408-663" v:mID="408" v:groupContext="shape" v:layerMember="1" transform="translate(-5.7454E-015,-1.31811)">
+				<title>Planilha.408</title>
+				<rect x="0" y="838.29" width="2.6336" height="3.6" class="st3"/>
+			</g>
+			<g id="shape409-665" v:mID="409" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.256,839.069) rotate(-90)">
+				<title>Planilha.409</title>
+				<rect x="0" y="841.607" width="0.595276" height="0.283183" class="st3"/>
+			</g>
+			<g id="shape410-667" v:mID="410" v:groupContext="shape" v:layerMember="1" transform="translate(0.254864,-1.70079)">
+				<title>Planilha.410</title>
+				<rect x="0" y="839.055" width="2.12387" height="2.83465" class="st3"/>
+			</g>
+			<g id="shape411-669" v:mID="411" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,837.804) rotate(-90)">
+				<title>Planilha.411</title>
+				<path d="M0.13 840.6 L0 840.6 L0 841.72 L0.13 841.72 L0.13 840.6 Z M0.24 840.6 L0.13 840.6 L0.13 841.72 L0.24 841.72
+							 L0.24 840.6 Z M0.24 840.6 L0.24 841.72 L0.28 841.72 L0.28 841.89 L0.45 841.89 L0.45 840.43 L0.28 840.43
+							 L0.28 840.6 L0.24 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape412-671" v:mID="412" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,840.189) rotate(-90)">
+				<title>Planilha.412</title>
+				<path d="M0.21 840.6 L0.17 840.6 L0.17 840.43 L0 840.43 L0 841.89 L0.17 841.89 L0.17 841.72 L0.21 841.72 L0.21 840.6
+							 Z M0.21 840.6 L0.21 841.72 L0.32 841.72 L0.32 840.6 L0.21 840.6 Z M0.32 840.6 L0.32 841.72 L0.45 841.72
+							 L0.45 840.6 L0.32 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape413-673" v:mID="413" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.899,839.447) rotate(-90)">
+				<title>Planilha.413</title>
+				<ellipse cx="0.675" cy="841.215" rx="0.675" ry="0.674329" class="st3"/>
+			</g>
+			<g id="shape414-675" v:mID="414" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.039,839.306) rotate(-90)">
+				<title>Planilha.414</title>
+				<ellipse cx="0.534375" cy="841.356" rx="0.534375" ry="0.533843" class="st3"/>
+			</g>
+			<g id="shape415-677" v:mID="415" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.194,839.151) rotate(-90)">
+				<title>Planilha.415</title>
+				<ellipse cx="0.379688" cy="841.51" rx="0.379688" ry="0.37931" class="st3"/>
+			</g>
+		</g>
+		<g id="group416-679" transform="translate(223.709,-658.205)" v:mID="416" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(127120000)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC simplex/LC Duplex Type Adapter Support Module, w/o Adapter Loaded, Black)"/>
+			</v:custProps>
+			<title>fiber optic adapter support module.707</title>
+			<g id="shape417-680" v:mID="417" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.417</title>
+				<path d="M2.83 837.64 L2.83 837.35 L3.39 837.35 L3.96 837.35 L3.96 837.64 L3.96 841.46 L3.96 841.89 L3.39 841.89
+							 L0.57 841.89 L0 841.89 L0 841.46 L0 837.64 L0 837.35 L0.57 837.35 L1.13 837.35 L1.13 837.64 L0.57 837.64
+							 L0.57 841.46 L3.39 841.46 L3.39 837.64 L2.83 837.64 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="group418-682" transform="translate(224.362,-657.354)" v:mID="418" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(231121108)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC/PC Simplex MM Adapter, Zirconia Sleeve)"/>
+				<v:cp v:nameU="Row_4" v:lbl="Installed Date" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_5" v:lbl="Warranty Exp" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_6" v:lbl="Location" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_7" v:lbl="Building" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_8" v:lbl="Room" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_9" v:lbl="Comments" v:type="0" v:langID="1033"/>
+			</v:custProps>
+			<title>SC MM adapter simplex.709</title>
+			<g id="shape419-683" v:mID="419" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.419</title>
+				<path d="M1.63 841.32 a0.311501 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M1.63 836.22 a0.311501
+							 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M2.63 835.94 L2.35 835.65 L0.28 835.65
+							 L0 835.94 L0 841.61 L0.28 841.89 L2.35 841.89 L2.63 841.61 L2.63 835.94 Z" class="st3"/>
+			</g>
+			<g id="shape420-685" v:mID="420" v:groupContext="shape" v:layerMember="1" transform="translate(-5.7454E-015,-1.31811)">
+				<title>Planilha.420</title>
+				<rect x="0" y="838.29" width="2.6336" height="3.6" class="st3"/>
+			</g>
+			<g id="shape421-687" v:mID="421" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.256,839.069) rotate(-90)">
+				<title>Planilha.421</title>
+				<rect x="0" y="841.607" width="0.595276" height="0.283183" class="st3"/>
+			</g>
+			<g id="shape422-689" v:mID="422" v:groupContext="shape" v:layerMember="1" transform="translate(0.254864,-1.70079)">
+				<title>Planilha.422</title>
+				<rect x="0" y="839.055" width="2.12387" height="2.83465" class="st3"/>
+			</g>
+			<g id="shape423-691" v:mID="423" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,837.804) rotate(-90)">
+				<title>Planilha.423</title>
+				<path d="M0.13 840.6 L0 840.6 L0 841.72 L0.13 841.72 L0.13 840.6 Z M0.24 840.6 L0.13 840.6 L0.13 841.72 L0.24 841.72
+							 L0.24 840.6 Z M0.24 840.6 L0.24 841.72 L0.28 841.72 L0.28 841.89 L0.45 841.89 L0.45 840.43 L0.28 840.43
+							 L0.28 840.6 L0.24 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape424-693" v:mID="424" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,840.189) rotate(-90)">
+				<title>Planilha.424</title>
+				<path d="M0.21 840.6 L0.17 840.6 L0.17 840.43 L0 840.43 L0 841.89 L0.17 841.89 L0.17 841.72 L0.21 841.72 L0.21 840.6
+							 Z M0.21 840.6 L0.21 841.72 L0.32 841.72 L0.32 840.6 L0.21 840.6 Z M0.32 840.6 L0.32 841.72 L0.45 841.72
+							 L0.45 840.6 L0.32 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape425-695" v:mID="425" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.899,839.447) rotate(-90)">
+				<title>Planilha.425</title>
+				<ellipse cx="0.675" cy="841.215" rx="0.675" ry="0.674329" class="st3"/>
+			</g>
+			<g id="shape426-697" v:mID="426" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.039,839.306) rotate(-90)">
+				<title>Planilha.426</title>
+				<ellipse cx="0.534375" cy="841.356" rx="0.534375" ry="0.533843" class="st3"/>
+			</g>
+			<g id="shape427-699" v:mID="427" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.194,839.151) rotate(-90)">
+				<title>Planilha.427</title>
+				<ellipse cx="0.379688" cy="841.51" rx="0.379688" ry="0.37931" class="st3"/>
+			</g>
+		</g>
+		<g id="group428-701" transform="translate(232.195,-658.205)" v:mID="428" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(127120000)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC simplex/LC Duplex Type Adapter Support Module, w/o Adapter Loaded, Black)"/>
+			</v:custProps>
+			<title>fiber optic adapter support module.719</title>
+			<g id="shape429-702" v:mID="429" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.429</title>
+				<path d="M2.83 837.64 L2.83 837.35 L3.39 837.35 L3.96 837.35 L3.96 837.64 L3.96 841.46 L3.96 841.89 L3.39 841.89
+							 L0.57 841.89 L0 841.89 L0 841.46 L0 837.64 L0 837.35 L0.57 837.35 L1.13 837.35 L1.13 837.64 L0.57 837.64
+							 L0.57 841.46 L3.39 841.46 L3.39 837.64 L2.83 837.64 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="group430-704" transform="translate(240.682,-658.205)" v:mID="430" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(127120000)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC simplex/LC Duplex Type Adapter Support Module, w/o Adapter Loaded, Black)"/>
+			</v:custProps>
+			<title>fiber optic adapter support module.721</title>
+			<g id="shape431-705" v:mID="431" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.431</title>
+				<path d="M2.83 837.64 L2.83 837.35 L3.39 837.35 L3.96 837.35 L3.96 837.64 L3.96 841.46 L3.96 841.89 L3.39 841.89
+							 L0.57 841.89 L0 841.89 L0 841.46 L0 837.64 L0 837.35 L0.57 837.35 L1.13 837.35 L1.13 837.64 L0.57 837.64
+							 L0.57 841.46 L3.39 841.46 L3.39 837.64 L2.83 837.64 Z" class="st2"/>
+			</g>
+		</g>
+		<g id="group432-707" transform="translate(232.849,-657.354)" v:mID="432" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(231121108)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC/PC Simplex MM Adapter, Zirconia Sleeve)"/>
+				<v:cp v:nameU="Row_4" v:lbl="Installed Date" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_5" v:lbl="Warranty Exp" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_6" v:lbl="Location" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_7" v:lbl="Building" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_8" v:lbl="Room" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_9" v:lbl="Comments" v:type="0" v:langID="1033"/>
+			</v:custProps>
+			<title>SC MM adapter simplex.723</title>
+			<g id="shape433-708" v:mID="433" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.433</title>
+				<path d="M1.63 841.32 a0.311501 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M1.63 836.22 a0.311501
+							 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M2.63 835.94 L2.35 835.65 L0.28 835.65
+							 L0 835.94 L0 841.61 L0.28 841.89 L2.35 841.89 L2.63 841.61 L2.63 835.94 Z" class="st3"/>
+			</g>
+			<g id="shape434-710" v:mID="434" v:groupContext="shape" v:layerMember="1" transform="translate(-5.7454E-015,-1.31811)">
+				<title>Planilha.434</title>
+				<rect x="0" y="838.29" width="2.6336" height="3.6" class="st3"/>
+			</g>
+			<g id="shape435-712" v:mID="435" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.256,839.069) rotate(-90)">
+				<title>Planilha.435</title>
+				<rect x="0" y="841.607" width="0.595276" height="0.283183" class="st3"/>
+			</g>
+			<g id="shape436-714" v:mID="436" v:groupContext="shape" v:layerMember="1" transform="translate(0.254864,-1.70079)">
+				<title>Planilha.436</title>
+				<rect x="0" y="839.055" width="2.12387" height="2.83465" class="st3"/>
+			</g>
+			<g id="shape437-716" v:mID="437" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,837.804) rotate(-90)">
+				<title>Planilha.437</title>
+				<path d="M0.13 840.6 L0 840.6 L0 841.72 L0.13 841.72 L0.13 840.6 Z M0.24 840.6 L0.13 840.6 L0.13 841.72 L0.24 841.72
+							 L0.24 840.6 Z M0.24 840.6 L0.24 841.72 L0.28 841.72 L0.28 841.89 L0.45 841.89 L0.45 840.43 L0.28 840.43
+							 L0.28 840.6 L0.24 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape438-718" v:mID="438" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,840.189) rotate(-90)">
+				<title>Planilha.438</title>
+				<path d="M0.21 840.6 L0.17 840.6 L0.17 840.43 L0 840.43 L0 841.89 L0.17 841.89 L0.17 841.72 L0.21 841.72 L0.21 840.6
+							 Z M0.21 840.6 L0.21 841.72 L0.32 841.72 L0.32 840.6 L0.21 840.6 Z M0.32 840.6 L0.32 841.72 L0.45 841.72
+							 L0.45 840.6 L0.32 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape439-720" v:mID="439" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.899,839.447) rotate(-90)">
+				<title>Planilha.439</title>
+				<ellipse cx="0.675" cy="841.215" rx="0.675" ry="0.674329" class="st3"/>
+			</g>
+			<g id="shape440-722" v:mID="440" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.039,839.306) rotate(-90)">
+				<title>Planilha.440</title>
+				<ellipse cx="0.534375" cy="841.356" rx="0.534375" ry="0.533843" class="st3"/>
+			</g>
+			<g id="shape441-724" v:mID="441" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.194,839.151) rotate(-90)">
+				<title>Planilha.441</title>
+				<ellipse cx="0.379688" cy="841.51" rx="0.379688" ry="0.37931" class="st3"/>
+			</g>
+		</g>
+		<g id="group442-726" transform="translate(241.335,-657.354)" v:mID="442" v:groupContext="group" v:layerMember="1">
+			<v:custProps>
+				<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+				<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(231121108)"/>
+				<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+						v:val="VT4(SC/PC Simplex MM Adapter, Zirconia Sleeve)"/>
+				<v:cp v:nameU="Row_4" v:lbl="Installed Date" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_5" v:lbl="Warranty Exp" v:type="5" v:langID="1033" v:cal="0"/>
+				<v:cp v:nameU="Row_6" v:lbl="Location" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_7" v:lbl="Building" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_8" v:lbl="Room" v:type="0" v:langID="1033"/>
+				<v:cp v:nameU="Row_9" v:lbl="Comments" v:type="0" v:langID="1033"/>
+			</v:custProps>
+			<title>SC MM adapter simplex.733</title>
+			<g id="shape443-727" v:mID="443" v:groupContext="shape" v:layerMember="1">
+				<title>Planilha.443</title>
+				<path d="M1.63 841.32 a0.311501 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M1.63 836.22 a0.311501
+							 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M2.63 835.94 L2.35 835.65 L0.28 835.65
+							 L0 835.94 L0 841.61 L0.28 841.89 L2.35 841.89 L2.63 841.61 L2.63 835.94 Z" class="st3"/>
+			</g>
+			<g id="shape444-729" v:mID="444" v:groupContext="shape" v:layerMember="1" transform="translate(-5.7454E-015,-1.31811)">
+				<title>Planilha.444</title>
+				<rect x="0" y="838.29" width="2.6336" height="3.6" class="st3"/>
+			</g>
+			<g id="shape445-731" v:mID="445" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.256,839.069) rotate(-90)">
+				<title>Planilha.445</title>
+				<rect x="0" y="841.607" width="0.595276" height="0.283183" class="st3"/>
+			</g>
+			<g id="shape446-733" v:mID="446" v:groupContext="shape" v:layerMember="1" transform="translate(0.254864,-1.70079)">
+				<title>Planilha.446</title>
+				<rect x="0" y="839.055" width="2.12387" height="2.83465" class="st3"/>
+			</g>
+			<g id="shape447-735" v:mID="447" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,837.804) rotate(-90)">
+				<title>Planilha.447</title>
+				<path d="M0.13 840.6 L0 840.6 L0 841.72 L0.13 841.72 L0.13 840.6 Z M0.24 840.6 L0.13 840.6 L0.13 841.72 L0.24 841.72
+							 L0.24 840.6 Z M0.24 840.6 L0.24 841.72 L0.28 841.72 L0.28 841.89 L0.45 841.89 L0.45 840.43 L0.28 840.43
+							 L0.28 840.6 L0.24 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape448-737" v:mID="448" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.842,840.189) rotate(-90)">
+				<title>Planilha.448</title>
+				<path d="M0.21 840.6 L0.17 840.6 L0.17 840.43 L0 840.43 L0 841.89 L0.17 841.89 L0.17 841.72 L0.21 841.72 L0.21 840.6
+							 Z M0.21 840.6 L0.21 841.72 L0.32 841.72 L0.32 840.6 L0.21 840.6 Z M0.32 840.6 L0.32 841.72 L0.45 841.72
+							 L0.45 840.6 L0.32 840.6 Z" class="st3"/>
+			</g>
+			<g id="shape449-739" v:mID="449" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-839.899,839.447) rotate(-90)">
+				<title>Planilha.449</title>
+				<ellipse cx="0.675" cy="841.215" rx="0.675" ry="0.674329" class="st3"/>
+			</g>
+			<g id="shape450-741" v:mID="450" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.039,839.306) rotate(-90)">
+				<title>Planilha.450</title>
+				<ellipse cx="0.534375" cy="841.356" rx="0.534375" ry="0.533843" class="st3"/>
+			</g>
+			<g id="shape451-743" v:mID="451" v:groupContext="shape" v:layerMember="1"
+					transform="translate(-840.194,839.151) rotate(-90)">
+				<title>Planilha.451</title>
+				<ellipse cx="0.379688" cy="841.51" rx="0.379688" ry="0.37931" class="st3"/>
+			</g>
+		</g>
+		<g id="shape452-745" v:mID="452" v:groupContext="shape" v:layerMember="1" transform="translate(144.616,-663.307)">
+			<title>Planilha.452</title>
+			<desc>25 26 27 28 29 30 31 32 33 34 35 36</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="52.0496" cy="840.189" width="104.1" height="3.40157"/>
+			<rect x="0" y="838.488" width="104.099" height="3.40157" class="st4"/>
+			<text x="4" y="840.67" class="st5" v:langID="2052"><v:paragraph/><v:tabList/>25        26    <tspan class="st6"
+						v:langID="1046"> </tspan>    27         28         29         30        31         32         33        34         35        36</text>		</g>
+		<g id="shape14-749" v:mID="14" v:groupContext="shape" v:layerMember="1" transform="translate(127.361,-651.969)">
+			<title>DIO_298816</title>
+			<desc>B1C1</desc>
+			<v:custProps>
+				<v:cp v:nameU="BOCA" v:lbl="" v:prompt="" v:type="0" v:format="" v:sortKey="" v:invis="false" v:ask="false"
+						v:langID="1046" v:cal="0" v:val="VT0(298816):26"/>
+			</v:custProps>
+			<v:textBlock v:margins="rect(13,20,0,0)" v:tabSpace="42.5197"/>
+			<v:textRect cx="-19.4228" cy="816.009" width="136.8" height="38.8456" transform="rotate(-90)"/>
+			<text x="-832.26" y="-11.42" transform="rotate(-90)" class="st7" v:langID="1046"><v:paragraph v:horizAlign="1"/><v:tabList/>B1C1</text>		</g>
+		<g id="group1-751" transform="translate(144.567,-679.316)" v:mID="1" v:groupContext="group">
+			<title>Planilha.1</title>
+			<g id="group20-752" transform="translate(3.44665,0)" v:mID="20" v:groupContext="group" v:layerMember="1">
+				<v:custProps>
+					<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+					<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(231121108)"/>
+					<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+							v:val="VT4(SC/PC Simplex MM Adapter, Zirconia Sleeve)"/>
+					<v:cp v:nameU="Row_4" v:lbl="Installed Date" v:type="5" v:langID="1033" v:cal="0"/>
+					<v:cp v:nameU="Row_5" v:lbl="Warranty Exp" v:type="5" v:langID="1033" v:cal="0"/>
+					<v:cp v:nameU="Row_6" v:lbl="Location" v:type="0" v:langID="1033"/>
+					<v:cp v:nameU="Row_7" v:lbl="Building" v:type="0" v:langID="1033"/>
+					<v:cp v:nameU="Row_8" v:lbl="Room" v:type="0" v:langID="1033"/>
+					<v:cp v:nameU="Row_9" v:lbl="Comments" v:type="0" v:langID="1033"/>
+				</v:custProps>
+				<title>SC MM adapter simplex.380</title>
+				<g id="shape21-753" v:mID="21" v:groupContext="shape" v:layerMember="1">
+					<title>Planilha.21</title>
+					<path d="M1.63 841.32 a0.311501 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M1.63 836.22
+								 a0.311501 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M2.63 835.94 L2.35 835.65
+								 L0.28 835.65 L0 835.94 L0 841.61 L0.28 841.89 L2.35 841.89 L2.63 841.61 L2.63 835.94 Z"
+							class="st3"/>
+				</g>
+				<g id="shape22-755" v:mID="22" v:groupContext="shape" v:layerMember="1"
+						transform="translate(-5.7454E-015,-1.31811)">
+					<title>Planilha.22</title>
+					<rect x="0" y="838.29" width="2.6336" height="3.6" class="st3"/>
+				</g>
+				<g id="shape23-757" v:mID="23" v:groupContext="shape" v:layerMember="1"
+						transform="translate(-839.256,839.069) rotate(-90)">
+					<title>Planilha.23</title>
+					<rect x="0" y="841.607" width="0.595276" height="0.283183" class="st3"/>
+				</g>
+				<g id="shape24-759" v:mID="24" v:groupContext="shape" v:layerMember="1" transform="translate(0.254864,-1.70079)">
+					<title>Planilha.24</title>
+					<rect x="0" y="839.055" width="2.12387" height="2.83465" class="st3"/>
+				</g>
+				<g id="shape25-761" v:mID="25" v:groupContext="shape" v:layerMember="1"
+						transform="translate(-839.842,837.804) rotate(-90)">
+					<title>Planilha.25</title>
+					<path d="M0.13 840.6 L0 840.6 L0 841.72 L0.13 841.72 L0.13 840.6 Z M0.24 840.6 L0.13 840.6 L0.13 841.72 L0.24
+								 841.72 L0.24 840.6 Z M0.24 840.6 L0.24 841.72 L0.28 841.72 L0.28 841.89 L0.45 841.89 L0.45 840.43
+								 L0.28 840.43 L0.28 840.6 L0.24 840.6 Z" class="st3"/>
+				</g>
+				<g id="shape26-763" v:mID="26" v:groupContext="shape" v:layerMember="1"
+						transform="translate(-839.842,840.189) rotate(-90)">
+					<title>Planilha.26</title>
+					<path d="M0.21 840.6 L0.17 840.6 L0.17 840.43 L0 840.43 L0 841.89 L0.17 841.89 L0.17 841.72 L0.21 841.72 L0.21
+								 840.6 Z M0.21 840.6 L0.21 841.72 L0.32 841.72 L0.32 840.6 L0.21 840.6 Z M0.32 840.6 L0.32 841.72
+								 L0.45 841.72 L0.45 840.6 L0.32 840.6 Z" class="st3"/>
+				</g>
+				<g id="shape27-765" v:mID="27" v:groupContext="shape" v:layerMember="1"
+						transform="translate(-839.899,839.447) rotate(-90)">
+					<title>Planilha.27</title>
+					<ellipse cx="0.675" cy="841.215" rx="0.675" ry="0.674329" class="st3"/>
+				</g>
+				<g id="shape28-767" v:mID="28" v:groupContext="shape" v:layerMember="1"
+						transform="translate(-840.039,839.306) rotate(-90)">
+					<title>Planilha.28</title>
+					<ellipse cx="0.534375" cy="841.356" rx="0.534375" ry="0.533843" class="st3"/>
+				</g>
+				<g id="shape29-769" v:mID="29" v:groupContext="shape" v:layerMember="1"
+						transform="translate(-840.194,839.151) rotate(-90)">
+					<title>Planilha.29</title>
+					<ellipse cx="0.379688" cy="841.51" rx="0.379688" ry="0.37931" class="st3"/>
+				</g>
+			</g>
+			<g id="shape162-771" v:mID="162" v:groupContext="shape" v:layerMember="1" transform="translate(-8.74579E-012,-6.22036)">
+				<title>Planilha.162</title>
+				<desc>01</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="5.10236" cy="840.189" width="10.21" height="3.40157"/>
+				<rect x="0" y="838.488" width="10.2047" height="3.40157" class="st4"/>
+				<text x="4" y="840.67" class="st5" v:langID="1046"><v:paragraph/><v:tabList/>01</text>			</g>
+		</g>
+		<g id="group3-774" transform="translate(153.071,-679.316)" v:mID="3" v:groupContext="group">
+			<title>Planilha.3</title>
+			<g id="group30-775" transform="translate(2.77562,-0.850382)" v:mID="30" v:groupContext="group" v:layerMember="1">
+				<v:custProps>
+					<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+					<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(127120000)"/>
+					<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+							v:val="VT4(SC simplex/LC Duplex Type Adapter Support Module, w/o Adapter Loaded, Black)"/>
+				</v:custProps>
+				<title>fiber optic adapter support module.390</title>
+				<g id="shape31-776" v:mID="31" v:groupContext="shape" v:layerMember="1">
+					<title>Planilha.31</title>
+					<path d="M2.83 837.64 L2.83 837.35 L3.39 837.35 L3.96 837.35 L3.96 837.64 L3.96 841.46 L3.96 841.89 L3.39 841.89
+								 L0.57 841.89 L0 841.89 L0 841.46 L0 837.64 L0 837.35 L0.57 837.35 L1.13 837.35 L1.13 837.64 L0.57
+								 837.64 L0.57 841.46 L3.39 841.46 L3.39 837.64 L2.83 837.64 Z" class="st2"/>
+				</g>
+			</g>
+			<g id="group34-778" transform="translate(3.42907,-1.13687E-013)" v:mID="34" v:groupContext="group" v:layerMember="1">
+				<v:custProps>
+					<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+					<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(231121108)"/>
+					<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+							v:val="VT4(SC/PC Simplex MM Adapter, Zirconia Sleeve)"/>
+					<v:cp v:nameU="Row_4" v:lbl="Installed Date" v:type="5" v:langID="1033" v:cal="0"/>
+					<v:cp v:nameU="Row_5" v:lbl="Warranty Exp" v:type="5" v:langID="1033" v:cal="0"/>
+					<v:cp v:nameU="Row_6" v:lbl="Location" v:type="0" v:langID="1033"/>
+					<v:cp v:nameU="Row_7" v:lbl="Building" v:type="0" v:langID="1033"/>
+					<v:cp v:nameU="Row_8" v:lbl="Room" v:type="0" v:langID="1033"/>
+					<v:cp v:nameU="Row_9" v:lbl="Comments" v:type="0" v:langID="1033"/>
+				</v:custProps>
+				<title>SC MM adapter simplex.394</title>
+				<g id="shape35-779" v:mID="35" v:groupContext="shape" v:layerMember="1">
+					<title>Planilha.35</title>
+					<path d="M1.63 841.32 a0.311501 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M1.63 836.22
+								 a0.311501 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M2.63 835.94 L2.35 835.65
+								 L0.28 835.65 L0 835.94 L0 841.61 L0.28 841.89 L2.35 841.89 L2.63 841.61 L2.63 835.94 Z"
+							class="st3"/>
+				</g>
+				<g id="shape36-781" v:mID="36" v:groupContext="shape" v:layerMember="1"
+						transform="translate(-5.7454E-015,-1.31811)">
+					<title>Planilha.36</title>
+					<rect x="0" y="838.29" width="2.6336" height="3.6" class="st3"/>
+				</g>
+				<g id="shape37-783" v:mID="37" v:groupContext="shape" v:layerMember="1"
+						transform="translate(-839.256,839.069) rotate(-90)">
+					<title>Planilha.37</title>
+					<rect x="0" y="841.607" width="0.595276" height="0.283183" class="st3"/>
+				</g>
+				<g id="shape38-785" v:mID="38" v:groupContext="shape" v:layerMember="1" transform="translate(0.254864,-1.70079)">
+					<title>Planilha.38</title>
+					<rect x="0" y="839.055" width="2.12387" height="2.83465" class="st3"/>
+				</g>
+				<g id="shape39-787" v:mID="39" v:groupContext="shape" v:layerMember="1"
+						transform="translate(-839.842,837.804) rotate(-90)">
+					<title>Planilha.39</title>
+					<path d="M0.13 840.6 L0 840.6 L0 841.72 L0.13 841.72 L0.13 840.6 Z M0.24 840.6 L0.13 840.6 L0.13 841.72 L0.24
+								 841.72 L0.24 840.6 Z M0.24 840.6 L0.24 841.72 L0.28 841.72 L0.28 841.89 L0.45 841.89 L0.45 840.43
+								 L0.28 840.43 L0.28 840.6 L0.24 840.6 Z" class="st3"/>
+				</g>
+				<g id="shape40-789" v:mID="40" v:groupContext="shape" v:layerMember="1"
+						transform="translate(-839.842,840.189) rotate(-90)">
+					<title>Planilha.40</title>
+					<path d="M0.21 840.6 L0.17 840.6 L0.17 840.43 L0 840.43 L0 841.89 L0.17 841.89 L0.17 841.72 L0.21 841.72 L0.21
+								 840.6 Z M0.21 840.6 L0.21 841.72 L0.32 841.72 L0.32 840.6 L0.21 840.6 Z M0.32 840.6 L0.32 841.72
+								 L0.45 841.72 L0.45 840.6 L0.32 840.6 Z" class="st3"/>
+				</g>
+				<g id="shape41-791" v:mID="41" v:groupContext="shape" v:layerMember="1"
+						transform="translate(-839.899,839.447) rotate(-90)">
+					<title>Planilha.41</title>
+					<ellipse cx="0.675" cy="841.215" rx="0.675" ry="0.674329" class="st3"/>
+				</g>
+				<g id="shape42-793" v:mID="42" v:groupContext="shape" v:layerMember="1"
+						transform="translate(-840.039,839.306) rotate(-90)">
+					<title>Planilha.42</title>
+					<ellipse cx="0.534375" cy="841.356" rx="0.534375" ry="0.533843" class="st3"/>
+				</g>
+				<g id="shape43-795" v:mID="43" v:groupContext="shape" v:layerMember="1"
+						transform="translate(-840.194,839.151) rotate(-90)">
+					<title>Planilha.43</title>
+					<ellipse cx="0.379688" cy="841.51" rx="0.379688" ry="0.37931" class="st3"/>
+				</g>
+			</g>
+			<g id="shape2-797" v:mID="2" v:groupContext="shape" v:layerMember="1" transform="translate(-8.71382E-012,-6.10155)">
+				<title>Planilha.2</title>
+				<desc>02</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="5.10236" cy="840.189" width="10.21" height="3.40157"/>
+				<rect x="0" y="838.488" width="10.2047" height="3.40157" class="st4"/>
+				<text x="4" y="840.67" class="st5" v:langID="1046"><v:paragraph/><v:tabList/>02</text>			</g>
+		</g>
+		<g id="group5-800" transform="translate(237.827,-679.316)" v:mID="5" v:groupContext="group">
+			<title>Planilha.5</title>
+			<g id="group140-801" transform="translate(2.88324,-0.850382)" v:mID="140" v:groupContext="group" v:layerMember="1">
+				<v:custProps>
+					<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+					<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(127120000)"/>
+					<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+							v:val="VT4(SC simplex/LC Duplex Type Adapter Support Module, w/o Adapter Loaded, Black)"/>
+				</v:custProps>
+				<title>fiber optic adapter support module.500</title>
+				<g id="shape141-802" v:mID="141" v:groupContext="shape" v:layerMember="1">
+					<title>Planilha.141</title>
+					<path d="M2.83 837.64 L2.83 837.35 L3.39 837.35 L3.96 837.35 L3.96 837.64 L3.96 841.46 L3.96 841.89 L3.39 841.89
+								 L0.57 841.89 L0 841.89 L0 841.46 L0 837.64 L0 837.35 L0.57 837.35 L1.13 837.35 L1.13 837.64 L0.57
+								 837.64 L0.57 841.46 L3.39 841.46 L3.39 837.64 L2.83 837.64 Z" class="st2"/>
+				</g>
+			</g>
+			<g id="group152-804" transform="translate(3.53669,0)" v:mID="152" v:groupContext="group" v:layerMember="1">
+				<v:custProps>
+					<v:cp v:nameU="Row_1" v:lbl="Manufacturer" v:type="0" v:langID="1033" v:val="VT4(Premium-Line Systems GmbH)"/>
+					<v:cp v:nameU="Row_2" v:lbl="Part Number" v:type="0" v:langID="1033" v:val="VT4(231121108)"/>
+					<v:cp v:nameU="Row_3" v:lbl="Product Description" v:type="0" v:langID="1033"
+							v:val="VT4(SC/PC Simplex MM Adapter, Zirconia Sleeve)"/>
+					<v:cp v:nameU="Row_4" v:lbl="Installed Date" v:type="5" v:langID="1033" v:cal="0"/>
+					<v:cp v:nameU="Row_5" v:lbl="Warranty Exp" v:type="5" v:langID="1033" v:cal="0"/>
+					<v:cp v:nameU="Row_6" v:lbl="Location" v:type="0" v:langID="1033"/>
+					<v:cp v:nameU="Row_7" v:lbl="Building" v:type="0" v:langID="1033"/>
+					<v:cp v:nameU="Row_8" v:lbl="Room" v:type="0" v:langID="1033"/>
+					<v:cp v:nameU="Row_9" v:lbl="Comments" v:type="0" v:langID="1033"/>
+				</v:custProps>
+				<title>SC MM adapter simplex.512</title>
+				<g id="shape153-805" v:mID="153" v:groupContext="shape" v:layerMember="1">
+					<title>Planilha.153</title>
+					<path d="M1.63 841.32 a0.311501 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M1.63 836.22
+								 a0.311501 0.311811 0 1 1 -0.623002 0 a0.311501 0.311811 0 1 1 0.623002 0 Z M2.63 835.94 L2.35 835.65
+								 L0.28 835.65 L0 835.94 L0 841.61 L0.28 841.89 L2.35 841.89 L2.63 841.61 L2.63 835.94 Z"
+							class="st3"/>
+				</g>
+				<g id="shape154-807" v:mID="154" v:groupContext="shape" v:layerMember="1"
+						transform="translate(-5.7454E-015,-1.31811)">
+					<title>Planilha.154</title>
+					<rect x="0" y="838.29" width="2.6336" height="3.6" class="st3"/>
+				</g>
+				<g id="shape155-809" v:mID="155" v:groupContext="shape" v:layerMember="1"
+						transform="translate(-839.256,839.069) rotate(-90)">
+					<title>Planilha.155</title>
+					<rect x="0" y="841.607" width="0.595276" height="0.283183" class="st3"/>
+				</g>
+				<g id="shape156-811" v:mID="156" v:groupContext="shape" v:layerMember="1" transform="translate(0.254864,-1.70079)">
+					<title>Planilha.156</title>
+					<rect x="0" y="839.055" width="2.12387" height="2.83465" class="st3"/>
+				</g>
+				<g id="shape157-813" v:mID="157" v:groupContext="shape" v:layerMember="1"
+						transform="translate(-839.842,837.804) rotate(-90)">
+					<title>Planilha.157</title>
+					<path d="M0.13 840.6 L0 840.6 L0 841.72 L0.13 841.72 L0.13 840.6 Z M0.24 840.6 L0.13 840.6 L0.13 841.72 L0.24
+								 841.72 L0.24 840.6 Z M0.24 840.6 L0.24 841.72 L0.28 841.72 L0.28 841.89 L0.45 841.89 L0.45 840.43
+								 L0.28 840.43 L0.28 840.6 L0.24 840.6 Z" class="st3"/>
+				</g>
+				<g id="shape158-815" v:mID="158" v:groupContext="shape" v:layerMember="1"
+						transform="translate(-839.842,840.189) rotate(-90)">
+					<title>Planilha.158</title>
+					<path d="M0.21 840.6 L0.17 840.6 L0.17 840.43 L0 840.43 L0 841.89 L0.17 841.89 L0.17 841.72 L0.21 841.72 L0.21
+								 840.6 Z M0.21 840.6 L0.21 841.72 L0.32 841.72 L0.32 840.6 L0.21 840.6 Z M0.32 840.6 L0.32 841.72
+								 L0.45 841.72 L0.45 840.6 L0.32 840.6 Z" class="st3"/>
+				</g>
+				<g id="shape159-817" v:mID="159" v:groupContext="shape" v:layerMember="1"
+						transform="translate(-839.899,839.447) rotate(-90)">
+					<title>Planilha.159</title>
+					<ellipse cx="0.675" cy="841.215" rx="0.675" ry="0.674329" class="st3"/>
+				</g>
+				<g id="shape160-819" v:mID="160" v:groupContext="shape" v:layerMember="1"
+						transform="translate(-840.039,839.306) rotate(-90)">
+					<title>Planilha.160</title>
+					<ellipse cx="0.534375" cy="841.356" rx="0.534375" ry="0.533843" class="st3"/>
+				</g>
+				<g id="shape161-821" v:mID="161" v:groupContext="shape" v:layerMember="1"
+						transform="translate(-840.194,839.151) rotate(-90)">
+					<title>Planilha.161</title>
+					<ellipse cx="0.379688" cy="841.51" rx="0.379688" ry="0.37931" class="st3"/>
+				</g>
+			</g>
+			<g id="shape4-823" v:mID="4" v:groupContext="shape" v:layerMember="1" transform="translate(-8.71382E-012,-6.38502)">
+				<title>Planilha.4</title>
+				<desc>12</desc>
+				<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+				<v:textRect cx="5.10236" cy="840.189" width="10.21" height="3.40157"/>
+				<rect x="0" y="838.488" width="10.2047" height="3.40157" class="st4"/>
+				<text x="4" y="840.67" class="st5" v:langID="1046"><v:paragraph/><v:tabList/>12</text>			</g>
+		</g>
+	</g>
+</svg>

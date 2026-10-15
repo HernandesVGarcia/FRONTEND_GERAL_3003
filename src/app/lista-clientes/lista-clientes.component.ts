@@ -2,7 +2,7 @@
 
 
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, OnDestroy, Output, EventEmitter } from '@angular/core';
 import { PopsCli } from '../modelo/PopsCli';
 import { PopsCliService } from '../servico/pops-cli.service';
 
@@ -14,9 +14,13 @@ import { PopsCliService } from '../servico/pops-cli.service';
   templateUrl: './lista-clientes.component.html',
   styleUrls: ['./lista-clientes.component.css']
 })
-export class ListaPopsCLIComponent implements OnInit {
+export class ListaPopsCLIComponent implements OnInit, OnDestroy {
   vetorPOPSCLI: PopsCli[] = [];
   @Output() popsCliSelecionada = new EventEmitter<any[]>(); //emite evento para fibermap
+
+  private readonly onReloadMapClientes = (): void => {
+    this.selecionar();
+  };
   
   constructor(private servicoPopsCli: PopsCliService) {
     console.log('ListaPopsCliComponent construído');
@@ -25,6 +29,11 @@ export class ListaPopsCLIComponent implements OnInit {
   ngOnInit() {
     console.log('inicialização do app-lista-clientes');
     this.selecionar();
+    window.addEventListener('reloadMapClientes', this.onReloadMapClientes);
+  }
+
+  ngOnDestroy(): void {
+    window.removeEventListener('reloadMapClientes', this.onReloadMapClientes);
   }
 
   selecionar() {

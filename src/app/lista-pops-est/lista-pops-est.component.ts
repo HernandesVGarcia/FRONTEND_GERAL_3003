@@ -1,7 +1,7 @@
 
 
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, OnDestroy, Output, EventEmitter } from '@angular/core';
 import { PopsEst } from '../modelo/popsEst';
 import { PopsEstService } from '../servico/pops-est.service';
 
@@ -13,9 +13,13 @@ import { PopsEstService } from '../servico/pops-est.service';
   templateUrl: './lista-pops-est.component.html',
   styleUrls: ['./lista-pops-est.component.css']
 })
-export class ListaPopsESTComponent implements OnInit {
+export class ListaPopsESTComponent implements OnInit, OnDestroy {
   vetorPOPSEST: PopsEst[] = [];
   @Output() popsEstSelecionada = new EventEmitter<any[]>();
+
+  private readonly onReloadMapPopsEst = (): void => {
+    this.selecionar();
+  };
   
   constructor(private servicoPopsEst: PopsEstService) {
     console.log('ListaPopsEstComponent construído');
@@ -24,6 +28,11 @@ export class ListaPopsESTComponent implements OnInit {
   ngOnInit() {
     console.log('inicialização do app-lista-cto1-ok');
     this.selecionar();
+    window.addEventListener('reloadMapPopsEst', this.onReloadMapPopsEst);
+  }
+
+  ngOnDestroy(): void {
+    window.removeEventListener('reloadMapPopsEst', this.onReloadMapPopsEst);
   }
 
   selecionar() {
