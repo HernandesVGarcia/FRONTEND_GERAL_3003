@@ -1,7 +1,7 @@
 
 
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, OnDestroy, Output, EventEmitter } from '@angular/core';
 import { Cto_SP } from '../modelo/Cto_SP';
 import { CtoSPService } from '../servico/cto-sp.service';
 
@@ -13,10 +13,14 @@ import { CtoSPService } from '../servico/cto-sp.service';
   templateUrl: './lista-ctos-sp.component.html',
   styleUrls: ['./lista-ctos-sp.component.css']
 })
-export class ListaCtosSpComponent implements OnInit {
+export class ListaCtosSpComponent implements OnInit, OnDestroy {
   vetorCTOSP: Cto_SP[] = [];
   @Output() ctoSPSelecionada = new EventEmitter<any[]>();
-  
+
+  private readonly onReloadMapCaixas = (): void => {
+    this.selecionar();
+  };
+
   constructor(private servicoCtoSP: CtoSPService) {
     console.log('ListaCtosComponent construído');
   }
@@ -24,6 +28,11 @@ export class ListaCtosSpComponent implements OnInit {
   ngOnInit() {
     console.log('inicialização do app-lista-cto-SP-ok');
     this.selecionar();
+    window.addEventListener('reloadMapCaixas', this.onReloadMapCaixas);
+  }
+
+  ngOnDestroy(): void {
+    window.removeEventListener('reloadMapCaixas', this.onReloadMapCaixas);
   }
 
   selecionar() {

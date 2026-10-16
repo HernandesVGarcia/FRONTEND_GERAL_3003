@@ -7931,12 +7931,14 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
 
   //=====================================função para carregar as CTOs na Tela================================
   private updateMarkersCTO() {
-    
+      if (!this.map) {
+        return;
+      }
 
-      if (this.destinoCTO && this.destinoCTO.length > 0 && this.map) {
-        this.markerCtos.forEach(marker => marker.setMap(null));
-        this.markerCtos = [];
-        
+      this.markerCtos.forEach(marker => marker.setMap(null));
+      this.markerCtos = [];
+
+      if (this.destinoCTO && this.destinoCTO.length > 0) {
         this.destinoCTO.forEach(location => {
           const position = {
             lat: Number(location.LAT),
@@ -7976,9 +7978,9 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
       
       this.markerCtos.push(marker);
     });
-      
+
       console.log('CTOs atualizados:', this.markerCtos);
-    }
+      }
   }
 
   //=============================================CONVERSAO==============================
@@ -8013,12 +8015,14 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
 
 //=====================================função para carregar as CTOs COM SPLITTER na Tela================================
   private updateMarkersCTOSP() {
-    
+      if (!this.map) {
+        return;
+      }
 
-      if (this.destinoCTOSP && this.destinoCTOSP.length > 0 && this.map) {
-        this.markerCtosSP.forEach(marker => marker.setMap(null));
-        this.markerCtosSP = [];
-        
+      this.markerCtosSP.forEach(marker => marker.setMap(null));
+      this.markerCtosSP = [];
+
+      if (this.destinoCTOSP && this.destinoCTOSP.length > 0) {
         this.destinoCTOSP.forEach(location => {
           const position = {
             lat: Number(location.LAT),
@@ -8058,9 +8062,9 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
       
       this.markerCtosSP.push(marker);
     });
-      
+
       console.log('CTOs COM SPLITTER atualizados:', this.markerCtosSP);
-    }
+      }
   }
 
   
