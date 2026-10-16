@@ -167,7 +167,6 @@
 /* Responsividade para mobile */
 @media (max-width: 768px) {
   .search-buttons-container {
-    left: 38px;
     gap: 8px;
     padding: 8px 6px;
     border-radius: 8px;
@@ -198,7 +197,6 @@
 /* Mobile muito pequeno */
 @media (max-width: 480px) {
   .search-buttons-container {
-    left: 34px;
     gap: 6px;
     padding: 6px 5px;
   }
