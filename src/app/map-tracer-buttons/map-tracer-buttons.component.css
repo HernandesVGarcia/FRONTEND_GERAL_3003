@@ -230,7 +230,8 @@
 /* Responsividade para mobile */
 @media (max-width: 768px) {
   .tracer-buttons-container {
-    top: 100px; /* Mais abaixo para evitar conflito com toolbar */
+    /* Toolbar ~45px + controle Mapa; folga antes da barra azul */
+    top: 86px;
     gap: 8px;
     padding: 4px 10px 6px;
     border-radius: 8px;
@@ -273,7 +274,7 @@
 /* Mobile muito pequeno */
 @media (max-width: 480px) {
   .tracer-buttons-container {
-    top: 90px; /* Ajustado para telas muito pequenas */
+    top: 78px;
     gap: 6px;
     padding: 4px 8px 6px;
   }
