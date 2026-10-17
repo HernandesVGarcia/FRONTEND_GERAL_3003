@@ -5,6 +5,7 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
+    "build:cliente-dedicado": "ng build --configuration cliente-dedicado",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },

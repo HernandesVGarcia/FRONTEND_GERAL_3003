@@ -1,0 +1,77 @@
+<div class="modal-dialog modal-lg" #modalDialog>
+  <div class="modal-content shadow-lg">
+    <div
+      class="modal-header bg-primary text-white"
+      (mousedown)="onMouseDown($event)"
+      style="cursor: move">
+      <h5 class="modal-title fw-bold">
+        <mat-icon class="title-mat-icon" aria-hidden="true">edit_note</mat-icon>
+        Plotar Anotação
+      </h5>
+      <button
+        type="button"
+        class="btn-close btn-close-white"
+        (click)="fechar()"
+        aria-label="Fechar"></button>
+    </div>
+
+    <div class="modal-body">
+      <p class="text-muted small mb-3">
+        Informe o texto da anotação no ponto selecionado no mapa. As coordenadas foram preenchidas
+        automaticamente.
+      </p>
+
+      <div class="mb-3">
+        <label class="form-label fw-semibold" for="labelRabichoInput">
+          Anotação
+          <span class="badge bg-danger ms-1">obrigatório</span>
+        </label>
+        <textarea
+          id="labelRabichoInput"
+          class="form-control form-control-sm"
+          rows="3"
+          [(ngModel)]="form.label_rabicho"
+          name="label_rabicho"
+          [disabled]="salvando"
+          placeholder="Texto exibido no mapa"></textarea>
+      </div>
+
+      <div class="card card-compact mb-0 border-primary">
+        <div class="card-body card-body-compact">
+          <div class="row g-2">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold form-label-compact" for="latInput">Latitude</label>
+              <input
+                type="text"
+                id="latInput"
+                class="form-control form-control-sm input-compact input-coord"
+                [(ngModel)]="form.lat"
+                name="lat"
+                readonly />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold form-label-compact" for="lngInput">Longitude</label>
+              <input
+                type="text"
+                id="lngInput"
+                class="form-control form-control-sm input-compact input-coord"
+                [(ngModel)]="form.lng"
+                name="lng"
+                readonly />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer bg-light">
+      <button type="button" class="btn btn-secondary btn-sm me-2" (click)="fechar()" [disabled]="salvando">
+        <span class="me-1">✕</span>
+        Cancelar
+      </button>
+      <button type="button" class="btn btn-primary btn-sm" (click)="salvar()" [disabled]="salvando">
+        {{ salvando ? 'Salvando...' : 'Salvar anotação' }}
+      </button>
+    </div>
+  </div>
+</div>

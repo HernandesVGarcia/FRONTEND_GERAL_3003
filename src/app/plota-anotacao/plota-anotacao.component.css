@@ -1,0 +1,168 @@
+@import 'bootstrap/dist/css/bootstrap.min.css';
+
+:host ::ng-deep .modal-backdrop {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 5000 !important;
+}
+
+:host ::ng-deep .modal {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  z-index: 5001 !important;
+  display: block !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+
+:host ::ng-deep .modal-dialog {
+  position: relative !important;
+  margin: 1.75rem auto !important;
+  width: 520px !important;
+  max-width: 520px !important;
+  z-index: 5002 !important;
+  pointer-events: none !important;
+  transition: none;
+}
+
+:host ::ng-deep .modal-content {
+  pointer-events: auto !important;
+}
+
+.modal-content {
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2) !important;
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+  width: 100% !important;
+}
+
+.modal-header {
+  border-radius: 8px 8px 0 0;
+  padding: 12px 20px;
+  cursor: move;
+  user-select: none;
+  background-color: #629ef8 !important;
+  color: #fff !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.modal-title {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.modal-title .title-mat-icon {
+  font-size: 1.5rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  margin-right: 8px;
+  color: inherit;
+  flex-shrink: 0;
+}
+
+.modal-body {
+  padding: 15px 20px;
+  background: linear-gradient(to bottom, #f8f9fa, #ffffff);
+  overflow-y: auto;
+  flex: 0 1 auto;
+  max-height: calc(90vh - 140px);
+}
+
+.card {
+  border-radius: 6px;
+}
+
+.card-compact .card-body-compact {
+  padding: 8px 12px;
+  background-color: #eff3f5;
+}
+
+.card.border-primary .card-body {
+  background-color: #eff3f5;
+}
+
+.form-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 6px;
+}
+
+.form-label-compact {
+  font-size: 0.6rem;
+  margin-bottom: 2px;
+}
+
+.form-control-sm {
+  font-size: 0.875rem;
+  border: 1.5px solid #ced4da;
+  border-radius: 4px;
+}
+
+.input-compact {
+  height: 28px;
+  padding: 2px 8px;
+  font-size: 0.8rem;
+}
+
+.input-coord {
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+textarea.form-control-sm {
+  min-height: 72px;
+  resize: vertical;
+  padding: 6px 10px;
+}
+
+.badge {
+  font-size: 0.7rem;
+}
+
+.modal-footer {
+  border-top: 2px solid #dee2e6;
+  padding: 12px 20px;
+  border-radius: 0 0 8px 8px;
+  background-color: #f8f9fa !important;
+}
+
+.btn-sm {
+  padding: 8px 16px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 6px;
+  min-width: 100px;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #345677 0%, #345677 100%);
+  border: none;
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: linear-gradient(135deg, #6c757d 0%, #5c636a 100%);
+  border: none;
+}
+
+@media (max-width: 768px) {
+  :host ::ng-deep .modal-dialog {
+    width: 95% !important;
+    max-width: 95% !important;
+  }
+}

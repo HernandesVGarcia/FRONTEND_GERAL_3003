@@ -114,6 +114,7 @@ import { DetalhesCaixaComponent, DetalhesCaixaData } from '../detalhes-caixa/det
 import { PlotaDioComponent, PlotaDioData } from '../plota-dio/plota-dio.component';
 import { PlotaEstacaoComponent, PlotaEstacaoData } from '../plota-estacao/plota-estacao.component';
 import { PlotaClienteComponent, PlotaClienteData } from '../plota-cliente/plota-cliente.component';
+import { PlotaAnotacaoComponent, PlotaAnotacaoData, PlotaAnotacaoResult } from '../plota-anotacao/plota-anotacao.component';
 import { CadastroClienteComponent } from '../cadastro-cliente/cadastro-cliente.component';
 import { BocasService } from '../servico/bocas.service';
 import { Bocas } from '../modelo/Bocas';
@@ -1398,7 +1399,61 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
 
   private criarAnotacao(): void {
     console.log('🗺️ [CONTEXT-MENU] Criando anotação...');
-    alert('Funcionalidade de criar anotação será implementada em breve!');
+
+    if (!this.ultimaCoordenadaContextMenu) {
+      alert('Erro: Coordenada do mapa não encontrada. Clique novamente no mapa.');
+      this.hideContextMenu();
+      return;
+    }
+
+    const lat = this.ultimaCoordenadaContextMenu.lat();
+    const lng = this.ultimaCoordenadaContextMenu.lng();
+    this.ultimaCoordenadaContextMenu = null;
+
+    const idCity = this.authService.getIdCity();
+    if (!idCity) {
+      alert('Cidade não encontrada. Selecione uma cidade no workspace.');
+      this.hideContextMenu();
+      return;
+    }
+
+    const data: PlotaAnotacaoData = { lat, lng };
+
+    try {
+      const modalRef = this.ngbModal.open(PlotaAnotacaoComponent, {
+        size: 'lg',
+        backdrop: false,
+        centered: true,
+        keyboard: false,
+        windowClass: 'plota-anotacao-modal-window',
+      });
+
+      modalRef.componentInstance.data = data;
+      this.hideContextMenu();
+
+      modalRef.result.then(
+        (result: PlotaAnotacaoResult) => {
+          if (!result?.label_rabicho) {
+            return;
+          }
+
+          this.destinoAnotacoes.push({
+            label_rabicho: result.label_rabicho,
+            LAT: result.lat as any,
+            LNG: result.lng as any,
+          });
+
+          this.updateMarkersAnotacoes();
+          console.log('✅ [PLOTA-ANOTACAO] Anotação adicionada ao mapa:', result);
+        },
+        (dismissReason) => {
+          console.log('📝 [PLOTA-ANOTACAO] Modal fechado:', dismissReason);
+        },
+      );
+    } catch (err) {
+      console.error('❌ [PLOTA-ANOTACAO] Erro ao abrir modal:', err);
+      alert('Erro ao abrir modal de anotação. Verifique o console.');
+    }
   }
 
   private criarSobra(): void {
