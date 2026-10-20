@@ -578,6 +578,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
   marcadoresMedicao: google.maps.Marker[] = [];
   labelsMedicao: google.maps.Marker[] = [];
   listenerMapaMedicao: google.maps.MapsEventListener | null = null;
+  private listenersMedicaoPostes: google.maps.MapsEventListener[] = [];
 
   // ============================================================================
   // 🏗️ CONSTRUCTOR
@@ -5696,6 +5697,10 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
       this.markerPostesAP.push(marker);
     });
 
+    if (this.modoMedicao) {
+      this.registrarCliquesMedicaoNosPostes();
+    }
+
     console.log('Postes Aprovados atualizados:', this.markerPostesAP);
   }
 
@@ -5877,6 +5882,10 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
       marker.setMap(this.map ?? null);
       this.markerPostesConcessionaria.push(marker);
     });
+
+    if (this.modoMedicao) {
+      this.registrarCliquesMedicaoNosPostes();
+    }
 
     console.log('Postes Concessionária atualizados:', this.markerPostesConcessionaria.length);
   }
@@ -14674,6 +14683,8 @@ openGoJSModal() {
       this.adicionarPontoMedicao(event);
     });
 
+    this.registrarCliquesMedicaoNosPostes();
+
     // Adicionar listener de tecla ESC para desativar
     this.setupMedicaoEscListener();
 
@@ -14691,6 +14702,8 @@ openGoJSModal() {
       google.maps.event.removeListener(this.listenerMapaMedicao);
       this.listenerMapaMedicao = null;
     }
+
+    this.removerCliquesMedicaoNosPostes();
 
     // Remover listener ESC
     if (this.listenerEscMedicao) {
@@ -14727,20 +14740,55 @@ openGoJSModal() {
     console.log('📏 [MEDICAO] Modo de medição desativado');
   }
 
+  /** Clique no poste (aprovado/concessionária) repassa o centro do marcador para a régua. */
+  private registrarCliquesMedicaoNosPostes(): void {
+    this.removerCliquesMedicaoNosPostes();
+    if (!this.modoMedicao) {
+      return;
+    }
+
+    const anexar = (marker: google.maps.Marker) => {
+      const listener = marker.addListener('click', () => {
+        const pos = marker.getPosition();
+        if (pos) {
+          this.adicionarPontoMedicaoNaPosicao(pos);
+        }
+      });
+      this.listenersMedicaoPostes.push(listener);
+    };
+
+    this.markerPostesAP.forEach(anexar);
+    this.markerPostesConcessionaria.forEach(anexar);
+  }
+
+  private removerCliquesMedicaoNosPostes(): void {
+    this.listenersMedicaoPostes.forEach((listener) => {
+      google.maps.event.removeListener(listener);
+    });
+    this.listenersMedicaoPostes = [];
+  }
+
   /**
    * 📏 Adiciona um ponto à medição
    */
   private adicionarPontoMedicao(event: google.maps.MapMouseEvent): void {
-    if (!this.modoMedicao || !event.latLng) {
+    if (!event.latLng) {
+      return;
+    }
+    this.adicionarPontoMedicaoNaPosicao(event.latLng);
+  }
+
+  private adicionarPontoMedicaoNaPosicao(latLng: google.maps.LatLng): void {
+    if (!this.modoMedicao) {
       return;
     }
 
-    console.log('📏 [MEDICAO] Adicionando ponto:', event.latLng.lat(), event.latLng.lng());
-    this.pontosMedicao.push(event.latLng);
+    console.log('📏 [MEDICAO] Adicionando ponto:', latLng.lat(), latLng.lng());
+    this.pontosMedicao.push(latLng);
 
     // Criar marcador de vértice
     const marcador = new google.maps.Marker({
-      position: event.latLng,
+      position: latLng,
       map: this.map,
       icon: {
         path: google.maps.SymbolPath.CIRCLE,
