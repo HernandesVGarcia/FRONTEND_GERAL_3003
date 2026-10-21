@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
-import {Anotacoes} from '../modelo/Anotacoes';
-import {Observable, throwError } from 'rxjs';
-import { retry, timeout, catchError } from 'rxjs/operators';
+import { Anotacoes, mapApiRowToAnotacao } from '../modelo/Anotacoes';
+import { Observable, throwError } from 'rxjs';
+import { map, retry, timeout, catchError } from 'rxjs/operators';
 import { AuthService } from '../servico/auth.service';
 import { environment } from '../environments/environment';
 
@@ -50,10 +50,18 @@ export class AnotacoesService {
       const url = `${this.baseUrl}${route}`; 
 
 
-    return this.http.post<Anotacoes[]>(url,body,{ headers }).pipe(
+    return this.http.post<unknown>(url, body, { headers }).pipe(
+      map((body) => {
+        const raw =
+          body != null && typeof body === 'object' && 'response' in body
+            ? (body as { response: unknown }).response
+            : body;
+        const rows = Array.isArray(raw) ? raw : [];
+        return rows.map((row) => mapApiRowToAnotacao(row));
+      }),
       timeout(this.TIMEOUT),
       retry(this.RETRY_ATTEMPTS),
-      catchError(this.handleError)
+      catchError(this.handleError),
     );
     
 }

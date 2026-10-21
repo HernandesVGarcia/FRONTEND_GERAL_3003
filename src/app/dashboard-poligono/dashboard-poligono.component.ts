@@ -180,6 +180,7 @@ export class DashboardPoligonoComponent implements AfterViewInit, OnDestroy {
   private syncScheduled = false;
   exportandoPdf = false;
   pdfErro: string | null = null;
+  csvErro: string | null = null;
 
   @ViewChild('modalDialog', { static: false }) modalDialog!: ElementRef<HTMLElement>;
   @ViewChild('reportArea', { static: false }) reportArea!: ElementRef<HTMLElement>;
@@ -429,6 +430,93 @@ export class DashboardPoligonoComponent implements AfterViewInit, OnDestroy {
     this.activeModal.dismiss();
   }
 
+  exportarCsv(): void {
+    if (this.splittersLoading) {
+      return;
+    }
+
+    this.csvErro = null;
+
+    try {
+      const csv = this.buildCsvExportContent();
+      const fileName = this.buildRelatorioFileName('csv');
+      this.downloadTextFile(csv, fileName, 'text/csv;charset=utf-8');
+    } catch {
+      this.csvErro = 'Erro ao gerar CSV.';
+    }
+  }
+
+  private buildRelatorioFileName(extension: 'pdf' | 'csv'): string {
+    const idPart = this._data.modoGeral
+      ? 'mapa-geral'
+      : this._data.id_meta != null && Number.isFinite(this._data.id_meta) && this._data.id_meta > 0
+        ? String(this._data.id_meta)
+        : 'poligono';
+    const prefix = this._data.modoGeral ? 'relatorio-mapa' : 'relatorio-poligono';
+    return `${prefix}-${idPart}-${Date.now()}.${extension}`;
+  }
+
+  private buildCsvExportContent(): string {
+    const lines: string[] = [];
+
+    lines.push(this.csvRow(['Relatório', this.tituloPoligono]));
+    lines.push(this.csvRow(['id_meta', this.idMetaLabel]));
+    lines.push(this.csvRow(['Gerado em', new Date().toLocaleString('pt-BR')]));
+    lines.push('');
+
+    lines.push(this.csvRow(['Secao', 'Categoria', 'Valor', 'Unidade']));
+
+    const secoes: { titulo: string; unidade: string; dados: ChartDatum[] }[] = [
+      { titulo: 'Cabos por metragem (m)', unidade: 'm', dados: this.cabosMetragem },
+      { titulo: 'Caixas (CEO / CTO / CTOSP)', unidade: 'quantidade', dados: this.caixasTipo },
+      { titulo: 'Clientes (Ativo / Desativado / Cancelado)', unidade: 'quantidade', dados: this.clientesStatus },
+      { titulo: 'DIOs por capacidade', unidade: 'quantidade', dados: this.diosCapacidade },
+      { titulo: 'Splitters por tipo', unidade: 'quantidade', dados: this.splittersTipo },
+      { titulo: 'Condomínios', unidade: 'quantidade', dados: this.condominiosQuantidade },
+      { titulo: 'Estações', unidade: 'quantidade', dados: this.estacoesQuantidade },
+    ];
+
+    for (const secao of secoes) {
+      for (const entry of secao.dados) {
+        lines.push(
+          this.csvRow([
+            secao.titulo,
+            entry.name ?? '',
+            String(entry.value ?? 0),
+            secao.unidade,
+          ]),
+        );
+      }
+    }
+
+    return `\uFEFF${lines.join('\r\n')}`;
+  }
+
+  private csvRow(cells: string[]): string {
+    return cells.map((cell) => this.escapeCsvCell(cell)).join(',');
+  }
+
+  private escapeCsvCell(value: string): string {
+    const text = value ?? '';
+    if (/[",\r\n]/.test(text)) {
+      return `"${text.replace(/"/g, '""')}"`;
+    }
+    return text;
+  }
+
+  private downloadTextFile(content: string, fileName: string, mimeType: string): void {
+    const blob = new Blob([content], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = fileName;
+    anchor.style.display = 'none';
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+    URL.revokeObjectURL(url);
+  }
+
   async exportarPdf(): Promise<void> {
     if (this.exportandoPdf || this.splittersLoading || !this.reportArea?.nativeElement) {
       return;
@@ -458,13 +546,7 @@ export class DashboardPoligonoComponent implements AfterViewInit, OnDestroy {
         import('svg2pdf.js'),
       ]);
 
-      const idPart = this._data.modoGeral
-        ? 'mapa-geral'
-        : this._data.id_meta != null && Number.isFinite(this._data.id_meta) && this._data.id_meta > 0
-          ? String(this._data.id_meta)
-          : 'poligono';
-      const prefix = this._data.modoGeral ? 'relatorio-mapa' : 'relatorio-poligono';
-      const fileName = `${prefix}-${idPart}-${Date.now()}.pdf`;
+      const fileName = this.buildRelatorioFileName('pdf');
 
       try {
         const pdf = await this.buildPdfFromReportSvg(reportSvg, jsPDF, svg2pdf);

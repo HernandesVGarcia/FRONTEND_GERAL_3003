@@ -24,7 +24,7 @@ import { Dios } from '../modelo/dios';
 import { PosteAprovado } from '../modelo/poste-aprovado';
 import { PosteConcessionaria } from '../modelo/poste-concessionaria';
 import { Segmento } from '../modelo/segmento';
-import { Anotacoes } from '../modelo/Anotacoes';
+import { Anotacoes, resolveAnotacaoIdMeta } from '../modelo/Anotacoes';
 import { Poligonos } from '../modelo/poligonos';
 
 //import { CaixaInternaComponent } from '../caixa-interna/caixa-interna.component';
@@ -86,6 +86,8 @@ import { SegmentoService } from '../servico/segmento.service';
 import { PostesConcessionariaService } from '../servico/postes-concessionaria.service';
 import { InsertPosteAprovadoService } from '../servico/insert-poste-aprovado.service';
 import { ExcluiPosteAprovadoService } from '../servico/exclui-poste-aprovado.service';
+import { ExcluiAnotacaoService } from '../servico/exclui-anotacao.service';
+import { UpdateAnotacaoService } from '../servico/update-anotacao.service';
 import { AprovarPostesModalComponent, AprovarPostesConfirmacao } from '../aprovar-postes-modal/aprovar-postes-modal.component';
 import { ExcluiEstacaoService, ExcluiEstacaoRequest, ExcluiEstacaoResponse } from '../servico/exclui-estacao.service';
 import { ExcluiCondominioService, ExcluiCondominioRequest, ExcluiCondominioResponse } from '../servico/exclui-condominio.service';
@@ -443,7 +445,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
   // 🎯 Propriedades para context menu
   contextMenuVisible = false;
   contextMenuPosition = { x: 0, y: 0 };
-  contextMenuType: 'caixa' | 'map' | 'cabo' | 'dio' | 'cliente' | 'estacao' | 'condominio' | 'vertice' | 'poligono' | 'sobra' | 'poste_aprovado' = 'map'; // 🆕 Tipo de contexto do menu
+  contextMenuType: 'caixa' | 'map' | 'cabo' | 'dio' | 'cliente' | 'estacao' | 'condominio' | 'vertice' | 'poligono' | 'sobra' | 'poste_aprovado' | 'anotacao' = 'map'; // 🆕 Tipo de contexto do menu
   private clickedPoligono: google.maps.Polygon | null = null;
   private clickedVertexIndex: number | null = null; // 🆕 Índice do vértice clicado (para menu vertice)
   private contextMenuListenerAdded = false; // Flag para evitar listeners duplicados
@@ -454,6 +456,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
   private clickedDioData: any = null; // 🆕 Armazena dados do DIO clicado
   private clickedSobraData: Segmento | null = null;
   private clickedPosteAprovadoData: PosteAprovado | null = null;
+  private clickedAnotacaoData: Anotacoes | null = null;
   private clickedCliData: any = null; // 🆕 Armazena dados do cliente clicado
   private clickedCliAtData: any = null; // 🆕 Armazena dados do cliente ativado clicado
   private clickedCliDesData: any = null; // 🆕 Armazena dados do cliente desativado clicado
@@ -495,6 +498,13 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
   private sobraEmEdicaoOriginalPosition: { lat: number; lng: number } | null = null;
   private listenerMapaSalvarSobra: google.maps.MapsEventListener | null = null;
   private listenerEscCancelarSobra: ((event: KeyboardEvent) => void) | null = null;
+  // Edição de anotação (rabicho)
+  private anotacaoEmEdicao: google.maps.Marker | null = null;
+  private anotacaoEmEdicaoIndex: number | null = null;
+  private anotacaoEmEdicaoOriginalPosition: { lat: number; lng: number } | null = null;
+  private anotacaoEmEdicaoOriginalIcon: google.maps.Symbol | google.maps.Icon | string | null = null;
+  private listenerMapaSalvarAnotacao: google.maps.MapsEventListener | null = null;
+  private listenerEscCancelarAnotacao: ((event: KeyboardEvent) => void) | null = null;
   // 🔧 Propriedades para edição de DIO
   private dioEmEdicao: google.maps.Marker | null = null; // Marcador DIO em edição
   private dioEmEdicaoIndex: number | null = null; // Índice do DIO em edição
@@ -620,6 +630,8 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
     private postesConcessionariaService: PostesConcessionariaService,
     private insertPosteAprovadoService: InsertPosteAprovadoService,
     private excluiPosteAprovadoService: ExcluiPosteAprovadoService,
+    private excluiAnotacaoService: ExcluiAnotacaoService,
+    private updateAnotacaoService: UpdateAnotacaoService,
   ) {}
 
   // ============================================================================
@@ -811,6 +823,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
       this.clickedPoligono = null;
       this.clickedSobraData = null;
       this.clickedPosteAprovadoData = null;
+      this.clickedAnotacaoData = null;
       // 🆕 NOVO: Limpar coordenada do context menu quando não estiver em edição
       // Isso garante que a próxima vez que o usuário clicar com botão direito,
       // a coordenada será atualizada corretamente
@@ -974,6 +987,10 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
 
       case 'excluir-poste-aprovado':
         this.excluirPosteAprovado();
+        break;
+
+      case 'excluir-anotacao':
+        this.excluirAnotacao();
         break;
 
       default:
@@ -1439,6 +1456,7 @@ export class GoogleMapsComponent implements OnInit, OnChanges, AfterViewInit, On
           }
 
           this.destinoAnotacoes.push({
+            id_meta: result.id_meta,
             label_rabicho: result.label_rabicho,
             LAT: result.lat as any,
             LNG: result.lng as any,
@@ -5579,11 +5597,13 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
 
 // função para carregar anotacoes no mapa==============================
   private updateMarkersAnotacoes() {
-    if (this.destinoAnotacoes && this.destinoAnotacoes.length > 0 && this.map) {
-      this.markerAnotacoes.forEach(marker => marker.setMap(null));
-      this.markerAnotacoes = [];
+    this.markerAnotacoes.forEach(marker => marker.setMap(null));
+    this.markerAnotacoes = [];
+
+    if (!this.destinoAnotacoes?.length || !this.map) {
+      return;
     }
-    
+
     this.destinoAnotacoes.forEach(location => {
       const position = {
         lat: Number(location.LAT),
@@ -5600,15 +5620,7 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
           color: 'black',
           fontSize: '12px'
         } as google.maps.MarkerLabel,
-        icon: {
-          path: google.maps.SymbolPath.CIRCLE,
-          fillColor: '#000000',
-          fillOpacity: 1,
-          strokeColor: '#000000',
-          strokeWeight: 1,
-          scale: 5,
-          labelOrigin: new google.maps.Point(0, -2),
-        },
+        icon: this.obterIconeAnotacaoMarker(5),
         visible: this.currentZoom >= this.ZOOM_LEVEL_ANOTACOES
         ///visible: false
       };
@@ -5617,6 +5629,8 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
       if (this.map) {
         marker.setMap(this.map);
       }
+
+      this.gravarCamposAnotacaoNoMarcador(marker, location);
       
       // Variáveis para controlar cliques
       let clickTimeout: any;
@@ -5633,14 +5647,51 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
         clickTimeout = setTimeout(() => {
           // Clique simples - mostrar InfoWindow
           console.log('🔍 [Anotacao] Clique simples detectada na Anotacao:', location.label_rabicho);
-          this.showMarkerInfoWindow(marker, event, 'anotacao', location);
+          const idMeta = this.obterIdMetaAnotacao(marker, location);
+          const dadosInfo: Anotacoes = {
+            ...location,
+            id_meta: idMeta,
+            label_rabicho: location.label_rabicho,
+          };
+          const idx = this.markerAnotacoes.indexOf(marker);
+          if (idx !== -1 && idMeta != null && this.destinoAnotacoes[idx]) {
+            this.destinoAnotacoes[idx].id_meta = idMeta;
+          }
+          this.showMarkerInfoWindow(marker, event, 'anotacao', dadosInfo);
         }, 300); // Delay de 300ms para distinguir de duplo clique
-      }); 
+      });
 
-      
-      //this.markerAnotacoes.addListener('rightclick', (event: google.maps.MapMouseEvent) => {
-       // console.log('🔴 [Anotacao] Right-click na Anotacao:', location.label);
-      //});
+      marker.addListener('dblclick', () => {
+        if (clickTimeout) {
+          clearTimeout(clickTimeout);
+          clickTimeout = null;
+        }
+        if (this.currentMarkerInfoWindow) {
+          this.currentMarkerInfoWindow.close();
+        }
+        const index = this.markerAnotacoes.indexOf(marker);
+        if (index !== -1) {
+          this.habilitarEdicaoAnotacao(index);
+        }
+      });
+
+      marker.addListener('rightclick', (event: google.maps.MapMouseEvent) => {
+        if (clickTimeout) {
+          clearTimeout(clickTimeout);
+          clickTimeout = null;
+        }
+        const idMeta = this.obterIdMetaAnotacao(marker, location);
+        this.clickedAnotacaoData = {
+          ...location,
+          id_meta: idMeta ?? location.id_meta,
+        };
+        this.contextMenuType = 'anotacao';
+
+        if (event.domEvent) {
+          const mouseEvent = event.domEvent as MouseEvent;
+          this.showContextMenu(mouseEvent.clientX, mouseEvent.clientY);
+        }
+      });
 
       this.markerAnotacoes.push(marker);
     });
@@ -5770,6 +5821,268 @@ console.log(`Mapa centralizado na posição: ${lat}, ${lng}`);
         this.clickedPosteAprovadoData = null;
       },
     });
+  }
+
+  private excluirAnotacao(): void {
+    const anotacao = this.clickedAnotacaoData;
+
+    if (!anotacao?.id_meta) {
+      alert('Erro: anotação sem id_meta. Recarregue a lista lateral e tente novamente.');
+      this.hideContextMenu();
+      return;
+    }
+
+    const idCity = this.authService.getIdCity();
+    if (!idCity) {
+      alert('Erro: ID da cidade não encontrado. Selecione uma cidade no workspace.');
+      this.hideContextMenu();
+      return;
+    }
+
+    const label = anotacao.label_rabicho || 'Sem nome';
+    const confirmacao = confirm(`Tem certeza que deseja excluir esta anotação?\n\n${label}`);
+
+    if (!confirmacao) {
+      return;
+    }
+
+    const idMeta = anotacao.id_meta;
+
+    this.excluiAnotacaoService.excluirAnotacao({
+      id_meta: idMeta,
+      id_city: idCity,
+    }).subscribe({
+      next: (response) => {
+        if (response.success) {
+          this.destinoAnotacoes = (this.destinoAnotacoes ?? []).filter(
+            (item) => item.id_meta !== idMeta,
+          );
+          this.updateMarkersAnotacoes();
+          window.dispatchEvent(new CustomEvent('reloadMapAnotacoes'));
+          this.clickedAnotacaoData = null;
+          this.hideContextMenu();
+          this.cdr.detectChanges();
+        } else {
+          alert(response.message || response.error || 'Erro ao excluir anotação');
+        }
+      },
+      error: (err: unknown) => {
+        console.error('[EXCLUI-ANOTACAO] Erro:', err);
+        const errorObj = err as { message?: string };
+        alert(errorObj?.message || 'Erro ao excluir anotação');
+        this.clickedAnotacaoData = null;
+      },
+    });
+  }
+
+  private obterIconeAnotacaoMarker(scale: number): google.maps.Symbol {
+    return {
+      path: google.maps.SymbolPath.CIRCLE,
+      fillColor: '#000000',
+      fillOpacity: 1,
+      strokeColor: '#000000',
+      strokeWeight: 1,
+      scale,
+      labelOrigin: new google.maps.Point(0, -2),
+    };
+  }
+
+  /** id_meta e anotacao_data no MVCObject do Marker (Google Maps). */
+  private gravarCamposAnotacaoNoMarcador(marker: google.maps.Marker, location: Anotacoes): void {
+    const idMeta = this.obterIdMetaAnotacao(undefined, location);
+    const dados: Anotacoes = {
+      ...location,
+      id_meta: idMeta ?? location.id_meta,
+    };
+    if (idMeta != null) {
+      marker.set('id_meta', idMeta);
+    }
+    marker.set('anotacao_data', dados);
+  }
+
+  private obterIdMetaAnotacao(
+    marker?: google.maps.Marker | null,
+    fallback?: Anotacoes,
+  ): number | undefined {
+    if (marker) {
+      const fromMarker = resolveAnotacaoIdMeta({ id_meta: marker.get('id_meta') });
+      if (fromMarker != null) {
+        return fromMarker;
+      }
+      const fromMarkerData = resolveAnotacaoIdMeta(marker.get('anotacao_data'));
+      if (fromMarkerData != null) {
+        return fromMarkerData;
+      }
+    }
+    return resolveAnotacaoIdMeta(fallback);
+  }
+
+  private habilitarEdicaoAnotacao(index: number): void {
+    if (index < 0 || index >= this.markerAnotacoes.length) {
+      console.error('[EDITAR-ANOTACAO] Índice inválido:', index);
+      return;
+    }
+
+    const marker = this.markerAnotacoes[index];
+    const anotacao = this.destinoAnotacoes[index];
+
+    if (!marker || !anotacao) {
+      console.error('[EDITAR-ANOTACAO] Marcador ou anotação não encontrados');
+      return;
+    }
+
+    if (this.anotacaoEmEdicao) {
+      this.desabilitarEdicaoAnotacao();
+    }
+    if (this.caixaEmEdicao) {
+      this.desabilitarEdicaoCaixa();
+    }
+    if (this.sobraEmEdicao) {
+      this.desabilitarEdicaoSobra();
+    }
+    if (this.dioEmEdicao) {
+      this.desabilitarEdicaoDio();
+    }
+
+    const position = marker.getPosition();
+    if (position) {
+      this.anotacaoEmEdicaoOriginalPosition = {
+        lat: position.lat(),
+        lng: position.lng(),
+      };
+    }
+
+    this.anotacaoEmEdicaoOriginalIcon = marker.getIcon() ?? this.obterIconeAnotacaoMarker(5);
+
+    marker.setDraggable(true);
+    marker.setOpacity(0.7);
+    marker.setIcon(this.obterIconeAnotacaoMarker(9));
+
+    this.anotacaoEmEdicao = marker;
+    this.anotacaoEmEdicaoIndex = index;
+
+    console.log(
+      '[EDITAR-ANOTACAO] Edição habilitada para id_meta:',
+      this.obterIdMetaAnotacao(marker, anotacao),
+    );
+
+    if (this.map && !this.listenerMapaSalvarAnotacao) {
+      this.listenerMapaSalvarAnotacao = this.map.addListener('click', () => {
+        if (this.anotacaoEmEdicao) {
+          this.salvarEdicaoAnotacao();
+        }
+      });
+    }
+
+    if (!this.listenerEscCancelarAnotacao) {
+      this.listenerEscCancelarAnotacao = (event: KeyboardEvent) => {
+        if (event.key === 'Escape' && this.anotacaoEmEdicao) {
+          this.cancelarEdicaoAnotacao();
+        }
+      };
+      document.addEventListener('keydown', this.listenerEscCancelarAnotacao);
+    }
+  }
+
+  private desabilitarEdicaoAnotacao(): void {
+    if (this.anotacaoEmEdicao) {
+      this.anotacaoEmEdicao.setDraggable(false);
+      this.anotacaoEmEdicao.setOpacity(1.0);
+      if (this.anotacaoEmEdicaoOriginalIcon != null) {
+        this.anotacaoEmEdicao.setIcon(this.anotacaoEmEdicaoOriginalIcon);
+      } else {
+        this.anotacaoEmEdicao.setIcon(this.obterIconeAnotacaoMarker(5));
+      }
+    }
+
+    if (this.listenerMapaSalvarAnotacao) {
+      google.maps.event.removeListener(this.listenerMapaSalvarAnotacao);
+      this.listenerMapaSalvarAnotacao = null;
+    }
+
+    if (this.listenerEscCancelarAnotacao) {
+      document.removeEventListener('keydown', this.listenerEscCancelarAnotacao);
+      this.listenerEscCancelarAnotacao = null;
+    }
+
+    this.anotacaoEmEdicao = null;
+    this.anotacaoEmEdicaoIndex = null;
+    this.anotacaoEmEdicaoOriginalPosition = null;
+    this.anotacaoEmEdicaoOriginalIcon = null;
+  }
+
+  private salvarEdicaoAnotacao(): void {
+    if (!this.anotacaoEmEdicao || this.anotacaoEmEdicaoIndex === null) {
+      return;
+    }
+
+    const position = this.anotacaoEmEdicao.getPosition();
+    if (!position) {
+      console.error('[EDITAR-ANOTACAO] Posição não disponível');
+      return;
+    }
+
+    const anotacao = this.destinoAnotacoes[this.anotacaoEmEdicaoIndex];
+    const idMeta = this.obterIdMetaAnotacao(this.anotacaoEmEdicao, anotacao);
+    if (!idMeta) {
+      alert('Erro: id_meta da anotação não encontrado');
+      return;
+    }
+
+    const newLat = position.lat();
+    const newLng = position.lng();
+
+    this.updateAnotacaoService
+      .atualizarCoordenadas({
+        id_meta: idMeta,
+        lat: newLat,
+        lng: newLng,
+      })
+      .subscribe({
+        next: (response) => {
+          if (response?.success) {
+            if (anotacao && !anotacao.id_meta) {
+              anotacao.id_meta = idMeta;
+            }
+            anotacao.LAT = newLat as any;
+            anotacao.LNG = newLng as any;
+            console.log('[EDITAR-ANOTACAO] Coordenadas atualizadas:', response.message);
+            window.dispatchEvent(new CustomEvent('reloadMapAnotacoes'));
+            this.desabilitarEdicaoAnotacao();
+          } else {
+            alert(response?.message || 'Erro ao atualizar coordenadas da anotação');
+          }
+        },
+        error: (err: unknown) => {
+          console.error('[EDITAR-ANOTACAO] Erro ao atualizar coordenadas:', err);
+          const originalPos = this.anotacaoEmEdicaoOriginalPosition;
+          if (this.anotacaoEmEdicao && originalPos) {
+            this.anotacaoEmEdicao.setPosition({
+              lat: originalPos.lat,
+              lng: originalPos.lng,
+            });
+            anotacao.LAT = originalPos.lat as any;
+            anotacao.LNG = originalPos.lng as any;
+          }
+          const errorObj = err as { message?: string };
+          alert(errorObj?.message || 'Erro ao atualizar coordenadas da anotação');
+          this.desabilitarEdicaoAnotacao();
+        },
+      });
+  }
+
+  private cancelarEdicaoAnotacao(): void {
+    if (!this.anotacaoEmEdicao || !this.anotacaoEmEdicaoOriginalPosition) {
+      return;
+    }
+
+    this.anotacaoEmEdicao.setPosition({
+      lat: this.anotacaoEmEdicaoOriginalPosition.lat,
+      lng: this.anotacaoEmEdicaoOriginalPosition.lng,
+    });
+
+    this.desabilitarEdicaoAnotacao();
+    console.log('[EDITAR-ANOTACAO] Edição cancelada, posição restaurada');
   }
 
   private extentPermiteCarregarPostesConcessionaria(): boolean {
@@ -9275,12 +9588,14 @@ private updateVisibleMarkers() {
 private generateMarkerInfoWindowContent(tipo: string, dados: any): string {
   const lat = dados.LAT || dados.lat;
   const lng = dados.LONGI || dados.lng || dados.LNG;
-  const id = dados.id_meta || dados.ID_META;
+  const id = dados.id_meta ?? dados.ID_META;
+  const idExibicao = id != null && id !== '' ? id : '—';
   const numero = dados.numero || dados.NUMERO || dados.sigla || 'S/N';
   
   let titulo = '';
   let cor = '';
   let icone = '';
+  let rodape = 'Duplo-clique para abrir diagrama';
   
   switch (tipo) {
     case 'caixa':
@@ -9303,6 +9618,12 @@ private generateMarkerInfoWindowContent(tipo: string, dados: any): string {
       cor = '#9b59b6';
       icone = '🔌';
       break;
+    case 'anotacao':
+      titulo = `Obs: ${dados.label_rabicho || 'S/N'}`;
+      cor = '#2c3e50';
+      icone = '📍';
+      rodape = 'Duplo-clique para mover';
+      break;
     default:
       titulo = `📍 ${numero}`;
       cor = '#95a5a6';
@@ -9314,7 +9635,7 @@ private generateMarkerInfoWindowContent(tipo: string, dados: any): string {
       <h4 style="margin: 0 0 10px 0; color: #2c3e50; border-bottom: 2px solid ${cor}; padding-bottom: 5px;">
         ${titulo}
       </h4>
-      <p style="margin: 6px 0; color: #34495e;"><strong>ID:</strong> ${id}</p>
+      <p style="margin: 6px 0; color: #34495e;"><strong>ID:</strong> ${idExibicao}</p>
       ${tipo === 'dio' && dados.CAPACIDADE ? `<p style="margin: 6px 0; color: #34495e;"><strong>Capacidade:</strong> ${dados.CAPACIDADE}</p>` : ''}
       <div style="margin: 10px 0; padding: 8px; background: #ecf0f1; border-radius: 5px;">
         <p style="margin: 0 0 5px 0; font-weight: bold; color: #2c3e50;">Coordenadas:</p>
@@ -9331,7 +9652,7 @@ private generateMarkerInfoWindowContent(tipo: string, dados: any): string {
         📋 Copiar Coordenadas
       </button>
       <p style="margin: 8px 0 0 0; font-size: 11px; color: #7f8c8d; text-align: center;">
-        Duplo-clique para abrir diagrama
+        ${rodape}
       </p>
     </div>
   `;
@@ -9344,6 +9665,7 @@ private darkenColor(color: string): string {
     '#27ae60': '#229954', // Verde
     '#e67e22': '#d35400', // Laranja
     '#9b59b6': '#8e44ad', // Roxo (DIO)
+    '#2c3e50': '#1a252f', // Anotação
     '#95a5a6': '#7f8c8d', // Cinza
     '#e74c3c': '#c0392b', // Vermelho (cliente desativado)
   };
@@ -10013,6 +10335,9 @@ private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = fal
     }
     if (this.sobraEmEdicao) {
       this.desabilitarEdicaoSobra();
+    }
+    if (this.anotacaoEmEdicao) {
+      this.desabilitarEdicaoAnotacao();
     }
 
     // Salvar posição original para poder cancelar
@@ -10973,6 +11298,9 @@ private addMarkerEventListeners(marker: google.maps.Marker, isCTO: boolean = fal
     // Se já há um DIO em edição, desabilitar o anterior
     if (this.dioEmEdicao) {
       this.desabilitarEdicaoDio();
+    }
+    if (this.anotacaoEmEdicao) {
+      this.desabilitarEdicaoAnotacao();
     }
 
     // Salvar posição original para poder cancelar
@@ -11970,6 +12298,9 @@ private habilitarEdicaoSobra(index: number): void {
   }
   if (this.caixaEmEdicao) {
     this.desabilitarEdicaoCaixa();
+  }
+  if (this.anotacaoEmEdicao) {
+    this.desabilitarEdicaoAnotacao();
   }
 
   const position = marker.getPosition();

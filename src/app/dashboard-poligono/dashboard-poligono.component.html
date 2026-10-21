@@ -164,8 +164,8 @@
     </div>
 
     <div class="modal-footer bg-light">
-      @if (pdfErro) {
-        <span class="text-danger small me-auto">{{ pdfErro }}</span>
+      @if (pdfErro || csvErro) {
+        <span class="text-danger small me-auto">{{ pdfErro || csvErro }}</span>
       }
       <button
         type="button"
@@ -175,6 +175,14 @@
       >
         <span class="me-1">✕</span>
         Fechar
+      </button>
+      <button
+        type="button"
+        class="btn btn-outline-primary btn-sm me-2"
+        (click)="exportarCsv()"
+        [disabled]="exportandoPdf || splittersLoading"
+      >
+        Exportar CSV
       </button>
       <button
         type="button"

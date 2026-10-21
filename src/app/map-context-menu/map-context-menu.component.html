@@ -133,6 +133,14 @@
   </div>
 </ng-container>
 
+<!-- Menu para Anotação -->
+<ng-container *ngIf="contextType === 'anotacao'">
+  <div class="menu-item" (click)="onAction('excluir-anotacao')">
+    <mat-icon>delete</mat-icon>
+    <span>Exclui anotação</span>
+  </div>
+</ng-container>
+
 <!-- Menu para Poste Aprovado -->
 <ng-container *ngIf="contextType === 'poste_aprovado'">
   <div class="menu-item" (click)="onAction('excluir-poste-aprovado')">

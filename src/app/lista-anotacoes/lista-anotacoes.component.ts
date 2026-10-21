@@ -37,11 +37,7 @@ export class ListaAnotacoesComponent implements OnInit, OnDestroy {
     this.servicoAnotacoes.selecionar().subscribe({
       next: (retorno) => {
         console.log('Dados recebidos:', retorno);
-        if ('response' in retorno) {
-          this.vetorAnotacoes = (retorno as any).response;
-        } else {
-          this.vetorAnotacoes = retorno as Anotacoes[];
-        }
+        this.vetorAnotacoes = Array.isArray(retorno) ? retorno : [];
         this.AnotacoesSelecionada.emit(this.vetorAnotacoes);
       },
       error: (erro) => {
