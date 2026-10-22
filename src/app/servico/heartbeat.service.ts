@@ -8,7 +8,7 @@ import { AuthService } from './auth.service';
   providedIn: 'root'
 })
 export class HeartbeatService {
-  private apiUrl = environment.apiUrlAbsolute || 'http://localhost:3003';
+  private apiUrl = environment.apiUrlAbsolute || 'http://localhost:3001';
   private heartbeatInterval: any;
   private readonly HEARTBEAT_INTERVAL = 30000; // 30 segundos
 

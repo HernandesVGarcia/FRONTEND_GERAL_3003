@@ -4753,7 +4753,7 @@ private ZOOM_LEVEL_CLIENTES_DISABLES = 19;   // pops visíveis em zoom >= 19
 private ZOOM_LEVEL_CLIENTES_ATIVOS = 17;   // pops visíveis em zoom >= 17
 private ZOOM_LEVEL_CONDOMINIOS = 17;   // CTOs visíveis em zoom >= 17
 private ZOOM_LEVEL_DIOS = 18;   // DIOS visíveis em zoom >= 117
-private ZOOM_LEVEL_ANOTACOES = 18;   // DIOS visíveis em zoom >= 117
+private ZOOM_LEVEL_ANOTACOES = 15;   // DIOS visíveis em zoom >= 117
 private ZOOM_LEVEL_POSTES_AP = 18;
 private ZOOM_LEVEL_POSTES_CONCESSIONARIA = 18;
 private readonly MAX_EXTENT_LAT_POSTES_CONCESSIONARIA = 0.05;
