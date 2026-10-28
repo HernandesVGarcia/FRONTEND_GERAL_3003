@@ -54,7 +54,35 @@
                   "maximumError": "250kB"
                 }
               ],
-              "outputHashing": "all"
+              "outputHashing": "all",
+              "assets": [
+                {
+                  "glob": "**/*",
+                  "input": "src/assets/",
+                  "output": "/assets/",
+                  "ignore": ["**/*.js", "documentação/**"]
+                },
+                {
+                  "glob": "jquery.js",
+                  "input": "src/assets/",
+                  "output": "/assets/"
+                },
+                {
+                  "glob": "jquery-ui.js",
+                  "input": "src/assets/",
+                  "output": "/assets/"
+                },
+                {
+                  "glob": "jquery.browser.js",
+                  "input": "src/assets/",
+                  "output": "/assets/"
+                },
+                {
+                  "glob": "jquery.layout.js",
+                  "input": "src/assets/",
+                  "output": "/assets/"
+                }
+              ]
             },
             "development": {
               "optimization": false,

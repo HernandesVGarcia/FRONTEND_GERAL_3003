@@ -15,6 +15,22 @@ frontend:
     paths:
       - node_modules/**/*
       - dist/**/*
+  customRedirects: # para ignorar erros de arquivos que não existem
+    - source: '/assets/rotas_api/<*>'
+      target: '/index.html'
+      status: '404'
+    - source: '/assets/insert_cliente.js'
+      target: '/index.html'
+      status: '404'
+    - source: '/assets/conexao_boca.js'
+      target: '/index.html'
+      status: '404'
+    - source: '/assets/rota_insert_idmeta.js'
+      target: '/index.html'
+      status: '404'
+    - source: '/assets/documentação/<*>'
+      target: '/index.html'
+      status: '404'
   customHeaders:
     - pattern: '**/*'
       headers:
