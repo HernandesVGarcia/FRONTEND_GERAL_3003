@@ -97,25 +97,25 @@ export class ConsultaApiRbxService {
 
   private async buscarDadosPolo(idPolo: string): Promise<{ url: string; chaveIntegracao: string; idErp: number } | null> {
     try {
-      const query = `SELECT HTTP, KEY_ERP, ID_ERP FROM tst.polos WHERE IDPOLO = {idPolo}`;
-      const params = { idPolo };
-
       const response = await firstValueFrom(
-        this.fiberApiService.executeDynamicQuery(query, params)
+        this.fiberApiService.runTemplate('get_polo_erp_integracao', { idpolo: idPolo })
       );
 
       if (response.success && response.data && response.data.length > 0) {
-        const polo = response.data[0];
-        const url = polo.HTTP || polo.http;
-        const chaveIntegracao = polo.KEY_ERP || polo.key_erp;
-        const idErp = polo.ID_ERP || polo.id_erp;
+        const polo = response.data[0] as Record<string, unknown>;
+        const url = String(polo['HTTP'] ?? polo['http'] ?? '');
+        const chaveIntegracao = String(polo['KEY_ERP'] ?? polo['key_erp'] ?? '');
+        const idErpRaw = polo['ID_ERP'] ?? polo['id_erp'];
 
         if (!url || !chaveIntegracao) {
           console.error('❌ [RBX] URL ou ChaveIntegracao não encontrados na tabela tst.polos');
           return null;
         }
 
-        const idErpNum = typeof idErp === 'string' ? parseInt(idErp, 10) : idErp;
+        const idErpNum =
+          typeof idErpRaw === 'string'
+            ? parseInt(idErpRaw, 10)
+            : Number(idErpRaw ?? 0);
 
         return {
           url,

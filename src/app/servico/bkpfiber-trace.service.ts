@@ -1,3 +1,4 @@
+/** ITEM-14 — arquivo de backup; usa rotas legadas /query-conex, /fiber-connected, /registro-idmeta. Pode excluir inteiro com as rotas da API. */
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError, Subject } from 'rxjs';

@@ -1,3 +1,4 @@
+/** ITEM-14 — backup RBX; usa executeDynamicQuery. App ativo: consulta-api-rbx.service.ts + runTemplate. */
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError, firstValueFrom } from 'rxjs';

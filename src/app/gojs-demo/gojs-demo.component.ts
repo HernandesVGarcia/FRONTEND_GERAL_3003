@@ -502,10 +502,7 @@ export class GoJSDemoComponent implements OnInit, AfterViewInit, OnDestroy {
       console.log('🏠 [GOJS] Consultando dados da caixa para idmeta:', idmeta);
 
       const response = await this.fiberApiService
-        .executeDynamicQuery(
-          `SELECT numerocx, LAT, LONGI, ID_INTEGRACAO, conta_splitter FROM tstmeta.caixa WHERE id_meta = {idmeta}`,
-          { idmeta },
-        )
+        .runTemplate('get_caixa_dados', { idmeta })
         .toPromise();
 
       if (!response?.success || !response.data?.length) {

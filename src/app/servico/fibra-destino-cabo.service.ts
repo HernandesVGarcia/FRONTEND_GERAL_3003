@@ -35,13 +35,13 @@ export class FibraDestinoCaboService {
     try {
       console.log(`🔍 [RABICHO] Processando RABICHO para IDMETA: ${id_meta}`);
       
-      const rabichoResponse = await this.fiberApiService.executeDynamicQuery(
-        'SELECT label_rabicho AS NOME FROM rabicho WHERE ID_META = {idmeta}',
-        { idmeta: id_meta }
-      ).toPromise();
+      const rabichoResponse = await this.fiberApiService
+        .runTemplate('get_rabicho_label_nome', { idmeta: id_meta })
+        .toPromise();
 
       if (rabichoResponse?.success && rabichoResponse.data && rabichoResponse.data.length > 0) {
-        const labelRabicho = rabichoResponse.data[0].NOME;
+        const rowRab = rabichoResponse.data[0] as Record<string, unknown>;
+        const labelRabicho = String(rowRab['NOME'] ?? rowRab['nome'] ?? '');
         
         console.log(`📊 [RABICHO] Label encontrado: ${labelRabicho}`);
         return labelRabicho;
@@ -65,13 +65,13 @@ export class FibraDestinoCaboService {
     try {
       console.log(`🔍 [CONDOMINIO] Processando CONDOMINIO para IDMETA: ${id_meta}`);
       
-      const condominioResponse = await this.fiberApiService.executeDynamicQuery(
-        'SELECT CONDOMINIO AS NOME FROM tst.condominio WHERE ID_META = {idmeta}',
-        { idmeta: id_meta }
-      ).toPromise();
+      const condominioResponse = await this.fiberApiService
+        .runTemplate('get_condominio_nome', { idmeta: id_meta })
+        .toPromise();
 
       if (condominioResponse?.success && condominioResponse.data && condominioResponse.data.length > 0) {
-        const nomeCondominio = condominioResponse.data[0].NOME;
+        const rowCond = condominioResponse.data[0] as Record<string, unknown>;
+        const nomeCondominio = String(rowCond['NOME'] ?? rowCond['nome'] ?? '');
         
         console.log(`📊 [CONDOMINIO] Nome encontrado: ${nomeCondominio}`);
         return nomeCondominio;
@@ -106,13 +106,13 @@ export class FibraDestinoCaboService {
     try {
       console.log(`🔍 [POP] Processando POP para IDMETA: ${id_meta}`);
       
-      const popResponse = await this.fiberApiService.executeDynamicQuery(
-        'SELECT SIGLA AS NOME FROM tst.estações WHERE ID_META = {idmeta}',
-        { idmeta: id_meta }
-      ).toPromise();
+      const popResponse = await this.fiberApiService
+        .runTemplate('get_estacao_sigla_nome', { idmeta: id_meta })
+        .toPromise();
 
       if (popResponse?.success && popResponse.data && popResponse.data.length > 0) {
-        const sigla = popResponse.data[0].NOME;
+        const rowPop = popResponse.data[0] as Record<string, unknown>;
+        const sigla = String(rowPop['NOME'] ?? rowPop['nome'] ?? rowPop['SIGLA'] ?? rowPop['sigla'] ?? '');
         
         console.log(`📊 [POP] Sigla encontrada: ${sigla}`);
         return sigla;
@@ -136,19 +136,18 @@ export class FibraDestinoCaboService {
     try {
       console.log(`🔍 [SPLITTER] Processando SPLITTER para IDMETA: ${id_meta}`);
       
-      const splitterResponse = await this.fiberApiService.executeDynamicQuery(
-        'SELECT numero_cx, capacidade FROM splitter_e WHERE idmeta = {idmeta}',
-        { idmeta: id_meta }
-      ).toPromise();
+      const splitterResponse = await this.fiberApiService
+        .runTemplate('get_splitter_numerocx_capacidade', { idmeta: id_meta })
+        .toPromise();
 
       if (splitterResponse?.success && splitterResponse.data && splitterResponse.data.length > 0) {
-        const splitterData = splitterResponse.data[0];
-        const numeroCx = splitterData.numero_cx;
-        const capacidade = splitterData.capacidade;
+        const splitterData = splitterResponse.data[0] as Record<string, unknown>;
+        const numeroCx = splitterData['numero_cx'] ?? splitterData['NUMERO_CX'];
+        const capacidade = splitterData['capacidade'] ?? splitterData['CAPACIDADE'];
         
         console.log(`📊 [SPLITTER] Dados encontrados - Numero_CX: ${numeroCx}, Capacidade: ${capacidade}`);
         
-        const resultado = `CX ${numeroCx}/Entrada_Splitter ${id_meta}_1:${capacidade}`;
+        const resultado = `CX ${String(numeroCx ?? '')}/Entrada_Splitter ${id_meta}_1:${String(capacidade ?? '')}`;
         console.log(`📊 [SPLITTER] Resultado final: ${resultado}`);
         return resultado;
       } else {
@@ -176,12 +175,19 @@ export class FibraDestinoCaboService {
       
       console.log(`🔍 [DIO OBS] Consultando OBS - Fibra: ${fibra_publica}, Grupo: ${grupo}, Tabela: ${tabela}`);
       
-      const obsQuery = `SELECT obs${fibra_publica} as obs FROM ${tabela} WHERE IDMETA = {idmeta}`;
-      const obsResponse = await this.fiberApiService.executeDynamicQuery(obsQuery, { idmeta: id_meta }).toPromise();
-      
+      const obsResponse = await this.fiberApiService
+        .runTemplate('get_meta_dio_obs', {
+          idmeta: id_meta,
+          tabela,
+          fibra: fibra_publica,
+        })
+        .toPromise();
+
       if (obsResponse?.success && obsResponse.data && obsResponse.data.length > 0) {
-        const obs = obsResponse.data[0].obs;
-        const obs_dio = obs && obs.trim() !== '' ? obs : '-----';
+        const rowObs = obsResponse.data[0] as Record<string, unknown>;
+        const obs = rowObs['obs'] ?? rowObs['OBS'];
+        const obsTexto = String(obs ?? '');
+        const obs_dio = obsTexto.trim() !== '' ? obsTexto : '-----';
         console.log(`📊 [DIO OBS] OBS encontrada: ${obs_dio}`);
         return obs_dio;
       } else {
@@ -209,27 +215,28 @@ export class FibraDestinoCaboService {
       console.log(`🔍 [DIO] Processando DIO para IDMETA: ${id_meta}`);
       
       // Primeira consulta: buscar SIGLA e ID_ESTACAO do DIO
-      const dioResponse = await this.fiberApiService.executeDynamicQuery(
-        'SELECT SIGLA AS NOME, ID_ESTACAO FROM dio WHERE ID_META = {idmeta}',
-        { idmeta: id_meta }
-      ).toPromise();
+      const dioResponse = await this.fiberApiService
+        .runTemplate('get_dio_sigla_id_estacao', { idmeta: id_meta })
+        .toPromise();
 
       if (dioResponse?.success && dioResponse.data && dioResponse.data.length > 0) {
-        const dioData = dioResponse.data[0];
-        const sigla = dioData.NOME;
-        const idEstacao = dioData.ID_ESTACAO;
+        const dioData = dioResponse.data[0] as Record<string, unknown>;
+        const sigla = String(dioData['NOME'] ?? dioData['nome'] ?? '');
+        const idEstacao = dioData['ID_ESTACAO'] ?? dioData['id_estacao'];
         
         console.log(`📊 [DIO] Dados encontrados - Sigla: ${sigla}, ID_Estacao: ${idEstacao}`);
         
         // Segunda consulta: buscar SIGLA da estação
         if (idEstacao) {
-          const estacaoResponse = await this.fiberApiService.executeDynamicQuery(
-            'SELECT SIGLA FROM tst.estações WHERE ID_META = {idmeta}',
-            { idmeta: idEstacao }
-          ).toPromise();
+          const estacaoResponse = await this.fiberApiService
+            .runTemplate('get_estacao_sigla_nome', { idmeta: idEstacao })
+            .toPromise();
 
           if (estacaoResponse?.success && estacaoResponse.data && estacaoResponse.data.length > 0) {
-            const estacaoSigla = estacaoResponse.data[0].SIGLA;
+            const rowEst = estacaoResponse.data[0] as Record<string, unknown>;
+            const estacaoSigla = String(
+              rowEst['NOME'] ?? rowEst['nome'] ?? rowEst['SIGLA'] ?? rowEst['sigla'] ?? ''
+            );
             const destino = `${sigla}: ${estacaoSigla}`;
             console.log(`📊 [DIO] Resultado final: ${destino}`);
             
@@ -271,15 +278,14 @@ export class FibraDestinoCaboService {
     try {
       console.log(`🔍 [CAIXA] Processando caixa para IDMETA: ${id_meta}`);
       
-      const caixaResponse = await this.fiberApiService.executeDynamicQuery(
-        'SELECT NUMERO AS NOME, TIPO FROM tst.caixa WHERE ID_META = {idmeta}',
-        { idmeta: id_meta }
-      ).toPromise();
+      const caixaResponse = await this.fiberApiService
+        .runTemplate('get_caixa_numero_tipo', { idmeta: id_meta })
+        .toPromise();
 
       if (caixaResponse?.success && caixaResponse.data && caixaResponse.data.length > 0) {
-        const caixaData = caixaResponse.data[0];
-        const numero = caixaData.NOME;
-        const tipo = caixaData.TIPO;
+        const caixaData = caixaResponse.data[0] as Record<string, unknown>;
+        const numero = caixaData['NOME'] ?? caixaData['nome'];
+        const tipo = caixaData['TIPO'] ?? caixaData['tipo'];
         
         console.log(`📊 [CAIXA] Dados encontrados - Número: ${numero}, Tipo: ${tipo}`);
         

@@ -507,17 +507,17 @@ export class FiberTraceService {
     console.log(`🔍 [DIO] Campo a consultar: ${campoFibra}`);
     
     // Consultar fibra final no cabo anterior (tabela e idmeta ainda são do cabo)
-    const fibraResponse = await this.fiberApiService.executeDynamicQuery(
-      `SELECT ${campoFibra} as fibra FROM tstmeta.${tabela} WHERE IDMETA = {idmeta}`,
-      { idmeta: idmeta }
-    ).toPromise();
-    
+    const fibraResponse = await this.fiberApiService
+      .runTemplate('get_meta_coluna_fibra', { tabela, idmeta, coluna: campoFibra })
+      .toPromise();
+
     let fibraFinal = 0;
     if (fibraResponse?.success && fibraResponse.data && fibraResponse.data.length > 0) {
-      const fibraNumero = fibraResponse.data[0].fibra;
+      const rowFibraLbl = fibraResponse.data[0] as Record<string, unknown>;
+      const fibraNumero = rowFibraLbl['fibra'] ?? rowFibraLbl['FIBRA'];
       if (fibraNumero && fibraNumero !== 'ZERO') {
         // FN_XLABEL retorna o número da fibra final no DIO
-        fibraFinal = parseInt(fibraNumero);
+        fibraFinal = parseInt(String(fibraNumero ?? ''), 10);
         console.log(`✅ [DIO] Fibra final encontrada: ${fibraFinal}`);
       } else {
         fibraFinal = 0;
@@ -572,26 +572,28 @@ export class FiberTraceService {
 
     // Buscar cabo conectado na bandeja
     console.log(`🔍 [DIO-CABO] Consultando campo c${conector} para IDMETA ${idmeta}`);
-    const caboResponse = await this.fiberApiService.executeDynamicQuery(
-      `SELECT c${conector} as cabo FROM tstmeta.dio WHERE id_meta = {idmeta}`,
-      { idmeta: idmeta }
-    ).toPromise();
+    const caboResponse = await this.fiberApiService
+      .runTemplate('get_dio_conector_cabo', { idmeta, conector })
+      .toPromise();
     console.log(`📊 [DIO-CABO] Resposta:`, caboResponse);
-    
-    if (!caboResponse?.success || !caboResponse.data || caboResponse.data.length === 0 || caboResponse.data[0].cabo === 'ZERO') {
+
+    const rowCaboDio = caboResponse?.data?.[0] as Record<string, unknown> | undefined;
+    const cabo = rowCaboDio?.['cabo'] ?? rowCaboDio?.['CABO'];
+
+    if (!caboResponse?.success || !cabo || cabo === 'ZERO') {
       console.log(`❌ [DIO-CABO] Cabo não encontrado ou ZERO`);
       return { idmeta, fiber: 0, tabela: '', registro: '', status: 'fim' };
     }
-    
-    const cabo = caboResponse.data[0].cabo;
+
+    const caboStr = String(cabo);
 
     // Buscar fibra conectada na tabela original
-    const fiberResponse = await this.fiberApiService.executeDynamicQuery(
-      `SELECT FN${fibra} as fiber FROM tstmeta.${tabela} WHERE IDMETA = {idmeta}`,
-      { idmeta: idmeta }
-    ).toPromise();
-    
-    const fibraCabo = fiberResponse?.data?.[0]?.fiber || 0;
+    const fiberResponse = await this.fiberApiService
+      .runTemplate('get_meta_fn_fiber', { tabela, idmeta, fibra })
+      .toPromise();
+
+    const rowFnFiber = fiberResponse?.data?.[0] as Record<string, unknown> | undefined;
+    const fibraCabo = Number(rowFnFiber?.['fiber'] ?? rowFnFiber?.['FIBER'] ?? 0) || 0;
     if (fibraCabo === 0) {
       console.log(`❌ [DIO-CABO] Fibra conectada não encontrada`);
       return { idmeta, fiber: 0, tabela: '', registro: '', status: 'fim' };
@@ -601,11 +603,11 @@ export class FiberTraceService {
     const tuboCabo = this.calculateTubo(fibraCabo);
     
     // Determinar ponta A ou B
-    const isPontaB = cabo.includes('B');
+    const isPontaB = caboStr.includes('B');
     const tabelaCabo = isPontaB ? `cabob_t${tuboCabo}` : `caboa_t${tuboCabo}`;
     
     // Extrair IDMETA do cabo
-    const caboIdmeta = this.extractCaboIdmeta(cabo);
+    const caboIdmeta = this.extractCaboIdmeta(caboStr);
     
     console.log(`✅ [DIO-CABO] Resultado - IDMETA: ${caboIdmeta}, Fibra: ${fibraCabo}, Tabela: ${tabelaCabo}`);
     

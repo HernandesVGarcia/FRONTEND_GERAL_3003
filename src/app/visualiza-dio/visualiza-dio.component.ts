@@ -157,30 +157,32 @@ export class VisualizaDioComponent implements OnInit, OnDestroy {
     console.log('🏠 [DIO-INFO] Carregando informações do DIO e estação...');
     
     // Consulta 1: DIO - obter sigla e ID da estação
-    this.fiberApiService.executeDynamicQuery(
-      'SELECT SIGLA AS NOME, ID_ESTACAO FROM tstmeta.dio WHERE id_meta = {idmeta}',
-      { idmeta: this.data.id_meta }
-    ).pipe(takeUntil(this.destroy$))
+    this.fiberApiService
+      .runTemplate('get_dio_sigla_id_estacao', { idmeta: this.data.id_meta })
+      .pipe(takeUntil(this.destroy$))
     .subscribe({
       next: (dioResponse) => {
         console.log('📊 [DIO-INFO] Resposta DIO:', dioResponse);
         
         if (dioResponse?.success && dioResponse.data && dioResponse.data.length > 0) {
-          this.dioSigla = dioResponse.data[0].NOME;
-          const idEstacao = dioResponse.data[0].ID_ESTACAO;
+          const rowDio = dioResponse.data[0] as Record<string, unknown>;
+          this.dioSigla = String(rowDio['NOME'] ?? rowDio['nome'] ?? '');
+          const idEstacao = rowDio['ID_ESTACAO'] ?? rowDio['id_estacao'];
           console.log('🏠 [DIO-INFO] DIO encontrado:', this.dioSigla, 'ID Estação:', idEstacao);
           
           // Consulta 2: Estação - obter sigla da estação
-          this.fiberApiService.executeDynamicQuery(
-            'SELECT SIGLA FROM tst.estações WHERE ID_META = {idmeta}',
-            { idmeta: idEstacao }
-          ).pipe(takeUntil(this.destroy$))
+          this.fiberApiService
+            .runTemplate('get_estacao_sigla_nome', { idmeta: idEstacao })
+            .pipe(takeUntil(this.destroy$))
           .subscribe({
             next: (estacaoResponse) => {
               console.log('📊 [DIO-INFO] Resposta Estação:', estacaoResponse);
               
               if (estacaoResponse?.success && estacaoResponse.data && estacaoResponse.data.length > 0) {
-                this.estacaoSigla = estacaoResponse.data[0].SIGLA;
+                const rowEstInfo = estacaoResponse.data[0] as Record<string, unknown>;
+                this.estacaoSigla = String(
+                  rowEstInfo['NOME'] ?? rowEstInfo['nome'] ?? rowEstInfo['SIGLA'] ?? rowEstInfo['sigla'] ?? ''
+                );
                 console.log('🏠 [DIO-INFO] Estação encontrada:', this.estacaoSigla);
                 console.log('🏠 [DIO-INFO] Título completo:', `DIO ${this.dioSigla} ${this.estacaoSigla}`);
               } else {
@@ -928,10 +930,9 @@ export class VisualizaDioComponent implements OnInit, OnDestroy {
     return new Promise((resolve, reject) => {
       // Sempre consultar a tabela ids para obter o tipo do objeto (seguindo VB6)
       console.log(`Consultando tipo do objeto para IDMETA: ${idmeta}`);
-      this.fiberApiService.executeDynamicQuery(
-        'SELECT TIPO_OBJETO FROM tstmeta.ids WHERE id_meta = {idmeta}',
-        { idmeta: idmeta }
-      ).subscribe({
+      this.fiberApiService
+        .runTemplate('get_ids_tipo_objeto', { idmeta: idmeta })
+        .subscribe({
         next: (response) => {
           if (!response.success || !response.data || response.data.length === 0) {
             console.log(`Tipo do objeto não encontrado para IDMETA: ${idmeta}`);
@@ -939,7 +940,8 @@ export class VisualizaDioComponent implements OnInit, OnDestroy {
             return;
           }
 
-        const tipoObjeto = response.data[0].TIPO_OBJETO;
+        const rowIds = response.data[0] as Record<string, unknown>;
+        const tipoObjeto = String(rowIds['TIPO_OBJETO'] ?? rowIds['tipo_objeto'] ?? '');
         console.log(`Tipo do objeto encontrado: ${tipoObjeto} para IDMETA: ${idmeta}`);
         console.log(`📊 [IDS] Dados completos:`, response.data[0]);
         
@@ -972,13 +974,14 @@ export class VisualizaDioComponent implements OnInit, OnDestroy {
     try {
       switch (tipoObjeto) {
         case 'CAIXA':
-          const caixaResponse = await this.fiberApiService.executeDynamicQuery(
-            'SELECT NUMEROCX AS NOME FROM tstmeta.caixa WHERE ID_META = {idmeta}',
-            { idmeta: idmeta }
-          ).toPromise();
+          const caixaResponse = await this.fiberApiService
+            .runTemplate('get_caixa_nome_destino', { idmeta: idmeta }) // get_caixa_nome_destino (T04) — rota query_conex na API
+            .toPromise();
           if (caixaResponse?.success && caixaResponse.data && caixaResponse.data.length > 0) {
+            const rowCaixa = caixaResponse.data[0] as Record<string, unknown>;
+            const nomeCaixa = rowCaixa['NOME'] ?? rowCaixa['nome'];
             return {
-              destname: `CAIXA ${caixaResponse.data[0].NOME}`,
+              destname: `CAIXA ${nomeCaixa ?? ''}`,
               bdio: '---',
               fibre: '---'
             };
@@ -986,13 +989,13 @@ export class VisualizaDioComponent implements OnInit, OnDestroy {
           break;
 
         case 'POP':
-          const popResponse = await this.fiberApiService.executeDynamicQuery(
-            'SELECT SIGLA AS NOME FROM tst.estações WHERE ID_META = {idmeta}',
-            { idmeta: idmeta }
-          ).toPromise();
+          const popResponse = await this.fiberApiService
+            .runTemplate('get_estacao_sigla_nome', { idmeta: idmeta })
+            .toPromise();
           if (popResponse?.success && popResponse.data && popResponse.data.length > 0) {
+            const rowPopDest = popResponse.data[0] as Record<string, unknown>;
             return {
-              destname: popResponse.data[0].NOME,
+              destname: String(rowPopDest['NOME'] ?? rowPopDest['nome'] ?? ''),
               bdio: '---',
               fibre: '---'
             };
@@ -1000,13 +1003,13 @@ export class VisualizaDioComponent implements OnInit, OnDestroy {
           break;
 
         case 'Rabicho':
-          const rabichoResponse = await this.fiberApiService.executeDynamicQuery(
-            'SELECT LABEL_RABICHO AS NOME FROM tstmeta.rabicho WHERE ID_META = {idmeta}',
-            { idmeta: idmeta }
-          ).toPromise();
+          const rabichoResponse = await this.fiberApiService
+            .runTemplate('get_rabicho_label_nome', { idmeta })
+            .toPromise();
           if (rabichoResponse?.success && rabichoResponse.data && rabichoResponse.data.length > 0) {
+            const rowRabicho = rabichoResponse.data[0] as Record<string, unknown>;
             return {
-              destname: rabichoResponse.data[0].NOME,
+              destname: String(rowRabicho['NOME'] ?? rowRabicho['nome'] ?? ''),
               bdio: '---',
               fibre: '---'
             };
@@ -1016,25 +1019,28 @@ export class VisualizaDioComponent implements OnInit, OnDestroy {
         case 'DIO':
           console.log(`🔍 [DIO] Consultando DIO para IDMETA: ${idmeta}`);
           console.log(`🔌 [DIO] Fibra final recebida: ${fibraFinal}`);
-          const dioResponse = await this.fiberApiService.executeDynamicQuery(
-            'SELECT SIGLA AS NOME, ID_ESTACAO FROM tstmeta.dio WHERE id_meta = {idmeta}',
-            { idmeta: idmeta }
-          ).toPromise();
+          const dioResponse = await this.fiberApiService
+            .runTemplate('get_dio_sigla_id_estacao', { idmeta: idmeta })
+            .toPromise();
           console.log(`📊 [DIO] Resposta da consulta:`, dioResponse);
           if (dioResponse?.success && dioResponse.data && dioResponse.data.length > 0) {
-            const bdio = dioResponse.data[0].NOME;
-            const idEstacao = dioResponse.data[0].ID_ESTACAO;
+            const rowDioDest = dioResponse.data[0] as Record<string, unknown>;
+            const bdio = String(rowDioDest['NOME'] ?? rowDioDest['nome'] ?? '');
+            const idEstacao = rowDioDest['ID_ESTACAO'] ?? rowDioDest['id_estacao'];
             console.log(`🏠 [DIO] DIO encontrado: ${bdio}, Estação: ${idEstacao}`);
             
             // Buscar sigla da estação
-            const estacaoResponse = await this.fiberApiService.executeDynamicQuery(
-              'SELECT SIGLA FROM tst.estações WHERE ID_META = {idmeta}',
-              { idmeta: idEstacao }
-            ).toPromise();
+            const estacaoResponse = await this.fiberApiService
+              .runTemplate('get_estacao_sigla_nome', { idmeta: idEstacao })
+              .toPromise();
             
             if (estacaoResponse?.success && estacaoResponse.data && estacaoResponse.data.length > 0) {
+              const rowEstDest = estacaoResponse.data[0] as Record<string, unknown>;
+              const destEstacao = String(
+                rowEstDest['NOME'] ?? rowEstDest['nome'] ?? rowEstDest['SIGLA'] ?? rowEstDest['sigla'] ?? ''
+              );
               const result = {
-                destname: estacaoResponse.data[0].SIGLA,
+                destname: destEstacao,
                 bdio: bdio,
                 fibre: fibraFinal || '---' // 🆕 NOVO: Usar fibra final se disponível
               };
@@ -1048,14 +1054,15 @@ export class VisualizaDioComponent implements OnInit, OnDestroy {
 
         case 'caixa':
           console.log(`🔍 [CAIXA] Consultando caixa para IDMETA: ${idmeta}`);
-          const caixaResponse2 = await this.fiberApiService.executeDynamicQuery(
-            'SELECT NUMERO AS NOME FROM tst.caixa WHERE ID_META = {idmeta}',
-            { idmeta: idmeta }
-          ).toPromise();
+          const caixaResponse2 = await this.fiberApiService
+            .runTemplate('get_caixa_numero_tipo', { idmeta: idmeta })
+            .toPromise();
           console.log(`📊 [CAIXA] Resposta da consulta:`, caixaResponse2);
           if (caixaResponse2?.success && caixaResponse2.data && caixaResponse2.data.length > 0) {
+            const rowTstCaixa = caixaResponse2.data[0] as Record<string, unknown>;
+            const nomeTstCaixa = rowTstCaixa['NOME'] ?? rowTstCaixa['nome'];
             return {
-              destname: `CAIXA ${caixaResponse2.data[0].NOME}`,
+              destname: `CAIXA ${nomeTstCaixa ?? ''}`,
               bdio: '---',
               fibre: '---'
             };
@@ -1072,13 +1079,14 @@ export class VisualizaDioComponent implements OnInit, OnDestroy {
           };
 
         case 'splitter':
-          const splitterResponse = await this.fiberApiService.executeDynamicQuery(
-            'SELECT numero_cx FROM tstmeta.splitter_e WHERE idmeta = {idmeta}',
-            { idmeta: idmeta }
-          ).toPromise();
+          const splitterResponse = await this.fiberApiService
+            .runTemplate('get_splitter_numerocx_capacidade', { idmeta })
+            .toPromise();
           if (splitterResponse?.success && splitterResponse.data && splitterResponse.data.length > 0) {
+            const rowSp = splitterResponse.data[0] as Record<string, unknown>;
+            const numeroCxDest = rowSp['numero_cx'] ?? rowSp['NUMERO_CX'];
             return {
-              destname: `CX_${splitterResponse.data[0].numero_cx}:SPLITTER_${idmeta}`,
+              destname: `CX_${numeroCxDest ?? ''}:SPLITTER_${idmeta}`,
               bdio: '---',
               fibre: fibraFinal || 'E' // Usar fibraFinal se disponível, senão "E"
             };
@@ -1087,14 +1095,15 @@ export class VisualizaDioComponent implements OnInit, OnDestroy {
 
         case 'splitter_entrada':
           console.log(`🔀 [SPLITTER-ENTRADA] Consultando entrada do splitter para IDMETA: ${idmeta}`);
-          const splitterEntradaResponse = await this.fiberApiService.executeDynamicQuery(
-            'SELECT numero_cx FROM tstmeta.splitter_e WHERE idmeta = {idmeta}',
-            { idmeta: idmeta }
-          ).toPromise();
+          const splitterEntradaResponse = await this.fiberApiService
+            .runTemplate('get_splitter_numerocx_capacidade', { idmeta })
+            .toPromise();
           console.log(`📊 [SPLITTER-ENTRADA] Resposta da consulta:`, splitterEntradaResponse);
           if (splitterEntradaResponse?.success && splitterEntradaResponse.data && splitterEntradaResponse.data.length > 0) {
+            const rowSpEnt = splitterEntradaResponse.data[0] as Record<string, unknown>;
+            const numeroCxEnt = rowSpEnt['numero_cx'] ?? rowSpEnt['NUMERO_CX'];
             return {
-              destname: `SPLITTER ${splitterEntradaResponse.data[0].numero_cx}`,
+              destname: `SPLITTER ${numeroCxEnt ?? ''}`,
               bdio: '---',
               fibre: fibraFinal || 'E' // Usar fibraFinal se disponível, senão "E"
             };

@@ -81,6 +81,11 @@
                   "glob": "jquery.layout.js",
                   "input": "src/assets/",
                   "output": "/assets/"
+                },
+                {
+                  "glob": "404.html",
+                  "input": "src",
+                  "output": "/"
                 }
               ]
             },

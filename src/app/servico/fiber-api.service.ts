@@ -17,6 +17,11 @@ export interface QueryConexResponse {
   error?: string;
 }
 
+export interface QueryConexRunRequest {
+  template: string;
+  params: { [key: string]: unknown };
+}
+
 export interface IdmetaByVisualRequest {
   tabelaCabo: string;
   nomeCabo: string;
@@ -83,9 +88,8 @@ export class FiberApiService {
     return this.cancelSubject.closed;
   }
 
-  /**=========================================API====QUERY DINAMICA===================================================
-   * 1. Consulta dinâmica genérica - baseada na consulta principal do VB6
-   * SELECT {regist} as registro from {TABELA} where idmeta = {idmeta}
+  /** ITEM-14 LEGADO — PODE EXCLUIR: chama POST /query-conex (SQL livre). Use runTemplate.
+   * Consumidores restantes: consulta-api-rbxbkp, bkpfiber-trace, bkp2fiber-trace (backups).
    */
   executeDynamicQuery(query: string, params: { [key: string]: any }): Observable<QueryConexResponse> {
     const route = `/query-conex`;
@@ -110,9 +114,29 @@ export class FiberApiService {
     );
   }
 
-  /**=======================================API=========================================================
-   * 2. Buscar IDMETA por nome visual - baseada na consulta do VB6
-   * SELECT ID_META from {TABELACABO} where id_VISIO = '{NOMECABO}'
+  /** Item 14 — query do catálogo (ex.: template get_sigla_dio). */
+  runTemplate(template: string, params: { [key: string]: unknown }): Observable<QueryConexResponse> {
+    const route = `/query-conex/run`;
+    const token = this.authService.getToken();
+
+    const headers = new HttpHeaders()
+      .set('Content-Type', 'application/json')
+      .set('Authorization', `Bearer ${token}`);
+
+    const body: QueryConexRunRequest = { template, params };
+
+    const url = `${this.baseUrl}${route}`;
+
+    return this.http.post<QueryConexResponse>(url, body, { headers }).pipe(
+      takeUntil(this.cancelSubject),
+      timeout(this.TIMEOUT),
+      retry(this.RETRY_ATTEMPTS),
+      catchError(this.handleError)
+    );
+  }
+
+  /** ITEM-14 LEGADO — PODE EXCLUIR: POST /query-conex/idmeta-visual (sem template no catálogo).
+   * Não usado por componentes ativos (só backup bkpfiber-trace).
    */
   getIdmetaByVisualName(tabelaCabo: string, nomeCabo: string): Observable<IdmetaByVisualResponse> {
     const route = `/query-conex/idmeta-visual`;
@@ -145,24 +169,23 @@ export class FiberApiService {
    * SELECT {regist} as registro from {TABELA} where idmeta = {idmeta}
    */
   getRegistroByIdmeta(tabela: string, idmeta: number, registro: string): Observable<RegistroByIdmetaResponse> {
-    const route = `/query-conex/registro-idmeta`;
-    const token = this.authService.getToken();
-
-    const headers = new HttpHeaders()
-      .set('Content-Type', 'application/json')
-      .set('Authorization', `Bearer ${token}`);
-
-    const body = {
-      tabela: tabela,
-      idmeta: idmeta,
-      registro: registro
-    };
-
-    const url = `${this.baseUrl}${route}`;
-
-    return this.http.post<RegistroByIdmetaResponse>(url, body, { headers }).pipe(
-      timeout(this.TIMEOUT),
-      retry(this.RETRY_ATTEMPTS),
+    return this.runTemplate('get_meta_registro_coluna', { tabela, idmeta, registro }).pipe(
+      map((response) => {
+        if (!response.success) {
+          return {
+            success: false,
+            valor: '',
+            error: response.error,
+          };
+        }
+        if (!response.data || response.data.length === 0) {
+          return { success: true, valor: '' };
+        }
+        const row = response.data[0] as Record<string, unknown>;
+        const raw = row['registro'] ?? row['REGISTRO'];
+        const valor = raw != null && raw !== '' ? String(raw) : '';
+        return { success: true, valor };
+      }),
       catchError(error => {
         console.error('Erro ao buscar registro por IDMETA:', error);
         return throwError(() => error);
@@ -175,24 +198,16 @@ export class FiberApiService {
    * SELECT FN{FIBER} as fiber from {TABELA} where idmeta = {idmeta}
    */
   getFiberConnected(tabela: string, idmeta: number, fiber: number): Observable<FiberConnectedResponse> {
-    const route = `/query-conex/fiber-connected`;
-    const token = this.authService.getToken();
-
-    const headers = new HttpHeaders()
-      .set('Content-Type', 'application/json')
-      .set('Authorization', `Bearer ${token}`);
-
-    const body = {
-      tabela: tabela,
-      idmeta: idmeta,
-      fiber: fiber
-    };
-
-    const url = `${this.baseUrl}${route}`;
-
-    return this.http.post<FiberConnectedResponse>(url, body, { headers }).pipe(
-      timeout(this.TIMEOUT),
-      retry(this.RETRY_ATTEMPTS),
+    return this.runTemplate('get_meta_fn_fiber', { tabela, idmeta, fibra: fiber }).pipe(
+      map((response) => {
+        if (!response.success || !response.data || response.data.length === 0) {
+          return { success: true, fiber: 0 };
+        }
+        const row = response.data[0] as Record<string, unknown>;
+        const fiberValue = row['fiber'] ?? row['FIBER'];
+        const n = Number.parseInt(String(fiberValue ?? ''), 10);
+        return { success: true, fiber: Number.isFinite(n) ? n : 0 };
+      }),
       catchError(error => {
         console.error('Erro ao buscar fibra conectada:', error);
         return throwError(() => error);
@@ -205,15 +220,16 @@ export class FiberApiService {
    * SELECT capacidade FROM tstmeta.cabopa WHERE id_meta = {idMeta}
    */
   getCapacidadeCabo(idMeta: number): Observable<string> {
-    const query = `SELECT capacidade FROM tstmeta.cabopa WHERE id_meta = ${idMeta}`;
-    console.log(`🗺️ [API-CAPACIDADE] Consultando capacidade do cabo ${idMeta}: ${query}`);
-    
-    return this.executeDynamicQuery(query, {}).pipe(
+    console.log(`🗺️ [API-CAPACIDADE] Consultando capacidade do cabo ${idMeta} (get_cabopa_capacidade / T14)`);
+
+    return this.runTemplate('get_cabopa_capacidade', { idmeta: idMeta }).pipe(
       map(response => {
         if (response.success && response.data && response.data.length > 0) {
-          const capacidade = response.data[0].capacidade;
-          console.log(`🗺️ [API-CAPACIDADE] Capacidade encontrada para cabo ${idMeta}: ${capacidade}`);
-          return capacidade;
+          const row = response.data[0] as Record<string, unknown>;
+          const capacidade = row['capacidade'] ?? row['CAPACIDADE'];
+          const capacidadeStr = capacidade != null ? String(capacidade) : 'unknown';
+          console.log(`🗺️ [API-CAPACIDADE] Capacidade encontrada para cabo ${idMeta}: ${capacidadeStr}`);
+          return capacidadeStr;
         } else {
           console.warn(`🗺️ [API-CAPACIDADE] Capacidade não encontrada para cabo ${idMeta}`);
           return 'unknown';

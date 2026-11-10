@@ -340,14 +340,14 @@ export class FiberTraceUnifilarSplitterService {
       }
       // 🆕 NOVO: Inicializar primeiro objeto (DIO de origem) apenas no primeiro passo
       if (stepCount === 0) {
-        const siglaResponse = await this.fiberApiService.executeDynamicQuery(
-          `SELECT LABEL,ID_META_CAIXA,entrada,TIPO_SPLITTER FROM tstmeta.SPLITTER_E WHERE IDMETA = {idmeta}`,
-          { idmeta: idmeta }
-        ).toPromise();
+        const siglaResponse = await this.fiberApiService
+          .runTemplate('get_splitter_entrada_label', { idmeta })
+          .toPromise();
 
-        let entrada = siglaResponse?.data?.[0]?.entrada;
-        let tipo_splitter = siglaResponse?.data?.[0]?.TIPO_SPLITTER;
-        let idmetacx = siglaResponse?.data?.[0]?.ID_META_CAIXA;
+        const rowSpInicio = siglaResponse?.data?.[0] as Record<string, unknown> | undefined;
+        let entrada = rowSpInicio?.['entrada'] ?? rowSpInicio?.['ENTRADA'];
+        let tipo_splitter = rowSpInicio?.['TIPO_SPLITTER'] ?? rowSpInicio?.['tipo_splitter'];
+        let idmetacx = rowSpInicio?.['ID_META_CAIXA'] ?? rowSpInicio?.['id_meta_caixa'];
 
         console.log ('entrada:' ,entrada,'tipo_splitter:',tipo_splitter,'id_meta_cx:',idmetacx)
 
@@ -360,7 +360,11 @@ export class FiberTraceUnifilarSplitterService {
         if(!this.flag_entrada_splitter_processada ){
           this.flag_entrada_splitter_processada = true; 
                  
-          await this.identificarEntradaSplitter(idmetacx,entrada,tipo_splitter);
+          await this.identificarEntradaSplitter(
+            Number(idmetacx),
+            String(entrada ?? ''),
+            String(tipo_splitter ?? ''),
+          );
                              
           
           this.dotString += this.dotStringEntrada;}
@@ -369,7 +373,7 @@ export class FiberTraceUnifilarSplitterService {
 
 
         //===============================================================================================================
-        const sigla = siglaResponse?.data?.[0]?.LABEL || `SPLITTER_${idmeta}`;
+        const sigla = String(rowSpInicio?.['LABEL'] ?? rowSpInicio?.['label'] ?? `SPLITTER_${idmeta}`);
         //this.Objeto_Atual = `$F{sigla}_${fiber}`; // Fibra já vem correta (1, 2, 3, etc.)
         this.Objeto_Atual = `SPLITTER:f${fiber}`
         this.Objeto_Anterior = this.Objeto_Atual;
@@ -380,12 +384,15 @@ export class FiberTraceUnifilarSplitterService {
 
         // codigo novo para obter prop.boca1_6.label boca e fibra que a saida do splitter esta ligado
         //***************************16/10/2025*************************** */
-        const BOCAResponse = await this.fiberApiService.executeDynamicQuery(
-          `SELECT F${fiber} FROM ${tabela} WHERE IDMETA = {idmeta}`,
-          { idmeta: idmeta }
-        ).toPromise();
-        
-        const conteudosp = BOCAResponse?.data?.[0]?.[`F${fiber}`] || `F${fiber}`;
+        const BOCAResponse = await this.fiberApiService
+          .runTemplate('get_meta_f_coluna', { idmeta, tabela, fiber })
+          .toPromise();
+
+        const rowBoca = BOCAResponse?.data?.[0] as Record<string, unknown> | undefined;
+        const fKey = `F${fiber}`;
+        const conteudosp = String(
+          rowBoca?.[fKey] ?? rowBoca?.[fKey.toLowerCase()] ?? `F${fiber}`
+        );
 
         //============================================================= */
         // 🆕 NOVO: Verificar se a saída não está conectada (=id())
@@ -644,25 +651,34 @@ export class FiberTraceUnifilarSplitterService {
 
 
 //consulta a boca da caixa obtem o cabo apenas para pegar o label do cabo
-  const bocaResponse = await this.fiberApiService.executeDynamicQuery(
-    `SELECT ${registrocx} FROM ${tabelacx} WHERE IDMETA = {idmeta}`,
-    { idmeta: idmetacx }
-  ).toPromise();
+  const bocaResponse = await this.fiberApiService
+    .runTemplate('get_meta_coluna_valor', {
+      idmeta: idmetacx,
+      tabela: tabelacx,
+      coluna: registrocx,
+    })
+    .toPromise();
 
-  let conteudoboca = bocaResponse?.data?.[0]?.[`F${fibraNumboca}L`]; //exemplo =cabo129198A!Prop.Fibra_1.VALUE
+  const rowBocaCx = bocaResponse?.data?.[0] as Record<string, unknown> | undefined;
+  const colKey = `F${fibraNumboca}L`;
+  let conteudoboca = String(
+    rowBocaCx?.[colKey] ?? rowBocaCx?.[colKey.toLowerCase()] ?? ''
+  ); //exemplo =cabo129198A!Prop.Fibra_1.VALUE
 
 const match2 = conteudoboca.match(/=(.+?)!Prop\.Fibra_(\d+)\./);
 const idvisio = match2 ? match2[1] : null; // "cabo129198A"
 const fibraNumero = match2 ? parseInt(match2[2]) : 0; // 1
 let ponta = '';
 if (idvisio) {
-   ponta = idvisio.slice(-1); // "A"
+   ponta = idvisio.slice(-1); // "A" ou "B" (maiúsculo no id_visio)
 }
+/** Nomes de tabela MySQL no tstmeta são minúsculos (cabopa/cabopb, caboa_t/cabob_t). */
+const pontaLower = ponta ? ponta.toLowerCase() : '';
 const match3 = conteudoboca.match(/=cabo(\d+)[AB]!/);
 const caboIdmeta = match3 ? parseInt(match3[1]) : 0; // 129198
 
 const tubocabo = this.calculateTubo(fibraNumero);
-const tabelacabox = `cabo${ponta}_t${tubocabo}`;
+const tabelacabox = `cabo${pontaLower}_t${tubocabo}`;
 const registrocabox = `FIBRA_${fibraNumero}`;
 //=====================================================================
 
@@ -686,14 +702,15 @@ console.log(`-------> [entrada splitter] fibraDestino.id_meta:'${fibraDestino.id
 }
 
 
-  const caboResponse = await this.fiberApiService.executeDynamicQuery(
-    `SELECT label_cabo FROM cabop${ponta} WHERE id_meta = {idmeta}`,
-    { idmeta: caboIdmeta}
-  ).toPromise();
+  const caboResponse = await this.fiberApiService
+    .runTemplate('get_cabop_label_cabo', { idmeta: caboIdmeta, ponta: ponta || 'A' })
+    .toPromise();
 
-
-
-  let label_cabo = caboResponse?.data?.[0]?.label_cabo;
+  const rowLabelEntrada = caboResponse?.data?.[0] as Record<string, unknown> | undefined;
+  let label_cabo = rowLabelEntrada?.['label_cabo'] ?? rowLabelEntrada?.['LABEL_CABO'];
+  if (label_cabo != null) {
+    label_cabo = String(label_cabo);
+  }
   if (label_cabo) {
     label_cabo = `"${label_cabo} (${fibraNumero})"`;
     console.log(`------------------>🔍 [ENTRADA] Label do cabo: ${label_cabo}`);
@@ -1060,18 +1077,18 @@ const CAMPOS = construirCamposSplitter(capacidade);
     
     // 🆕 NOVO: Compor string fibra (igual ao VB6 linha 643)
     try {
-      const cabopaResponse = await this.fiberApiService.executeDynamicQuery(
-        `SELECT label_cabo FROM tstmeta.cabopa WHERE id_meta = {idmeta}`,
-        { idmeta: caboId }
-      ).toPromise();
-      
-      const cabomResponse = await this.fiberApiService.executeDynamicQuery(
-        `SELECT capacidade FROM tstmeta.cabom WHERE id_meta = {idmeta}`,
-        { idmeta: caboId }
-      ).toPromise();
-      
-      const label_cabo = cabopaResponse?.data?.[0]?.label_cabo || '';
-      const capacidade = cabomResponse?.data?.[0]?.capacidade || 0;
+      const cabopaResponse = await this.fiberApiService
+        .runTemplate('get_cabopa_label_cabo', { idmeta: caboId })
+        .toPromise();
+
+      const cabomResponse = await this.fiberApiService
+        .runTemplate('get_cabom_capacidade', { idmeta: caboId })
+        .toPromise();
+
+      const rowLabelCabo = cabopaResponse?.data?.[0] as Record<string, unknown> | undefined;
+      const rowCapCabom = cabomResponse?.data?.[0] as Record<string, unknown> | undefined;
+      const label_cabo = String(rowLabelCabo?.['label_cabo'] ?? rowLabelCabo?.['LABEL_CABO'] ?? '');
+      const capacidade = rowCapCabom?.['capacidade'] ?? rowCapCabom?.['CAPACIDADE'] ?? 0;
       
       // Compor string fibra igual ao VB6
       let fibraString: string;
@@ -1166,10 +1183,9 @@ const CAMPOS = construirCamposSplitter(capacidade);
     // 🆕 NOVO: Compor DOT da caixa (igual ao VB6) - SÓ se flag_caixa = false
     if (!this.flag_caixa) {
       try {
-        const caixaResponse = await this.fiberApiService.executeDynamicQuery(
-          `SELECT numerocx, label_cx FROM tstmeta.caixa WHERE id_meta = {idmeta}`,
-          { idmeta: caixaId }
-        ).toPromise();
+        const caixaResponse = await this.fiberApiService
+          .runTemplate('get_caixa_numerocx_label', { idmeta: caixaId })
+          .toPromise();
         
         const numerocx = caixaResponse?.data?.[0]?.numerocx || caixaId.toString();
         const label_cx = caixaResponse?.data?.[0]?.label_cx || `CX_${caixaId}`;
@@ -1252,17 +1268,17 @@ const CAMPOS = construirCamposSplitter(capacidade);
     console.log(`🔍 [DIO] Campo a consultar: ${campoFibra}`);
     
     // Consultar fibra final no cabo anterior (tabela e idmeta ainda são do cabo)
-    const fibraResponse = await this.fiberApiService.executeDynamicQuery(
-      `SELECT ${campoFibra} as fibra FROM tstmeta.${tabela} WHERE IDMETA = {idmeta}`,
-      { idmeta: idmeta }
-    ).toPromise();
-    
+    const fibraResponse = await this.fiberApiService
+      .runTemplate('get_meta_coluna_fibra', { tabela, idmeta, coluna: campoFibra })
+      .toPromise();
+
     let fibraFinal = 0;
     if (fibraResponse?.success && fibraResponse.data && fibraResponse.data.length > 0) {
-      const fibraNumero = fibraResponse.data[0].fibra;
+      const rowFibraLbl = fibraResponse.data[0] as Record<string, unknown>;
+      const fibraNumero = rowFibraLbl['fibra'] ?? rowFibraLbl['FIBRA'];
       if (fibraNumero && fibraNumero !== 'ZERO') {
         // FN_XLABEL retorna o número da fibra final no DIO
-        fibraFinal = parseInt(fibraNumero);
+        fibraFinal = parseInt(String(fibraNumero ?? ''), 10);
         console.log(`✅ [DIO] Fibra final encontrada: ${fibraFinal}`);
       } else {
         fibraFinal = 0;
@@ -1285,18 +1301,22 @@ const CAMPOS = construirCamposSplitter(capacidade);
     // 🆕 NOVO: Compor DOT do DIO (igual ao VB6)
     try {
       // 🆕 CORREÇÃO: Consulta igual ao VB6 linha 604-605
-      const dioResponse = await this.fiberApiService.executeDynamicQuery(
-        `SELECT NOME, pop.id_estacao FROM tstmeta.dio, tstmeta.pop WHERE dio.id_estacao = pop.id_meta AND dio.id_meta = {idmeta}`,
-        { idmeta: dioIdmeta }
-      ).toPromise();
-      
-      const estacaoResponse = await this.fiberApiService.executeDynamicQuery(
-        `SELECT sigla FROM tst.estações WHERE id_estacao = {id_estacao}`,
-        { id_estacao: dioResponse?.data?.[0]?.id_estacao || 0 }
-      ).toPromise();
-      
-      const nome = dioResponse?.data?.[0]?.NOME || `DIO_${dioIdmeta}`;
-      const siglaEstacao = estacaoResponse?.data?.[0]?.sigla || 'EST';
+      const dioResponse = await this.fiberApiService
+        .runTemplate('get_dio_nome_pop_id_estacao', { idmeta: dioIdmeta })
+        .toPromise();
+
+      const rowDioPop = dioResponse?.data?.[0] as Record<string, unknown> | undefined;
+      const idEstacaoDio = rowDioPop?.['id_estacao'] ?? rowDioPop?.['ID_ESTACAO'];
+
+      const estacaoResponse = await this.fiberApiService
+        .runTemplate('get_estacao_sigla_id_estacao', {
+          id_estacao: idEstacaoDio || 0,
+        })
+        .toPromise();
+
+      const nome = String(rowDioPop?.['NOME'] ?? rowDioPop?.['nome'] ?? `DIO_${dioIdmeta}`);
+      const rowEstDot = estacaoResponse?.data?.[0] as Record<string, unknown> | undefined;
+      const siglaEstacao = String(rowEstDot?.['sigla'] ?? rowEstDot?.['SIGLA'] ?? 'EST');
       
       // Compor novo objeto atual (igual ao VB6 linha 612)
       const novoObjetoAtual = `"${(nome + '_F' + fibraFinal + '_(' + siglaEstacao+')').substring(0, 40)}"`;
@@ -1368,26 +1388,28 @@ const CAMPOS = construirCamposSplitter(capacidade);
 
     // Buscar cabo conectado na bandeja
     console.log(`🔍 [DIO-CABO] Consultando campo c${conector} para IDMETA ${idmeta}`);
-    const caboResponse = await this.fiberApiService.executeDynamicQuery(
-      `SELECT c${conector} as cabo FROM tstmeta.dio WHERE id_meta = {idmeta}`,
-      { idmeta: idmeta }
-    ).toPromise();
+    const caboResponse = await this.fiberApiService
+      .runTemplate('get_dio_conector_cabo', { idmeta, conector })
+      .toPromise();
     console.log(`📊 [DIO-CABO] Resposta:`, caboResponse);
-    
-    if (!caboResponse?.success || !caboResponse.data || caboResponse.data.length === 0 || caboResponse.data[0].cabo === 'ZERO') {
+
+    const rowCaboDio = caboResponse?.data?.[0] as Record<string, unknown> | undefined;
+    const cabo = rowCaboDio?.['cabo'] ?? rowCaboDio?.['CABO'];
+
+    if (!caboResponse?.success || !cabo || cabo === 'ZERO') {
       console.log(`❌ [DIO-CABO] Cabo não encontrado ou ZERO`);
       return { idmeta, fiber: 0, tabela: '', registro: '', status: 'fim' };
     }
-    
-    const cabo = caboResponse.data[0].cabo;
+
+    const caboStr = String(cabo);
 
     // Buscar fibra conectada na tabela original
-    const fiberResponse = await this.fiberApiService.executeDynamicQuery(
-      `SELECT FN${fibra} as fiber FROM tstmeta.${tabela} WHERE IDMETA = {idmeta}`,
-      { idmeta: idmeta }
-    ).toPromise();
-    
-    const fibraCabo = fiberResponse?.data?.[0]?.fiber || 0;
+    const fiberResponse = await this.fiberApiService
+      .runTemplate('get_meta_fn_fiber', { tabela, idmeta, fibra })
+      .toPromise();
+
+    const rowFnFiber = fiberResponse?.data?.[0] as Record<string, unknown> | undefined;
+    const fibraCabo = Number(rowFnFiber?.['fiber'] ?? rowFnFiber?.['FIBER'] ?? 0) || 0;
     if (fibraCabo === 0) {
       console.log(`❌ [DIO-CABO] Fibra conectada não encontrada`);
       return { idmeta, fiber: 0, tabela: '', registro: '', status: 'fim' };
@@ -1397,11 +1419,11 @@ const CAMPOS = construirCamposSplitter(capacidade);
     const tuboCabo = this.calculateTubo(fibraCabo);
     
     // Determinar ponta A ou B
-    const isPontaB = cabo.includes('B');
+    const isPontaB = caboStr.includes('B');
     const tabelaCabo = isPontaB ? `cabob_t${tuboCabo}` : `caboa_t${tuboCabo}`;
     
     // Extrair IDMETA do cabo
-    const caboIdmeta = this.extractCaboIdmeta(cabo);
+    const caboIdmeta = this.extractCaboIdmeta(caboStr);
     
     console.log(`✅ [DIO-CABO] Resultado - IDMETA: ${caboIdmeta}, Fibra: ${fibraCabo}, Tabela: ${tabelaCabo}`);
     
@@ -1472,22 +1494,21 @@ const CAMPOS = construirCamposSplitter(capacidade);
   private async comporSplitterDot(idmeta: number, fiber: number): Promise<void> {
     try {
       // Buscar informações do splitter (igual ao VB6 linha 678)
-      const splitterResponse = await this.fiberApiService.executeDynamicQuery(
-        `SELECT CAPACIDADE, NUMERO_CX, TIPO_SPLITTER, LABEL, acoplamento FROM tstmeta.splitter_e, tst.tipo_splitter WHERE IDMETA = {idmeta} AND tst.tipo_splitter.id = splitter_e.TIPO_SPLITTER`,
-        { idmeta: idmeta }
-      ).toPromise();
-      
+      const splitterResponse = await this.fiberApiService
+        .runTemplate('get_splitter_tipo', { idmeta })
+        .toPromise();
+
       if (!splitterResponse?.success || !splitterResponse.data || splitterResponse.data.length === 0) {
         console.log(`❌ [SPLITTER-DOT] Dados do splitter não encontrados`);
         return;
       }
-      
-      const splitterData = splitterResponse.data[0];
-      const capacidade = splitterData.CAPACIDADE || 0;
-      const numeroCx = splitterData.NUMERO_CX || idmeta;
-      const tipoSplitter = splitterData.TIPO_SPLITTER || 0;
-      const label = splitterData.LABEL || `SPLIT_${idmeta}`;
-      const acoplamento = splitterData.ACOPLAMENTO || '';
+
+      const splitterData = splitterResponse.data[0] as Record<string, unknown>;
+      const capacidade = Number(splitterData['CAPACIDADE'] ?? splitterData['capacidade'] ?? 0);
+      const numeroCx = splitterData['NUMERO_CX'] ?? splitterData['numero_cx'] ?? idmeta;
+      const tipoSplitter = Number(splitterData['TIPO_SPLITTER'] ?? splitterData['tipo_splitter'] ?? 0);
+      const label = String(splitterData['LABEL'] ?? splitterData['label'] ?? `SPLIT_${idmeta}`);
+      const acoplamento = String(splitterData['acoplamento'] ?? splitterData['ACOPLAMENTO'] ?? '');
       
       // Determinar cor (igual ao VB6 linha 690)
       const colorSp = tipoSplitter > 11 ? 'fillcolor=lightblue' : 'fillcolor=palegreen';
@@ -1623,12 +1644,14 @@ const CAMPOS = construirCamposSplitter(capacidade);
 
     // 🆕 NOVO: Compor DOT do POP (igual ao VB6 linha 597)
     try {
-      const popResponse = await this.fiberApiService.executeDynamicQuery(
-        `SELECT sigla FROM tst.estações WHERE id_meta = {idmeta}`,
-        { idmeta: popIdmeta }
-      ).toPromise();
-      
-      const sigla = popResponse?.data?.[0]?.sigla || `POP_${popIdmeta}`;
+      const popResponse = await this.fiberApiService
+        .runTemplate('get_estacao_sigla_nome', { idmeta: popIdmeta })
+        .toPromise();
+
+      const rowPopDot = popResponse?.data?.[0] as Record<string, unknown> | undefined;
+      const sigla =
+        String(rowPopDot?.['NOME'] ?? rowPopDot?.['nome'] ?? rowPopDot?.['sigla'] ?? rowPopDot?.['SIGLA'] ?? '') ||
+        `POP_${popIdmeta}`;
       
       // Compor novo objeto atual (igual ao VB6 linha 595)
       const novoObjetoAtual = `"${sigla.substring(0, 22)}"`;
@@ -1686,12 +1709,14 @@ const CAMPOS = construirCamposSplitter(capacidade);
 
     // 🆕 NOVO: Compor DOT do RABICHO (igual ao VB6 linha 628)
     try {
-      const rabichoResponse = await this.fiberApiService.executeDynamicQuery(
-        `SELECT label_rabicho FROM tstmeta.rabicho WHERE id_meta = {idmeta}`,
-        { idmeta: idmeta }
-      ).toPromise();
-      
-      const label_rabicho = rabichoResponse?.data?.[0]?.label_rabicho || `RAB_${idmeta}`;
+      const rabichoResponse = await this.fiberApiService
+        .runTemplate('get_rabicho_label_nome', { idmeta })
+        .toPromise();
+
+      const rowRabDot = rabichoResponse?.data?.[0] as Record<string, unknown> | undefined;
+      const label_rabicho =
+        String(rowRabDot?.['NOME'] ?? rowRabDot?.['nome'] ?? rowRabDot?.['label_rabicho'] ?? '') ||
+        `RAB_${idmeta}`;
       
       // Compor novo objeto atual (igual ao VB6 linha 626)
       const novoObjetoAtual = `"${label_rabicho.substring(0, 20)}"`;

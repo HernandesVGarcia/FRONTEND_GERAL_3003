@@ -1,3 +1,4 @@
+/** ITEM-14 — backup; usa executeDynamicQuery (POST /query-conex SQL livre). Pode excluir com legado da API. */
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { FiberApiService } from './fiber-api.service';

@@ -340,10 +340,9 @@ export class FiberTraceUnifilarTotalService {
 
       // 🆕 CORREÇÃO: Inicializar primeiro objeto (DIO de origem) para cada fibra individualmente
       if (stepCount === 0) {
-        const siglaResponse = await this.fiberApiService.executeDynamicQuery(
-          `SELECT SIGLA FROM tstmeta.dio WHERE id_meta = {idmeta}`,
-          { idmeta: idmeta }
-        ).toPromise();
+        const siglaResponse = await this.fiberApiService
+          .runTemplate('get_sigla_dio', { idmeta })
+          .toPromise();
         
         const sigla = siglaResponse?.data?.[0]?.SIGLA || `DIO_${idmeta}`;
         this.Objeto_Atual = `${sigla}_F${fiber}`; // Nome individual para cada fibra (B1C1_F1, B1C1_F2, etc.)
@@ -463,10 +462,9 @@ export class FiberTraceUnifilarTotalService {
       }
       // 🆕 NOVO: Inicializar primeiro objeto (DIO de origem) apenas no primeiro passo
       if (stepCount === 0) {
-        const siglaResponse = await this.fiberApiService.executeDynamicQuery(
-          `SELECT SIGLA FROM tstmeta.dio WHERE id_meta = {idmeta}`,
-          { idmeta: idmeta }
-        ).toPromise();
+        const siglaResponse = await this.fiberApiService
+          .runTemplate('get_sigla_dio', { idmeta })
+          .toPromise();
         
         const sigla = siglaResponse?.data?.[0]?.SIGLA || `DIO_${idmeta}`;
         this.Objeto_Atual = `${sigla}_F${fiber}`; // Fibra já vem correta (1, 2, 3, etc.)
@@ -898,18 +896,18 @@ export class FiberTraceUnifilarTotalService {
     
     // 🆕 NOVO: Compor string fibra (igual ao VB6 linha 643)
     try {
-      const cabopaResponse = await this.fiberApiService.executeDynamicQuery(
-        `SELECT label_cabo FROM tstmeta.cabopa WHERE id_meta = {idmeta}`,
-        { idmeta: caboId }
-      ).toPromise();
-      
-      const cabomResponse = await this.fiberApiService.executeDynamicQuery(
-        `SELECT capacidade FROM tstmeta.cabom WHERE id_meta = {idmeta}`,
-        { idmeta: caboId }
-      ).toPromise();
-      
-      const label_cabo = cabopaResponse?.data?.[0]?.label_cabo || '';
-      const capacidade = cabomResponse?.data?.[0]?.capacidade || 0;
+      const cabopaResponse = await this.fiberApiService
+        .runTemplate('get_cabopa_label_cabo', { idmeta: caboId })
+        .toPromise();
+
+      const cabomResponse = await this.fiberApiService
+        .runTemplate('get_cabom_capacidade', { idmeta: caboId })
+        .toPromise();
+
+      const rowLabelCabo = cabopaResponse?.data?.[0] as Record<string, unknown> | undefined;
+      const rowCapCabom = cabomResponse?.data?.[0] as Record<string, unknown> | undefined;
+      const label_cabo = String(rowLabelCabo?.['label_cabo'] ?? rowLabelCabo?.['LABEL_CABO'] ?? '');
+      const capacidade = rowCapCabom?.['capacidade'] ?? rowCapCabom?.['CAPACIDADE'] ?? 0;
       
       // Compor string fibra igual ao VB6
       let fibraString: string;
@@ -1004,10 +1002,9 @@ export class FiberTraceUnifilarTotalService {
     // 🆕 NOVO: Compor DOT da caixa (igual ao VB6) - SÓ se flag_caixa = false
     if (!this.flag_caixa) {
       try {
-        const caixaResponse = await this.fiberApiService.executeDynamicQuery(
-          `SELECT numerocx, label_cx FROM tstmeta.caixa WHERE id_meta = {idmeta}`,
-          { idmeta: caixaId }
-        ).toPromise();
+        const caixaResponse = await this.fiberApiService
+          .runTemplate('get_caixa_numerocx_label', { idmeta: caixaId })
+          .toPromise();
         
         const numerocx = caixaResponse?.data?.[0]?.numerocx || caixaId.toString();
         const label_cx = caixaResponse?.data?.[0]?.label_cx || `CX_${caixaId}`;
@@ -1090,17 +1087,17 @@ export class FiberTraceUnifilarTotalService {
     console.log(`🔍 [DIO] Campo a consultar: ${campoFibra}`);
     
     // Consultar fibra final no cabo anterior (tabela e idmeta ainda são do cabo)
-    const fibraResponse = await this.fiberApiService.executeDynamicQuery(
-      `SELECT ${campoFibra} as fibra FROM tstmeta.${tabela} WHERE IDMETA = {idmeta}`,
-      { idmeta: idmeta }
-    ).toPromise();
-    
+    const fibraResponse = await this.fiberApiService
+      .runTemplate('get_meta_coluna_fibra', { tabela, idmeta, coluna: campoFibra })
+      .toPromise();
+
     let fibraFinal = 0;
     if (fibraResponse?.success && fibraResponse.data && fibraResponse.data.length > 0) {
-      const fibraNumero = fibraResponse.data[0].fibra;
+      const rowFibraLbl = fibraResponse.data[0] as Record<string, unknown>;
+      const fibraNumero = rowFibraLbl['fibra'] ?? rowFibraLbl['FIBRA'];
       if (fibraNumero && fibraNumero !== 'ZERO') {
         // FN_XLABEL retorna o número da fibra final no DIO
-        fibraFinal = parseInt(fibraNumero);
+        fibraFinal = parseInt(String(fibraNumero ?? ''), 10);
         console.log(`✅ [DIO] Fibra final encontrada: ${fibraFinal}`);
       } else {
         fibraFinal = 0;
@@ -1123,18 +1120,22 @@ export class FiberTraceUnifilarTotalService {
     // 🆕 NOVO: Compor DOT do DIO (igual ao VB6)
     try {
       // 🆕 CORREÇÃO: Consulta igual ao VB6 linha 604-605
-      const dioResponse = await this.fiberApiService.executeDynamicQuery(
-        `SELECT NOME, pop.id_estacao FROM tstmeta.dio, tstmeta.pop WHERE dio.id_estacao = pop.id_meta AND dio.id_meta = {idmeta}`,
-        { idmeta: dioIdmeta }
-      ).toPromise();
-      
-      const estacaoResponse = await this.fiberApiService.executeDynamicQuery(
-        `SELECT sigla FROM tst.estações WHERE id_estacao = {id_estacao}`,
-        { id_estacao: dioResponse?.data?.[0]?.id_estacao || 0 }
-      ).toPromise();
-      
-      const nome = dioResponse?.data?.[0]?.NOME || `DIO_${dioIdmeta}`;
-      const siglaEstacao = estacaoResponse?.data?.[0]?.sigla || 'EST';
+      const dioResponse = await this.fiberApiService
+        .runTemplate('get_dio_nome_pop_id_estacao', { idmeta: dioIdmeta })
+        .toPromise();
+
+      const rowDioPop = dioResponse?.data?.[0] as Record<string, unknown> | undefined;
+      const idEstacaoDio = rowDioPop?.['id_estacao'] ?? rowDioPop?.['ID_ESTACAO'];
+
+      const estacaoResponse = await this.fiberApiService
+        .runTemplate('get_estacao_sigla_id_estacao', {
+          id_estacao: idEstacaoDio || 0,
+        })
+        .toPromise();
+
+      const nome = String(rowDioPop?.['NOME'] ?? rowDioPop?.['nome'] ?? `DIO_${dioIdmeta}`);
+      const rowEstDot = estacaoResponse?.data?.[0] as Record<string, unknown> | undefined;
+      const siglaEstacao = String(rowEstDot?.['sigla'] ?? rowEstDot?.['SIGLA'] ?? 'EST');
       
       // Compor novo objeto atual (igual ao VB6 linha 612)
       const novoObjetoAtual = `"${(nome + '_F' + fibraFinal + '_(' + siglaEstacao+')').substring(0, 40)}"`;
@@ -1206,26 +1207,28 @@ export class FiberTraceUnifilarTotalService {
 
     // Buscar cabo conectado na bandeja
     console.log(`🔍 [DIO-CABO] Consultando campo c${conector} para IDMETA ${idmeta}`);
-    const caboResponse = await this.fiberApiService.executeDynamicQuery(
-      `SELECT c${conector} as cabo FROM tstmeta.dio WHERE id_meta = {idmeta}`,
-      { idmeta: idmeta }
-    ).toPromise();
+    const caboResponse = await this.fiberApiService
+      .runTemplate('get_dio_conector_cabo', { idmeta, conector })
+      .toPromise();
     console.log(`📊 [DIO-CABO] Resposta:`, caboResponse);
-    
-    if (!caboResponse?.success || !caboResponse.data || caboResponse.data.length === 0 || caboResponse.data[0].cabo === 'ZERO') {
+
+    const rowCaboDio = caboResponse?.data?.[0] as Record<string, unknown> | undefined;
+    const cabo = rowCaboDio?.['cabo'] ?? rowCaboDio?.['CABO'];
+
+    if (!caboResponse?.success || !cabo || cabo === 'ZERO') {
       console.log(`❌ [DIO-CABO] Cabo não encontrado ou ZERO`);
       return { idmeta, fiber: 0, tabela: '', registro: '', status: 'fim' };
     }
-    
-    const cabo = caboResponse.data[0].cabo;
+
+    const caboStr = String(cabo);
 
     // Buscar fibra conectada na tabela original
-    const fiberResponse = await this.fiberApiService.executeDynamicQuery(
-      `SELECT FN${fibra} as fiber FROM tstmeta.${tabela} WHERE IDMETA = {idmeta}`,
-      { idmeta: idmeta }
-    ).toPromise();
-    
-    const fibraCabo = fiberResponse?.data?.[0]?.fiber || 0;
+    const fiberResponse = await this.fiberApiService
+      .runTemplate('get_meta_fn_fiber', { tabela, idmeta, fibra })
+      .toPromise();
+
+    const rowFnFiber = fiberResponse?.data?.[0] as Record<string, unknown> | undefined;
+    const fibraCabo = Number(rowFnFiber?.['fiber'] ?? rowFnFiber?.['FIBER'] ?? 0) || 0;
     if (fibraCabo === 0) {
       console.log(`❌ [DIO-CABO] Fibra conectada não encontrada`);
       return { idmeta, fiber: 0, tabela: '', registro: '', status: 'fim' };
@@ -1235,11 +1238,11 @@ export class FiberTraceUnifilarTotalService {
     const tuboCabo = this.calculateTubo(fibraCabo);
     
     // Determinar ponta A ou B
-    const isPontaB = cabo.includes('B');
+    const isPontaB = caboStr.includes('B');
     const tabelaCabo = isPontaB ? `cabob_t${tuboCabo}` : `caboa_t${tuboCabo}`;
     
     // Extrair IDMETA do cabo
-    const caboIdmeta = this.extractCaboIdmeta(cabo);
+    const caboIdmeta = this.extractCaboIdmeta(caboStr);
     
     console.log(`✅ [DIO-CABO] Resultado - IDMETA: ${caboIdmeta}, Fibra: ${fibraCabo}, Tabela: ${tabelaCabo}`);
     
@@ -1310,22 +1313,21 @@ export class FiberTraceUnifilarTotalService {
   private async comporSplitterDot(idmeta: number, fiber: number): Promise<void> {
     try {
       // Buscar informações do splitter (igual ao VB6 linha 678)
-      const splitterResponse = await this.fiberApiService.executeDynamicQuery(
-        `SELECT CAPACIDADE, NUMERO_CX, TIPO_SPLITTER, LABEL, acoplamento FROM tstmeta.splitter_e, tst.tipo_splitter WHERE IDMETA = {idmeta} AND tst.tipo_splitter.id = splitter_e.TIPO_SPLITTER`,
-        { idmeta: idmeta }
-      ).toPromise();
-      
+      const splitterResponse = await this.fiberApiService
+        .runTemplate('get_splitter_tipo', { idmeta })
+        .toPromise();
+
       if (!splitterResponse?.success || !splitterResponse.data || splitterResponse.data.length === 0) {
         console.log(`❌ [SPLITTER-DOT] Dados do splitter não encontrados`);
         return;
       }
-      
-      const splitterData = splitterResponse.data[0];
-      const capacidade = splitterData.CAPACIDADE || 0;
-      const numeroCx = splitterData.NUMERO_CX || idmeta;
-      const tipoSplitter = splitterData.TIPO_SPLITTER || 0;
-      const label = splitterData.LABEL || `SPLIT_${idmeta}`;
-      const acoplamento = splitterData.ACOPLAMENTO || '';
+
+      const splitterData = splitterResponse.data[0] as Record<string, unknown>;
+      const capacidade = Number(splitterData['CAPACIDADE'] ?? splitterData['capacidade'] ?? 0);
+      const numeroCx = splitterData['NUMERO_CX'] ?? splitterData['numero_cx'] ?? idmeta;
+      const tipoSplitter = Number(splitterData['TIPO_SPLITTER'] ?? splitterData['tipo_splitter'] ?? 0);
+      const label = String(splitterData['LABEL'] ?? splitterData['label'] ?? `SPLIT_${idmeta}`);
+      const acoplamento = String(splitterData['acoplamento'] ?? splitterData['ACOPLAMENTO'] ?? '');
       
       // Determinar cor (igual ao VB6 linha 690)
       const colorSp = tipoSplitter > 11 ? 'fillcolor=lightblue' : 'fillcolor=palegreen';
@@ -1460,12 +1462,14 @@ export class FiberTraceUnifilarTotalService {
 
     // 🆕 NOVO: Compor DOT do POP (igual ao VB6 linha 597)
     try {
-      const popResponse = await this.fiberApiService.executeDynamicQuery(
-        `SELECT sigla FROM tst.estações WHERE id_meta = {idmeta}`,
-        { idmeta: popIdmeta }
-      ).toPromise();
-      
-      const sigla = popResponse?.data?.[0]?.sigla || `POP_${popIdmeta}`;
+      const popResponse = await this.fiberApiService
+        .runTemplate('get_estacao_sigla_nome', { idmeta: popIdmeta })
+        .toPromise();
+
+      const rowPopDot = popResponse?.data?.[0] as Record<string, unknown> | undefined;
+      const sigla =
+        String(rowPopDot?.['NOME'] ?? rowPopDot?.['nome'] ?? rowPopDot?.['sigla'] ?? rowPopDot?.['SIGLA'] ?? '') ||
+        `POP_${popIdmeta}`;
       
       // Compor novo objeto atual (igual ao VB6 linha 595)
       const novoObjetoAtual = `"${sigla.substring(0, 22)}"`;
@@ -1523,12 +1527,14 @@ export class FiberTraceUnifilarTotalService {
 
     // 🆕 NOVO: Compor DOT do RABICHO (igual ao VB6 linha 628)
     try {
-      const rabichoResponse = await this.fiberApiService.executeDynamicQuery(
-        `SELECT label_rabicho FROM tstmeta.rabicho WHERE id_meta = {idmeta}`,
-        { idmeta: idmeta }
-      ).toPromise();
-      
-      const label_rabicho = rabichoResponse?.data?.[0]?.label_rabicho || `RAB_${idmeta}`;
+      const rabichoResponse = await this.fiberApiService
+        .runTemplate('get_rabicho_label_nome', { idmeta })
+        .toPromise();
+
+      const rowRabDot = rabichoResponse?.data?.[0] as Record<string, unknown> | undefined;
+      const label_rabicho =
+        String(rowRabDot?.['NOME'] ?? rowRabDot?.['nome'] ?? rowRabDot?.['label_rabicho'] ?? '') ||
+        `RAB_${idmeta}`;
       
       // Compor novo objeto atual (igual ao VB6 linha 626)
       const novoObjetoAtual = `"${label_rabicho.substring(0, 20)}"`;
