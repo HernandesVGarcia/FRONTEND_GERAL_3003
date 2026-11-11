@@ -627,9 +627,27 @@ export class FiberTraceUnifilarSplitterService {
 
   //=====================================================faz o tracer reverso da entrada só no PASSO 0==================
 
- private async identificarEntradaSplitter(idmetacx: number, entrada: string, tipo_splitter: string) {
+ /** Fragmento DOT da entrada/splitter sem fechar `}` — concatena com o rastreio das saídas. */
+ private montarDotStringEntradaSemConexao(tipo_splitter: string): void {
+  const capacidade = this.getCapacidadeFromTipo(parseInt(tipo_splitter, 10) || 0);
+  const CAMPOS = this.construirCamposSplitter(capacidade);
+  const LABEL_DESTINO = '"sem_conexão"';
+  this.dotStringEntrada =
+    'digraph G {size= 7.9;ranksep=0.5;rankdir=LR;' +
+    'node[label=' + LABEL_DESTINO + ',shape=record,width=.1,height=.15,fontsize=8.5,color=green,style=filled,fillcolor=white];SPLITTERE;' +
+    'node[shape=record,width=.1,height=.1,fontsize=9,color=blue,style=filled,fillcolor=Lightblue ];' +
+    'SPLITTER[ label= ' + CAMPOS + ',height=1.8,fontsize=12];' +
+    'SPLITTERE->SPLITTER[label= ' + LABEL_DESTINO + ',fontsize=9]; ';
+ }
 
-  if(entrada !=''){
+ private async identificarEntradaSplitter(idmetacx: number, entrada: string, tipo_splitter: string) {
+  const entradaNorm = String(entrada ?? '').trim();
+  if (entradaNorm === '' || entradaNorm === '=id()') {
+    console.log(`------------------>🔍 [ENTRADA] sem conexão (entrada vazia ou =id())`);
+    this.montarDotStringEntradaSemConexao(tipo_splitter);
+    return;
+  }
+
   console.log(`------------------>🔍 [ENTRADA] idmetacx:${idmetacx}, entrada:${entrada}, tipo_splitter:${tipo_splitter}`);
 
   let tabelacx = '';
@@ -732,19 +750,15 @@ DESTNAME= '"' + fibraDestino.tipo_objeto + "__Fibra:" + fibraDestino.fibra  +"__
 
 console.log ('------------------>capacidade:',capacidade)
 
-const CAMPOS = construirCamposSplitter(capacidade); 
+const CAMPOS = this.construirCamposSplitter(capacidade); 
 
  //se a entrada do splitter nao esta vazia, entao compoe o DOT string da entrada do splitter
- this.dotStringEntrada = "digraph G {size= 7.9;ranksep=0.5;rankdir=LR;node[label=" + DESTNAME + ",shape=record,width=.1,height=.15,fontsize=8.5,color=green,style=filled,fillcolor=aquamarine];SPLITTERE;node[shape=record,width=.1,height=.1,fontsize=9,color=blue,style=filled,fillcolor=Lightblue ];SPLITTER[ label= " + CAMPOS + ",height=1.8,fontsize=12];SPLITTERE->SPLITTER[label= " + label_cabo + ",fontsize=9]; "
-  }}
-  else{
-    let capacidade = this.getCapacidadeFromTipo(parseInt(tipo_splitter));
-    const CAMPOS = construirCamposSplitter(capacidade); 
-    const LABEL_DESTINO = "sem_conexão";  
-  this.dotStringEntrada = "digraph G {size= 7.9;ranksep=0.5;rankdir=LR;node[label=" + LABEL_DESTINO + ",shape=record,width=.1,height=.15,fontsize=8.5,color=green,style=filled,fillcolor=white];SPLITTERE;node[shape=record,width=.1,height=.1,fontsize=9,color=blue,style=filled,fillcolor=Lightblue ];SPLITTER[ label= " + CAMPOS + ",height=1.8,fontsize=12];SPLITTERE->SPLITTER[label= "+ LABEL_DESTINO +",fontsize=9]; }"
+    this.dotStringEntrada = "digraph G {size= 7.9;ranksep=0.5;rankdir=LR;node[label=" + DESTNAME + ",shape=record,width=.1,height=.15,fontsize=8.5,color=green,style=filled,fillcolor=aquamarine];SPLITTERE;node[shape=record,width=.1,height=.1,fontsize=9,color=blue,style=filled,fillcolor=Lightblue ];SPLITTER[ label= " + CAMPOS + ",height=1.8,fontsize=12];SPLITTERE->SPLITTER[label= " + label_cabo + ",fontsize=9]; ";
+  } else {
+    console.log(`------------------>🔍 [ENTRADA] sem destino rastreado (fibraDestino ausente)`);
+    this.montarDotStringEntradaSemConexao(tipo_splitter);
+  }
 }
- //console.log(`------------------>🔍 [ENTRADA] DOT string entrada: ${this.dotStringEntrada}`);
- //return this.dotStringEntrada;
  
 
 
@@ -756,7 +770,7 @@ const CAMPOS = construirCamposSplitter(capacidade);
 
  
 
- function construirCamposSplitter(capacidade : number) {
+ private construirCamposSplitter(capacidade: number): string {
   let campos = '';
   
   switch (capacidade) {
@@ -792,9 +806,6 @@ const CAMPOS = construirCamposSplitter(capacidade);
   
   return campos;
 }
- }
-
-
 
  private getCapacidadeFromTipo(tipoSplitter: number): number {
   switch(tipoSplitter) {
